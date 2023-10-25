@@ -1,48 +1,84 @@
 #ifndef TRANSACTION_H
 #define TRANSACTION_H
 
-#include <QDate>
-#include <QString>
-
-QT_BEGIN_NAMESPACE
-namespace Table {
-enum Column {
-    kID,
-    kPostDate,
-    kDescription,
-    kTransfer,
-    kStatus,
-    kDocument,
-    kDebit,
-    kCredit,
-    kBalance,
-};
-}
-QT_END_NAMESPACE
+#include <QSharedPointer>
+#include <QStringList>
 
 struct Transaction {
-    int id { 0 };
-    QDate post_date { QDate::currentDate() };
+    int id {};
+    QString date_time {};
+    QString code {};
+    int lhs_node {};
+    double lhs_ratio { 1.0 };
+    double lhs_debit {};
+    double lhs_credit {};
     QString description {};
-    int transfer { 0 };
-    bool status { false };
     QStringList document {};
-    double debit { 0.0 };
-    double credit { 0.0 };
-    double balance { 0.0 };
+    bool state { false };
+    double rhs_credit {};
+    double rhs_debit {};
+    double rhs_ratio { 1.0 };
+    int rhs_node {};
 
-    void ResetToDefault()
+    void Reset()
     {
         id = 0;
-        post_date = QDate::currentDate();
+        date_time.clear();
+        code.clear();
+        lhs_node = 0;
+        lhs_ratio = 1.0;
+        lhs_debit = 0.0;
+        lhs_credit = 0.0;
         description.clear();
-        transfer = 0;
-        status = false;
+        rhs_node = 0;
+        rhs_ratio = 1.0;
+        rhs_debit = 0.0;
+        rhs_credit = 0.0;
+        state = false;
         document.clear();
-        debit = 0.0;
-        credit = 0.0;
-        balance = 0.0;
-    };
+    }
 };
+
+struct Trans {
+    int* id {};
+    QString* date_time {};
+    QString* code {};
+    int* node {};
+    double* ratio {};
+    double* debit {};
+    double* credit {};
+    QString* description {};
+    QStringList* document {};
+    bool* state {};
+    double* related_credit {};
+    double* related_debit {};
+    double* related_ratio {};
+    int* related_node {};
+
+    double subtotal {};
+
+    void Reset()
+    {
+        id = nullptr;
+        date_time = nullptr;
+        code = nullptr;
+        node = nullptr;
+        ratio = nullptr;
+        debit = nullptr;
+        credit = nullptr;
+        description = nullptr;
+        related_node = nullptr;
+        related_ratio = nullptr;
+        related_debit = nullptr;
+        related_credit = nullptr;
+        state = nullptr;
+        document = nullptr;
+
+        subtotal = 0.0;
+    }
+};
+
+using TransactionList = QList<Transaction*>;
+using TransList = QList<Trans*>;
 
 #endif // TRANSACTION_H

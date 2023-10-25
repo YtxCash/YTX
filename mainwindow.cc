@@ -1,633 +1,1946 @@
 ﻿#include "mainwindow.h"
-#include "delegate/alignright.h"
-#include "delegate/datedelegate.h"
-#include "delegate/documentdelegate.h"
-#include "delegate/numericaldelegate.h"
-#include "delegate/statedelegate.h"
-#include "delegate/textdelegate.h"
-#include "delegate/transferdelegate.h"
-#include "dialog/editnode.h"
-#include "dialog/insertnode.h"
-#include "dialog/linkeddocument.h"
-#include "globalmanager/nodepool.h"
-#include "globalmanager/signalmanager.h"
-#include "ui_mainwindow.h"
-#include <QDir>
-#include <QHeaderView>
-#include <QKeyEvent>
-#include <QMessageBox>
 
-MainWindow::MainWindow(QWidget* parent)
+#include <QDragEnterEvent>
+#include <QFileDialog>
+#include <QHeaderView>
+#include <QLockFile>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QProcess>
+#include <QQueue>
+#include <QResource>
+#include <QScrollBar>
+
+#include "component/constvalue.h"
+#include "component/enumclass.h"
+#include "database/sqlite/sqliteorder.h"
+#include "database/sqlite/sqliteproduct.h"
+#include "database/sqlite/sqlitestakeholder.h"
+#include "delegate/checkstate.h"
+#include "delegate/datetimed.h"
+#include "delegate/line.h"
+#include "delegate/table/tablecombo.h"
+#include "delegate/table/tabledbclick.h"
+#include "delegate/table/tabledoublespin.h"
+#include "delegate/tree/order/employeer.h"
+#include "delegate/tree/order/ordernamer.h"
+#include "delegate/tree/product/amountr.h"
+#include "delegate/tree/stakeholder/deadline.h"
+#include "delegate/tree/treecombo.h"
+#include "delegate/tree/treedoublespin.h"
+#include "delegate/tree/treedoublespinpercent.h"
+#include "delegate/tree/treedoublespinunitr.h"
+#include "delegate/tree/treeplaintext.h"
+#include "delegate/tree/treespin.h"
+#include "dialog/about.h"
+#include "dialog/editdocument.h"
+#include "dialog/editnode/editnodefinance.h"
+#include "dialog/editnode/editnodeproduct.h"
+#include "dialog/editnode/editnodestakeholder.h"
+#include "dialog/editnode/insertnodeorder.h"
+#include "dialog/preferences.h"
+#include "dialog/removenode.h"
+#include "dialog/search.h"
+#include "global/resourcepool.h"
+#include "global/signalstation.h"
+#include "global/sqlconnection.h"
+#include "table/model/tablemodelproduct.h"
+#include "table/model/tablemodelstakeholder.h"
+#include "table/model/tablemodeltask.h"
+#include "tree/model/treemodelorder.h"
+#include "tree/model/treemodelproduct.h"
+#include "tree/model/treemodelstakeholder.h"
+#include "ui_mainwindow.h"
+#include "widget/tablewidget.h"
+#include "widget/treewidget/treewidget.h"
+#include "widget/treewidget/treewidgetorder.h"
+
+MainWindow::MainWindow(CString& dir_path, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , dir_path_ { dir_path }
 {
+    ResourceFile();
+    SharedInterface(dir_path);
+
     ui->setupUi(this);
+    SetTabWidget();
+    SetConnect();
+    SetHash();
+    SetHeader();
+    SetAction();
 
-    auto financial_tree_info_ = TreeInfo(kFinancialTable, kFinancialPathTable, kFinancialTransactionTable);
-    financial_ = CreateTree(financial_tree_info_);
-    ui->tabWidget->addTab(financial_.first, "Financial");
-    IniContainer(ui->tabWidget);
-    IniConnect();
+    qApp->setWindowIcon(QIcon(":/logo/logo/logo.png"));
+    this->setAcceptDrops(true);
 
-    date_format_ = "yyyy/MM/dd";
-    decimal_ = 2;
-    home_dir_ = QDir::homePath();
+    RestoreState(ui->splitter, shared_interface_, WINDOW, SPLITTER_STATE);
+    RestoreState(this, shared_interface_, WINDOW, MAINWINDOW_STATE);
+    RestoreGeometry(this, shared_interface_, WINDOW, MAINWINDOW_GEOMETRY);
+
+    Recent();
+
+#ifdef Q_OS_WIN
+    ui->actionRemove->setShortcut(Qt::Key_Delete);
+#elif defined(Q_OS_MACOS)
+    ui->actionRemove->setShortcut(Qt::Key_Backspace);
+#endif
 }
 
 MainWindow::~MainWindow()
 {
-    delete financial_.second;
-    delete financial_.first;
-    delete ui;
+    SaveState(ui->splitter, shared_interface_, WINDOW, SPLITTER_STATE);
+    SaveState(this, shared_interface_, WINDOW, MAINWINDOW_STATE);
+    SaveGeometry(this, shared_interface_, WINDOW, MAINWINDOW_GEOMETRY);
+    shared_interface_->setValue(START_SECTION, std::to_underlying(start_));
 
-    for (auto it = opened_table_view_.begin(); it != opened_table_view_.end(); ++it) {
-        auto view = it.value();
-        FreeView(view);
+    if (finance_tree_.widget) {
+        SaveTableWidget(finance_table_, finance_data_.info.node, VIEW);
+        SaveState(finance_tree_.widget->Header(), exclusive_interface_, finance_data_.info.node, HEADER_STATE);
+
+        finance_dialog_.clear();
     }
 
-    opened_table_view_.clear();
+    if (product_tree_.widget) {
+        SaveTableWidget(product_table_, product_data_.info.node, VIEW);
+        SaveState(product_tree_.widget->Header(), exclusive_interface_, product_data_.info.node, HEADER_STATE);
+
+        product_dialog_.clear();
+    }
+
+    if (stakeholder_tree_.widget) {
+        SaveTableWidget(stakeholder_table_, stakeholder_data_.info.node, VIEW);
+        SaveState(stakeholder_tree_.widget->Header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
+
+        stakeholder_dialog_.clear();
+    }
+
+    if (task_tree_.widget) {
+        SaveTableWidget(task_table_, task_data_.info.node, VIEW);
+        SaveState(task_tree_.widget->Header(), exclusive_interface_, task_data_.info.node, HEADER_STATE);
+
+        task_dialog_.clear();
+    }
+
+    if (sales_tree_.widget) {
+        SaveTableWidget(sales_table_, sales_data_.info.node, VIEW);
+        SaveState(sales_tree_.widget->Header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
+
+        sales_dialog_.clear();
+    }
+
+    if (purchase_tree_.widget) {
+        SaveTableWidget(purchase_table_, purchase_data_.info.node, VIEW);
+        SaveState(purchase_tree_.widget->Header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
+
+        purchase_dialog_.clear();
+    }
+
+    delete ui;
 }
 
-void MainWindow::do_treeView_doubleClicked(const QModelIndex& index)
+void MainWindow::ROpenFile(CString& file_path)
+{
+    if (file_path.isEmpty() || file_path == SqlConnection::Instance().DatabaseName())
+        return;
+
+    if (SqlConnection::Instance().DatabaseEnable()) {
+        QProcess::startDetached(qApp->applicationFilePath(), QStringList() << file_path);
+        return;
+    }
+
+    if (SqlConnection::Instance().SetDatabaseName(file_path)) {
+        QFileInfo file_info(file_path);
+        auto complete_base_name { file_info.completeBaseName() };
+
+        this->setWindowTitle(complete_base_name);
+        ExclusiveInterface(dir_path_, complete_base_name);
+        LockFile(file_info.absolutePath(), complete_base_name);
+
+        sql_ = MainwindowSqlite(start_);
+        SetFinanceData();
+        SetTaskData();
+        SetProductData();
+        SetStakeholderData();
+        SetSalesData();
+        SetPurchaseData();
+
+        CreateSection(finance_tree_, tr(Finance), &finance_data_, &finance_table_, &finance_rule_);
+        CreateSection(stakeholder_tree_, tr(Stakeholder), &stakeholder_data_, &stakeholder_table_, &stakeholder_rule_);
+        CreateSection(product_tree_, tr(Product), &product_data_, &product_table_, &product_rule_);
+        CreateSection(task_tree_, tr(Task), &task_data_, &task_table_, &task_rule_);
+        CreateSection(sales_tree_, tr(Sales), &sales_data_, &sales_table_, &sales_rule_);
+        CreateSection(purchase_tree_, tr(Purchase), &purchase_data_, &purchase_table_, &purchase_rule_);
+
+        switch (start_) {
+        case Section::kFinance:
+            on_rBtnFinance_toggled(true);
+            break;
+        case Section::kStakeholder:
+            on_rBtnStakeholder_toggled(true);
+            break;
+        case Section::kProduct:
+            on_rBtnProduct_toggled(true);
+            break;
+        case Section::kTask:
+            on_rBtnTask_toggled(true);
+            break;
+        case Section::kSales:
+            on_rBtnSales_toggled(true);
+            break;
+        case Section::kPurchase:
+            on_rBtnPurchase_toggled(true);
+            break;
+        default:
+            break;
+        }
+
+        QString path { QDir::toNativeSeparators(file_path) };
+
+        if (!recent_list_.contains(path)) {
+            auto menu { ui->menuRecent };
+            auto action { new QAction(path, menu) };
+
+            if (menu->isEmpty()) {
+                menu->addAction(action);
+                SetClearMenuAction();
+            } else
+                ui->menuRecent->insertAction(ui->actionSeparator, action);
+
+            recent_list_.emplaceBack(path);
+            UpdateRecent();
+        }
+    }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasUrls()) {
+        auto suffix { QFileInfo(event->mimeData()->urls().at(0).fileName()).suffix().toLower() };
+        if (suffix == YTX)
+            return event->acceptProposedAction();
+    }
+
+    event->ignore();
+}
+
+void MainWindow::dropEvent(QDropEvent* event) { ROpenFile(event->mimeData()->urls().at(0).toLocalFile()); }
+
+void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
 {
     if (index.column() != 0)
         return;
 
-    bool placeholder = index.siblingAtColumn(Tree::kPlaceholder).data().toBool();
-    if (placeholder)
+    bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
+    if (branch)
         return;
 
-    int node_id = index.siblingAtColumn(Tree::kID).data().toInt();
-    QString node_name = index.siblingAtColumn(Tree::kName).data().toString();
-    bool node_rule = index.siblingAtColumn(Tree::kRule).data().toBool();
+    auto node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+    if (node_id == -1)
+        return;
 
-    if (opened_table_view_.contains(node_id)) {
-        SwitchTab(node_id);
-    } else {
-        TableInfo info(node_id, node_name, 2, node_rule, kFinancialTransactionTable);
+    if (!section_table_->contains(node_id))
+        CreateTable(section_data_, section_tree_->model, section_rule_, section_table_, node_id);
 
-        CreateTable(info, ui->tabWidget, financial_.second);
+    SwitchTab(node_id);
+}
+
+void MainWindow::SwitchTab(int node_id, int trans_id)
+{
+    auto widget { section_table_->value(node_id, nullptr) };
+    if (!widget)
+        return;
+
+    ui->tabWidget->setCurrentWidget(widget);
+    widget->activateWindow();
+
+    if (trans_id == 0)
+        return;
+
+    auto view { widget->View() };
+    auto index { GetTableModel(view)->GetIndex(trans_id) };
+    view->setCurrentIndex(index);
+    view->scrollTo(index.sibling(index.row(), std::to_underlying(TableEnum::kDateTime)), QAbstractItemView::PositionAtCenter);
+}
+
+bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name)
+{
+    auto lock_file_path { absolute_path + SLASH + complete_base_name + SFX_LOCK };
+
+    static QLockFile lock_file { lock_file_path };
+    if (!lock_file.tryLock(100))
+        return false;
+
+    return true;
+}
+
+void MainWindow::CreateTable(SectionData* data, TreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, int node_id)
+{
+    auto name { tree_model->Name(node_id) };
+    auto section { data->info.section };
+    auto node_rule { tree_model->NodeRule(node_id) };
+
+    auto widget { new TableWidget(this) };
+    auto view { widget->View() };
+    TableModel* model {};
+
+    switch (section) {
+    case Section::kFinance:
+        model = new TableModel(data->sql, node_rule, node_id, data->info, finance_rule_, this);
+        break;
+    case Section::kProduct:
+        model = new TableModelProduct(data->sql, node_rule, node_id, data->info, product_rule_, this);
+        break;
+    case Section::kTask:
+        model = new TableModelTask(data->sql, node_rule, node_id, data->info, task_rule_, this);
+        break;
+    case Section::kStakeholder:
+        model = new TableModelStakeholder(data->sql, node_rule, node_id, data->info, stakeholder_rule_, tree_model->Unit(node_id), this);
+        break;
+    default:
+        break;
+    }
+
+    widget->SetModel(model);
+
+    int tab_index { ui->tabWidget->addTab(widget, name) };
+    auto tab_bar { ui->tabWidget->tabBar() };
+
+    tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
+    tab_bar->setTabToolTip(tab_index, tree_model->GetPath(node_id));
+
+    SetView(view);
+    SetConnect(view, model, tree_model, data);
+
+    switch (section) {
+    case Section::kFinance:
+    case Section::kProduct:
+    case Section::kTask:
+        CreateDelegate(view, tree_model, section_rule, node_id);
+        break;
+    case Section::kStakeholder:
+        DelegateStakeholder(view, section_rule);
+        break;
+    default:
+        break;
+    }
+
+    table_hash->insert(node_id, widget);
+    SignalStation::Instance().RegisterModel(section, node_id, model);
+}
+
+void MainWindow::SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const SectionData* data)
+{
+    connect(table, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
+
+    connect(table, &TableModel::SRemoveOne, &SignalStation::Instance(), &SignalStation::RRemoveOne);
+    connect(table, &TableModel::SAppendOne, &SignalStation::Instance(), &SignalStation::RAppendOne);
+    connect(table, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
+    connect(table, &TableModel::SMoveMulti, &SignalStation::Instance(), &SignalStation::RMoveMulti);
+
+    connect(table, &TableModel::SUpdateOneTotal, tree, &TreeModel::RUpdateOneTotal);
+    connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
+
+    connect(tree, &TreeModel::SNodeRule, table, &TableModel::RNodeRule);
+
+    connect(data->sql.data(), &Sqlite::SRemoveMulti, table, &TableModel::RRemoveMulti);
+
+    connect(data->sql.data(), &Sqlite::SMoveMulti, &SignalStation::Instance(), &SignalStation::RMoveMulti);
+}
+
+void MainWindow::CreateDelegate(QTableView* view, const TreeModel* tree_model, CSectionRule* section_rule, int node_id)
+{
+    auto node { new TableCombo(*tree_model, node_id, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRelatedNode), node);
+
+    auto value { new TableDoubleSpin(section_rule->value_decimal, DMIN, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), value);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), value);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kBalance), value);
+
+    auto ratio { new TableDoubleSpin(section_rule->ratio_decimal, DMIN, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRatio), ratio);
+
+    auto date_time { new DateTimeD(interface_.date_format, section_rule->hide_time, true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
+
+    auto line { new Line(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
+
+    auto state { new CheckState(false, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
+
+    auto document { new TableDbClick(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+}
+
+void MainWindow::DelegateStakeholder(QTableView* view, CSectionRule* section_rule)
+{
+    auto node { new TableCombo(*product_tree_.model, 0, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRelatedNode), node);
+
+    auto unit_price { new TableDoubleSpin(section_rule->ratio_decimal, DMIN, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRatio), unit_price);
+
+    auto date_time { new DateTimeD(interface_.date_format, section_rule->hide_time, true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
+
+    auto line { new Line(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
+
+    auto document { new TableDbClick(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+}
+
+void MainWindow::CreateSection(Tree& tree, CString& name, SectionData* data, TableHash* table_hash, CSectionRule* section_rule)
+{
+    const auto* info { &data->info };
+    auto tab_widget { ui->tabWidget };
+
+    auto widget { tree.widget };
+    auto view { widget->View() };
+    auto model { tree.model };
+
+    CreateDelegate(view, info, section_rule);
+    SetConnect(view, widget, model, data->sql.data());
+
+    tab_widget->tabBar()->setTabData(tab_widget->addTab(widget, name), QVariant::fromValue(Tab { info->section, 0 }));
+
+    RestoreState(view->header(), exclusive_interface_, info->node, HEADER_STATE);
+    RestoreTableWidget(data, model, section_rule, table_hash, VIEW);
+
+    SetView(view);
+    // view->setColumnHidden(1, true);
+}
+
+void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSectionRule* section_rule)
+{
+    switch (info->section) {
+    case Section::kFinance:
+    case Section::kTask:
+        DelegateFinance(view, info, section_rule);
+        break;
+    case Section::kStakeholder:
+        DelegateStakeholder(view, info, section_rule);
+        break;
+    case Section::kProduct:
+        DelegateProduct(view, info, section_rule);
+        break;
+    case Section::kSales:
+    case Section::kPurchase:
+        DelegateOrder(view, info, section_rule);
+        break;
+    default:
+        break;
     }
 }
 
-void MainWindow::SwitchTab(int node_id)
+void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSectionRule* section_rule)
 {
-    auto view = opened_table_view_.value(node_id);
-    ui->tabWidget->setCurrentWidget(view);
+    auto line { new Line(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kCode), line);
+
+    auto plain_text { new TreePlainText(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kNote), plain_text);
+
+    auto final_total { new TreeDoubleSpinUnitR(section_rule->value_decimal, info->unit_symbol_hash, true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kFinalTotal), final_total);
+
+    auto initial_total { new TreeDoubleSpinUnitR(section_rule->value_decimal, info->unit_symbol_hash, false, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kInitialTotal), initial_total);
+
+    auto unit { new TreeCombo(info->unit_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kUnit), unit);
+
+    auto node_rule { new TreeCombo(node_rule_hash_, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kNodeRule), node_rule);
+
+    auto branch { new CheckState(true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kBranch), branch);
 }
 
-void MainWindow::CreateTable(const TableInfo& info, QTabWidget* container, TreeModel* tree_model)
+void MainWindow::DelegateProduct(QTreeView* view, CInfo* info, CSectionRule* section_rule)
 {
-    auto view = new QTableView(container);
-    auto model = new TableModel(info, view);
-    view->setModel(model);
+    auto line { new Line(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCode), line);
 
-    int tab_index = container->addTab(view, info.node_name);
-    int node_id = info.node_id;
-    container->tabBar()->setTabData(tab_index, node_id);
-    container->setCurrentWidget(view);
+    auto plain_text { new TreePlainText(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kNote), plain_text);
 
-    auto leaf_map = tree_model->GetLeafMap();
-    RemoveOneLeaf(leaf_map, info.node_id);
+    auto quantity { new TreeDoubleSpinUnitR(section_rule->value_decimal, info->unit_symbol_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kInitialTotal), quantity);
 
-    IniTableView(view);
-    IniTableHeaderView(view);
-    IniTableConnect(model, tree_model);
-    CreateTableDelegate(view, leaf_map, tree_model);
+    auto amount { new AmountR(section_rule->ratio_decimal, finance_data_.info.unit_symbol_hash, finance_rule_.base_unit, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kFinalTotal), amount);
 
-    opened_table_view_.insert(node_id, view);
-    SignalManager::Instance().RegisterTableModel(node_id, model);
+    auto price { new TreeDoubleSpin(section_rule->ratio_decimal, DMIN, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
+
+    auto unit { new TreeCombo(info->unit_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnit), unit);
+
+    auto node_rule { new TreeCombo(node_rule_hash_, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kNodeRule), node_rule);
+
+    auto branch { new CheckState(true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kBranch), branch);
 }
 
-void MainWindow::IniTableConnect(TableModel* table, TreeModel* tree)
+void MainWindow::DelegateStakeholder(QTreeView* view, CInfo* info, CSectionRule* section_rule)
 {
-    connect(table, &TableModel::SendUpdate, &SignalManager::Instance(), &SignalManager::ReceiveUpdate, Qt::UniqueConnection);
-    connect(table, &TableModel::SendRemove, &SignalManager::Instance(), &SignalManager::ReceiveRemove, Qt::UniqueConnection);
-    connect(table, &TableModel::SendCopy, &SignalManager::Instance(), &SignalManager::ReceiveCopy, Qt::UniqueConnection);
+    auto line { new Line(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kCode), line);
 
-    connect(tree, &TreeModel::SendRule, table, &TableModel::ReceiveRule, Qt::UniqueConnection);
-    connect(table, &TableModel::SendReCalculate, tree, &TreeModel::ReceiveReCalculate, Qt::UniqueConnection);
+    auto plain_text { new TreePlainText(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kNote), plain_text);
+
+    auto payment_period { new TreeSpin(0, IMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
+
+    auto tax_rate { new TreeDoubleSpinPercent(section_rule->ratio_decimal, 0, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
+
+    auto deadline { new Deadline(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
+
+    auto mark { new TreeCombo(info->unit_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kUnit), mark);
+
+    auto branch { new CheckState(true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kBranch), branch);
+
+    auto node_term { new TreeCombo(node_term_hash_, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kNodeRule), node_term);
 }
 
-void MainWindow::CreateTableDelegate(QTableView* view, const QMultiMap<QString, int>& leaf_map, TreeModel* tree_model)
+void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* section_rule)
 {
-    auto transfer = new TransferDelegate(leaf_map, view);
-    view->setItemDelegateForColumn(Table::kTransfer, transfer);
-    connect(tree_model, &TreeModel::SendLeaf, transfer, &TransferDelegate::ReceiveLeaf, Qt::UniqueConnection);
+    auto line { new Line(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDescription), line);
 
-    auto numerical = new NumericalDelegate(decimal_, view);
-    view->setItemDelegateForColumn(Table::kDebit, numerical);
-    view->setItemDelegateForColumn(Table::kCredit, numerical);
+    auto amount { new TreeDoubleSpinUnitR(section_rule->ratio_decimal, info->unit_symbol_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kInitialTotal), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFinalTotal), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), amount);
 
-    auto date = new DateDelegate(date_format_, view);
-    view->setItemDelegateForColumn(Table::kPostDate, date);
+    auto quantity { new TreeDoubleSpinUnitR(section_rule->value_decimal, info->unit_symbol_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
 
-    auto description = new TextDelegate(view);
-    view->setItemDelegateForColumn(Table::kDescription, description);
+    auto first { new TreeSpin(IMIN, IMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), first);
 
-    auto align_right = new AlignRight(view);
-    view->setItemDelegateForColumn(Table::kBalance, align_right);
+    auto employee { new EmployeeR(*stakeholder_tree_.model, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
 
-    auto statue = new StateDelegate(view);
-    view->setItemDelegateForColumn(Table::kStatus, statue);
+    auto date_time { new Deadline(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
-    auto document = new DocumentDelegate(view);
-    view->setItemDelegateForColumn(Table::kDocument, document);
+    auto term { new TreeCombo(info->unit_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kUnit), term);
+
+    auto branch { new CheckState(true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kBranch), branch);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kNodeRule), branch);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kRefund), branch);
+
+    auto name { new OrderName(*stakeholder_tree_.model, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
 }
 
-QPair<QTreeView*, TreeModel*> MainWindow::CreateTree(const TreeInfo& info)
+void MainWindow::SetConnect(const QTreeView* view, const AbstractTreeWidget* widget, const TreeModel* model, const Sqlite* table_sql)
 {
-    auto view = new QTreeView(this);
-    auto model = new TreeModel(info, view);
-    view->setModel(model);
+    connect(view, &QTreeView::doubleClicked, this, &MainWindow::RTreeViewDoubleClicked);
+    connect(view, &QTreeView::customContextMenuRequested, this, &MainWindow::RTreeViewCustomContextMenuRequested);
 
-    IniTreeView(view);
-    IniTreeHeaderView(view);
-    CreateTreeDelegate(view);
+    connect(model, &TreeModel::SUpdateName, this, &MainWindow::RUpdateName);
 
-    return QPair<QTreeView*, TreeModel*>(view, model);
+    connect(model, &TreeModel::SUpdateDSpinBox, widget, &AbstractTreeWidget::RUpdateDSpinBox);
+
+    connect(model, &TreeModel::SResizeColumnToContents, view, &QTreeView::resizeColumnToContents);
+
+    connect(table_sql, &Sqlite::SRemoveNode, model, &TreeModel::RRemoveNode);
+    connect(table_sql, &Sqlite::SUpdateMultiTotal, model, &TreeModel::RUpdateMultiTotal);
+
+    connect(table_sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }
 
-void MainWindow::CreateTreeDelegate(QTreeView* view)
+void MainWindow::PrepInsertNode(QTreeView* view)
 {
-    auto text = new TextDelegate(view);
-    view->setItemDelegateForColumn(Tree::kDescription, text);
-    view->setItemDelegateForColumn(Tree::kRule, text);
-    view->setItemDelegateForColumn(Tree::kPlaceholder, text);
-
-    auto align_right = new AlignRight(view);
-    view->setItemDelegateForColumn(Tree::kTotal, align_right);
-}
-
-void MainWindow::IniTreeHeaderView(QTreeView* view)
-{
-    auto header = view->header();
-
-    for (int column = 0; column != view->model()->columnCount(); ++column) {
-        switch (column) {
-        case Tree::kDescription:
-            header->setSectionResizeMode(column, QHeaderView::Stretch);
-            break;
-        default:
-            header->setSectionResizeMode(column, QHeaderView::ResizeToContents);
-            break;
-        }
-    }
-}
-
-void MainWindow::InsertRowInTree(QTreeView* view, TreeModel* model)
-{
-    auto current_index = view->currentIndex();
+    auto current_index { view->currentIndex() };
     current_index = current_index.isValid() ? current_index : QModelIndex();
 
-    auto parent_index = current_index.parent();
+    auto parent_index { current_index.parent() };
     parent_index = parent_index.isValid() ? parent_index : QModelIndex();
-    bool parent_rule = parent_index.siblingAtColumn(Tree::kRule).data().toBool();
 
-    int row = current_index.isValid() ? current_index.row() + 1 : 0;
-
-    auto node = NodePool::Instance().Allocate();
-    node->rule = parent_rule;
-
-    auto dialog = new InsertNode(node, view);
-    if (dialog->exec() == QDialog::Rejected)
-        return;
-
-    if (model->insertRow(row, parent_index, node)) {
-        auto index = model->index(row, 0, parent_index);
-        view->setCurrentIndex(index);
-    }
+    InsertNode(parent_index, current_index.row() + 1);
 }
 
-void MainWindow::InsertRowInTable(QWidget* widget)
+void MainWindow::InsertNode(const QModelIndex& parent, int row)
 {
-    auto view = GetTableView(widget);
-    if (!view)
-        return;
+    auto model { section_tree_->model };
 
-    auto model = GetTableModel(view);
-    if (!model)
-        return;
+    auto parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
 
-    int empty_transfer = model->EmptyTransfer();
+    auto node { ResourcePool<Node>::Instance().Allocate() };
+    node->node_rule = model->NodeRule(parent_id);
+    node->unit = model->Unit(parent_id);
+    model->SetParent(node, parent_id);
 
-    if (empty_transfer == -1) {
-        int row = view->currentIndex().isValid() ? view->currentIndex().row() + 1 : 0;
-        if (model->insertRow(row)) {
-            auto index = model->index(row, Table::kPostDate);
-            view->setCurrentIndex(index);
-            view->edit(index.sibling(index.row(), Table::kPostDate));
+    auto info { &section_data_->info };
+
+    QDialog* dialog {};
+
+    switch (info->section) {
+    case Section::kFinance:
+        dialog = new EditNodeFinance(node, interface_.separator, finance_data_.info, *model, parent_id, false, false, this);
+        break;
+    case Section::kTask:
+        dialog = new EditNodeFinance(node, interface_.separator, task_data_.info, *model, parent_id, false, false, this);
+        break;
+    case Section::kStakeholder:
+        node->branch = true;
+        dialog = new EditNodeStakeholder(
+            node, stakeholder_rule_, interface_.separator, stakeholder_data_.info, false, false, parent_id, node_term_hash_, model, this);
+        break;
+    case Section::kProduct:
+        dialog = new EditNodeProduct(node, product_rule_, interface_.separator, info->unit_hash, *model, parent_id, false, false, this);
+        break;
+    case Section::kSales:
+        dialog = new InsertNodeOrder(node, sales_rule_, &stakeholder_tree_, *product_tree_.model, *info, this);
+        dialog->setWindowTitle(tr(Sales));
+        break;
+    case Section::kPurchase:
+        dialog = new InsertNodeOrder(node, purchase_rule_, &stakeholder_tree_, *product_tree_.model, *info, this);
+        dialog->setWindowTitle(tr(Purchase));
+        break;
+    default:
+        return ResourcePool<Node>::Instance().Recycle(node);
+    }
+
+    dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(dialog, &QDialog::accepted, this, [=, this]() {
+        if (model->InsertNode(row, parent, node)) {
+            auto index = model->index(row, 0, parent);
+            section_tree_->widget->SetCurrentIndex(index);
         }
-    } else {
-        auto index = model->index(empty_transfer, Table::kTransfer);
-        view->setCurrentIndex(index);
-        view->edit(index.sibling(index.row(), Table::kTransfer));
-    }
+    });
+    connect(dialog, &QDialog::rejected, this, [=]() { ResourcePool<Node>::Instance().Recycle(node); });
+
+    section_dialog_->append(dialog);
+    dialog->show();
 }
 
-void MainWindow::do_actionDelete()
+void MainWindow::AppendTrans(QWidget* widget)
 {
-    auto widget = ui->tabWidget->currentWidget();
+    auto view { GetQTableView(widget) };
+    auto model { GetTableModel(view) };
+    int row { model->GetRow(0) };
+    QModelIndex index {};
 
-    if (IsTreeView(widget)) {
-        DeleteFromTreeView(financial_.first, financial_.second);
-        return;
-    }
+    index = (row == -1) ? (model->InsertTrans() ? model->index(model->rowCount() - 1, std::to_underlying(TableEnum::kDateTime)) : index)
+                        : model->index(row, std::to_underlying(TableEnum::kRelatedNode));
 
-    if (IsTableView(widget)) {
-        DeleteFromTableView(ui->tabWidget->currentWidget());
-        return;
-    }
+    view->setCurrentIndex(index);
 }
 
-void MainWindow::do_actionNew()
+void MainWindow::RInsertTriggered()
 {
-    auto widget = ui->tabWidget->currentWidget();
-
-    if (IsTreeView(widget)) {
-        InsertRowInTree(financial_.first, financial_.second);
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget)
         return;
-    }
 
-    if (IsTableView(widget)) {
-        InsertRowInTable(ui->tabWidget->currentWidget());
-        return;
-    }
+    if (IsTreeWidget(current_widget))
+        PrepInsertNode(section_tree_->widget->View());
+
+    if (IsTableWidget(current_widget))
+        AppendTrans(current_widget);
 }
 
-void MainWindow::DeleteFromTreeView(QTreeView* view, TreeModel* model)
+void MainWindow::RRemoveTriggered()
+{
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget)
+        return;
+
+    if (IsTreeWidget(current_widget))
+        RemoveNode(section_tree_->widget->View(), section_tree_->model);
+
+    if (IsTableWidget(current_widget))
+        DeleteTrans(current_widget);
+}
+
+void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
 {
     if (!HasSelection(view))
         return;
 
-    auto index = view->currentIndex();
-    if (!model || !index.isValid())
+    auto index { view->currentIndex() };
+    if (!index.isValid())
         return;
 
-    int node_id = index.siblingAtColumn(Tree::kID).data().toInt();
-    auto node = model->GetNode(node_id);
-    bool placeholder = index.siblingAtColumn(Tree::kPlaceholder).data().toBool();
+    auto node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+    auto branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toInt() };
 
-    if (placeholder) {
-        if (node->children.isEmpty()) {
-            model->removeRow(index.row(), index.parent());
-            return;
-        }
+    if (branch) {
+        if (model->ChildrenEmpty(node_id))
+            model->RemoveNode(index.row(), index.parent());
+        else
+            RemoveBranch(model, index, node_id);
 
-        ShowPlaceholderMsgBox(model, index);
         return;
     }
 
-    if (!model->UsageOfNode(node_id)) {
-        DeleteNodeAndRelatedView(model, index, node_id);
+    auto& sql { section_data_->sql };
+    bool interal_references { sql->NodeInternalReferences(node_id) };
+    bool exteral_references { sql->NodeExternalReferences(node_id) };
+
+    if (!interal_references && !exteral_references) {
+        RemoveView(model, index, node_id);
         return;
     }
 
-    auto leaf_map = model->GetLeafMap();
-    RemoveOneLeaf(leaf_map, node_id);
-
-    auto dialog = new DeleteNode(node_id, leaf_map, view);
-    IniDeleteNodeConnect(dialog, model);
-
-    if (dialog->exec() == QDialog::Accepted) {
-        DeleteNodeAndRelatedView(model, index, node_id);
+    if (interal_references && !exteral_references) {
+        auto dialog { new class RemoveNode(*model, node_id, this) };
+        connect(dialog, &RemoveNode::SRemoveMulti, section_data_->sql.data(), &Sqlite::RRemoveMulti);
+        connect(dialog, &RemoveNode::SReplaceMulti, section_data_->sql.data(), &Sqlite::RReplaceMulti);
+        dialog->exec();
+        return;
     }
+
+    auto dialog { new class RemoveNode(*model, node_id, this) };
+    connect(dialog, &RemoveNode::SReplaceMulti, section_data_->sql.data(), &Sqlite::RReplaceMulti);
+    dialog->DisableRemove();
+    dialog->exec();
 }
 
-void MainWindow::IniDeleteNodeConnect(DeleteNode* dialog, TreeModel* model)
+void MainWindow::DeleteTrans(QWidget* widget)
 {
-    connect(dialog, &DeleteNode::SendDelete, model, &TreeModel::ReceiveDelete, Qt::UniqueConnection);
-    connect(dialog, &DeleteNode::SendReplace, model, &TreeModel::ReceiveReplace, Qt::UniqueConnection);
-    connect(dialog, &DeleteNode::SendReloadAll, &SignalManager::Instance(), &SignalManager::ReceiveReloadAll, Qt::UniqueConnection);
-}
-
-void MainWindow::DeleteNodeAndRelatedView(TreeModel* model, const QModelIndex& index, int node_id)
-{
-    model->removeRow(index.row(), index.parent());
-    auto related_view = opened_table_view_.value(node_id);
-
-    if (related_view) {
-        FreeView(related_view);
-        opened_table_view_.remove(node_id);
-        SignalManager::Instance().DeregisterTableModel(node_id);
-    }
-}
-
-QTableView* MainWindow::GetTableView(QWidget* widget)
-{
-    return qobject_cast<QTableView*>(widget);
-}
-
-TableModel* MainWindow::GetTableModel(QTableView* view)
-{
-    return qobject_cast<TableModel*>(view->model());
-}
-
-bool MainWindow::IsTreeView(QWidget* widget)
-{
-    return widget->inherits("QTreeView");
-}
-
-bool MainWindow::IsTableView(QWidget* widget)
-{
-    return widget->inherits("QTableView");
-}
-
-void MainWindow::RemoveOneLeaf(QMultiMap<QString, int>& leaf_map, int node_id)
-{
-    for (auto it = leaf_map.begin(); it != leaf_map.end(); ++it) {
-        if (it.value() == node_id) {
-            leaf_map.remove(it.key());
-            return;
-        }
-    }
-}
-
-void MainWindow::ShowPlaceholderMsgBox(TreeModel* model, const QModelIndex& index)
-{
-    QMessageBox msg_box;
-    msg_box.setIcon(QMessageBox::Information);
-    msg_box.setText("Remove a placeholder node");
-    msg_box.setInformativeText("This node will be deleted, and its children will be promoted to the current layer");
-
-    msg_box.addButton(QMessageBox::Cancel);
-    msg_box.addButton(QMessageBox::Ok);
-
-    if (msg_box.exec() == QMessageBox::Ok) {
-        model->removeRow(index.row(), index.parent());
-    }
-}
-
-void MainWindow::DeleteFromTableView(QWidget* widget)
-{
-    auto view = GetTableView(widget);
+    auto view { GetQTableView(widget) };
     if (!HasSelection(view))
         return;
 
-    auto model = GetTableModel(view);
-    auto index = view->currentIndex();
+    auto model { GetTableModel(view) };
+    auto index { view->currentIndex() };
 
     if (model && index.isValid()) {
-        model->removeRow(index.row());
+        int row { index.row() };
+        model->RemoveTrans(row);
+
+        auto row_count { model->rowCount() };
+        if (row_count == 0)
+            return;
+
+        if (row <= row_count - 1)
+            index = model->index(row, 0);
+        else if (row_count >= 1)
+            index = model->index(row - 1, 0);
+
+        if (index.isValid())
+            view->setCurrentIndex(index);
     }
 }
 
-void MainWindow::do_releaseView(int index)
+void MainWindow::RemoveView(TreeModel* model, const QModelIndex& index, int node_id)
 {
-    int node_id = ui->tabWidget->tabBar()->tabData(index).toInt();
-    auto view = opened_table_view_.value(node_id);
+    model->RemoveNode(index.row(), index.parent());
+    auto widget { section_table_->value(node_id) };
 
-    FreeView(view);
-    opened_table_view_.remove(node_id);
-
-    SignalManager::Instance().DeregisterTableModel(node_id);
+    if (widget) {
+        FreeWidget(widget);
+        section_table_->remove(node_id);
+        SignalStation::Instance().DeregisterModel(section_data_->info.section, node_id);
+    }
 }
 
-void MainWindow::FreeView(QTableView* view)
+void MainWindow::SaveTableWidget(const TableHash& table_hash, CString& section_name, CString& property)
 {
-    if (view) {
-        auto model = view->model();
-        if (model) {
-            view->setModel(nullptr);
-            delete model;
+    auto keys { table_hash.keys() };
+    QStringList list {};
+
+    for (const auto& node_id : keys)
+        list.emplaceBack(QString::number(node_id));
+
+    exclusive_interface_->setValue(QString("%1/%2").arg(section_name, property), list);
+}
+
+void MainWindow::RestoreTableWidget(SectionData* data, TreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, CString& property)
+{
+    auto variant { exclusive_interface_->value(QString("%1/%2").arg(data->info.node, property)) };
+
+    QSet<int> list {};
+
+    if (variant.isValid() && variant.canConvert<QStringList>()) {
+        auto variant_list { variant.value<QStringList>() };
+        for (const auto& node_id : variant_list)
+            list.insert(node_id.toInt());
+    }
+
+    for (const auto& node_id : list) {
+        if (tree_model->Contains(node_id) && !tree_model->Branch(node_id) && node_id >= 1)
+            CreateTable(data, tree_model, section_rule, table_hash, node_id);
+    }
+}
+
+void MainWindow::Recent()
+{
+    recent_list_ = shared_interface_->value(RECENT_FILE).toStringList();
+
+    auto recent_menu { ui->menuRecent };
+    QStringList valid_list {};
+
+    for (const auto& file : recent_list_) {
+        if (QFile::exists(file)) {
+            auto action { recent_menu->addAction(file) };
+            connect(action, &QAction::triggered, this, [file, this]() { ROpenFile(file); });
+            valid_list.emplaceBack(file);
         }
-        delete view;
+    }
+
+    if (recent_list_ != valid_list) {
+        recent_list_ = valid_list;
+        UpdateRecent();
+    }
+
+    SetClearMenuAction();
+}
+
+void MainWindow::RemoveBranch(TreeModel* model, const QModelIndex& index, int node_id)
+{
+    QMessageBox msg {};
+    msg.setIcon(QMessageBox::Question);
+    msg.setText(tr("Remove %1").arg(model->GetPath(node_id)));
+    msg.setInformativeText(tr("The branch will be removed, and its direct children will be promoted to the same level."));
+    msg.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
+
+    if (msg.exec() == QMessageBox::Ok)
+        model->RemoveNode(index.row(), index.parent());
+}
+
+void MainWindow::RTabCloseRequested(int index)
+{
+    if (index == 0)
+        return;
+
+    int node_id { ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id };
+    auto widget { section_table_->value(node_id) };
+
+    FreeWidget(widget);
+    section_table_->remove(node_id);
+
+    SignalStation::Instance().DeregisterModel(section_data_->info.section, node_id);
+}
+
+void MainWindow::SetTabWidget()
+{
+    auto tab_widget { ui->tabWidget };
+    auto tab_bar { tab_widget->tabBar() };
+
+    tab_bar->setDocumentMode(true);
+    tab_bar->setExpanding(false);
+    tab_bar->setTabButton(0, QTabBar::LeftSide, nullptr);
+
+    tab_widget->setMovable(true);
+    tab_widget->setTabsClosable(true);
+    tab_widget->setElideMode(Qt::ElideNone);
+
+    start_ = Section(shared_interface_->value(START_SECTION, 0).toInt());
+
+    switch (start_) {
+    case Section::kFinance:
+        ui->rBtnFinance->setChecked(true);
+        break;
+    case Section::kStakeholder:
+        ui->rBtnStakeholder->setChecked(true);
+        break;
+    case Section::kProduct:
+        ui->rBtnProduct->setChecked(true);
+        break;
+    case Section::kTask:
+        ui->rBtnTask->setChecked(true);
+        break;
+    case Section::kSales:
+        ui->rBtnSales->setChecked(true);
+        break;
+    case Section::kPurchase:
+        ui->rBtnPurchase->setChecked(true);
+        break;
+    default:
+        break;
     }
 }
 
-void MainWindow::IniContainer(QTabWidget* container)
-{
-    container->tabBar()->setDocumentMode(true);
-    container->tabBar()->setExpanding(false);
-    container->setMovable(true);
-    container->setTabsClosable(true);
-    container->setElideMode(Qt::ElideNone);
-    container->tabBar()->setTabButton(0, QTabBar::LeftSide, nullptr);
-}
-
-void MainWindow::IniTableView(QTableView* view)
+void MainWindow::SetView(QTableView* view)
 {
     view->setSortingEnabled(true);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setAlternatingRowColors(true);
-    view->setEditTriggers(QAbstractItemView::CurrentChanged);
-    view->installEventFilter(this);
+    view->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::CurrentChanged);
+    view->setColumnHidden(std::to_underlying(TableEnum::kID), true);
+
+    auto h_header { view->horizontalHeader() };
+    h_header->setSectionResizeMode(QHeaderView::ResizeToContents);
+    h_header->setSectionResizeMode(std::to_underlying(TableEnum::kDescription), QHeaderView::Stretch);
+
+    auto v_header { view->verticalHeader() };
+    v_header->setDefaultSectionSize(ROW_HEIGHT);
+    v_header->setSectionResizeMode(QHeaderView::Fixed);
+    v_header->setHidden(true);
+
+    view->scrollToBottom();
+    view->setCurrentIndex(QModelIndex());
+    view->sortByColumn(std::to_underlying(TableEnum::kDateTime), Qt::AscendingOrder);
 }
 
-void MainWindow::IniTableHeaderView(QTableView* view)
+void MainWindow::SetConnect()
 {
-    auto header = view->horizontalHeader();
-    header->setSectionsMovable(false);
+    connect(ui->actionInsert, &QAction::triggered, this, &MainWindow::RInsertTriggered);
+    connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::RRemoveTriggered);
+    connect(ui->actionAppend, &QAction::triggered, this, &MainWindow::RPrepAppendTriggered);
+    connect(ui->actionJump, &QAction::triggered, this, &MainWindow::RJumpTriggered);
+    connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::RSearchTriggered);
+    connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::RPreferencesTriggered);
+    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::RAboutTriggered);
+    connect(ui->actionNew, &QAction::triggered, this, &MainWindow::RNewTriggered);
+    connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::ROpenTriggered);
+    connect(ui->actionClearMenu, &QAction::triggered, this, &MainWindow::RClearMenuTriggered);
 
-    for (int column = 0; column != view->model()->columnCount(); ++column) {
-        switch (column) {
-        case Table::kDescription:
-            header->setSectionResizeMode(column, QHeaderView::Stretch);
-            break;
-        default:
-            header->setSectionResizeMode(column, QHeaderView::ResizeToContents);
-            break;
-        }
+    connect(ui->actionDocument, &QAction::triggered, this, &MainWindow::REditDocument);
+    connect(ui->actionNode, &QAction::triggered, this, &MainWindow::REditNode);
+
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::RTabCloseRequested);
+    connect(ui->tabWidget, &QTabWidget::tabBarDoubleClicked, this, &MainWindow::RTabBarDoubleClicked);
+
+    connect(ui->actionCheckAll, &QAction::triggered, this, &MainWindow::RUpdateState);
+    connect(ui->actionCheckNone, &QAction::triggered, this, &MainWindow::RUpdateState);
+    connect(ui->actionCheckReverse, &QAction::triggered, this, &MainWindow::RUpdateState);
+}
+
+void MainWindow::SetFinanceData()
+{
+    auto section { Section::kFinance };
+    auto& info { finance_data_.info };
+    auto& sql { finance_data_.sql };
+    auto& model { finance_tree_.model };
+
+    info.section = section;
+    info.node = FINANCE;
+    info.path = FINANCE_PATH;
+    info.transaction = FINANCE_TRANSACTION;
+
+    QStringList unit_list { "CNY", "HKD", "USD", "GBP", "JPY", "CAD", "AUD", "EUR" };
+    auto& unit_hash { info.unit_hash };
+
+    QStringList unit_symbol_list { "¥", "$", "$", "£", "¥", "$", "$", "€" };
+    auto& unit_symbol_hash { info.unit_symbol_hash };
+
+    for (int i = 0; i != unit_list.size(); ++i) {
+        unit_hash.insert(i, unit_list.at(i));
+        unit_symbol_hash.insert(i, unit_symbol_list.at(i));
     }
+
+    sql_.QuerySectionRule(finance_rule_, section);
+
+    sql = QSharedPointer<Sqlite>::create(info);
+    finance_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransactionHash());
+
+    model = new TreeModel(sql, info, finance_rule_.base_unit, finance_table_, interface_.separator, this);
+    finance_tree_.widget = new TreeWidget(model, info, finance_rule_, this);
 }
 
-void MainWindow::IniConnect()
+void MainWindow::SetProductData()
 {
-    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::do_releaseView, Qt::UniqueConnection);
-    connect(financial_.first, &QTreeView::doubleClicked, this, &MainWindow::do_treeView_doubleClicked, Qt::UniqueConnection);
-    connect(financial_.first, &QTreeView::customContextMenuRequested, this, &MainWindow::do_treeView_customContextMenuRequested, Qt::UniqueConnection);
-    connect(ui->actionNew, &QAction::triggered, this, &MainWindow::do_actionNew, Qt::UniqueConnection);
-    connect(ui->actionDelete, &QAction::triggered, this, &MainWindow::do_actionDelete, Qt::UniqueConnection);
-    connect(ui->actionAppend, &QAction::triggered, this, &MainWindow::do_actionAppend, Qt::UniqueConnection);
-    connect(ui->actionJump, &QAction::triggered, this, &MainWindow::do_actionJump, Qt::UniqueConnection);
-    connect(ui->actionEditNode, &QAction::triggered, this, &MainWindow::do_actionEditNode, Qt::UniqueConnection);
-    connect(ui->actionLinkedDocument, &QAction::triggered, this, &MainWindow::do_actionLinkedDocument, Qt::UniqueConnection);
+    auto section { Section::kProduct };
+    auto& info { product_data_.info };
+    auto& sql { product_data_.sql };
+    auto& model { product_tree_.model };
+
+    info.section = section;
+    info.node = PRODUCT;
+    info.path = PRODUCT_PATH;
+    info.transaction = PRODUCT_TRANSACTION;
+
+    QStringList unit_list { "", "BX", "PCS", "SET", "SF" };
+    auto& unit_hash { info.unit_hash };
+
+    for (int i = 0; i != unit_list.size(); ++i)
+        unit_hash.insert(i, unit_list.at(i));
+
+    sql_.QuerySectionRule(product_rule_, section);
+
+    sql = QSharedPointer<SqliteProduct>::create(info);
+    product_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransactionHash());
+
+    model = new TreeModelProduct(sql, info, product_rule_.base_unit, product_table_, interface_.separator, this);
+    product_tree_.widget = new TreeWidget(model, info, product_rule_, this);
 }
 
-void MainWindow::IniTreeView(QTreeView* view)
+void MainWindow::SetStakeholderData()
+{
+    auto section { Section::kStakeholder };
+    auto& info { stakeholder_data_.info };
+    auto& sql { stakeholder_data_.sql };
+    auto& model { stakeholder_tree_.model };
+
+    info.section = section;
+    info.node = STAKEHOLDER;
+    info.path = STAKEHOLDER_PATH;
+    info.transaction = STAKEHOLDER_TRANSACTION;
+
+    QStringList unit_list { "E", "C", "V", "P" };
+    auto& unit_hash { info.unit_hash };
+
+    for (int i = 0; i != unit_list.size(); ++i)
+        unit_hash.insert(i, unit_list.at(i));
+
+    sql_.QuerySectionRule(stakeholder_rule_, section);
+
+    sql = QSharedPointer<SqliteStakeholder>::create(info);
+    stakeholder_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransactionHash());
+
+    stakeholder_tree_.model = new TreeModelStakeholder(sql, info, stakeholder_rule_.base_unit, stakeholder_table_, interface_.separator, this);
+    stakeholder_tree_.widget = new TreeWidget(model, info, stakeholder_rule_, this);
+
+    connect(product_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+
+    stakeholder_tree_.widget->HideStatus();
+}
+
+void MainWindow::SetTaskData()
+{
+    auto section { Section::kTask };
+    auto& info { task_data_.info };
+    auto& sql { task_data_.sql };
+    auto& model { task_tree_.model };
+
+    info.section = section;
+    info.node = TASK;
+    info.path = TASK_PATH;
+    info.transaction = TASK_TRANSACTION;
+
+    QStringList unit_list { "", "BX", "PCS", "PER", "SET", "SF" };
+    auto& unit_hash { info.unit_hash };
+
+    for (int i = 0; i != unit_list.size(); ++i)
+        unit_hash.insert(i, unit_list.at(i));
+
+    sql_.QuerySectionRule(task_rule_, section);
+
+    sql = QSharedPointer<Sqlite>::create(info);
+    task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransactionHash());
+
+    model = new TreeModel(sql, info, task_rule_.base_unit, task_table_, interface_.separator, this);
+    task_tree_.widget = new TreeWidget(model, info, task_rule_, this);
+}
+
+void MainWindow::SetSalesData()
+{
+    auto section { Section::kSales };
+    auto& info { sales_data_.info };
+    auto& sql { sales_data_.sql };
+    auto& model { sales_tree_.model };
+
+    info.section = section;
+    info.node = SALES;
+    info.path = SALES_PATH;
+    info.transaction = SALES_TRANSACTION;
+
+    QStringList unit_list { "C", "M", "P" };
+    auto& unit_hash { info.unit_hash };
+
+    for (int i = 0; i != unit_list.size(); ++i)
+        unit_hash.insert(i, unit_list.at(i));
+
+    sql_.QuerySectionRule(sales_rule_, section);
+
+    sql = QSharedPointer<SqliteOrder>::create(info);
+    task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransactionHash());
+
+    model = new TreeModelOrder(sql, info, sales_rule_.base_unit, sales_table_, interface_.separator, this);
+    sales_tree_.widget = new TreeWidgetOrder(model, info, sales_rule_, this);
+
+    connect(product_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+    connect(stakeholder_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+}
+
+void MainWindow::SetPurchaseData()
+{
+    auto section { Section::kPurchase };
+    auto& info { purchase_data_.info };
+    auto& sql { purchase_data_.sql };
+    auto& model { purchase_tree_.model };
+
+    info.section = section;
+    info.node = PURCHASE;
+    info.path = PURCHASE_PATH;
+    info.transaction = PURCHASE_TRANSACTION;
+
+    QStringList unit_list { "C", "M", "P" };
+    auto& unit_hash { info.unit_hash };
+
+    for (int i = 0; i != unit_list.size(); ++i)
+        unit_hash.insert(i, unit_list.at(i));
+
+    sql_.QuerySectionRule(purchase_rule_, section);
+
+    sql = QSharedPointer<SqliteOrder>::create(info);
+    task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransactionHash());
+
+    model = new TreeModelOrder(sql, info, purchase_rule_.base_unit, purchase_table_, interface_.separator, this);
+    purchase_tree_.widget = new TreeWidgetOrder(model, info, purchase_rule_, this);
+
+    connect(product_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+    connect(stakeholder_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+}
+
+void MainWindow::SetHash()
+{
+    node_rule_hash_.insert(0, "DICD");
+    node_rule_hash_.insert(1, "DDCI");
+
+    node_term_hash_.insert(0, "C");
+    node_term_hash_.insert(1, "M");
+
+    date_format_list_.emplaceBack(DATE_TIME_FST);
+}
+
+void MainWindow::SetHeader()
+{
+    finance_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("NodeRule"), tr("Branch"), tr("Unit"),
+        tr("Foreign Total"), tr("Local Total"), "" };
+    finance_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("FXRate"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
+        tr("Debit"), tr("Credit"), tr("Subtotal") };
+    finance_data_.info.table_header = {
+        tr("ID"),
+        tr("DateTime"),
+        tr("Code"),
+        tr("LhsNode"),
+        tr("LhsFXRate"),
+        tr("LhsDebit"),
+        tr("LhsCredit"),
+        tr("Description"),
+        tr("D"),
+        tr("S"),
+        tr("RhsCredit"),
+        tr("RhsDebit"),
+        tr("RhsFXRate"),
+        tr("RhsNode"),
+    };
+
+    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("NodeRule"), tr("Branch"), tr("Unit"),
+        tr("Commission"), tr("UnitPrice"), tr("Quantity Total"), tr("Amount Total"), "" };
+    product_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
+        tr("Debit"), tr("Credit"), tr("Subtotal") };
+    product_data_.info.table_header = {
+        tr("ID"),
+        tr("DateTime"),
+        tr("Code"),
+        tr("LhsNode"),
+        tr("LhsUnitCost"),
+        tr("LhsDebit"),
+        tr("LhsCredit"),
+        tr("Description"),
+        tr("D"),
+        tr("S"),
+        tr("RhsCredit"),
+        tr("RhsDebit"),
+        tr("RhsUnitCost"),
+        tr("RhsNode"),
+    };
+
+    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
+        tr("Employee"), tr("Deadline"), tr("PaymentPeriod"), tr("TaxRate"), "" };
+    stakeholder_data_.info.part_table_header
+        = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Commission"), "", "" };
+    stakeholder_data_.info.table_header = {
+        tr("ID"),
+        tr("DateTime"),
+        tr("Code"),
+        tr("LhsNode"),
+        tr("LhsRatio"),
+        tr("LhsDebit"),
+        tr("LhsCredit"),
+        tr("Description"),
+        tr("D"),
+        tr("S"),
+        tr("RhsCredit"),
+        tr("RhsDebit"),
+        tr("RhsRatio"),
+        tr("RhsNode"),
+    };
+
+    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("NodeRule"), tr("Branch"), tr("Unit"),
+        tr("Quantity Total"), tr("Amount Total"), "" };
+    task_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
+        tr("Debit"), tr("Credit"), tr("Subtotal") };
+    task_data_.info.table_header = {
+        tr("ID"),
+        tr("DateTime"),
+        tr("Code"),
+        tr("LhsNode"),
+        tr("LhsUnitCost"),
+        tr("LhsDebit"),
+        tr("LhsCredit"),
+        tr("Description"),
+        tr("D"),
+        tr("S"),
+        tr("RhsCredit"),
+        tr("RhsDebit"),
+        tr("RhsUnitCost"),
+        tr("RhsNode"),
+    };
+
+    sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Posted"), tr("Branch"), tr("Term"), tr("Party"),
+        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Refund"), tr("Initial Total"), tr("Final Total"), "" };
+
+    purchase_data_.info.tree_header = sales_data_.info.tree_header;
+}
+
+void MainWindow::SetAction()
+{
+    ui->actionInsert->setIcon(QIcon(":/solarized_dark/solarized_dark/insert.png"));
+    ui->actionNode->setIcon(QIcon(":/solarized_dark/solarized_dark/edit.png"));
+    ui->actionDocument->setIcon(QIcon(":/solarized_dark/solarized_dark/edit2.png"));
+    ui->actionTransport->setIcon(QIcon(":/solarized_dark/solarized_dark/edit2.png"));
+    ui->actionRemove->setIcon(QIcon(":/solarized_dark/solarized_dark/remove2.png"));
+    ui->actionAbout->setIcon(QIcon(":/solarized_dark/solarized_dark/about.png"));
+    ui->actionAppend->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
+    ui->actionJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
+    ui->actionLocate->setIcon(QIcon(":/solarized_dark/solarized_dark/locate.png"));
+    ui->actionPreferences->setIcon(QIcon(":/solarized_dark/solarized_dark/settings.png"));
+    ui->actionSearch->setIcon(QIcon(":/solarized_dark/solarized_dark/search.png"));
+    ui->actionNew->setIcon(QIcon(":/solarized_dark/solarized_dark/new.png"));
+    ui->actionOpen->setIcon(QIcon(":/solarized_dark/solarized_dark/open.png"));
+    ui->actionCheckAll->setIcon(QIcon(":/solarized_dark/solarized_dark/check-all.png"));
+    ui->actionCheckNone->setIcon(QIcon(":/solarized_dark/solarized_dark/check-none.png"));
+    ui->actionCheckReverse->setIcon(QIcon(":/solarized_dark/solarized_dark/check-reverse.png"));
+
+    ui->actionCheckAll->setProperty(CHECK, std::to_underlying(Check::kAll));
+    ui->actionCheckNone->setProperty(CHECK, std::to_underlying(Check::kNone));
+    ui->actionCheckReverse->setProperty(CHECK, std::to_underlying(Check::kReverse));
+}
+
+void MainWindow::SetView(QTreeView* view)
 {
     view->setSelectionMode(QAbstractItemView::SingleSelection);
     view->setDragDropMode(QAbstractItemView::InternalMove);
+    view->setEditTriggers(QAbstractItemView::DoubleClicked);
     view->setDropIndicatorShown(true);
     view->setSortingEnabled(true);
-    //    view->setColumnHidden(1, true);
     view->setContextMenuPolicy(Qt::CustomContextMenu);
     view->setExpandsOnDoubleClick(true);
-    view->expandAll();
-    view->installEventFilter(this);
+
+    auto header { view->header() };
+    header->setSectionResizeMode(QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(std::to_underlying(TreeEnum::kDescription), QHeaderView::Stretch);
+    header->setStretchLastSection(true);
+    header->setDefaultAlignment(Qt::AlignCenter);
 }
 
-void MainWindow::do_actionAppend()
+void MainWindow::RPrepAppendTriggered()
 {
-    auto widget = ui->tabWidget->currentWidget();
-    if (!IsTreeView(widget))
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !IsTreeWidget(current_widget))
         return;
 
-    auto view = financial_.first;
+    auto view { section_tree_->widget->View() };
     if (!HasSelection(view))
         return;
 
-    auto index = view->currentIndex();
+    auto parent_index { view->currentIndex() };
+    if (!parent_index.isValid())
+        return;
+
+    bool branch { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
+    if (!branch)
+        return;
+
+    InsertNode(parent_index, 0);
+}
+
+void MainWindow::RJumpTriggered()
+{
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !IsTableWidget(current_widget))
+        return;
+
+    auto view { GetQTableView(current_widget) };
+    if (!HasSelection(view))
+        return;
+
+    auto index { view->currentIndex() };
     if (!index.isValid())
         return;
 
-    bool placeholder = index.siblingAtColumn(Tree::kPlaceholder).data().toBool();
-    if (!placeholder)
+    int row { index.row() };
+    auto related_node_id { index.sibling(row, std::to_underlying(TableEnum::kRelatedNode)).data().toInt() };
+    if (related_node_id == 0)
         return;
 
-    auto model = financial_.second;
+    if (!section_table_->contains(related_node_id))
+        CreateTable(section_data_, section_tree_->model, section_rule_, section_table_, related_node_id);
 
-    bool rule = index.siblingAtColumn(Tree::kRule).data().toBool();
-
-    auto new_node = NodePool::Instance().Allocate();
-    new_node->rule = rule;
-
-    auto dialog = new InsertNode(new_node, view);
-    if (dialog->exec() == QDialog::Rejected)
-        return;
-
-    if (model->insertRow(0, index, new_node)) {
-        auto child_index = model->index(0, 0, index);
-        view->setCurrentIndex(child_index);
-    }
+    auto trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
+    SwitchTab(related_node_id, trans_id);
 }
 
-void MainWindow::do_actionJump()
-{
-    auto widget = ui->tabWidget->currentWidget();
-
-    if (!IsTableView(widget))
-        return;
-
-    auto view = GetTableView(widget);
-    if (!HasSelection(view))
-        return;
-
-    auto model = GetTableModel(view);
-    if (!model)
-        return;
-
-    auto trans_index = view->currentIndex();
-    if (!trans_index.isValid())
-        return;
-
-    auto transaction = model->GetTransaction(trans_index);
-    int trans_id = transaction->id;
-
-    auto transfer_id = transaction->transfer;
-    if (transfer_id == 0)
-        return;
-
-    auto transfer_node = financial_.second->GetNode(transfer_id);
-    if (!transfer_node)
-        return;
-
-    if (opened_table_view_.contains(transfer_id)) {
-        SwitchTab(transfer_id);
-    } else {
-        TableInfo info(transfer_id, transfer_node->name, 2, transfer_node->rule, kFinancialTransactionTable);
-        CreateTable(info, ui->tabWidget, financial_.second);
-    }
-
-    auto transfer_view = opened_table_view_.value(transfer_id);
-    auto transfer_model = qobject_cast<TableModel*>(transfer_view->model());
-
-    int trans_row = transfer_model->GetRow(trans_id);
-    if (trans_row == -1)
-        return;
-    auto transfer_index = transfer_model->index(trans_row, 0, QModelIndex());
-    transfer_view->setCurrentIndex(transfer_index);
-}
-
-void MainWindow::do_treeView_customContextMenuRequested(const QPoint& pos)
+void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
 {
     Q_UNUSED(pos);
 
     auto menu = new QMenu(this);
-
-    menu->addAction(ui->actionDelete);
-    menu->addAction(ui->actionNew);
+    menu->addAction(ui->actionInsert);
+    menu->addAction(ui->actionNode);
     menu->addAction(ui->actionAppend);
+    menu->addAction(ui->actionRemove);
 
     menu->exec(QCursor::pos());
 }
 
-void MainWindow::do_actionEditNode()
+void MainWindow::REditNode()
 {
-    if (!IsTreeView(ui->tabWidget->currentWidget()))
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !IsTreeWidget(current_widget))
         return;
 
-    if (!HasSelection(financial_.first))
-        return;
-
-    auto index = financial_.first->currentIndex();
-    if (!index.isValid())
-        return;
-
-    int node_id = index.siblingAtColumn(Tree::kID).data().toInt();
-    auto node = financial_.second->GetNode(node_id);
-    bool usage = financial_.second->UsageOfNode(node_id);
-
-    auto dialog = new EditNode(node, usage, financial_.first);
-    connect(dialog, &EditNode::SendUpdate, financial_.second, &TreeModel::ReceiveUpdate, Qt::UniqueConnection);
-    dialog->exec();
-}
-
-bool MainWindow::eventFilter(QObject* watched, QEvent* event)
-{
-    if (event->type() != QEvent::KeyPress)
-        return QMainWindow::eventFilter(watched, event);
-
-    auto key = static_cast<QKeyEvent*>(event)->key();
-    if (key == Qt::Key_Return || key == Qt::Key_Enter) {
-        if (watched->inherits("QTableView")) {
-            InsertRowInTable(ui->tabWidget->currentWidget());
-        }
-
-        if (watched->inherits("QTreeView")) {
-            auto view = qobject_cast<QTreeView*>(watched);
-            auto index = view->currentIndex();
-            do_treeView_doubleClicked(index);
-        }
-
-        return true;
-    }
-
-    return QMainWindow::eventFilter(watched, event);
-}
-
-template <typename T>
-bool MainWindow::HasSelection(T* view)
-{
-    if (!view)
-        return false;
-    auto selection_model = view->selectionModel();
-    return selection_model && selection_model->hasSelection();
-}
-
-void MainWindow::do_actionLinkedDocument()
-{
-    auto widget = ui->tabWidget->currentWidget();
-
-    if (!IsTableView(widget))
-        return;
-
-    auto view = GetTableView(widget);
+    auto view { section_tree_->widget->View() };
     if (!HasSelection(view))
         return;
 
-    auto model = GetTableModel(view);
-    if (!model)
+    auto index { view->currentIndex() };
+    if (!index.isValid())
         return;
 
-    auto trans_index = view->currentIndex();
+    auto node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+    auto model { section_tree_->model };
+
+    auto parent_index { index.parent() };
+    auto parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
+
+    auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
+    model->CopyNode(tmp_node, node_id);
+
+    bool node_usage { section_data_->sql->NodeInternalReferences(node_id) || section_data_->sql->NodeExternalReferences(node_id) };
+    bool view_opened { section_table_->contains(node_id) };
+
+    auto info { &section_data_->info };
+
+    QDialog* dialog {};
+
+    switch (info->section) {
+    case Section::kFinance:
+        dialog = new EditNodeFinance(tmp_node, interface_.separator, finance_data_.info, *model, parent_id, node_usage, view_opened, this);
+        break;
+    case Section::kTask:
+        dialog = new EditNodeFinance(tmp_node, interface_.separator, task_data_.info, *model, parent_id, node_usage, view_opened, this);
+        break;
+    case Section::kStakeholder:
+        dialog = new EditNodeStakeholder(
+            tmp_node, stakeholder_rule_, interface_.separator, stakeholder_data_.info, node_usage, view_opened, parent_id, node_term_hash_, model, this);
+        break;
+    case Section::kProduct:
+        dialog = new EditNodeProduct(tmp_node, product_rule_, interface_.separator, info->unit_hash, *model, parent_id, node_usage, view_opened, this);
+        break;
+    case Section::kSales:
+        dialog = new InsertNodeOrder(tmp_node, sales_rule_, &stakeholder_tree_, *product_tree_.model, *info, this);
+        dialog->setWindowTitle(tr(Sales));
+        break;
+    case Section::kPurchase:
+        dialog = new InsertNodeOrder(tmp_node, purchase_rule_, &stakeholder_tree_, *product_tree_.model, *info, this);
+        dialog->setWindowTitle(tr(Purchase));
+        break;
+    default:
+        return ResourcePool<Node>::Instance().Recycle(tmp_node);
+    }
+
+    dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(dialog, &QDialog::accepted, this, [=]() {
+        model->UpdateNode(tmp_node);
+        ResourcePool<Node>::Instance().Recycle(tmp_node);
+    });
+    connect(dialog, &QDialog::rejected, this, [=]() { ResourcePool<Node>::Instance().Recycle(tmp_node); });
+
+    section_dialog_->append(dialog);
+    dialog->show();
+}
+
+void MainWindow::REditDocument()
+{
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !IsTableWidget(current_widget))
+        return;
+
+    auto view { GetQTableView(current_widget) };
+    if (!HasSelection(view))
+        return;
+
+    auto trans_index { view->currentIndex() };
     if (!trans_index.isValid())
         return;
 
-    auto transaction = model->GetTransaction(trans_index);
-    auto dialog = new LinkedDocument(transaction, home_dir_, view);
-    connect(dialog, &LinkedDocument::SendUpdate, &SignalManager::Instance(), &SignalManager::ReceiveUpdate, Qt::UniqueConnection);
-    connect(dialog, &LinkedDocument::SendDocument, model, &TableModel::ReceiveDocument, Qt::UniqueConnection);
-    dialog->exec();
+    auto document_dir { section_rule_->document_dir };
+    auto model { GetTableModel(view) };
+    auto trans { model->GetTrans(trans_index) };
+
+    auto dialog { new EditDocument(section_data_->info.section, trans, document_dir, this) };
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    if (dialog->exec() == QDialog::Accepted)
+        section_data_->sql->UpdateField(section_data_->info.transaction, DOCUMENT, trans->document->join(SEMICOLON), *trans->id);
+}
+
+void MainWindow::RUpdateName(const Node* node)
+{
+    auto model { section_tree_->model };
+    int node_id { node->id };
+    auto tab_bar { ui->tabWidget->tabBar() };
+    int count { ui->tabWidget->count() };
+
+    if (!node->branch) {
+        if (!section_table_->contains(node_id))
+            return;
+
+        auto path { model->GetPath(node_id) };
+
+        for (int index = 0; index != count; ++index) {
+            if (tab_bar->tabData(index).value<Tab>().node_id == node_id) {
+                tab_bar->setTabText(index, node->name);
+                tab_bar->setTabToolTip(index, path);
+            }
+        }
+    }
+
+    if (node->branch) {
+        QQueue<const Node*> queue {};
+        queue.enqueue(node);
+
+        QList<int> list {};
+        while (!queue.isEmpty()) {
+            auto queue_node = queue.dequeue();
+
+            if (queue_node->branch)
+                for (const auto& child : queue_node->children)
+                    queue.enqueue(child);
+            else
+                list.emplaceBack(queue_node->id);
+        }
+
+        int node_id {};
+        QString path {};
+
+        for (int index = 0; index != count; ++index) {
+            node_id = tab_bar->tabData(index).value<Tab>().node_id;
+
+            if (list.contains(node_id)) {
+                path = model->GetPath(node_id);
+                tab_bar->setTabToolTip(index, path);
+            }
+        }
+    }
+}
+
+void MainWindow::RUpdateSettings(CSectionRule& section_rule, const Interface& interface)
+{
+    if (interface_ != interface)
+        UpdateInterface(interface);
+
+    if (*section_rule_ != section_rule) {
+        bool update_base_unit { section_rule_->base_unit != section_rule.base_unit };
+        bool resize_column { section_rule_->value_decimal != section_rule.value_decimal || section_rule_->ratio_decimal != section_rule.ratio_decimal
+            || section_rule_->hide_time != section_rule.hide_time };
+
+        *section_rule_ = section_rule;
+
+        if (update_base_unit)
+            section_tree_->model->UpdateBaseUnit(section_rule.base_unit);
+
+        section_tree_->widget->SetStatus();
+        sql_.UpdateSectionRule(section_rule, section_data_->info.section);
+
+        if (resize_column) {
+            auto current_widget { ui->tabWidget->currentWidget() };
+            if (IsTableWidget(current_widget))
+                ResizeColumn(GetQTableView(current_widget)->horizontalHeader(), true);
+            if (IsTreeWidget(current_widget))
+                ResizeColumn(section_tree_->widget->Header(), false);
+        }
+    }
+}
+void MainWindow::RFreeView(int node_id)
+{
+    auto view { section_table_->value(node_id) };
+
+    if (view) {
+        FreeWidget(view);
+        section_table_->remove(node_id);
+        SignalStation::Instance().DeregisterModel(section_data_->info.section, node_id);
+    }
+}
+
+void MainWindow::UpdateInterface(const Interface& interface)
+{
+    auto new_language { interface.language };
+    if (interface_.language != new_language) {
+        if (new_language == EN_US) {
+            qApp->removeTranslator(&cash_translator_);
+            qApp->removeTranslator(&base_translator_);
+        } else
+            LoadAndInstallTranslator(new_language);
+
+        ui->retranslateUi(this);
+        SetHeader();
+        UpdateTranslate();
+    }
+
+    auto new_separator { interface.separator };
+    auto old_separator { interface_.separator };
+
+    if (old_separator != new_separator) {
+        finance_tree_.model->UpdateSeparator(old_separator, new_separator);
+        stakeholder_tree_.model->UpdateSeparator(old_separator, new_separator);
+        product_tree_.model->UpdateSeparator(old_separator, new_separator);
+        task_tree_.model->UpdateSeparator(old_separator, new_separator);
+        sales_tree_.model->UpdateSeparator(old_separator, new_separator);
+        purchase_tree_.model->UpdateSeparator(old_separator, new_separator);
+
+        auto widget { ui->tabWidget };
+        int count { ui->tabWidget->count() };
+
+        for (int index = 0; index != count; ++index)
+            widget->setTabToolTip(index, widget->tabToolTip(index).replace(old_separator, new_separator));
+    }
+
+    interface_ = interface;
+
+    shared_interface_->beginGroup(INTERFACE);
+    shared_interface_->setValue(LANGUAGE, interface.language);
+    shared_interface_->setValue(SEPARATOR, interface.separator);
+    shared_interface_->setValue(DATE_FORMAT, interface.date_format);
+    shared_interface_->endGroup();
+}
+
+void MainWindow::UpdateTranslate()
+{
+    QWidget* widget {};
+    Tab tab_id {};
+    auto tab_widget { ui->tabWidget };
+    auto tab_bar { tab_widget->tabBar() };
+    int count { tab_widget->count() };
+
+    for (int index = 0; index != count; ++index) {
+        widget = tab_widget->widget(index);
+        tab_id = tab_bar->tabData(index).value<Tab>();
+
+        if (IsTreeWidget(widget)) {
+            Section section { tab_id.section };
+            switch (section) {
+            case Section::kFinance:
+                tab_widget->setTabText(index, tr(Finance));
+                break;
+            case Section::kStakeholder:
+                tab_widget->setTabText(index, tr(Stakeholder));
+                break;
+            case Section::kProduct:
+                tab_widget->setTabText(index, tr(Product));
+                break;
+            case Section::kTask:
+                tab_widget->setTabText(index, tr(Task));
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+void MainWindow::UpdateRecent() { shared_interface_->setValue(RECENT_FILE, recent_list_); }
+
+void MainWindow::LoadAndInstallTranslator(CString& language)
+{
+    QString cash_language { QString(":/I18N/I18N/") + YTX + "_" + language + SFX_QM };
+    if (cash_translator_.load(cash_language))
+        qApp->installTranslator(&cash_translator_);
+
+    QString base_language { ":/I18N/I18N/qtbase_" + language + SFX_QM };
+    if (base_translator_.load(base_language))
+        qApp->installTranslator(&base_translator_);
+}
+
+void MainWindow::ResizeColumn(QHeaderView* header, bool table_view)
+{
+    header->setSectionResizeMode(QHeaderView::ResizeToContents);
+    table_view ? header->setSectionResizeMode(std::to_underlying(TableEnumSearch::kDescription), QHeaderView::Stretch)
+               : header->setSectionResizeMode(std::to_underlying(TreeEnum::kDescription), QHeaderView::Stretch);
+    ;
+}
+
+void MainWindow::SharedInterface(CString& dir_path)
+{
+    static QSettings shared_interface(dir_path + SLASH + YTX + SFX_INI, QSettings::IniFormat);
+    shared_interface_ = &shared_interface;
+
+    shared_interface.beginGroup(INTERFACE);
+    interface_.language = shared_interface.value(LANGUAGE, EN_US).toString();
+    interface_.theme = shared_interface.value(THEME, SOLARIZED_DARK).toString();
+    interface_.date_format = shared_interface.value(DATE_FORMAT, DATE_TIME_FST).toString();
+    interface_.separator = shared_interface.value(SEPARATOR, DASH).toString();
+    shared_interface.endGroup();
+
+    LoadAndInstallTranslator(interface_.language);
+
+    QString theme { "file:///:/theme/theme/" + interface_.theme + SFX_QSS };
+    qApp->setStyleSheet(theme);
+}
+
+void MainWindow::ExclusiveInterface(CString& dir_path, CString& base_name)
+{
+    static QSettings exclusive_interface(dir_path + SLASH + base_name + SFX_INI, QSettings::IniFormat);
+    exclusive_interface_ = &exclusive_interface;
+}
+
+void MainWindow::ResourceFile()
+{
+    QString path {};
+
+#ifdef Q_OS_WIN
+    path = QCoreApplication::applicationDirPath() + "/resource";
+
+    if (QDir dir(path); !dir.exists()) {
+        if (!QDir::home().mkpath(path)) {
+            qDebug() << "Failed to create directory:" << path;
+            return;
+        }
+    }
+
+    path += "/resource.brc";
+
+#if 0
+    QString command { "D:/Qt/6.7.2/llvm-mingw_64/bin/rcc.exe" };
+    QStringList arguments {};
+    arguments << "-binary"
+              << "D:/YTX/resource/resource.qrc"
+              << "-o" << path;
+
+    QProcess process {};
+
+    // 启动终端并执行命令
+    process.start(command, arguments);
+    process.waitForFinished();
+#endif
+
+#elif defined(Q_OS_MACOS)
+    path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
+
+#if 0
+    QString command { QDir::homePath() + "/Qt/6.7.2/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o " + path };
+
+    QProcess process {};
+    process.start("zsh", QStringList() << "-c" << command);
+    process.waitForFinished();
+#endif
+
+#endif
+
+    QResource::registerResource(path);
+}
+
+void MainWindow::RSearchTriggered()
+{
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    auto dialog { new Search(section_data_->info, interface_, *section_tree_->model, section_data_->search_sql, *section_rule_, node_rule_hash_, this) };
+    connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);
+    connect(dialog, &Search::STableLocation, this, &MainWindow::RTableLocation);
+    connect(section_tree_->model, &TreeModel::SSearch, dialog, &Search::RSearch);
+    dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    section_dialog_->append(dialog);
+    dialog->show();
+}
+
+void MainWindow::RTreeLocation(int node_id)
+{
+    auto widget { section_tree_->widget };
+    ui->tabWidget->setCurrentWidget(widget);
+
+    auto index { section_tree_->model->GetIndex(node_id) };
+    widget->activateWindow();
+    widget->SetCurrentIndex(index);
+}
+
+void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
+{
+    int id { lhs_node_id };
+
+    auto Contains = [&](int node_id) {
+        if (section_table_->contains(node_id)) {
+            id = node_id;
+            return true;
+        }
+        return false;
+    };
+
+    if (!Contains(lhs_node_id) && !Contains(rhs_node_id))
+        CreateTable(section_data_, section_tree_->model, section_rule_, section_table_, id);
+
+    SwitchTab(id, trans_id);
+}
+
+void MainWindow::RPreferencesTriggered()
+{
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    auto model { section_tree_->model };
+
+    auto preference { new Preferences(section_data_->info, *model, date_format_list_, interface_, *section_rule_, this) };
+    connect(preference, &Preferences::SUpdateSettings, this, &MainWindow::RUpdateSettings);
+    preference->exec();
+}
+
+void MainWindow::RAboutTriggered()
+{
+    static About* dialog = nullptr;
+
+    if (!dialog) {
+        dialog = new About(this);
+        dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(dialog, &QDialog::finished, [=]() { dialog = nullptr; });
+    }
+
+    dialog->show();
+    dialog->activateWindow();
+}
+
+void MainWindow::RNewTriggered()
+{
+    QString filter("*.ytx");
+    auto file_path { QFileDialog::getSaveFileName(this, tr("New"), QDir::homePath(), filter, nullptr) };
+    if (file_path.isEmpty())
+        return;
+
+    if (!file_path.endsWith(SFX_YTX, Qt::CaseInsensitive))
+        file_path += SFX_YTX;
+
+    sql_.NewFile(file_path);
+    ROpenFile(file_path);
+}
+
+void MainWindow::ROpenTriggered()
+{
+    QString filter("*.ytx");
+    auto file_path { QFileDialog::getOpenFileName(this, tr("Open"), QDir::homePath(), filter, nullptr) };
+
+    ROpenFile(file_path);
+}
+
+void MainWindow::SetClearMenuAction()
+{
+    auto menu { ui->menuRecent };
+
+    if (!menu->isEmpty()) {
+        auto separator { ui->actionSeparator };
+        menu->addAction(separator);
+        separator->setSeparator(true);
+
+        menu->addAction(ui->actionClearMenu);
+    }
+}
+
+void MainWindow::RClearMenuTriggered()
+{
+    ui->menuRecent->clear();
+    recent_list_.clear();
+    UpdateRecent();
+}
+
+void MainWindow::RTabBarDoubleClicked(int index) { RTreeLocation(ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id); }
+
+void MainWindow::RUpdateState()
+{
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !IsTableWidget(current_widget))
+        return;
+
+    GetTableModel(GetQTableView(current_widget))->UpdateAllState(Check { QObject::sender()->property(CHECK).toInt() });
+}
+
+void MainWindow::SwitchSection(const Tab& last_tab)
+{
+    auto tab_widget { ui->tabWidget };
+    auto tab_bar { tab_widget->tabBar() };
+    int count { tab_widget->count() };
+    Tab tab {};
+
+    for (int index = 0; index != count; ++index) {
+        tab = tab_bar->tabData(index).value<Tab>();
+        tab.section == start_ ? tab_widget->setTabVisible(index, true) : tab_widget->setTabVisible(index, false);
+
+        if (tab == last_tab)
+            tab_widget->setCurrentIndex(index);
+    }
+
+    SwitchDialog(section_dialog_, true);
+}
+
+void MainWindow::SwitchDialog(QList<PDialog>* dialog_list, bool enable)
+{
+    if (dialog_list) {
+        for (auto& dialog : *dialog_list)
+            if (dialog)
+                dialog->setVisible(enable);
+    }
+}
+
+void MainWindow::UpdateLastTab()
+{
+    if (section_data_) {
+        auto index { ui->tabWidget->currentIndex() };
+        section_data_->last_tab = ui->tabWidget->tabBar()->tabData(index).value<Tab>();
+    }
+}
+
+void MainWindow::on_rBtnFinance_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kFinance;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &finance_tree_;
+    section_table_ = &finance_table_;
+    section_dialog_ = &finance_dialog_;
+    section_rule_ = &finance_rule_;
+    section_data_ = &finance_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnSales_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kSales;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &sales_tree_;
+    section_table_ = &sales_table_;
+    section_dialog_ = &sales_dialog_;
+    section_rule_ = &sales_rule_;
+    section_data_ = &sales_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnTask_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kTask;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &task_tree_;
+    section_table_ = &task_table_;
+    section_dialog_ = &task_dialog_;
+    section_rule_ = &task_rule_;
+    section_data_ = &task_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnStakeholder_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kStakeholder;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &stakeholder_tree_;
+    section_table_ = &stakeholder_table_;
+    section_dialog_ = &stakeholder_dialog_;
+    section_rule_ = &stakeholder_rule_;
+    section_data_ = &stakeholder_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnProduct_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kProduct;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &product_tree_;
+    section_table_ = &product_table_;
+    section_dialog_ = &product_dialog_;
+    section_rule_ = &product_rule_;
+    section_data_ = &product_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnPurchase_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kPurchase;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &purchase_tree_;
+    section_table_ = &purchase_table_;
+    section_dialog_ = &purchase_dialog_;
+    section_rule_ = &purchase_rule_;
+    section_data_ = &purchase_data_;
+
+    SwitchSection(section_data_->last_tab);
 }
