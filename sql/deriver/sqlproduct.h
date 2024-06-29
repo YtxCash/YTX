@@ -11,7 +11,7 @@ public:
     bool Tree(NodeHash& node_hash) override;
     bool Insert(int parent_id, Node* node) override;
     void LeafTotal(Node* node) override;
-    bool ExternalReferences(int node_id, Section target) const override;
+    bool ExternalReferences(int node_id) const override;
 
 private:
     // tree

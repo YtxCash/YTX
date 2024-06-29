@@ -18,20 +18,16 @@ bool SqlOrder::Tree(NodeHash& node_hash)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part_1st = QString("SELECT name, id, first_property, employee, third_property, discount, refund, stakeholder, date_time, description, posted, branch, "
-                            "mark, initial_total, final_total "
-                            "FROM %1 "
-                            "WHERE removed = 0 ")
-                        .arg(info_->node);
+    auto part = QString(R"(
+    SELECT name, id, first_property, employee, third_property, discount, refund, stakeholder, date_time, description, posted, branch, mark, initial_total, final_total
+    FROM %1
+    WHERE removed = 0
+)")
+                    .arg(info_->node);
 
-    // "WHERE mark = 2 AND removed = 0 ")
+    // WHERE mark = 2 AND removed = 0
 
-    auto part_2nd = QString("SELECT ancestor, descendant "
-                            "FROM %1 "
-                            "WHERE distance = 1 ")
-                        .arg(info_->path);
-
-    query.prepare(part_1st);
+    query.prepare(part);
     if (!query.exec()) {
         qWarning() << "Error in order create tree 1 setp " << query.lastError().text();
         return false;
@@ -39,14 +35,7 @@ bool SqlOrder::Tree(NodeHash& node_hash)
 
     CreateNodeHash(query, node_hash);
     query.clear();
-
-    query.prepare(part_2nd);
-    if (!query.exec()) {
-        qWarning() << "Error in order create tree 2 setp " << query.lastError().text();
-        return false;
-    }
-
-    SetRelationship(query, node_hash);
+    ReadRelationship(query, node_hash);
 
     return true;
 }
@@ -58,23 +47,15 @@ bool SqlOrder::Insert(int parent_id, Node* node)
 
     QSqlQuery query(*db_);
 
-    auto part_1st = QString(
-        "INSERT INTO %1 (name, first_property, employee, third_property, discount, refund, stakeholder, date_time, description, posted, branch, mark, "
-        "initial_total, final_total ) "
-        "VALUES (:name, :first_property, :employee, :third_property, :discount, :refund, :stakeholder, :date_time, :description, :posted, :branch, "
-        ":mark, :initial_total, :final_total ) ")
-                        .arg(info_->node);
-
-    auto part_2nd = QString("INSERT INTO %1 (ancestor, descendant, distance) "
-                            "SELECT ancestor, :node_id, distance + 1 FROM %1 "
-                            "WHERE descendant = :parent "
-                            "UNION ALL "
-                            "SELECT :node_id, :node_id, 0 ")
-                        .arg(info_->path);
+    auto part = QString(R"(
+    INSERT INTO %1 (name, first_property, employee, third_property, discount, refund, stakeholder, date_time, description, posted, branch, mark, initial_total, final_total)
+    VALUES (:name, :first_property, :employee, :third_property, :discount, :refund, :stakeholder, :date_time, :description, :posted, :branch, :mark, :initial_total, :final_total)
+)")
+                    .arg(info_->node);
 
     if (!DBTransaction([&]() {
             // 插入节点记录
-            query.prepare(part_1st);
+            query.prepare(part);
             query.bindValue(":name", node->name);
             query.bindValue(":first_property", node->first_property);
             query.bindValue(":employee", node->second_property);
@@ -101,15 +82,7 @@ bool SqlOrder::Insert(int parent_id, Node* node)
             query.clear();
 
             // 插入节点路径记录
-            query.prepare(part_2nd);
-            query.bindValue(":node_id", node->id);
-            query.bindValue(":parent", parent_id);
-
-            if (!query.exec()) {
-                qWarning() << "Failed to insert order_node_path record: " << query.lastError().text();
-                return false;
-            }
-
+            WriteRelationship(query, node->id, parent_id);
             return true;
         })) {
         qWarning() << "Failed to insert order record";
@@ -134,10 +107,11 @@ SPTransList SqlOrder::TransList(int node_id)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, "
-                        "description, code, document, date_time "
-                        "FROM %1 "
-                        "WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+    FROM %1
+    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -154,14 +128,10 @@ SPTransList SqlOrder::TransList(int node_id)
 bool SqlOrder::Insert(CSPTrans& trans)
 {
     QSqlQuery query(*db_);
-    auto part = QString("INSERT INTO %1 "
-                        "(date_time, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, "
-                        "state, description, code, "
-                        "document) "
-                        "VALUES "
-                        "(:date_time, :lhs_node, :lhs_ratio, :lhs_debit, :lhs_credit, :transport, :location, :rhs_node, :rhs_ratio, :rhs_debit, "
-                        ":rhs_credit, :state, "
-                        ":description, :code, :document) ")
+    auto part = QString(R"(
+    INSERT INTO %1 (date_time, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document)
+    VALUES (:date_time, :lhs_node, :lhs_ratio, :lhs_debit, :lhs_credit, :transport, :location, :rhs_node, :rhs_ratio, :rhs_debit, :rhs_credit, :state, :description, :code, :document)
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -201,10 +171,11 @@ SPTransList SqlOrder::TransList(int node_id, const QList<int>& trans_id_list)
     for (const auto& id : trans_id_list)
         list.append(QString::number(id));
 
-    auto part = QString("SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, "
-                        "description, code, document, date_time "
-                        "FROM %1 "
-                        "WHERE id IN (%2) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+    FROM %1
+    WHERE id IN (%2) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+)")
                     .arg(info_->transaction, list.join(", "));
 
     query.prepare(part);
@@ -223,10 +194,11 @@ SPTransaction SqlOrder::Transaction(int trans_id)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, "
-                        "description, code, document, date_time "
-                        "FROM %1 "
-                        "WHERE id = :trans_id AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+    FROM %1
+    WHERE id = :trans_id AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);

@@ -75,14 +75,14 @@ private slots:
 
     void RUpdateState();
 
-    void on_rBtnFinance_clicked();
-    void on_rBtnTask_clicked();
-    void on_rBtnStakeholder_clicked();
-    void on_rBtnProduct_clicked();
-    void on_rBtnSales_clicked();
-    void on_rBtnPurchase_clicked();
-
     void on_actionLocate_triggered();
+
+    void on_rBtnFinance_toggled(bool checked);
+    void on_rBtnSales_toggled(bool checked);
+    void on_rBtnTask_toggled(bool checked);
+    void on_rBtnStakeholder_toggled(bool checked);
+    void on_rBtnProduct_toggled(bool checked);
+    void on_rBtnPurchase_toggled(bool checked);
 
 private:
     inline bool IsTreeWidget(const QWidget* widget) { return widget->inherits("AbstractTreeWidget"); }

@@ -45,6 +45,10 @@ public slots:
     virtual bool RRemoveNode(int node_id) = 0;
 
 public:
+    Qt::DropActions supportedDropActions() const override { return Qt::CopyAction | Qt::MoveAction; }
+    QStringList mimeTypes() const override { return QStringList { "node/id" }; }
+
+public:
     virtual bool RemoveRow(int row, const QModelIndex& parent = QModelIndex()) = 0;
     virtual bool InsertRow(int row, const QModelIndex& parent, Node* node) = 0;
 

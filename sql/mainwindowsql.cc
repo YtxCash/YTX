@@ -16,10 +16,11 @@ void MainwindowSql::QuerySectionRule(SectionRule& section_rule, Section section)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part { "SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, base_unit, document_dir, "
-                "value_decimal, ratio_decimal "
-                "FROM section_rule "
-                "WHERE id = :section " };
+    auto part = R"(
+    SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, base_unit, document_dir, value_decimal, ratio_decimal
+    FROM section_rule
+    WHERE id = :section
+)";
 
     query.prepare(part);
     query.bindValue(":section", std::to_underlying(section) + 1);
@@ -45,13 +46,13 @@ void MainwindowSql::QuerySectionRule(SectionRule& section_rule, Section section)
 
 void MainwindowSql::UpdateSectionRule(const SectionRule& section_rule, Section section)
 {
-    auto part {
-        "UPDATE section_rule "
-        "SET static_label = :static_label, static_node = :static_node, dynamic_label = :dynamic_label, dynamic_node_lhs = :dynamic_node_lhs, operation = "
-        ":operation, dynamic_node_rhs = :dynamic_node_rhs, hide_time = :hide_time, base_unit = :base_unit, document_dir = :document_dir, value_decimal = "
-        ":value_decimal, ratio_decimal = :ratio_decimal "
-        "WHERE id = :section "
-    };
+    auto part = R"(
+    UPDATE section_rule
+    SET static_label = :static_label, static_node = :static_node, dynamic_label = :dynamic_label, dynamic_node_lhs = :dynamic_node_lhs,
+        operation = :operation, dynamic_node_rhs = :dynamic_node_rhs, hide_time = :hide_time, base_unit = :base_unit, document_dir = :document_dir,
+        value_decimal = :value_decimal, ratio_decimal = :ratio_decimal
+    WHERE id = :section
+)";
 
     QSqlQuery query(*db_);
 
@@ -106,20 +107,22 @@ void MainwindowSql::NewFile(CString& file_path)
     QString sales_path = Path(SALES_PATH);
     QString sales_transaction = TransactionOrder(SALES_TRANSACTION);
 
-    QString section_rule = "CREATE TABLE IF NOT EXISTS section_rule (      \n"
-                           "  id INTEGER PRIMARY KEY AUTOINCREMENT,        \n"
-                           "  static_label        TEXT,                    \n"
-                           "  static_node         INTEGER,                 \n"
-                           "  dynamic_label       TEXT,                    \n"
-                           "  dynamic_node_lhs    INTEGER,                 \n"
-                           "  operation           TEXT,                    \n"
-                           "  dynamic_node_rhs    INTEGER,                 \n"
-                           "  hide_time           BOOLEAN    DEFAULT 1,    \n"
-                           "  base_unit           INTEGER,                 \n"
-                           "  document_dir        TEXT,                    \n"
-                           "  value_decimal       INTEGER    DEFAULT 2,    \n"
-                           "  ratio_decimal       INTEGER    DEFAULT 4     \n"
-                           ");";
+    QString section_rule = R"(
+    CREATE TABLE IF NOT EXISTS section_rule (
+        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+        static_label        TEXT,
+        static_node         INTEGER,
+        dynamic_label       TEXT,
+        dynamic_node_lhs    INTEGER,
+        operation           TEXT,
+        dynamic_node_rhs    INTEGER,
+        hide_time           BOOLEAN    DEFAULT 1,
+        base_unit           INTEGER,
+        document_dir        TEXT,
+        value_decimal       INTEGER    DEFAULT 2,
+        ratio_decimal       INTEGER    DEFAULT 4
+    );
+)";
 
     QString section_rule_row = "INSERT INTO section_rule (static_node) VALUES (0);";
 
@@ -157,220 +160,243 @@ void MainwindowSql::NewFile(CString& file_path)
 
 QString MainwindowSql::NodeFinance(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (           \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,   \n"
-                   "  name             TEXT,                  \n"
-                   "  code             TEXT,                  \n"
-                   "  description      TEXT,                  \n"
-                   "  note             TEXT,                  \n"
-                   "  node_rule        BOOLEAN    DEFAULT 0,  \n"
-                   "  branch           BOOLEAN    DEFAULT 0,  \n"
-                   "  unit             INTEGER,               \n"
-                   "  initial_total    NUMERIC,               \n"
-                   "  final_total      NUMERIC,               \n"
-                   "  removed          BOOLEAN    DEFAULT 0   \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        name             TEXT,
+        code             TEXT,
+        description      TEXT,
+        note             TEXT,
+        node_rule        BOOLEAN    DEFAULT 0,
+        branch           BOOLEAN    DEFAULT 0,
+        unit             INTEGER,
+        foreign_total    NUMERIC,
+        base_total       NUMERIC,
+        removed          BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::NodeTask(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (           \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,   \n"
-                   "  name             TEXT,                  \n"
-                   "  code             TEXT,                  \n"
-                   "  description      TEXT,                  \n"
-                   "  note             TEXT,                  \n"
-                   "  node_rule        BOOLEAN    DEFAULT 0,  \n"
-                   "  branch           BOOLEAN    DEFAULT 0,  \n"
-                   "  unit             INTEGER,               \n"
-                   "  initial_total    NUMERIC,               \n"
-                   "  removed          BOOLEAN    DEFAULT 0   \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        name              TEXT,
+        code              TEXT,
+        description       TEXT,
+        note              TEXT,
+        node_rule         BOOLEAN    DEFAULT 0,
+        branch            BOOLEAN    DEFAULT 0,
+        unit              INTEGER,
+        quantity_total    NUMERIC,
+        removed           BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::NodeStakeholder(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (                           \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,                   \n"
-                   "  name              TEXT,                                 \n"
-                   "  code              TEXT,                                 \n"
-                   "  payment_period    INTEGER,                              \n"
-                   "  employee          INTEGER,                              \n"
-                   "  tax_rate          NUMERIC,                              \n"
-                   "  deadline          TEXT,                                 \n"
-                   "  description       TEXT,                                 \n"
-                   "  note              TEXT,                                 \n"
-                   "  term              BOOLEAN    DEFAULT 0,                 \n"
-                   "  branch            BOOLEAN    DEFAULT 0,                 \n"
-                   "  mark              INTEGER,                              \n"
-                   "  removed           BOOLEAN    DEFAULT 0                  \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        name              TEXT,
+        code              TEXT,
+        payment_period    INTEGER,
+        employee          INTEGER,
+        tax_rate          NUMERIC,
+        deadline          TEXT,
+        description       TEXT,
+        note              TEXT,
+        term              BOOLEAN    DEFAULT 0,
+        branch            BOOLEAN    DEFAULT 0,
+        mark              INTEGER,
+        removed           BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::NodeProduct(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (           \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,   \n"
-                   "  name             TEXT,                  \n"
-                   "  code             TEXT,                  \n"
-                   "  unit_price       NUMERIC,               \n"
-                   "  commission       NUMERIC,               \n"
-                   "  description      TEXT,                  \n"
-                   "  note             TEXT,                  \n"
-                   "  node_rule        BOOLEAN    DEFAULT 0,  \n"
-                   "  branch           BOOLEAN    DEFAULT 0,  \n"
-                   "  unit             INTEGER,               \n"
-                   "  initial_total    NUMERIC,               \n"
-                   "  removed          BOOLEAN    DEFAULT 0   \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        name              TEXT,
+        code              TEXT,
+        unit_price        NUMERIC,
+        commission        NUMERIC,
+        description       TEXT,
+        note              TEXT,
+        node_rule         BOOLEAN    DEFAULT 0,
+        branch            BOOLEAN    DEFAULT 0,
+        unit              INTEGER,
+        quantity_total    NUMERIC,
+        amount_total      NUMERIC,
+        removed           BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::NodeOrder(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (                               \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,                       \n"
-                   "  name              TEXT,                                     \n"
-                   "  first_property    INTEGER,                                  \n"
-                   "  employee          INTEGER,                                  \n"
-                   "  third_property    NUMERIC,                                  \n"
-                   "  discount          NUMERIC,                                  \n"
-                   "  refund            BOOLEAN    DEFAULT 0,                     \n"
-                   "  stakeholder       INTEGER,                                  \n"
-                   "  date_time         DATE,                                     \n"
-                   "  description       TEXT,                                     \n"
-                   "  posted            BOOLEAN    DEFAULT 0,                     \n"
-                   "  branch            BOOLEAN    DEFAULT 0,                     \n"
-                   "  mark              INTEGER,                                  \n"
-                   "  initial_total     NUMERIC,                                  \n"
-                   "  final_total       NUMERIC,                                  \n"
-                   "  removed           BOOLEAN    DEFAULT 0                      \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        name              TEXT,
+        first_property    INTEGER,
+        employee          INTEGER,
+        third_property    NUMERIC,
+        discount          NUMERIC,
+        refund            BOOLEAN    DEFAULT 0,
+        stakeholder       INTEGER,
+        date_time         DATE,
+        description       TEXT,
+        posted            BOOLEAN    DEFAULT 0,
+        branch            BOOLEAN    DEFAULT 0,
+        mark              INTEGER,
+        initial_total     NUMERIC,
+        final_total       NUMERIC,
+        removed           BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::Path(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (                    \n"
-                   "  ancestor      INTEGER  CHECK (ancestor   >= 1),  \n"
-                   "  descendant    INTEGER  CHECK (descendant >= 1),  \n"
-                   "  distance      INTEGER  CHECK (distance   >= 0)   \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        ancestor      INTEGER    CHECK (ancestor   >= 1),
+        descendant    INTEGER    CHECK (descendant >= 1),
+        distance      INTEGER    CHECK (distance   >= 0)
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::TransactionFinance(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (                                            \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,                                    \n"
-                   "  date_time      DATE,                                                     \n"
-                   "  code           TEXT,                                                     \n"
-                   "  lhs_node       INTEGER,                                                  \n"
-                   "  lhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (lhs_ratio  > 0),         \n"
-                   "  lhs_debit      NUMERIC                   CHECK (lhs_debit  >=0),         \n"
-                   "  lhs_credit     NUMERIC                   CHECK (lhs_credit >=0),         \n"
-                   "  description    TEXT,                                                     \n"
-                   "  transport      INTEGER                   CHECK(transport IN (0, 1, 2)),  \n"
-                   "  location       TEXT,                                                     \n"
-                   "  document       TEXT,                                                     \n"
-                   "  state          BOOLEAN    DEFAULT 0,                                     \n"
-                   "  rhs_credit     NUMERIC                   CHECK (rhs_credit >=0),         \n"
-                   "  rhs_debit      NUMERIC                   CHECK (rhs_debit  >=0),         \n"
-                   "  rhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (rhs_ratio  > 0),         \n"
-                   "  rhs_node       INTEGER,                                                  \n"
-                   "  removed        BOOLEAN    DEFAULT 0                                      \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_time      DATE,
+        code           TEXT,
+        lhs_node       INTEGER,
+        lhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (lhs_ratio   > 0),
+        lhs_debit      NUMERIC                   CHECK (lhs_debit  >= 0),
+        lhs_credit     NUMERIC                   CHECK (lhs_credit >= 0),
+        description    TEXT,
+        transport      INTEGER,
+        location       TEXT,
+        document       TEXT,
+        state          BOOLEAN    DEFAULT 0,
+        rhs_credit     NUMERIC                   CHECK (rhs_credit >= 0),
+        rhs_debit      NUMERIC                   CHECK (rhs_debit  >= 0),
+        rhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (rhs_ratio   > 0),
+        rhs_node       INTEGER,
+        removed        BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::TransactionOrder(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (                                            \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,                                    \n"
-                   "  date_time      DATE,                                                     \n"
-                   "  code           TEXT,                                                     \n"
-                   "  lhs_node       INTEGER,                                                  \n"
-                   "  lhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (lhs_ratio  > 0),         \n"
-                   "  lhs_debit      NUMERIC                   CHECK (lhs_debit  >=0),         \n"
-                   "  lhs_credit     NUMERIC                   CHECK (lhs_credit >=0),         \n"
-                   "  description    TEXT,                                                     \n"
-                   "  transport      INTEGER                   CHECK(transport IN (0, 1, 2)),  \n"
-                   "  location       TEXT,                                                     \n"
-                   "  document       TEXT,                                                     \n"
-                   "  state          BOOLEAN    DEFAULT 0,                                     \n"
-                   "  rhs_credit     NUMERIC                   CHECK (rhs_credit >=0),         \n"
-                   "  rhs_debit      NUMERIC                   CHECK (rhs_debit  >=0),         \n"
-                   "  rhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (rhs_ratio  > 0),         \n"
-                   "  rhs_node       INTEGER,                                                  \n"
-                   "  removed        BOOLEAN    DEFAULT 0                                      \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_time      DATE,
+        code           TEXT,
+        lhs_node       INTEGER,
+        lhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (lhs_ratio   > 0),
+        lhs_debit      NUMERIC                   CHECK (lhs_debit  >= 0),
+        lhs_credit     NUMERIC                   CHECK (lhs_credit >= 0),
+        description    TEXT,
+        transport      INTEGER,
+        location       TEXT,
+        document       TEXT,
+        state          BOOLEAN    DEFAULT 0,
+        rhs_credit     NUMERIC                   CHECK (rhs_credit >= 0),
+        rhs_debit      NUMERIC                   CHECK (rhs_debit  >= 0),
+        rhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (rhs_ratio   > 0),
+        rhs_node       INTEGER,
+        removed        BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::TransactionStakeholder(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (          \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,  \n"
-                   "  date_time      DATE,                   \n"
-                   "  code           TEXT,                   \n"
-                   "  lhs_node       INTEGER,                \n"
-                   "  unit_price     NUMERIC,                \n"
-                   "  commission     NUMERIC,                \n"
-                   "  description    TEXT,                   \n"
-                   "  document       TEXT,                   \n"
-                   "  rhs_node       INTEGER,                \n"
-                   "  removed        BOOLEAN    DEFAULT 0    \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_time      DATE,
+        code           TEXT,
+        lhs_node       INTEGER,
+        unit_price     NUMERIC,
+        commission     NUMERIC,
+        description    TEXT,
+        document       TEXT,
+        rhs_node       INTEGER,
+        removed        BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::TransactionTask(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (                             \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,                     \n"
-                   "  date_time      DATE,                                      \n"
-                   "  code           TEXT,                                      \n"
-                   "  lhs_node       INTEGER,                                   \n"
-                   "  lhs_ratio      NUMERIC,                                   \n"
-                   "  lhs_debit      NUMERIC    CHECK (lhs_debit  >=0),         \n"
-                   "  lhs_credit     NUMERIC    CHECK (lhs_credit >=0),         \n"
-                   "  description    TEXT,                                      \n"
-                   "  transport      INTEGER    CHECK(transport IN (0, 1, 2)),  \n"
-                   "  location       TEXT,                                      \n"
-                   "  document       TEXT,                                      \n"
-                   "  state          BOOLEAN    DEFAULT 0,                      \n"
-                   "  rhs_credit     NUMERIC    CHECK (rhs_credit >=0),         \n"
-                   "  rhs_debit      NUMERIC    CHECK (rhs_debit  >=0),         \n"
-                   "  rhs_ratio      NUMERIC,                                   \n"
-                   "  rhs_node       INTEGER,                                   \n"
-                   "  removed        BOOLEAN    DEFAULT 0                       \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_time      DATE,
+        code           TEXT,
+        lhs_node       INTEGER,
+        lhs_ratio      NUMERIC,
+        lhs_debit      NUMERIC                  CHECK (lhs_debit  >= 0),
+        lhs_credit     NUMERIC                  CHECK (lhs_credit >= 0),
+        description    TEXT,
+        transport      INTEGER,
+        location       TEXT,
+        document       TEXT,
+        state          BOOLEAN    DEFAULT 0,
+        rhs_credit     NUMERIC                  CHECK (rhs_credit >= 0),
+        rhs_debit      NUMERIC                  CHECK (rhs_debit  >= 0),
+        rhs_ratio      NUMERIC,
+        rhs_node       INTEGER,
+        removed        BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }
 
 QString MainwindowSql::TransactionProduct(CString& table_name)
 {
-    return QString("CREATE TABLE IF NOT EXISTS %1 (                             \n"
-                   "  id INTEGER PRIMARY KEY AUTOINCREMENT,                     \n"
-                   "  date_time      DATE,                                      \n"
-                   "  code           TEXT,                                      \n"
-                   "  lhs_node       INTEGER,                                   \n"
-                   "  lhs_ratio      NUMERIC,                                   \n"
-                   "  lhs_debit      NUMERIC    CHECK (lhs_debit  >=0),         \n"
-                   "  lhs_credit     NUMERIC    CHECK (lhs_credit >=0),         \n"
-                   "  description    TEXT,                                      \n"
-                   "  transport      INTEGER    CHECK(transport IN (0, 1, 2)),  \n"
-                   "  location       TEXT,                                      \n"
-                   "  document       TEXT,                                      \n"
-                   "  state          BOOLEAN    DEFAULT 0,                      \n"
-                   "  rhs_credit     NUMERIC    CHECK (rhs_credit >=0),         \n"
-                   "  rhs_debit      NUMERIC    CHECK (rhs_debit  >=0),         \n"
-                   "  rhs_ratio      NUMERIC,                                   \n"
-                   "  rhs_node       INTEGER,                                   \n"
-                   "  removed        BOOLEAN    DEFAULT 0                       \n"
-                   ");")
+    return QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_time      DATE,
+        code           TEXT,
+        lhs_node       INTEGER,
+        lhs_ratio      NUMERIC,
+        lhs_debit      NUMERIC                  CHECK (lhs_debit  >= 0),
+        lhs_credit     NUMERIC                  CHECK (lhs_credit >= 0),
+        description    TEXT,
+        transport      INTEGER,
+        location       TEXT,
+        document       TEXT,
+        state          BOOLEAN    DEFAULT 0,
+        rhs_credit     NUMERIC                  CHECK (rhs_credit >= 0),
+        rhs_debit      NUMERIC                  CHECK (rhs_debit  >= 0),
+        rhs_ratio      NUMERIC,
+        rhs_node       INTEGER,
+        removed        BOOLEAN    DEFAULT 0
+    );
+)")
         .arg(table_name);
 }

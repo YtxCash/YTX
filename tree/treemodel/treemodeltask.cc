@@ -29,8 +29,8 @@ TreeModelTask::~TreeModelTask() { RecycleNode(node_hash_); }
 
 bool TreeModelTask::RUpdateMultiTotal(const QList<int>& node_list)
 {
-    double old_initial_total {};
-    double initial_diff {};
+    double old_quantity_total {};
+    double quantity_diff {};
     Node* node {};
 
     for (const auto& node_id : node_list) {
@@ -39,13 +39,13 @@ bool TreeModelTask::RUpdateMultiTotal(const QList<int>& node_list)
         if (!node || node->branch)
             continue;
 
-        old_initial_total = node->initial_total;
+        old_quantity_total = node->initial_total;
 
         sql_->LeafTotal(node);
         UpdateLeafTotal(node);
 
-        initial_diff = node->initial_total - old_initial_total;
-        UpdateBranchTotal(node, initial_diff);
+        quantity_diff = node->initial_total - old_quantity_total;
+        UpdateBranchTotal(node, quantity_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -58,7 +58,6 @@ void TreeModelTask::UpdateNode(const Node* tmp_node)
         return;
 
     auto node { node_hash_.value(tmp_node->id) };
-
     if (*node == *tmp_node)
         return;
 
@@ -97,20 +96,17 @@ bool TreeModelTask::RRemoveNode(int node_id)
     return true;
 }
 
-void TreeModelTask::RUpdateOneTotal(int node_id, double final_debit_diff, double final_credit_diff, double initial_debit_diff, double initial_credit_diff)
+void TreeModelTask::RUpdateOneTotal(int node_id, double, double, double quantity_debit_diff, double quantity_credit_diff)
 {
-    Q_UNUSED(final_debit_diff)
-    Q_UNUSED(final_credit_diff)
-
     auto node { const_cast<Node*>(GetNode(node_id)) };
     auto node_rule { node->node_rule };
 
-    auto initial_diff { node_rule ? initial_credit_diff - initial_debit_diff : initial_debit_diff - initial_credit_diff };
+    auto quantity_diff { node_rule ? quantity_credit_diff - quantity_debit_diff : quantity_debit_diff - quantity_credit_diff };
 
-    node->initial_total += initial_diff;
+    node->initial_total += quantity_diff;
     UpdateLeafTotal(node);
 
-    UpdateBranchTotal(node, initial_diff);
+    UpdateBranchTotal(node, quantity_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -141,7 +137,7 @@ void TreeModelTask::IniTree(NodeHash& node_hash, StringHash& leaf_path, StringHa
     node_hash.insert(-1, root_);
 }
 
-void TreeModelTask::UpdateBranchTotal(const Node* node, double initial_diff)
+void TreeModelTask::UpdateBranchTotal(const Node* node, double quantity_diff)
 {
     if (!node)
         return;
@@ -154,7 +150,7 @@ void TreeModelTask::UpdateBranchTotal(const Node* node, double initial_diff)
         equal = node->parent->node_rule == node_rule;
 
         if (node->parent->unit == unit)
-            node->parent->initial_total += equal ? initial_diff : -initial_diff;
+            node->parent->initial_total += equal ? quantity_diff : -quantity_diff;
 
         node = node->parent;
     }
@@ -184,7 +180,7 @@ void TreeModelTask::UpdateBranchUnit(Node* node) const
     queue.enqueue(node);
 
     const Node* queue_node {};
-    double initial_total {};
+    double quantity_total {};
     bool equal {};
     bool branch {};
 
@@ -201,11 +197,11 @@ void TreeModelTask::UpdateBranchUnit(Node* node) const
 
         if (!branch && queue_node->unit == unit) {
             equal = queue_node->node_rule == node_rule;
-            initial_total += equal ? queue_node->initial_total : -queue_node->initial_total;
+            quantity_total += equal ? queue_node->initial_total : -queue_node->initial_total;
         }
     }
 
-    node->initial_total = initial_total;
+    node->initial_total = quantity_total;
 }
 
 void TreeModelTask::RecycleNode(NodeHash& node_hash)
@@ -340,8 +336,10 @@ bool TreeModelTask::UpdateRule(Node* node, bool value)
     sql_->Update(info_->node, NODE_RULE, value, node->id);
 
     node->initial_total = -node->initial_total;
-    if (!node->branch)
+    if (!node->branch) {
         emit SNodeRule(node->id, value);
+        UpdateLeafTotal(node);
+    }
 
     return true;
 }
@@ -519,7 +517,7 @@ bool TreeModelTask::UpdateLeafTotal(const Node* node)
     if (!node || node->branch)
         return false;
 
-    sql_->Update(info_->node, INITIAL_TOTAL, node->initial_total, node->id);
+    sql_->Update(info_->node, QUANTITY_TOTAL, node->initial_total, node->id);
 
     return true;
 }

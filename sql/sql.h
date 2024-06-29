@@ -13,6 +13,9 @@
 class Sql : public QObject {
     Q_OBJECT
 
+public:
+    Sql(const Info* info, QObject* parent = nullptr);
+
 signals:
     // send to all table model
     void SRemoveMulti(const QMultiHash<int, int>& node_trans);
@@ -41,17 +44,14 @@ public slots:
     }
 
 public:
-    Sql(const Info* info, QObject* parent = nullptr);
-
     // tree
     virtual bool Tree(NodeHash& node_hash);
     virtual bool Insert(int parent_id, Node* node);
     virtual void LeafTotal(Node* node);
     virtual bool InternalReferences(int node_id) const;
-    virtual bool ExternalReferences(int node_id, Section target) const
+    virtual bool ExternalReferences(int node_id) const
     {
         Q_UNUSED(node_id)
-        Q_UNUSED(target)
         return false;
     };
 
@@ -79,7 +79,8 @@ protected:
     virtual void CreateNodeHash(QSqlQuery& query, NodeHash& node_hash);
 
     bool DBTransaction(std::function<bool()> function);
-    void SetRelationship(QSqlQuery& query, const NodeHash& node_hash);
+    void ReadRelationship(QSqlQuery& query, const NodeHash& node_hash);
+    void WriteRelationship(QSqlQuery& query, int node_id, int parent_id);
 
     // table
     virtual SPTransList QueryList(int node_id, QSqlQuery& query);

@@ -36,6 +36,8 @@ enum class TreeColumn {
     kThird,
     kFourth,
     kFifth,
+    kSixth,
+    kSeventh,
     kDateTime,
     kDescription,
     kNote,

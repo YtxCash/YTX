@@ -485,22 +485,20 @@ bool TableModelProduct::UpdateDebit(SPTrans& trans, double value)
     *trans->debit = (value > credit) ? abs : 0;
     *trans->credit = (value <= credit) ? abs : 0;
 
-    double t_debit { *trans->related_debit };
-    double t_credit { *trans->related_credit };
-
     *trans->related_debit = *trans->credit;
     *trans->related_credit = *trans->debit;
 
     if (*trans->related_node == 0)
         return false;
 
-    auto initial_debit_diff { *trans->debit - debit };
-    auto initial_credit_diff { *trans->credit - credit };
-    emit SUpdateOneTotal(*trans->node, initial_debit_diff, initial_credit_diff, initial_debit_diff, initial_credit_diff);
+    auto unit_cost { *trans->ratio };
+    auto quantity_debit_diff { *trans->debit - debit };
+    auto quantity_credit_diff { *trans->credit - credit };
+    auto amount_debit_diff { quantity_debit_diff * unit_cost };
+    auto amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    auto t_initial_debit_diff { *trans->related_debit - t_debit };
-    auto t_initial_credit_diff { *trans->related_credit - t_credit };
-    emit SUpdateOneTotal(*trans->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff, t_initial_credit_diff);
+    emit SUpdateOneTotal(*trans->node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
+    emit SUpdateOneTotal(*trans->related_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
 
     return true;
 }
@@ -519,22 +517,20 @@ bool TableModelProduct::UpdateCredit(SPTrans& trans, double value)
     *trans->debit = (value > debit) ? 0 : abs;
     *trans->credit = (value <= debit) ? 0 : abs;
 
-    double t_debit { *trans->related_debit };
-    double t_credit { *trans->related_credit };
-
     *trans->related_debit = *trans->credit;
     *trans->related_credit = *trans->debit;
 
     if (*trans->related_node == 0)
         return false;
 
-    auto initial_debit_diff { *trans->debit - debit };
-    auto initial_credit_diff { *trans->credit - credit };
-    emit SUpdateOneTotal(*trans->node, initial_debit_diff, initial_credit_diff, initial_debit_diff, initial_credit_diff);
+    auto unit_cost { *trans->ratio };
+    auto quantity_debit_diff { *trans->debit - debit };
+    auto quantity_credit_diff { *trans->credit - credit };
+    auto amount_debit_diff { quantity_debit_diff * unit_cost };
+    auto amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    auto t_initial_debit_diff { *trans->related_debit - t_debit };
-    auto t_initial_credit_diff { *trans->related_credit - t_credit };
-    emit SUpdateOneTotal(*trans->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff, t_initial_credit_diff);
+    emit SUpdateOneTotal(*trans->node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
+    emit SUpdateOneTotal(*trans->related_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
 
     return true;
 }
@@ -544,10 +540,19 @@ bool TableModelProduct::UpdateUnitCost(SPTrans& trans, double value)
     const double tolerance { std::pow(10, -section_rule_->ratio_decimal - 2) };
     double ratio { *trans->ratio };
 
-    if (std::abs(ratio - value) < tolerance || value <= 0)
+    if (std::abs(ratio - value) < tolerance || value < 0)
         return false;
 
+    auto result { value - ratio };
     *trans->ratio = value;
+    *trans->related_ratio = value;
+
+    if (*trans->related_node == 0)
+        return false;
+
+    emit SUpdateOneTotal(*trans->node, *trans->debit * result, *trans->credit * result, 0, 0);
+    emit SUpdateOneTotal(*trans->related_node, *trans->related_debit * result, *trans->related_credit * result, 0, 0);
+
     return true;
 }
 

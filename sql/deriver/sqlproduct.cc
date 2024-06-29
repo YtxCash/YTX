@@ -15,17 +15,14 @@ bool SqlProduct::Tree(NodeHash& node_hash)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part_1st = QString("SELECT name, id, code, unit_price, commission, description, note, node_rule, branch, unit, initial_total "
-                            "FROM %1 "
-                            "WHERE removed = 0 ")
-                        .arg(info_->node);
+    auto part = QString(R"(
+    SELECT name, id, code, unit_price, commission, description, note, node_rule, branch, unit, quantity_total, amount_total
+    FROM %1
+    WHERE removed = 0
+)")
+                    .arg(info_->node);
 
-    auto part_2nd = QString("SELECT ancestor, descendant "
-                            "FROM %1 "
-                            "WHERE distance = 1 ")
-                        .arg(info_->path);
-
-    query.prepare(part_1st);
+    query.prepare(part);
     if (!query.exec()) {
         qWarning() << "Error in product create tree 1 setp " << query.lastError().text();
         return false;
@@ -33,14 +30,7 @@ bool SqlProduct::Tree(NodeHash& node_hash)
 
     CreateNodeHash(query, node_hash);
     query.clear();
-
-    query.prepare(part_2nd);
-    if (!query.exec()) {
-        qWarning() << "Error in product create tree 2 setp " << query.lastError().text();
-        return false;
-    }
-
-    SetRelationship(query, node_hash);
+    ReadRelationship(query, node_hash);
 
     return true;
 }
@@ -52,20 +42,15 @@ bool SqlProduct::Insert(int parent_id, Node* node)
 
     QSqlQuery query(*db_);
 
-    auto part_1st = QString("INSERT INTO %1 (name, code, unit_price, commission, description, note, node_rule, branch, unit) "
-                            "VALUES (:name, :code, :unit_price, :commission, :description, :note, :node_rule, :branch, :unit) ")
-                        .arg(info_->node);
-
-    auto part_2nd = QString("INSERT INTO %1 (ancestor, descendant, distance) "
-                            "SELECT ancestor, :node_id, distance + 1 FROM %1 "
-                            "WHERE descendant = :parent "
-                            "UNION ALL "
-                            "SELECT :node_id, :node_id, 0 ")
-                        .arg(info_->path);
+    auto part = QString(R"(
+    INSERT INTO %1 (name, code, unit_price, commission, description, note, node_rule, branch, unit)
+    VALUES (:name, :code, :unit_price, :commission, :description, :note, :node_rule, :branch, :unit)
+)")
+                    .arg(info_->node);
 
     if (!DBTransaction([&]() {
             // 插入节点记录
-            query.prepare(part_1st);
+            query.prepare(part);
             query.bindValue(":name", node->name);
             query.bindValue(":code", node->code);
             query.bindValue(":unit_price", node->third_property);
@@ -87,15 +72,7 @@ bool SqlProduct::Insert(int parent_id, Node* node)
             query.clear();
 
             // 插入节点路径记录
-            query.prepare(part_2nd);
-            query.bindValue(":node_id", node->id);
-            query.bindValue(":parent", parent_id);
-
-            if (!query.exec()) {
-                qWarning() << "Failed to insert node_path record: " << query.lastError().text();
-                return false;
-            }
-
+            WriteRelationship(query, node->id, parent_id);
             return true;
         })) {
         qWarning() << "Failed to insert record";
@@ -113,11 +90,13 @@ void SqlProduct::LeafTotal(Node* node)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT lhs_debit AS debit, lhs_credit AS credit FROM %1 "
-                        "WHERE lhs_node = (:node_id) AND removed = 0 "
-                        "UNION ALL "
-                        "SELECT rhs_debit, rhs_credit FROM %1 "
-                        "WHERE rhs_node = (:node_id) AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT lhs_debit AS debit, lhs_credit AS credit, lhs_ratio AS ratio FROM %1
+    WHERE lhs_node = (:node_id) AND removed = 0
+    UNION ALL
+    SELECT rhs_debit, rhs_credit, rhs_ratio FROM %1
+    WHERE rhs_node = (:node_id) AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -125,48 +104,49 @@ void SqlProduct::LeafTotal(Node* node)
     if (!query.exec())
         qWarning() << "Error in calculate node total setp " << query.lastError().text();
 
-    double initial_total_debit { 0.0 };
-    double initial_total_credit { 0.0 };
+    double quantity_total_debit { 0.0 };
+    double quantity_total_credit { 0.0 };
+    double amount_total_debit { 0.0 };
+    double amount_total_credit { 0.0 };
     bool node_rule { node->node_rule };
 
+    double unit_cost { 0.0 };
     double debit { 0.0 };
     double credit { 0.0 };
 
     while (query.next()) {
+        unit_cost = query.value("ratio").toDouble();
+
         debit = query.value("debit").toDouble();
         credit = query.value("credit").toDouble();
 
-        initial_total_debit += debit;
-        initial_total_credit += credit;
+        amount_total_debit += debit * unit_cost;
+        amount_total_credit += credit * unit_cost;
+
+        quantity_total_debit += debit;
+        quantity_total_credit += credit;
     }
 
-    node->initial_total = node_rule ? (initial_total_credit - initial_total_debit) : (initial_total_debit - initial_total_credit);
+    node->initial_total = node_rule ? (quantity_total_credit - quantity_total_debit) : (quantity_total_debit - quantity_total_credit);
+    node->final_total = node_rule ? (amount_total_credit - amount_total_debit) : (amount_total_debit - amount_total_credit);
 }
 
-bool SqlProduct::ExternalReferences(int node_id, Section target) const
+bool SqlProduct::ExternalReferences(int node_id) const
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    QString transaction {};
+    auto string = R"(
+    SELECT COUNT(*)
+    FROM (
+        SELECT 1 FROM stakeholder_transaction WHERE rhs_node = :node_id AND removed = 0
+        UNION ALL
+        SELECT 1 FROM sales_transaction WHERE rhs_node = :node_id AND removed = 0
+        UNION ALL
+        SELECT 1 FROM purchase_transaction WHERE rhs_node = :node_id AND removed = 0
+    ) AS combined;
+)";
 
-    switch (target) {
-    case Section::kStakeholder:
-        transaction = "stakeholder_transaction";
-        break;
-    case Section::kSales:
-        transaction = "sales_transaction";
-        break;
-    case Section::kPurchase:
-        transaction = "purchase_transaction";
-        break;
-    default:
-        break;
-    }
-
-    auto string = QString("SELECT COUNT(*) FROM %1 "
-                          "WHERE rhs_node = :node_id AND removed = 0 ")
-                      .arg(transaction);
     query.prepare(string);
     query.bindValue(":node_id", node_id);
 
@@ -198,7 +178,8 @@ void SqlProduct::CreateNodeHash(QSqlQuery& query, NodeHash& node_hash)
         node->node_rule = query.value("node_rule").toBool();
         node->branch = query.value("branch").toBool();
         node->unit = query.value("unit").toInt();
-        node->initial_total = query.value("initial_total").toDouble();
+        node->initial_total = query.value("quantity_total").toDouble();
+        node->final_total = query.value("amount_total").toDouble();
 
         node_hash.insert(node_id, node);
     }

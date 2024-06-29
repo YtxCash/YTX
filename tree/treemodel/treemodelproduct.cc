@@ -29,8 +29,10 @@ TreeModelProduct::~TreeModelProduct() { RecycleNode(node_hash_); }
 
 bool TreeModelProduct::RUpdateMultiTotal(const QList<int>& node_list)
 {
-    double old_initial_total {};
-    double initial_diff {};
+    double old_amount_total {};
+    double old_quantity_total {};
+    double amount_diff {};
+    double quantity_diff {};
     Node* node {};
 
     for (const auto& node_id : node_list) {
@@ -39,13 +41,16 @@ bool TreeModelProduct::RUpdateMultiTotal(const QList<int>& node_list)
         if (!node || node->branch)
             continue;
 
-        old_initial_total = node->initial_total;
+        old_amount_total = node->final_total;
+        old_quantity_total = node->initial_total;
 
         sql_->LeafTotal(node);
         UpdateLeafTotal(node);
 
-        initial_diff = node->initial_total - old_initial_total;
-        UpdateBranchTotal(node, initial_diff);
+        amount_diff = node->final_total - old_amount_total;
+        quantity_diff = node->initial_total - old_quantity_total;
+
+        UpdateBranchTotal(node, amount_diff, quantity_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -58,8 +63,6 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
         return;
 
     auto node { const_cast<Node*>(GetNode(tmp_node->id)) };
-    UpdateUnitPrice(node, tmp_node->third_property);
-
     if (*node == *tmp_node)
         return;
 
@@ -69,6 +72,8 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     UpdateNote(node, tmp_node->note);
     UpdateRule(node, tmp_node->node_rule);
     UpdateUnit(node, tmp_node->unit);
+    UpdateUnitPrice(node, tmp_node->third_property);
+    UpdateCommission(node, tmp_node->fourth_property);
 
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
@@ -98,20 +103,20 @@ bool TreeModelProduct::RRemoveNode(int node_id)
     return true;
 }
 
-void TreeModelProduct::RUpdateOneTotal(int node_id, double final_debit_diff, double final_credit_diff, double initial_debit_diff, double initial_credit_diff)
+void TreeModelProduct::RUpdateOneTotal(
+    int node_id, double amount_debit_diff, double amount_credit_diff, double quantity_debit_diff, double quantity_credit_diff)
 {
-    Q_UNUSED(final_debit_diff)
-    Q_UNUSED(final_credit_diff)
-
     auto node { const_cast<Node*>(GetNode(node_id)) };
     auto node_rule { node->node_rule };
 
-    auto initial_diff { node_rule ? initial_credit_diff - initial_debit_diff : initial_debit_diff - initial_credit_diff };
+    auto amount_diff { node_rule ? amount_credit_diff - amount_debit_diff : amount_debit_diff - amount_credit_diff };
+    auto quantity_diff { node_rule ? quantity_credit_diff - quantity_debit_diff : quantity_debit_diff - quantity_credit_diff };
 
-    node->initial_total += initial_diff;
+    node->final_total += amount_diff;
+    node->initial_total += quantity_diff;
+
     UpdateLeafTotal(node);
-
-    UpdateBranchTotal(node, initial_diff);
+    UpdateBranchTotal(node, amount_diff, quantity_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -135,14 +140,14 @@ void TreeModelProduct::IniTree(NodeHash& node_hash, StringHash& leaf_path, Strin
             continue;
         }
 
-        UpdateBranchTotal(node, node->initial_total);
+        UpdateBranchTotal(node, node->final_total, node->initial_total);
         leaf_path.insert(node->id, path);
     }
 
     node_hash.insert(-1, root_);
 }
 
-void TreeModelProduct::UpdateBranchTotal(const Node* node, double initial_diff)
+void TreeModelProduct::UpdateBranchTotal(const Node* node, double amount_diff, double quantity_diff)
 {
     if (!node)
         return;
@@ -153,9 +158,10 @@ void TreeModelProduct::UpdateBranchTotal(const Node* node, double initial_diff)
 
     while (node != root_) {
         equal = node->parent->node_rule == node_rule;
+        node->parent->final_total += equal ? amount_diff : -amount_diff;
 
         if (node->parent->unit == unit)
-            node->parent->initial_total += equal ? initial_diff : -initial_diff;
+            node->parent->initial_total += equal ? quantity_diff : -quantity_diff;
 
         node = node->parent;
     }
@@ -254,8 +260,7 @@ bool TreeModelProduct::UpdateBranch(Node* node, bool value)
     if (node->branch == value || !node->children.isEmpty() || table_hash_->contains(node_id))
         return false;
 
-    if (sql_->InternalReferences(node_id) || sql_->ExternalReferences(node_id, Section::kStakeholder) || sql_->ExternalReferences(node_id, Section::kPurchase)
-        || sql_->ExternalReferences(node_id, Section::kSales))
+    if (sql_->InternalReferences(node_id) || sql_->ExternalReferences(node_id))
         return false;
 
     node->branch = value;
@@ -371,8 +376,12 @@ bool TreeModelProduct::UpdateRule(Node* node, bool value)
     sql_->Update(info_->node, NODE_RULE, value, node->id);
 
     node->initial_total = -node->initial_total;
-    if (!node->branch)
+    node->final_total = -node->final_total;
+
+    if (!node->branch) {
         emit SNodeRule(node->id, value);
+        UpdateLeafTotal(node);
+    }
 
     return true;
 }
@@ -533,7 +542,7 @@ bool TreeModelProduct::RemoveRow(int row, const QModelIndex& parent)
     }
 
     if (!branch) {
-        UpdateBranchTotal(node, -node->initial_total);
+        UpdateBranchTotal(node, -node->final_total, -node->initial_total);
         leaf_path_.remove(node_id);
         sql_->Remove(node_id, false);
     }
@@ -552,7 +561,8 @@ bool TreeModelProduct::UpdateLeafTotal(const Node* node)
     if (!node || node->branch)
         return false;
 
-    sql_->Update(info_->node, INITIAL_TOTAL, node->initial_total, node->id);
+    sql_->Update(info_->node, QUANTITY_TOTAL, node->initial_total, node->id);
+    sql_->Update(info_->node, AMOUNT_TOTAL, node->final_total, node->id);
 
     return true;
 }
@@ -599,6 +609,8 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
         return node->unit;
     case TreeColumn::kInitialTotal:
         return node->initial_total;
+    case TreeColumn::kFinalTotal:
+        return node->final_total;
     default:
         return QVariant();
     }
@@ -720,11 +732,11 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        UpdateBranchTotal(node, -node->initial_total);
+        UpdateBranchTotal(node, -node->final_total, -node->initial_total);
 
         destination_parent->children.insert(begin_row, node);
         node->parent = destination_parent;
-        UpdateBranchTotal(node, node->initial_total);
+        UpdateBranchTotal(node, node->final_total, node->initial_total);
 
         endMoveRows();
     }

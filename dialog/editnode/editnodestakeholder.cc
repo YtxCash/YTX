@@ -5,22 +5,36 @@
 #include "component/constvalue.h"
 #include "ui_editnodestakeholder.h"
 
-EditNodeStakeholder::EditNodeStakeholder(Node* node, const SectionRule* section_rule, CString* separator, const Info* info, QSharedPointer<Sql> sql,
-    bool view_opened, CString& parent_path, CStringHash* node_term_hash, QWidget* parent)
+EditNodeStakeholder::EditNodeStakeholder(Node* node, const SectionRule* section_rule, CString* separator, const Info* info, bool node_usage, bool view_opened,
+    CString& parent_path, CStringHash* node_term_hash, CStringHash* branch_path, const NodeHash* node_hash, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
     , node_ { node }
     , separator_ { separator }
     , node_term_hash_ { node_term_hash }
+    , branch_path_ { branch_path }
     , section_rule_ { section_rule }
-    , sql_ { sql }
+    , node_hash_ { node_hash }
+    , info_ { info }
+    , node_usage_ { node_usage }
     , view_opened_ { view_opened }
     , parent_path_ { parent_path }
 {
     ui->setupUi(this);
+
+    ui->comboMark->blockSignals(true);
+    ui->comboTerm->blockSignals(true);
+    ui->comboEmployee->blockSignals(true);
+    ui->chkBoxBranch->blockSignals(true);
+
     IniDialog(&info->unit_hash);
     IniConnect();
     Data(node);
+
+    ui->comboMark->blockSignals(false);
+    ui->comboTerm->blockSignals(false);
+    ui->comboEmployee->blockSignals(false);
+    ui->chkBoxBranch->blockSignals(false);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
@@ -28,24 +42,21 @@ EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 void EditNodeStakeholder::IniDialog(CStringHash* unit_hash)
 {
     ui->lineEditName->setFocus();
-    parent_path_ += (parent_path_.isEmpty() ? QString() : *separator_);
+    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
+
+    if (!parent_path_.isEmpty())
+        parent_path_ += *separator_;
+
     this->setWindowTitle(parent_path_ + node_->name);
 
-    ui->comboMark->blockSignals(true);
-    for (auto it = unit_hash->cbegin(); it != unit_hash->cend(); ++it)
-        ui->comboMark->addItem(it.value(), it.key());
+    IniComboMark(node_->branch, unit_hash);
 
-    ui->comboMark->model()->sort(0);
-    ui->comboMark->blockSignals(false);
-
-    ui->comboTerm->blockSignals(true);
     for (auto it = node_term_hash_->cbegin(); it != node_term_hash_->cend(); ++it)
         ui->comboTerm->addItem(it.value(), it.key());
 
     ui->comboTerm->model()->sort(0);
-    ui->comboTerm->blockSignals(false);
 
-    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
+    IniComboEmployee();
 
     ui->spinBoxPaymentPeriod->setRange(0, IMAX);
     ui->dateEditDeadline->setDisplayFormat(DATE_D);
@@ -53,25 +64,55 @@ void EditNodeStakeholder::IniDialog(CStringHash* unit_hash)
     ui->dSpinBoxTaxRate->setDecimals(section_rule_->ratio_decimal);
 }
 
+void EditNodeStakeholder::IniComboMark(bool branch, CStringHash* unit_hash)
+{
+    ui->comboMark->clear();
+
+    for (auto it = unit_hash->cbegin(); it != unit_hash->cend(); ++it) {
+        if ((branch && it.key() != 3) || (!branch && it.key() == 3))
+            ui->comboMark->addItem(it.value(), it.key());
+    }
+
+    if (branch)
+        ui->comboMark->model()->sort(0);
+}
+
+void EditNodeStakeholder::IniComboEmployee()
+{
+    ui->comboEmployee->clear();
+
+    for (auto it = branch_path_->cbegin(); it != branch_path_->cend(); ++it)
+        if (node_hash_->value(it.key())->unit == 0)
+            ui->comboEmployee->addItem(it.value(), it.key());
+
+    ui->comboEmployee->insertItem(0, QString(), 0);
+    ui->comboEmployee->setCurrentIndex(0);
+    ui->comboEmployee->model()->sort(0);
+}
+
 void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::REditName); }
 
 void EditNodeStakeholder::Data(Node* node)
 {
-    int mark_index { ui->comboMark->findData(node->unit) };
+    int mark_index { ui->comboMark->findData(node_->unit) };
     ui->comboMark->setCurrentIndex(mark_index);
-    DisableComponent(node->unit == 0);
+
+    int term_index { ui->comboTerm->findData(node->node_rule) };
+    ui->comboTerm->setCurrentIndex(term_index);
+
+    ui->chkBoxBranch->setChecked(node->branch);
 
     bool editable { parent_path_.isEmpty() && node->name.isEmpty() };
     ui->comboMark->setEnabled(editable);
     ui->labMark->setEnabled(editable);
 
-    int term_index { ui->comboTerm->findData(node->node_rule) };
-    ui->comboTerm->setCurrentIndex(term_index);
-
     if (node->name.isEmpty()) {
         ui->pBtnOk->setEnabled(false);
         return;
     }
+
+    int employee_index { ui->comboEmployee->findData(node->second_property) };
+    ui->comboEmployee->setCurrentIndex(employee_index);
 
     ui->lineEditName->setText(node->name);
     ui->lineEditCode->setText(node->code);
@@ -79,23 +120,9 @@ void EditNodeStakeholder::Data(Node* node)
     ui->plainTextEdit->setPlainText(node->note);
     ui->spinBoxPaymentPeriod->setValue(node->first_property);
     ui->dSpinBoxTaxRate->setValue(node->third_property * HUNDRED);
-    ui->spinBoxDecimal->setValue(node->second_property);
     ui->dateEditDeadline->setDateTime(QDateTime::fromString(node->date_time, DATE_D));
 
-    ui->chkBoxBranch->setChecked(node->branch);
-
-    int node_id { node->id };
-    bool usage { sql_->InternalReferences(node_id) || sql_->ExternalReferences(node_id, Section::kPurchase)
-        || sql_->ExternalReferences(node_id, Section::kSales) };
-    ui->chkBoxBranch->setEnabled(!usage && node->children.isEmpty() && !view_opened_);
-}
-
-void EditNodeStakeholder::DisableComponent(bool disable)
-{
-    ui->labelTaxRate->setDisabled(disable);
-    ui->dSpinBoxTaxRate->setDisabled(disable);
-    ui->labelDecimal->setDisabled(disable);
-    ui->spinBoxDecimal->setDisabled(disable);
+    ui->chkBoxBranch->setEnabled(!node_usage_ && node->children.isEmpty() && !view_opened_);
 }
 
 void EditNodeStakeholder::REditName(const QString& arg1)
@@ -111,7 +138,11 @@ void EditNodeStakeholder::on_lineEditCode_editingFinished() { node_->code = ui->
 
 void EditNodeStakeholder::on_lineEditDescription_editingFinished() { node_->description = ui->lineEditDescription->text(); }
 
-void EditNodeStakeholder::on_chkBoxBranch_toggled(bool checked) { node_->branch = checked; }
+void EditNodeStakeholder::on_chkBoxBranch_toggled(bool checked)
+{
+    node_->branch = checked;
+    IniComboMark(checked, &info_->unit_hash);
+}
 
 void EditNodeStakeholder::on_plainTextEdit_textChanged() { node_->note = ui->plainTextEdit->toPlainText(); }
 
@@ -119,7 +150,6 @@ void EditNodeStakeholder::on_comboMark_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
     node_->unit = ui->comboMark->currentData().toInt();
-    DisableComponent(node_->unit == 0);
 }
 
 void EditNodeStakeholder::on_comboTerm_currentIndexChanged(int index)
@@ -134,8 +164,6 @@ void EditNodeStakeholder::on_dateEditDeadline_editingFinished() { node_->date_ti
 
 void EditNodeStakeholder::on_dSpinBoxTaxRate_editingFinished() { node_->third_property = ui->dSpinBoxTaxRate->value() / HUNDRED; }
 
-void EditNodeStakeholder::on_spinBoxDecimal_editingFinished() { node_->second_property = ui->spinBoxDecimal->value(); }
-
 void EditNodeStakeholder::changeEvent(QEvent* event)
 {
     if (event->type() == QEvent::ActivationChange && this->isActiveWindow()) {
@@ -146,8 +174,15 @@ void EditNodeStakeholder::changeEvent(QEvent* event)
                     node_name_list_.emplaceBack(node->name);
 
             REditName(ui->lineEditName->text());
+            IniComboEmployee();
         });
     }
 
     QDialog::changeEvent(event);
+}
+
+void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
+{
+    Q_UNUSED(index)
+    node_->second_property = ui->comboEmployee->currentData().toInt();
 }

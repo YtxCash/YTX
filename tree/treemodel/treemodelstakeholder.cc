@@ -43,8 +43,6 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
         return;
 
     auto node { const_cast<Node*>(GetNode(tmp_node->id)) };
-    UpdateTaxRate(node, tmp_node->third_property);
-
     if (*node == *tmp_node)
         return;
 
@@ -55,7 +53,8 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
     UpdateDeadline(node, tmp_node->date_time);
     UpdatePaymentPeriod(node, tmp_node->first_property);
     UpdateTerm(node, tmp_node->node_rule);
-    UpdateDecimal(node, tmp_node->second_property);
+    UpdateEmployee(node, tmp_node->second_property);
+    UpdateTaxRate(node, tmp_node->third_property);
 
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
@@ -194,7 +193,7 @@ bool TreeModelStakeholder::UpdateBranch(Node* node, bool value)
     if (node->branch == value || !node->children.isEmpty() || table_hash_->contains(node_id))
         return false;
 
-    if (sql_->InternalReferences(node_id) || sql_->ExternalReferences(node_id, Section::kPurchase) || sql_->ExternalReferences(node_id, Section::kSales))
+    if (sql_->InternalReferences(node_id) || sql_->ExternalReferences(node_id))
         return false;
 
     node->branch = value;
@@ -214,13 +213,13 @@ bool TreeModelStakeholder::UpdateTerm(Node* node, bool value)
     return true;
 }
 
-bool TreeModelStakeholder::UpdateDecimal(Node* node, int value)
+bool TreeModelStakeholder::UpdateEmployee(Node* node, int value)
 {
     if (node->second_property == value)
         return false;
 
     node->second_property = value;
-    sql_->Update(info_->node, DECIMAL, value, node->id);
+    sql_->Update(info_->node, EMPLOYEE, value, node->id);
     return true;
 }
 

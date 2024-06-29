@@ -5,21 +5,26 @@
 #include "component/constvalue.h"
 #include "ui_editnodeproduct.h"
 
-EditNodeProduct::EditNodeProduct(Node* node, const SectionRule* section_rule, CString* separator, const Info* info, QSharedPointer<Sql> sql, bool view_opened,
-    CString& parent_path, QWidget* parent)
+EditNodeProduct::EditNodeProduct(Node* node, const SectionRule* section_rule, CString* separator, CStringHash* unit_hash, CString& parent_path, bool node_usage,
+    bool view_opened, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeProduct)
     , node_ { node }
     , separator_ { separator }
     , section_rule_ { section_rule }
-    , sql_ { sql }
+    , node_usage_ { node_usage }
     , view_opened_ { view_opened }
     , parent_path_ { parent_path }
 {
     ui->setupUi(this);
-    IniDialog(&info->unit_hash);
+
+    ui->comboUnit->blockSignals(true);
+
+    IniDialog(unit_hash);
     IniConnect();
     Data(node);
+
+    ui->comboUnit->blockSignals(false);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }
@@ -27,17 +32,17 @@ EditNodeProduct::~EditNodeProduct() { delete ui; }
 void EditNodeProduct::IniDialog(CStringHash* unit_hash)
 {
     ui->lineEditName->setFocus();
-    parent_path_ += (parent_path_.isEmpty() ? QString() : *separator_);
+    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
+
+    if (!parent_path_.isEmpty())
+        parent_path_ += *separator_;
+
     this->setWindowTitle(parent_path_ + node_->name);
 
-    ui->comboUnit->blockSignals(true);
     for (auto it = unit_hash->cbegin(); it != unit_hash->cend(); ++it)
         ui->comboUnit->addItem(it.value(), it.key());
 
     ui->comboUnit->model()->sort(0);
-    ui->comboUnit->blockSignals(false);
-
-    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
 
     ui->dSpinBoxUnitPrice->setRange(0.0, DMAX);
     ui->dSpinBoxCommission->setRange(0.0, DMAX);
@@ -67,11 +72,7 @@ void EditNodeProduct::Data(Node* node)
 
     ui->chkBoxBranch->setChecked(node->branch);
 
-    int node_id { node->id };
-    bool usage { sql_->InternalReferences(node_id) || sql_->ExternalReferences(node_id, Section::kStakeholder)
-        || sql_->ExternalReferences(node_id, Section::kPurchase) || sql_->ExternalReferences(node_id, Section::kSales) };
-
-    ui->chkBoxBranch->setEnabled(!usage && node->children.isEmpty() && !view_opened_);
+    ui->chkBoxBranch->setEnabled(!node_usage_ && node->children.isEmpty() && !view_opened_);
 }
 
 void EditNodeProduct::REditName(const QString& arg1)

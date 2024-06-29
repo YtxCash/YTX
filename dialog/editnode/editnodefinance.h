@@ -14,7 +14,7 @@ class EditNodeFinance final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeFinance(Node* node, CString* separator, const Info* info, bool node_usage, bool view_opened, CString& parent_path, QWidget* parent = nullptr);
+    EditNodeFinance(Node* node, CString* separator, const Info* info, CString& parent_path, bool node_usage, bool view_opened, QWidget* parent = nullptr);
     ~EditNodeFinance();
 
 private slots:

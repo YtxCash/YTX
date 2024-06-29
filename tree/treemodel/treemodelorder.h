@@ -43,9 +43,6 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    Qt::DropActions supportedDropActions() const override { return Qt::CopyAction | Qt::MoveAction; }
-    QStringList mimeTypes() const override { return QStringList() << "node/id"; }
-
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
     bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
 
@@ -85,6 +82,7 @@ private:
     bool UpdatePosted(Node* node, bool value);
     bool UpdateBranch(Node* node, bool value);
     bool UpdateTerm(Node* node, int value);
+    bool UpdateStakeholder(Node* node, int value);
 
     bool IsDescendant(Node* lhs, Node* rhs) const;
 

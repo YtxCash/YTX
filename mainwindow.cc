@@ -19,18 +19,21 @@
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespin.h"
 #include "delegate/tree/deadline.h"
+#include "delegate/tree/treeamountr.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedoublespin.h"
 #include "delegate/tree/treedoublespinpercent.h"
 #include "delegate/tree/treedoublespinr.h"
+#include "delegate/tree/treeorderemployee.h"
+#include "delegate/tree/treeordername.h"
 #include "delegate/tree/treeplaintext.h"
 #include "delegate/tree/treespin.h"
 #include "dialog/about.h"
 #include "dialog/editdocument.h"
 #include "dialog/editnode/editnodefinance.h"
-#include "dialog/editnode/editnodeorder.h"
 #include "dialog/editnode/editnodeproduct.h"
 #include "dialog/editnode/editnodestakeholder.h"
+#include "dialog/editnode/insertnodeorder.h"
 #include "dialog/edittransport.h"
 #include "dialog/preferences.h"
 #include "dialog/removenode.h"
@@ -176,22 +179,22 @@ void MainWindow::ROpenFile(CString& file_path)
 
         switch (start_) {
         case Section::kFinance:
-            on_rBtnFinance_clicked();
+            on_rBtnFinance_toggled(true);
             break;
         case Section::kStakeholder:
-            on_rBtnStakeholder_clicked();
+            on_rBtnStakeholder_toggled(true);
             break;
         case Section::kProduct:
-            on_rBtnProduct_clicked();
+            on_rBtnProduct_toggled(true);
             break;
         case Section::kTask:
-            on_rBtnTask_clicked();
+            on_rBtnTask_toggled(true);
             break;
         case Section::kSales:
-            on_rBtnSales_clicked();
+            on_rBtnSales_toggled(true);
             break;
         case Section::kPurchase:
-            on_rBtnPurchase_clicked();
+            on_rBtnPurchase_toggled(true);
             break;
         default:
             break;
@@ -476,8 +479,11 @@ void MainWindow::DelegateProduct(QTreeView* view, const Info* info, const Sectio
     auto plain_text { new TreePlainText(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kNote), plain_text);
 
-    auto total { new TreeDoubleSpinR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), total);
+    auto quantity { new TreeDoubleSpinR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), quantity);
+
+    auto amount { new TreeAmountR(&section_rule->ratio_decimal, &finance_data_.info.unit_symbol_hash, &finance_rule_.base_unit, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFinalTotal), amount);
 
     auto unit_price { new TreeDoubleSpin(&section_rule->ratio_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kThird), unit_price);
@@ -525,16 +531,18 @@ void MainWindow::DelegateOrder(QTreeView* view, const Info* info, const SectionR
     auto line { new Line(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kDescription), line);
 
-    auto total { new TreeDoubleSpinR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), total);
-    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFinalTotal), total);
-    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kThird), total);
-    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFourth), total);
+    auto amount { new TreeDoubleSpinR(&section_rule->ratio_decimal, &info->unit_symbol_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFinalTotal), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFourth), amount);
+
+    auto quantity { new TreeDoubleSpinR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kThird), quantity);
 
     auto first { new TreeSpin(IMIN, IMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFirst), first);
 
-    auto employee { new TreeSpin(0, IMAX, view) };
+    auto employee { new TreeOrderEmployee(stakeholder_tree_.model->BranchPath(), view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kSecond), employee);
 
     auto date_time { new Deadline(DATE_D, view) };
@@ -547,6 +555,9 @@ void MainWindow::DelegateOrder(QTreeView* view, const Info* info, const SectionR
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kBranch), branch);
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kNodeRule), branch);
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFifth), branch);
+
+    auto name { new TreeOrderName(stakeholder_tree_.model->BranchPath(), view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kName), name);
 }
 
 void MainWindow::SetConnect(const QTreeView* view, const AbstractTreeWidget* widget, const AbstractTreeModel* model, const Sql* table_sql)
@@ -580,36 +591,38 @@ void MainWindow::PrepInsertNode(QTreeView* view)
 void MainWindow::InsertNode(const QModelIndex& parent, int row)
 {
     auto model { section_tree_->model };
-    Node* parent_node { model->GetNode(parent) };
+
+    auto parent_node { model->GetNode(parent) };
+    auto parent_path { model->Path(parent_node->id) };
 
     auto node { NodePool::Instance().Allocate() };
     node->node_rule = parent_node->node_rule;
     node->unit = parent_node->unit;
     node->parent = parent_node;
 
+    auto info { &section_data_->info };
+
     QDialog* dialog {};
 
     switch (section_data_->info.section) {
     case Section::kFinance:
     case Section::kTask:
-        dialog = new EditNodeFinance(node, &interface_.separator, &section_data_->info, false, false, model->Path(parent_node->id), this);
+        dialog = new EditNodeFinance(node, &interface_.separator, info, parent_path, false, false, this);
         break;
     case Section::kStakeholder:
-        dialog = new EditNodeStakeholder(
-            node, section_rule_, &interface_.separator, &section_data_->info, section_data_->sql, false, model->Path(parent_node->id), &node_term_hash_, this);
+        node->branch = true;
+        dialog = new EditNodeStakeholder(node, section_rule_, &interface_.separator, info, false, false, parent_path, &node_term_hash_,
+            section_tree_->model->BranchPath(), section_tree_->model->GetNodeHash(), this);
         break;
     case Section::kProduct:
-        dialog = new EditNodeProduct(
-            node, section_rule_, &interface_.separator, &section_data_->info, section_data_->sql, false, model->Path(parent_node->id), this);
+        dialog = new EditNodeProduct(node, section_rule_, &interface_.separator, &info->unit_hash, parent_path, false, false, this);
         break;
     case Section::kSales:
-        dialog = new EditNodeOrder(node, section_rule_, stakeholder_tree_.model->GetNodeHash(), stakeholder_tree_.model->LeafPath(),
-            product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new EditNodeOrder(node, section_rule_, stakeholder_tree_.model->GetNodeHash(), stakeholder_tree_.model->LeafPath(),
-            product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -617,6 +630,8 @@ void MainWindow::InsertNode(const QModelIndex& parent, int row)
     }
 
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
     connect(dialog, &QDialog::accepted, this, [=, this]() {
         if (model->InsertRow(row, parent, node)) {
             auto index = model->index(row, 0, parent);
@@ -693,19 +708,7 @@ void MainWindow::RemoveNode(QTreeView* view, AbstractTreeModel* model)
 
     auto& sql { section_data_->sql };
     bool interal_references { sql->InternalReferences(node_id) };
-    bool exteral_references {};
-
-    switch (section_data_->info.section) {
-    case Section::kProduct:
-        exteral_references = sql->ExternalReferences(node_id, Section::kStakeholder);
-        break;
-    case Section::kStakeholder:
-        exteral_references = sql->ExternalReferences(node_id, Section::kSales) || sql->ExternalReferences(node_id, Section::kPurchase);
-        break;
-    default:
-        exteral_references = false;
-        break;
-    }
+    bool exteral_references { sql->ExternalReferences(node_id) };
 
     if (!interal_references && !exteral_references) {
         RemoveView(model, index, node_id);
@@ -1174,8 +1177,8 @@ void MainWindow::SetHash()
 
 void MainWindow::SetHeader()
 {
-    finance_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), "", "", "", "", "", "", tr("Description"), tr("Note"), tr("Rule"), tr("Branch"),
-        tr("Unit"), tr("Total"), "", "" };
+    finance_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), "", "", "", "", "", "", "", "", tr("Description"), tr("Note"), tr("Rule"),
+        tr("Branch"), tr("Unit"), tr("Total"), "", "" };
     finance_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("FXRate"), tr("Description"), tr("T"), tr("D"), tr("S"),
         tr("TransferNode"), tr("Debit"), tr("Credit"), tr("Balance") };
     finance_data_.info.table_header = {
@@ -1196,8 +1199,8 @@ void MainWindow::SetHeader()
         tr("RhsNode"),
     };
 
-    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), "", "", tr("UnitPrice"), tr("Commission"), "", "", tr("Description"), tr("Note"),
-        tr("Rule"), tr("Branch"), tr("Unit"), tr("Total"), "", "" };
+    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), "", "", tr("UnitPrice"), tr("Commission"), "", "", "", "", tr("Description"),
+        tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Quantity"), tr("Amount"), "" };
     product_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("T"), tr("D"), tr("S"), tr("Position"),
         tr("Debit"), tr("Credit"), tr("Remainder") };
     product_data_.info.table_header = {
@@ -1218,7 +1221,7 @@ void MainWindow::SetHeader()
         tr("RhsNode"),
     };
 
-    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("PaymentPeriod"), tr("Employee"), tr("TaxRate"), "", "", tr("Deadline"),
+    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("PaymentPeriod"), tr("Employee"), tr("TaxRate"), "", "", "", "", tr("Deadline"),
         tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"), "", "", "" };
     stakeholder_data_.info.part_table_header
         = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), "", tr("D"), "", tr("RelatedNode"), tr("Commission"), "", "" };
@@ -1240,8 +1243,8 @@ void MainWindow::SetHeader()
         tr("RhsNode"),
     };
 
-    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), "", "", "", "", "", "", tr("Description"), tr("Note"), tr("Rule"), tr("Branch"),
-        tr("Unit"), tr("Total"), "", "" };
+    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), "", "", "", "", "", "", "", "", tr("Description"), tr("Note"), tr("Rule"), tr("Branch"),
+        tr("Unit"), tr("Quantity"), "", "" };
     task_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("T"), tr("D"), tr("S"), tr("RelatedNode"),
         tr("Debit"), tr("Credit"), tr("Remainder") };
     task_data_.info.table_header = {
@@ -1262,11 +1265,11 @@ void MainWindow::SetHeader()
         tr("RhsNode"),
     };
 
-    sales_data_.info.tree_header = { tr("Name"), tr("ID"), "", tr("First"), tr("Employee"), tr("Third"), tr("Discount"), tr("Refund"), tr("DateTime"),
-        tr("Description"), "", tr("Posted"), tr("Branch"), tr("Mark"), tr("Initial Total"), tr("Final Total"), "" };
+    sales_data_.info.tree_header = { tr("Name"), tr("ID"), "", tr("First"), tr("Employee"), tr("Third"), tr("Discount"), tr("Refund"), "", tr("Customer"),
+        tr("DateTime"), tr("Description"), "", tr("Posted"), tr("Branch"), tr("Mark"), tr("Initial Total"), tr("Final Total"), "" };
 
-    purchase_data_.info.tree_header = { tr("Name"), tr("ID"), "", tr("First"), tr("Employee"), tr("Third"), tr("Discount"), tr("Refund"), tr("DateTime"),
-        tr("Description"), "", tr("Posted"), tr("Branch"), tr("Mark"), tr("Initial Total"), tr("Final Total"), "" };
+    purchase_data_.info.tree_header = { tr("Name"), tr("ID"), "", tr("First"), tr("Employee"), tr("Third"), tr("Discount"), tr("Refund"), "", tr("Employee"),
+        tr("DateTime"), tr("Description"), "", tr("Posted"), tr("Branch"), tr("Mark"), tr("Initial Total"), tr("Final Total"), "" };
 }
 
 void MainWindow::SetAction()
@@ -1425,7 +1428,7 @@ void MainWindow::REditNode()
         return;
 
     auto tmp_node { new Node(*node) };
-    bool node_usage { section_data_->sql->InternalReferences(node->id) };
+    bool node_usage { section_data_->sql->InternalReferences(node->id) || section_data_->sql->ExternalReferences(node->id) };
     bool view_opened { section_table_->contains(node->id) };
     auto parent_path { model->Path(node->parent->id) };
 
@@ -1434,23 +1437,22 @@ void MainWindow::REditNode()
     switch (section_data_->info.section) {
     case Section::kFinance:
     case Section::kTask:
-        dialog = new EditNodeFinance(tmp_node, &interface_.separator, &section_data_->info, node_usage, view_opened, parent_path, this);
+        dialog = new EditNodeFinance(tmp_node, &interface_.separator, &section_data_->info, parent_path, node_usage, view_opened, this);
         break;
     case Section::kStakeholder:
-        dialog = new EditNodeStakeholder(
-            tmp_node, section_rule_, &interface_.separator, &section_data_->info, section_data_->sql, view_opened, parent_path, &node_term_hash_, this);
+        dialog = new EditNodeStakeholder(tmp_node, section_rule_, &interface_.separator, &section_data_->info, node_usage, view_opened, parent_path,
+            &node_term_hash_, section_tree_->model->BranchPath(), section_tree_->model->GetNodeHash(), this);
         break;
     case Section::kProduct:
-        dialog = new EditNodeProduct(tmp_node, section_rule_, &interface_.separator, &section_data_->info, section_data_->sql, view_opened, parent_path, this);
+        dialog
+            = new EditNodeProduct(tmp_node, section_rule_, &interface_.separator, &section_data_->info.unit_hash, parent_path, node_usage, view_opened, this);
         break;
     case Section::kSales:
-        dialog = new EditNodeOrder(node, section_rule_, stakeholder_tree_.model->GetNodeHash(), stakeholder_tree_.model->LeafPath(),
-            product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(tmp_node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new EditNodeOrder(node, section_rule_, stakeholder_tree_.model->GetNodeHash(), stakeholder_tree_.model->LeafPath(),
-            product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(tmp_node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -1458,11 +1460,15 @@ void MainWindow::REditNode()
     }
 
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
     connect(dialog, &QDialog::accepted, this, [=]() {
         model->UpdateNode(tmp_node);
         NodePool::Instance().Recycle(tmp_node);
     });
     connect(dialog, &QDialog::rejected, this, [=]() { NodePool::Instance().Recycle(tmp_node); });
+
+    section_dialog_->append(dialog);
     dialog->show();
 }
 
@@ -1567,6 +1573,7 @@ void MainWindow::REditTransport()
 
     auto dialog { new EditTransport(&section_data_->info, &interface_, trans, &data_center, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
     connect(dialog, &EditTransport::SRetrieveOne, &SignalStation::Instance(), &SignalStation::RRetrieveOne);
     connect(dialog, &EditTransport::SDeleteOne, this, &MainWindow::RDeleteLocation);
     connect(dialog, &EditTransport::STransportLocation, this, &MainWindow::RTransportLocation);
@@ -1579,15 +1586,15 @@ void MainWindow::RTransportLocation(Section section, int trans_id, int lhs_node_
     switch (section) {
     case Section::kFinance:
         ui->rBtnFinance->setChecked(true);
-        on_rBtnFinance_clicked();
+        on_rBtnFinance_toggled(true);
         break;
     case Section::kProduct:
         ui->rBtnProduct->setChecked(true);
-        on_rBtnProduct_clicked();
+        on_rBtnProduct_toggled(true);
         break;
     case Section::kTask:
         ui->rBtnTask->setChecked(true);
-        on_rBtnTask_clicked();
+        on_rBtnTask_toggled(true);
         break;
     default:
         break;
@@ -1871,6 +1878,7 @@ void MainWindow::RSearchTriggered()
     connect(dialog, &Search::STableLocation, this, &MainWindow::RTableLocation);
     connect(section_tree_->model, &AbstractTreeModel::SSearch, dialog, &Search::RSearch);
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
     section_dialog_->append(dialog);
     dialog->show();
 }
@@ -2020,82 +2028,6 @@ void MainWindow::RUpdateState()
     GetTableModel(GetQTableView(current_widget))->UpdateState(Check { QObject::sender()->property(CHECK).toInt() });
 }
 
-void MainWindow::on_rBtnFinance_clicked()
-{
-    start_ = Section::kFinance;
-
-    if (!SqlConnection::Instance().DatabaseEnable())
-        return;
-
-    SwitchDialog(section_dialog_, false);
-    UpdateLastTab();
-
-    section_tree_ = &finance_tree_;
-    section_table_ = &finance_table_;
-    section_dialog_ = &finance_dialog_;
-    section_rule_ = &finance_rule_;
-    section_data_ = &finance_data_;
-
-    SwitchSection(section_data_->last_tab);
-}
-
-void MainWindow::on_rBtnTask_clicked()
-{
-    start_ = Section::kTask;
-
-    if (!SqlConnection::Instance().DatabaseEnable())
-        return;
-
-    SwitchDialog(section_dialog_, false);
-    UpdateLastTab();
-
-    section_tree_ = &task_tree_;
-    section_table_ = &task_table_;
-    section_dialog_ = &task_dialog_;
-    section_rule_ = &task_rule_;
-    section_data_ = &task_data_;
-
-    SwitchSection(section_data_->last_tab);
-}
-
-void MainWindow::on_rBtnStakeholder_clicked()
-{
-    start_ = Section::kStakeholder;
-
-    if (!SqlConnection::Instance().DatabaseEnable())
-        return;
-
-    SwitchDialog(section_dialog_, false);
-    UpdateLastTab();
-
-    section_tree_ = &stakeholder_tree_;
-    section_table_ = &stakeholder_table_;
-    section_dialog_ = &stakeholder_dialog_;
-    section_rule_ = &stakeholder_rule_;
-    section_data_ = &stakeholder_data_;
-
-    SwitchSection(section_data_->last_tab);
-}
-
-void MainWindow::on_rBtnProduct_clicked()
-{
-    start_ = Section::kProduct;
-
-    if (!SqlConnection::Instance().DatabaseEnable())
-        return;
-
-    SwitchDialog(section_dialog_, false);
-    UpdateLastTab();
-
-    section_tree_ = &product_tree_;
-    section_table_ = &product_table_;
-    section_dialog_ = &product_dialog_;
-    section_rule_ = &product_rule_;
-    section_data_ = &product_data_;
-
-    SwitchSection(section_data_->last_tab);
-}
-
 void MainWindow::SwitchSection(const Tab& last_tab)
 {
     auto tab_widget { ui->tabWidget };
@@ -2158,8 +2090,33 @@ void MainWindow::on_actionLocate_triggered()
     RTransportLocation(section, trans_id, transaction->lhs_node, transaction->rhs_node);
 }
 
-void MainWindow::on_rBtnSales_clicked()
+void MainWindow::on_rBtnFinance_toggled(bool checked)
 {
+    if (!checked)
+        return;
+
+    start_ = Section::kFinance;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &finance_tree_;
+    section_table_ = &finance_table_;
+    section_dialog_ = &finance_dialog_;
+    section_rule_ = &finance_rule_;
+    section_data_ = &finance_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnSales_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
     start_ = Section::kSales;
 
     if (!SqlConnection::Instance().DatabaseEnable())
@@ -2177,8 +2134,77 @@ void MainWindow::on_rBtnSales_clicked()
     SwitchSection(section_data_->last_tab);
 }
 
-void MainWindow::on_rBtnPurchase_clicked()
+void MainWindow::on_rBtnTask_toggled(bool checked)
 {
+    if (!checked)
+        return;
+
+    start_ = Section::kTask;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &task_tree_;
+    section_table_ = &task_table_;
+    section_dialog_ = &task_dialog_;
+    section_rule_ = &task_rule_;
+    section_data_ = &task_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnStakeholder_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kStakeholder;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &stakeholder_tree_;
+    section_table_ = &stakeholder_table_;
+    section_dialog_ = &stakeholder_dialog_;
+    section_rule_ = &stakeholder_rule_;
+    section_data_ = &stakeholder_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnProduct_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    start_ = Section::kProduct;
+
+    if (!SqlConnection::Instance().DatabaseEnable())
+        return;
+
+    SwitchDialog(section_dialog_, false);
+    UpdateLastTab();
+
+    section_tree_ = &product_tree_;
+    section_table_ = &product_table_;
+    section_dialog_ = &product_dialog_;
+    section_rule_ = &product_rule_;
+    section_data_ = &product_data_;
+
+    SwitchSection(section_data_->last_tab);
+}
+
+void MainWindow::on_rBtnPurchase_toggled(bool checked)
+{
+    if (!checked)
+        return;
+
     start_ = Section::kPurchase;
 
     if (!SqlConnection::Instance().DatabaseEnable())

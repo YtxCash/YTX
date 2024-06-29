@@ -18,17 +18,14 @@ bool SqlStakeholder::Tree(NodeHash& node_hash)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part_1st = QString("SELECT name, id, code, payment_period, employee, tax_rate, deadline, description, note, term, branch, mark "
-                            "FROM %1 "
-                            "WHERE removed = 0 ")
-                        .arg(info_->node);
+    auto part = QString(R"(
+    SELECT name, id, code, payment_period, employee, tax_rate, deadline, description, note, term, branch, mark
+    FROM %1
+    WHERE removed = 0
+)")
+                    .arg(info_->node);
 
-    auto part_2nd = QString("SELECT ancestor, descendant "
-                            "FROM %1 "
-                            "WHERE distance = 1 ")
-                        .arg(info_->path);
-
-    query.prepare(part_1st);
+    query.prepare(part);
     if (!query.exec()) {
         qWarning() << "sqlstakeholder: bool SqlStakeholder::Tree(NodeHash& node_hash) 1st" << query.lastError().text();
         return false;
@@ -36,14 +33,7 @@ bool SqlStakeholder::Tree(NodeHash& node_hash)
 
     CreateNodeHash(query, node_hash);
     query.clear();
-
-    query.prepare(part_2nd);
-    if (!query.exec()) {
-        qWarning() << "sqlstakeholder: bool SqlStakeholder::Tree(NodeHash& node_hash) 2nd" << query.lastError().text();
-        return false;
-    }
-
-    SetRelationship(query, node_hash);
+    ReadRelationship(query, node_hash);
 
     return true;
 }
@@ -56,20 +46,15 @@ bool SqlStakeholder::Insert(int parent_id, Node* node)
 
     QSqlQuery query(*db_);
 
-    auto part_1st = QString("INSERT INTO %1 (name, code, payment_period, employee, tax_rate, deadline, description, note, term, branch, mark) "
-                            "VALUES (:name, :code, :payment_period, :employee, :tax_rate, :deadline, :description, :note, :term, :branch, :mark) ")
-                        .arg(info_->node);
-
-    auto part_2nd = QString("INSERT INTO %1 (ancestor, descendant, distance) "
-                            "SELECT ancestor, :node_id, distance + 1 FROM %1 "
-                            "WHERE descendant = :parent "
-                            "UNION ALL "
-                            "SELECT :node_id, :node_id, 0 ")
-                        .arg(info_->path);
+    auto part = QString(R"(
+    INSERT INTO %1 (name, code, payment_period, employee, tax_rate, deadline, description, note, term, branch, mark)
+    VALUES (:name, :code, :payment_period, :employee, :tax_rate, :deadline, :description, :note, :term, :branch, :mark)
+)")
+                    .arg(info_->node);
 
     if (!DBTransaction([&]() {
             // 插入节点记录
-            query.prepare(part_1st);
+            query.prepare(part);
             query.bindValue(":name", node->name);
             query.bindValue(":code", node->code);
             query.bindValue(":payment_period", node->first_property);
@@ -93,15 +78,7 @@ bool SqlStakeholder::Insert(int parent_id, Node* node)
             query.clear();
 
             // 插入节点路径记录
-            query.prepare(part_2nd);
-            query.bindValue(":node_id", node->id);
-            query.bindValue(":parent", parent_id);
-
-            if (!query.exec()) {
-                qWarning() << "sqlstakeholder: bool SqlStakeholder::Insert(int parent_id, Node* node) 2nd" << query.lastError().text();
-                return false;
-            }
-
+            WriteRelationship(query, node->id, parent_id);
             return true;
         })) {
         qWarning() << "sqlstakeholder: bool SqlStakeholder::Insert(int parent_id, Node* node) end";
@@ -116,9 +93,12 @@ bool SqlStakeholder::InternalReferences(int node_id) const
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto string = QString("SELECT COUNT(*) FROM %1 "
-                          "WHERE lhs_node = :node_id AND removed = 0 ")
+    auto string = QString(R"(
+    SELECT COUNT(*) FROM %1
+    WHERE lhs_node = :node_id AND removed = 0
+)")
                       .arg(info_->transaction);
+
     query.prepare(string);
     query.bindValue(":node_id", node_id);
 
@@ -131,32 +111,25 @@ bool SqlStakeholder::InternalReferences(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-bool SqlStakeholder::ExternalReferences(int node_id, Section target) const
+bool SqlStakeholder::ExternalReferences(int node_id) const
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    QString transaction {};
+    auto string = R"(
+    SELECT COUNT(*)
+    FROM (
+        SELECT 1 FROM sales_transaction WHERE rhs_node = :node_id AND removed = 0
+        UNION ALL
+        SELECT 1 FROM purchase_transaction WHERE rhs_node = :node_id AND removed = 0
+    ) AS combined;
+)";
 
-    switch (target) {
-    case Section::kSales:
-        transaction = "sales_transaction";
-        break;
-    case Section::kPurchase:
-        transaction = "purchase_transaction";
-        break;
-    default:
-        break;
-    }
-
-    auto string = QString("SELECT COUNT(*) FROM %1 "
-                          "WHERE lhs_node = :node_id AND removed = 0 ")
-                      .arg(transaction);
     query.prepare(string);
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "sqlstakeholder: bool SqlStakeholder::ExternalReferences(int node_id, Section target) const" << query.lastError().text();
+        qWarning() << "Failed to count times " << query.lastError().text();
         return false;
     }
 
@@ -171,9 +144,11 @@ bool SqlStakeholder::RRemoveMulti(int node_id)
     // begin deal with database
     QSqlQuery query(*db_);
 
-    auto part = QString("UPDATE %1 "
-                        "SET removed = 1 "
-                        "WHERE lhs_node = :node_id ")
+    auto part = QString(R"(
+    UPDATE %1
+    SET removed = 1
+    WHERE lhs_node = :node_id
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -207,9 +182,11 @@ bool SqlStakeholder::RReplaceMulti(int old_node_id, int new_node_id)
 
     // begin deal with database
     QSqlQuery query(*db_);
-    auto part = QString("UPDATE %1 "
-                        "SET lhs_node = :new_node_id "
-                        "WHERE lhs_node = :old_node_id ")
+    auto part = QString(R"(
+    UPDATE %1
+    SET lhs_node = :new_node_id
+    WHERE lhs_node = :old_node_id
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -233,9 +210,11 @@ bool SqlStakeholder::RReplaceReferences(Section origin, int old_node_id, int new
     Q_UNUSED(origin)
 
     QSqlQuery query(*db_);
-    auto part = QString("UPDATE %1 "
-                        "SET rhs_node = :new_node_id "
-                        "WHERE rhs_node = :old_node_id ")
+    auto part = QString(R"(
+    UPDATE %1
+    SET rhs_node = :new_node_id
+    WHERE rhs_node = :old_node_id
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -258,9 +237,11 @@ SPTransList SqlStakeholder::TransList(int lhs_node_id)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT id, date_time, code, lhs_node, unit_price, commission, description, document, rhs_node "
-                        "FROM %1 "
-                        "WHERE lhs_node = :lhs_node_id AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, date_time, code, lhs_node, unit_price, commission, description, document, rhs_node
+    FROM %1
+    WHERE lhs_node = :lhs_node_id AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -277,10 +258,12 @@ SPTransList SqlStakeholder::TransList(int lhs_node_id)
 bool SqlStakeholder::Insert(CSPTrans& trans)
 {
     QSqlQuery query(*db_);
-    auto part = QString("INSERT INTO %1 "
-                        "(date_time, code, lhs_node, unit_price, commission, description, document, rhs_node) "
-                        "VALUES "
-                        "(:date_time, :code, :lhs_node, :unit_price, :commission, :description, :document, :rhs_node) ")
+    auto part = QString(R"(
+    INSERT INTO %1
+    (date_time, code, lhs_node, unit_price, commission, description, document, rhs_node)
+    VALUES
+    (:date_time, :code, :lhs_node, :unit_price, :commission, :description, :document, :rhs_node)
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -313,9 +296,11 @@ SPTransList SqlStakeholder::TransList(int node_id, const QList<int>& trans_id_li
     for (const auto& id : trans_id_list)
         list.append(QString::number(id));
 
-    auto part = QString("SELECT id, date_time, code, lhs_node, unit_price, commission, description, document, rhs_node "
-                        "FROM %1 "
-                        "WHERE id IN (%2) AND lhs_node = :node_id AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, date_time, code, lhs_node, unit_price, commission, description, document, rhs_node
+    FROM %1
+    WHERE id IN (%2) AND lhs_node = :node_id AND removed = 0
+)")
                     .arg(info_->transaction, list.join(", "));
 
     query.prepare(part);
@@ -334,9 +319,11 @@ SPTransaction SqlStakeholder::Transaction(int trans_id)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT id, date_time, code, lhs_node, unit_price, commission, description,  document, rhs_node "
-                        "FROM %1 "
-                        "WHERE id = :trans_id AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, date_time, code, lhs_node, unit_price, commission, description, document, rhs_node
+    FROM %1
+    WHERE id = :trans_id AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -443,13 +430,17 @@ QList<int> SqlStakeholder::TransID(int node_id, bool lhs)
     query.setForwardOnly(true);
 
     QList<int> list {};
-    auto part = QString("SELECT id FROM %1 "
-                        "WHERE lhs_node = :node_id AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id FROM %1
+    WHERE lhs_node = :node_id AND removed = 0
+)")
                     .arg(info_->transaction);
 
     if (!lhs)
-        part = QString("SELECT id FROM %1 "
-                       "WHERE rhs_node = :node_id AND removed = 0 ")
+        part = QString(R"(
+        SELECT id FROM %1
+        WHERE rhs_node = :node_id AND removed = 0
+)")
                    .arg(info_->transaction);
 
     query.prepare(part);

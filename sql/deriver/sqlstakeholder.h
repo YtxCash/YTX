@@ -20,7 +20,7 @@ public:
     bool Tree(NodeHash& node_hash) override;
     bool Insert(int parent_id, Node* node) override;
     bool InternalReferences(int node_id) const override;
-    bool ExternalReferences(int node_id, Section target) const override;
+    bool ExternalReferences(int node_id) const override;
 
     // table
     SPTransList TransList(int lhs_node_id) override;

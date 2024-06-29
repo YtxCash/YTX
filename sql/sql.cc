@@ -28,9 +28,11 @@ bool Sql::RRemoveMulti(int node_id)
     for (const int& id : trans_id_list)
         list.append(QString::number(id));
 
-    auto part = QString("UPDATE %1 "
-                        "SET removed = 1 "
-                        "WHERE id IN (%2) ")
+    auto part = QString(R"(
+    UPDATE %1
+    SET removed = 1
+    WHERE id IN (%2)
+)")
                     .arg(info_->transaction, list.join(", "));
 
     query.prepare(part);
@@ -72,13 +74,17 @@ bool Sql::RReplaceMulti(int old_node_id, int new_node_id)
 
     // begin deal with database
     QSqlQuery query(*db_);
-    auto part = QString("UPDATE %1 SET "
-                        "lhs_node = CASE "
-                        "WHEN lhs_node = :old_node_id AND rhs_node != :new_node_id THEN :new_node_id "
-                        "ELSE lhs_node END, "
-                        "rhs_node = CASE "
-                        "WHEN rhs_node = :old_node_id AND lhs_node != :new_node_id THEN :new_node_id "
-                        "ELSE rhs_node END ")
+    auto part = QString(R"(
+    UPDATE %1 SET
+    lhs_node = CASE
+        WHEN lhs_node = :old_node_id AND rhs_node != :new_node_id THEN :new_node_id
+        ELSE lhs_node
+    END,
+    rhs_node = CASE
+        WHEN rhs_node = :old_node_id AND lhs_node != :new_node_id THEN :new_node_id
+        ELSE rhs_node
+    END
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -107,17 +113,14 @@ bool Sql::Tree(NodeHash& node_hash)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part_1st = QString("SELECT name, id, code, description, note, node_rule, branch, unit, initial_total, final_total "
-                            "FROM %1 "
-                            "WHERE removed = 0 ")
-                        .arg(info_->node);
+    auto part = QString(R"(
+    SELECT name, id, code, description, note, node_rule, branch, unit, foreign_total, base_total
+    FROM %1
+    WHERE removed = 0
+)")
+                    .arg(info_->node);
 
-    auto part_2nd = QString("SELECT ancestor, descendant "
-                            "FROM %1 "
-                            "WHERE distance = 1 ")
-                        .arg(info_->path);
-
-    query.prepare(part_1st);
+    query.prepare(part);
     if (!query.exec()) {
         qWarning() << "Error in finance create tree 1 setp " << query.lastError().text();
         return false;
@@ -125,15 +128,7 @@ bool Sql::Tree(NodeHash& node_hash)
 
     CreateNodeHash(query, node_hash);
     query.clear();
-
-    query.prepare(part_2nd);
-    if (!query.exec()) {
-        qWarning() << "Error in finance create tree 2 setp " << query.lastError().text();
-        return false;
-    }
-
-    SetRelationship(query, node_hash);
-
+    ReadRelationship(query, node_hash);
     return true;
 }
 
@@ -144,20 +139,15 @@ bool Sql::Insert(int parent_id, Node* node)
 
     QSqlQuery query(*db_);
 
-    auto part_1st = QString("INSERT INTO %1 (name, code, description, note, node_rule, branch, unit) "
-                            "VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit) ")
-                        .arg(info_->node);
-
-    auto part_2nd = QString("INSERT INTO %1 (ancestor, descendant, distance) "
-                            "SELECT ancestor, :node_id, distance + 1 FROM %1 "
-                            "WHERE descendant = :parent "
-                            "UNION ALL "
-                            "SELECT :node_id, :node_id, 0 ")
-                        .arg(info_->path);
+    auto part = QString(R"(
+    INSERT INTO %1 (name, code, description, note, node_rule, branch, unit)
+    VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit)
+)")
+                    .arg(info_->node);
 
     if (!DBTransaction([&]() {
             // 插入节点记录
-            query.prepare(part_1st);
+            query.prepare(part);
             query.bindValue(":name", node->name);
             query.bindValue(":code", node->code);
             query.bindValue(":description", node->description);
@@ -167,7 +157,7 @@ bool Sql::Insert(int parent_id, Node* node)
             query.bindValue(":unit", node->unit);
 
             if (!query.exec()) {
-                qWarning() << "Failed to insert node record: " << query.lastError().text();
+                qWarning() << "Failed to insert finance node record: " << query.lastError().text();
                 return false;
             }
 
@@ -177,18 +167,10 @@ bool Sql::Insert(int parent_id, Node* node)
             query.clear();
 
             // 插入节点路径记录
-            query.prepare(part_2nd);
-            query.bindValue(":node_id", node->id);
-            query.bindValue(":parent", parent_id);
-
-            if (!query.exec()) {
-                qWarning() << "Failed to insert node_path record: " << query.lastError().text();
-                return false;
-            }
-
+            WriteRelationship(query, node->id, parent_id);
             return true;
         })) {
-        qWarning() << "Failed to insert record";
+        qWarning() << "Failed to insert finance record";
         return false;
     }
 
@@ -203,22 +185,24 @@ void Sql::LeafTotal(Node* node)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT lhs_debit AS debit, lhs_credit AS credit, lhs_ratio AS ratio FROM %1 "
-                        "WHERE lhs_node = (:node_id) AND removed = 0 "
-                        "UNION ALL "
-                        "SELECT rhs_debit, rhs_credit, rhs_ratio FROM %1 "
-                        "WHERE rhs_node = (:node_id) AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT lhs_debit AS debit, lhs_credit AS credit, lhs_ratio AS ratio FROM %1
+    WHERE lhs_node = (:node_id) AND removed = 0
+    UNION ALL
+    SELECT rhs_debit, rhs_credit, rhs_ratio FROM %1
+    WHERE rhs_node = (:node_id) AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
     query.bindValue(":node_id", node->id);
     if (!query.exec())
-        qWarning() << "Error in calculate node total setp " << query.lastError().text();
+        qWarning() << "Error in calculate finance total 1st setp " << query.lastError().text();
 
-    double initial_total_debit { 0.0 };
-    double initial_total_credit { 0.0 };
-    double final_total_debit { 0.0 };
-    double final_total_credit { 0.0 };
+    double foreign_total_debit { 0.0 };
+    double foreign_total_credit { 0.0 };
+    double base_total_debit { 0.0 };
+    double base_total_credit { 0.0 };
     bool node_rule { node->node_rule };
 
     double ratio { 0.0 };
@@ -228,50 +212,58 @@ void Sql::LeafTotal(Node* node)
     while (query.next()) {
         ratio = query.value("ratio").toDouble();
         if (ratio == 0) {
-            qWarning() << "Error in calculate node total, ratio can't be zero ";
+            qWarning() << "Error in calculate finance total, ratio can't be zero ";
             continue;
         }
 
         debit = query.value("debit").toDouble();
         credit = query.value("credit").toDouble();
 
-        final_total_debit += debit * ratio;
-        final_total_credit += credit * ratio;
+        base_total_debit += debit * ratio;
+        base_total_credit += credit * ratio;
 
-        initial_total_debit += debit;
-        initial_total_credit += credit;
+        foreign_total_debit += debit;
+        foreign_total_credit += credit;
     }
 
-    node->initial_total = node_rule ? (initial_total_credit - initial_total_debit) : (initial_total_debit - initial_total_credit);
-    node->final_total = node_rule ? (final_total_credit - final_total_debit) : (final_total_debit - final_total_credit);
+    node->initial_total = node_rule ? (foreign_total_credit - foreign_total_debit) : (foreign_total_debit - foreign_total_credit);
+    node->final_total = node_rule ? (base_total_credit - base_total_debit) : (base_total_debit - base_total_credit);
 }
 
 bool Sql::Remove(int node_id, bool branch)
 {
     QSqlQuery query(*db_);
 
-    auto part_1st = QString("UPDATE %1 "
-                            "SET removed = 1 "
-                            "WHERE id = :node_id ")
+    auto part_1st = QString(R"(
+    UPDATE %1
+    SET removed = 1
+    WHERE id = :node_id
+)")
                         .arg(info_->node);
 
-    auto part_2nd = QString("UPDATE %1 "
-                            "SET removed = 1 "
-                            "WHERE lhs_node = :node_id OR rhs_node = :node_id ")
+    auto part_2nd = QString(R"(
+    UPDATE %1
+    SET removed = 1
+    WHERE lhs_node = :node_id OR rhs_node = :node_id
+)")
                         .arg(info_->transaction);
 
-    if (branch)
-        part_2nd = QString("WITH related_nodes AS ( "
-                           "SELECT DISTINCT fp1.ancestor, fp2.descendant "
-                           "FROM %1 AS fp1 "
-                           "INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor "
-                           "WHERE fp2.ancestor = :node_id AND fp2.descendant != :node_id "
-                           "AND fp1.ancestor != :node_id) "
-                           "UPDATE %1 "
-                           "SET distance = distance - 1 "
-                           "WHERE ancestor IN (SELECT ancestor FROM related_nodes) AND "
-                           "descendant IN (SELECT descendant FROM related_nodes) ")
+    if (branch) {
+        part_2nd = QString(R"(
+        WITH related_nodes AS (
+            SELECT DISTINCT fp1.ancestor, fp2.descendant
+            FROM %1 AS fp1
+            INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor
+            WHERE fp2.ancestor = :node_id AND fp2.descendant != :node_id
+            AND fp1.ancestor != :node_id
+        )
+        UPDATE %1
+        SET distance = distance - 1
+        WHERE ancestor IN (SELECT ancestor FROM related_nodes)
+        AND descendant IN (SELECT descendant FROM related_nodes)
+    )")
                        .arg(info_->path);
+    }
 
     //     auto part_22nd = QString("UPDATE %1 "
     //                                   "SET distance = distance - 1 "
@@ -332,21 +324,26 @@ bool Sql::Drag(int destination_node_id, int node_id)
     //                                  ancestor != descendant)) ")
     //    .arg(path_);
 
-    auto part_1st = QString("WITH related_nodes AS ( "
-                            "SELECT DISTINCT fp1.ancestor, fp2.descendant "
-                            "FROM %1 AS fp1 "
-                            "INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor "
-                            "WHERE fp2.ancestor = :node_id AND fp1.ancestor != :node_id) "
-                            "DELETE FROM %1 "
-                            "WHERE ancestor IN (SELECT ancestor FROM related_nodes) AND "
-                            "descendant IN (SELECT descendant FROM related_nodes) ")
+    auto part_1st = QString(R"(
+    WITH related_nodes AS (
+        SELECT DISTINCT fp1.ancestor, fp2.descendant
+        FROM %1 AS fp1
+        INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor
+        WHERE fp2.ancestor = :node_id AND fp1.ancestor != :node_id
+    )
+    DELETE FROM %1
+    WHERE ancestor IN (SELECT ancestor FROM related_nodes)
+    AND descendant IN (SELECT descendant FROM related_nodes)
+)")
                         .arg(info_->path);
 
-    auto part_2nd = QString("INSERT INTO %1 (ancestor, descendant, distance) "
-                            "SELECT fp1.ancestor, fp2.descendant, fp1.distance + fp2.distance + 1 "
-                            "FROM %1 AS fp1 "
-                            "INNER JOIN %1 AS fp2 "
-                            "WHERE fp1.descendant = :destination_node_id AND fp2.ancestor = :node_id ")
+    auto part_2nd = QString(R"(
+    INSERT INTO %1 (ancestor, descendant, distance)
+    SELECT fp1.ancestor, fp2.descendant, fp1.distance + fp2.distance + 1
+    FROM %1 AS fp1
+    INNER JOIN %1 AS fp2
+    WHERE fp1.descendant = :destination_node_id AND fp2.ancestor = :node_id
+)")
                         .arg(info_->path);
 
     if (!DBTransaction([&]() {
@@ -384,9 +381,12 @@ bool Sql::InternalReferences(int node_id) const
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto string = QString("SELECT COUNT(*) FROM %1 "
-                          "WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0 ")
+    auto string = QString(R"(
+    SELECT COUNT(*) FROM %1
+    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+)")
                       .arg(info_->transaction);
+
     query.prepare(string);
     query.bindValue(":node_id", node_id);
 
@@ -404,10 +404,11 @@ SPTransList Sql::TransList(int node_id)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, "
-                        "description, code, document, date_time "
-                        "FROM %1 "
-                        "WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+    FROM %1
+    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -460,14 +461,12 @@ void Sql::Convert(CSPTransaction& transaction, SPTrans& trans, bool left)
 bool Sql::Insert(CSPTrans& trans)
 {
     QSqlQuery query(*db_);
-    auto part = QString("INSERT INTO %1 "
-                        "(date_time, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, "
-                        "state, description, code, "
-                        "document) "
-                        "VALUES "
-                        "(:date_time, :lhs_node, :lhs_ratio, :lhs_debit, :lhs_credit, :transport, :location, :rhs_node, :rhs_ratio, :rhs_debit, "
-                        ":rhs_credit, :state, "
-                        ":description, :code, :document) ")
+    auto part = QString(R"(
+    INSERT INTO %1
+    (date_time, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document)
+    VALUES
+    (:date_time, :lhs_node, :lhs_ratio, :lhs_debit, :lhs_credit, :transport, :location, :rhs_node, :rhs_ratio, :rhs_debit, :rhs_credit, :state, :description, :code, :document)
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -500,9 +499,11 @@ bool Sql::Insert(CSPTrans& trans)
 bool Sql::Delete(int trans_id)
 {
     QSqlQuery query(*db_);
-    auto part = QString("UPDATE %1 "
-                        "SET removed = 1 "
-                        "WHERE id = :trans_id ")
+    auto part = QString(R"(
+    UPDATE %1
+    SET removed = 1
+    WHERE id = :trans_id
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -521,16 +522,12 @@ bool Sql::Update(int trans_id)
     QSqlQuery query(*db_);
     auto transaction { transaction_hash_.value(trans_id) };
 
-    auto part = QString("UPDATE %1 SET "
-                        "lhs_node = :lhs_node, "
-                        "lhs_ratio = :lhs_ratio, "
-                        "lhs_debit = :lhs_debit, "
-                        "lhs_credit = :lhs_credit, "
-                        "rhs_node = :rhs_node, "
-                        "rhs_ratio = :rhs_ratio, "
-                        "rhs_debit = :rhs_debit, "
-                        "rhs_credit = :rhs_credit "
-                        "WHERE id = :id ")
+    auto part = QString(R"(
+    UPDATE %1 SET
+    lhs_node = :lhs_node, lhs_ratio = :lhs_ratio, lhs_debit = :lhs_debit, lhs_credit = :lhs_credit,
+    rhs_node = :rhs_node, rhs_ratio = :rhs_ratio, rhs_debit = :rhs_debit, rhs_credit = :rhs_credit
+    WHERE id = :id
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -556,9 +553,11 @@ bool Sql::Update(CString& table, CString& column, CVariant& value, int id)
 {
     QSqlQuery query(*db_);
 
-    auto part = QString("UPDATE %1 "
-                        "SET %2 = :value "
-                        "WHERE id = :id ")
+    auto part = QString(R"(
+    UPDATE %1
+    SET %2 = :value
+    WHERE id = :id
+)")
                     .arg(table, column);
 
     query.prepare(part);
@@ -577,8 +576,10 @@ bool Sql::Update(CString& column, CVariant& value, Check state)
 {
     QSqlQuery query(*db_);
 
-    auto part = QString("UPDATE %1 "
-                        "SET %2 = :value ")
+    auto part = QString(R"(
+    UPDATE %1
+    SET %2 = :value
+)")
                     .arg(info_->transaction, column);
 
     if (state == Check::kReverse)
@@ -607,10 +608,11 @@ SPTransList Sql::TransList(int node_id, const QList<int>& trans_id_list)
     for (const auto& id : trans_id_list)
         list.append(QString::number(id));
 
-    auto part = QString("SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, "
-                        "description, code, document, date_time "
-                        "FROM %1 "
-                        "WHERE id IN (%2) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+    FROM %1
+    WHERE id IN (%2) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+)")
                     .arg(info_->transaction, list.join(", "));
 
     query.prepare(part);
@@ -629,10 +631,11 @@ SPTransaction Sql::Transaction(int trans_id)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, "
-                        "description, code, document, date_time "
-                        "FROM %1 "
-                        "WHERE id = :trans_id AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, transport, location, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+    FROM %1
+    WHERE id = :trans_id AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);
@@ -672,8 +675,8 @@ void Sql::CreateNodeHash(QSqlQuery& query, NodeHash& node_hash)
         node->node_rule = query.value("node_rule").toBool();
         node->branch = query.value("branch").toBool();
         node->unit = query.value("unit").toInt();
-        node->initial_total = query.value("initial_total").toDouble();
-        node->final_total = query.value("final_total").toDouble();
+        node->initial_total = query.value("foreign_total").toDouble();
+        node->final_total = query.value("base_total").toDouble();
 
         node_hash.insert(node_id, node);
     }
@@ -690,8 +693,19 @@ bool Sql::DBTransaction(std::function<bool()> function)
     }
 }
 
-void Sql::SetRelationship(QSqlQuery& query, const NodeHash& node_hash)
+void Sql::ReadRelationship(QSqlQuery& query, const NodeHash& node_hash)
 {
+    auto part = QString(R"(
+    SELECT ancestor, descendant
+    FROM %1
+    WHERE distance = 1
+)")
+                    .arg(info_->path);
+
+    query.prepare(part);
+    if (!query.exec())
+        qWarning() << "Error in sql ReadRelationship " << query.lastError().text();
+
     int ancestor_id {};
     int descendant_id {};
     Node* ancestor {};
@@ -709,16 +723,39 @@ void Sql::SetRelationship(QSqlQuery& query, const NodeHash& node_hash)
     }
 }
 
+void Sql::WriteRelationship(QSqlQuery& query, int node_id, int parent_id)
+{
+    auto part = QString(R"(
+    INSERT INTO %1 (ancestor, descendant, distance)
+    SELECT ancestor, :node_id, distance + 1 FROM %1
+    WHERE descendant = :parent
+    UNION ALL
+    SELECT :node_id, :node_id, 0
+)")
+                    .arg(info_->path);
+
+    query.prepare(part);
+    query.bindValue(":node_id", node_id);
+    query.bindValue(":parent", parent_id);
+
+    if (!query.exec()) {
+        qWarning() << "Error in sql WriteRelationship " << query.lastError().text();
+        return;
+    }
+}
+
 QMultiHash<int, int> Sql::RelatedNodeTrans(int node_id) const
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString("SELECT lhs_node, id FROM %1 "
-                        "WHERE rhs_node = :node_id AND removed = 0 "
-                        "UNION ALL "
-                        "SELECT rhs_node, id FROM %1 "
-                        "WHERE lhs_node = :node_id AND removed = 0 ")
+    auto part = QString(R"(
+    SELECT lhs_node, id FROM %1
+    WHERE rhs_node = :node_id AND removed = 0
+    UNION ALL
+    SELECT rhs_node, id FROM %1
+    WHERE lhs_node = :node_id AND removed = 0
+)")
                     .arg(info_->transaction);
 
     query.prepare(part);

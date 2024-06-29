@@ -3,10 +3,8 @@
 
 #include <QDialog>
 
-#include "component/info.h"
 #include "component/settings.h"
 #include "component/using.h"
-#include "sql/sql.h"
 
 namespace Ui {
 class EditNodeProduct;
@@ -16,8 +14,8 @@ class EditNodeProduct final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeProduct(Node* node, const SectionRule* section_rule, CString* separator, const Info* info, QSharedPointer<Sql> sql, bool view_opened,
-        CString& parent_path, QWidget* parent = nullptr);
+    EditNodeProduct(Node* node, const SectionRule* section_rule, CString* separator, CStringHash* unit_hash, CString& parent_path, bool node_usage,
+        bool view_opened, QWidget* parent = nullptr);
     ~EditNodeProduct();
 
 private slots:
@@ -47,7 +45,7 @@ private:
     CString* separator_ {};
     const SectionRule* section_rule_ {};
 
-    QSharedPointer<Sql> sql_ {};
+    bool node_usage_ {};
     bool view_opened_ {};
     QStringList node_name_list_ {};
     QString parent_path_ {};

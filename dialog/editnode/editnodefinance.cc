@@ -4,7 +4,7 @@
 
 #include "ui_editnodefinance.h"
 
-EditNodeFinance::EditNodeFinance(Node* node, CString* separator, const Info* info, bool node_usage, bool view_opened, CString& parent_path, QWidget* parent)
+EditNodeFinance::EditNodeFinance(Node* node, CString* separator, const Info* info, CString& parent_path, bool node_usage, bool view_opened, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
     , node_ { node }
@@ -14,9 +14,14 @@ EditNodeFinance::EditNodeFinance(Node* node, CString* separator, const Info* inf
     , parent_path_ { parent_path }
 {
     ui->setupUi(this);
+
+    ui->comboUnit->blockSignals(true);
+
     IniDialog(&info->unit_hash);
     IniConnect();
     Data(node);
+
+    ui->comboUnit->blockSignals(false);
 
     if (info->section == Section::kFinance)
         ui->labUnit->setText(tr("Currency"));
@@ -27,17 +32,17 @@ EditNodeFinance::~EditNodeFinance() { delete ui; }
 void EditNodeFinance::IniDialog(CStringHash* unit_hash)
 {
     ui->lineEditName->setFocus();
-    parent_path_ += (parent_path_.isEmpty() ? QString() : *separator_);
+    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
+
+    if (!parent_path_.isEmpty())
+        parent_path_ += *separator_;
+
     this->setWindowTitle(parent_path_ + node_->name);
 
-    ui->comboUnit->blockSignals(true);
     for (auto it = unit_hash->cbegin(); it != unit_hash->cend(); ++it)
         ui->comboUnit->addItem(it.value(), it.key());
 
     ui->comboUnit->model()->sort(0);
-    ui->comboUnit->blockSignals(false);
-
-    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
 }
 
 void EditNodeFinance::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeFinance::REditName); }

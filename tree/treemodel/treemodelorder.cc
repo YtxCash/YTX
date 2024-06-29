@@ -63,7 +63,6 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
         return;
 
     auto node { node_hash_.value(tmp_node->id) };
-
     if (*node == *tmp_node)
         return;
 
@@ -77,6 +76,7 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
     UpdatePosted(node, tmp_node->node_rule);
     UpdateBranch(node, tmp_node->branch);
     UpdateTerm(node, tmp_node->unit);
+    UpdateStakeholder(node, tmp_node->seventh_property);
 
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
@@ -264,6 +264,17 @@ bool TreeModelOrder::UpdateTerm(Node* node, int value)
 
     if (node->branch)
         UpdateBranchUnit(node);
+
+    return true;
+}
+
+bool TreeModelOrder::UpdateStakeholder(Node* node, int value)
+{
+    if (node->seventh_property == value)
+        return false;
+
+    node->seventh_property = value;
+    sql_->Update(info_->node, STAKEHOLDER, value, node->id);
 
     return true;
 }
@@ -550,15 +561,17 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeColumn::kID:
         return node->id;
     case TreeColumn::kFirst:
-        return node->first_property;
+        return node->first_property == 0 ? QVariant() : node->first_property;
     case TreeColumn::kSecond:
-        return node->second_property;
+        return node->second_property == 0 ? QVariant() : node->second_property;
     case TreeColumn::kThird:
-        return node->third_property;
+        return node->third_property == 0 ? QVariant() : node->third_property;
     case TreeColumn::kFourth:
-        return node->fourth_property;
+        return node->fourth_property == 0 ? QVariant() : node->fourth_property;
     case TreeColumn::kFifth:
         return node->fifth_property;
+    case TreeColumn::kSeventh:
+        return node->seventh_property;
     case TreeColumn::kDateTime:
         return node->date_time;
     case TreeColumn::kDescription:

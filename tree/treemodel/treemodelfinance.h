@@ -18,7 +18,7 @@ public slots:
     // receive from table sql
     bool RUpdateMultiTotal(const QList<int>& node_list) override;
     // receive from related table model
-    void RUpdateOneTotal(int node_id, double final_debit_diff, double final_credit_diff, double initial_debit_diff, double initial_credit_diff) override;
+    void RUpdateOneTotal(int node_id, double base_debit_diff, double base_credit_diff, double foreign_debit_diff, double foreign_credit_diff) override;
     void RUpdateProperty(int, double, double, double) override { }
     // receive from table model
     void RSearch() override { emit SSearch(); }
@@ -43,9 +43,6 @@ public:
 
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
-
-    Qt::DropActions supportedDropActions() const override { return Qt::CopyAction | Qt::MoveAction; }
-    QStringList mimeTypes() const override { return QStringList() << "node/id"; }
 
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
     bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
@@ -72,8 +69,8 @@ public:
 
 private:
     void IniTree(NodeHash& node_hash, StringHash& leaf_path, StringHash& branch_path);
-    void UpdateBranchTotal(const Node* node, double final_diff, double initial_diff);
-    bool UpdateLeafTotal(const Node* node); // jsus store leaf's total into sqlite3 table
+    void UpdateBranchTotal(const Node* node, double base_diff, double foreign_diff);
+    bool UpdateLeafTotal(const Node* node); // jsus store leaf's total into sqlite3 table, ignore branch's total
 
     bool UpdateBranch(Node* node, bool value);
     bool UpdateRule(Node* node, bool value);

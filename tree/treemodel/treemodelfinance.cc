@@ -29,10 +29,10 @@ TreeModelFinance::~TreeModelFinance() { RecycleNode(node_hash_); }
 
 bool TreeModelFinance::RUpdateMultiTotal(const QList<int>& node_list)
 {
-    double old_final_total {};
-    double old_initial_total {};
-    double final_diff {};
-    double initial_diff {};
+    double old_base_total {};
+    double old_foreign_total {};
+    double base_diff {};
+    double foreign_diff {};
     Node* node {};
 
     for (const auto& node_id : node_list) {
@@ -41,16 +41,16 @@ bool TreeModelFinance::RUpdateMultiTotal(const QList<int>& node_list)
         if (!node || node->branch)
             continue;
 
-        old_final_total = node->final_total;
-        old_initial_total = node->initial_total;
+        old_base_total = node->final_total;
+        old_foreign_total = node->initial_total;
 
         sql_->LeafTotal(node);
         UpdateLeafTotal(node);
 
-        final_diff = node->final_total - old_final_total;
-        initial_diff = node->initial_total - old_initial_total;
+        base_diff = node->final_total - old_base_total;
+        foreign_diff = node->initial_total - old_foreign_total;
 
-        UpdateBranchTotal(node, final_diff, initial_diff);
+        UpdateBranchTotal(node, base_diff, foreign_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -63,7 +63,6 @@ void TreeModelFinance::UpdateNode(const Node* tmp_node)
         return;
 
     auto node { node_hash_.value(tmp_node->id) };
-
     if (*node == *tmp_node)
         return;
 
@@ -102,19 +101,19 @@ bool TreeModelFinance::RRemoveNode(int node_id)
     return true;
 }
 
-void TreeModelFinance::RUpdateOneTotal(int node_id, double final_debit_diff, double final_credit_diff, double initial_debit_diff, double initial_credit_diff)
+void TreeModelFinance::RUpdateOneTotal(int node_id, double base_debit_diff, double base_credit_diff, double foreign_debit_diff, double foreign_credit_diff)
 {
     auto node { const_cast<Node*>(GetNode(node_id)) };
     auto node_rule { node->node_rule };
 
-    auto final_diff { node_rule ? final_credit_diff - final_debit_diff : final_debit_diff - final_credit_diff };
-    auto initial_diff { node_rule ? initial_credit_diff - initial_debit_diff : initial_debit_diff - initial_credit_diff };
+    auto base_diff { node_rule ? base_credit_diff - base_debit_diff : base_debit_diff - base_credit_diff };
+    auto foreign_diff { node_rule ? foreign_credit_diff - foreign_debit_diff : foreign_debit_diff - foreign_credit_diff };
 
-    node->final_total += final_diff;
-    node->initial_total += initial_diff;
+    node->final_total += base_diff;
+    node->initial_total += foreign_diff;
 
     UpdateLeafTotal(node);
-    UpdateBranchTotal(node, final_diff, initial_diff);
+    UpdateBranchTotal(node, base_diff, foreign_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -145,7 +144,7 @@ void TreeModelFinance::IniTree(NodeHash& node_hash, StringHash& leaf_path, Strin
     node_hash.insert(-1, root_);
 }
 
-void TreeModelFinance::UpdateBranchTotal(const Node* node, double final_diff, double initial_diff)
+void TreeModelFinance::UpdateBranchTotal(const Node* node, double base_diff, double foreign_diff)
 {
     if (!node)
         return;
@@ -156,10 +155,10 @@ void TreeModelFinance::UpdateBranchTotal(const Node* node, double final_diff, do
 
     while (node != root_) {
         equal = node->parent->node_rule == node_rule;
-        node->parent->final_total += equal ? final_diff : -final_diff;
+        node->parent->final_total += equal ? base_diff : -base_diff;
 
         if (node->parent->unit == unit)
-            node->parent->initial_total += equal ? initial_diff : -initial_diff;
+            node->parent->initial_total += equal ? foreign_diff : -foreign_diff;
 
         node = node->parent;
     }
@@ -346,8 +345,10 @@ bool TreeModelFinance::UpdateRule(Node* node, bool value)
 
     node->final_total = -node->final_total;
     node->initial_total = -node->initial_total;
-    if (!node->branch)
+    if (!node->branch) {
         emit SNodeRule(node->id, value);
+        UpdateLeafTotal(node);
+    }
 
     return true;
 }
@@ -527,8 +528,8 @@ bool TreeModelFinance::UpdateLeafTotal(const Node* node)
 
     auto node_id { node->id };
 
-    sql_->Update(info_->node, FINAL_TOTAL, node->final_total, node_id);
-    sql_->Update(info_->node, INITIAL_TOTAL, node->initial_total, node_id);
+    sql_->Update(info_->node, BASE_TOTAL, node->final_total, node_id);
+    sql_->Update(info_->node, FOREIGN_TOTAL, node->initial_total, node_id);
 
     return true;
 }

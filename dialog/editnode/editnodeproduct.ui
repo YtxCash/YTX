@@ -245,7 +245,7 @@
     </widget>
    </item>
    <item row="8" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="labFinance">
      <property name="text">
       <string>Finance</string>
      </property>
@@ -283,7 +283,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="labCommission">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -306,7 +306,7 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="labelUnitPrice">
+       <widget class="QLabel" name="labUnitPrice">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>

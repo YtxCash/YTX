@@ -17,12 +17,33 @@ Preferences::Preferences(const Info* info, CStringHash* leaf_path, CStringHash* 
     , section_rule_ { section_rule }
 {
     ui->setupUi(this);
+
+    ui->comboDateTime->blockSignals(true);
+    ui->comboLanguage->blockSignals(true);
+    ui->comboSeparator->blockSignals(true);
+    ui->comboTheme->blockSignals(true);
+    ui->comboBaseUnit->blockSignals(true);
+    ui->comboDynamicLhs->blockSignals(true);
+    ui->comboStatic->blockSignals(true);
+    ui->comboOperation->blockSignals(true);
+    ui->comboDynamicRhs->blockSignals(true);
+
     IniStringList();
     IniDialog(&info->unit_hash, date_format_list);
     IniConnect();
 
     Data();
     RenameLable(info->section);
+
+    ui->comboDateTime->blockSignals(false);
+    ui->comboLanguage->blockSignals(false);
+    ui->comboSeparator->blockSignals(false);
+    ui->comboTheme->blockSignals(false);
+    ui->comboBaseUnit->blockSignals(false);
+    ui->comboDynamicLhs->blockSignals(false);
+    ui->comboStatic->blockSignals(false);
+    ui->comboOperation->blockSignals(false);
+    ui->comboDynamicRhs->blockSignals(false);
 }
 
 Preferences::~Preferences() { delete ui; }
@@ -65,8 +86,9 @@ void Preferences::IniCombo(QComboBox* combo, CStringHash* hash_1st, CStringHash*
     IniCombo(combo);
 
     combo->blockSignals(true);
-    for (auto it = hash_1st->cbegin(); it != hash_1st->cend(); ++it)
-        combo->addItem(it.value(), it.key());
+    if (hash_1st)
+        for (auto it = hash_1st->cbegin(); it != hash_1st->cend(); ++it)
+            combo->addItem(it.value(), it.key());
 
     if (hash_2nd)
         for (auto it = hash_2nd->cbegin(); it != hash_2nd->cend(); ++it)
@@ -80,10 +102,8 @@ void Preferences::IniCombo(QComboBox* combo, CStringList& list)
 {
     IniCombo(combo);
 
-    combo->blockSignals(true);
     combo->addItems(list);
     combo->model()->sort(0);
-    combo->blockSignals(false);
 }
 
 void Preferences::IniConnect()
@@ -123,18 +143,14 @@ void Preferences::Data()
 
 void Preferences::DataCombo(QComboBox* combo, int value)
 {
-    combo->blockSignals(true);
     int item_index { combo->findData(value) };
     combo->setCurrentIndex(item_index);
-    combo->blockSignals(false);
 }
 
 void Preferences::DataCombo(QComboBox* combo, CString& string)
 {
-    combo->blockSignals(true);
     int item_index { combo->findText(string) };
     combo->setCurrentIndex(item_index);
-    combo->blockSignals(false);
 }
 
 void Preferences::IniStringList()
