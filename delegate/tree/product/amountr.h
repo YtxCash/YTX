@@ -1,5 +1,5 @@
-#ifndef TREEAMOUNTR_H
-#define TREEAMOUNTR_H
+#ifndef AMOUNTR_H
+#define AMOUNTR_H
 
 // read only
 
@@ -8,9 +8,9 @@
 
 #include "component/using.h"
 
-class TreeAmountR final : public QStyledItemDelegate {
+class AmountR final : public QStyledItemDelegate {
 public:
-    TreeAmountR(const int* decimal, CStringHash* unit_symbol_hash, const int* base_unit, QObject* parent);
+    AmountR(const int* decimal, CStringHash* currency_symbol_hash, const int* base_currency, QObject* parent);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -19,9 +19,9 @@ private:
 
 private:
     const int* decimal_ {};
-    CStringHash* unit_symbol_hash_ {};
-    const int* base_unit_ {};
+    CStringHash* currency_symbol_hash_ {};
+    const int* base_currency_ {};
     QLocale locale_ {};
 };
 
-#endif // TREEAMOUNTR_H
+#endif // AMOUNTR_H

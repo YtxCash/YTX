@@ -2,12 +2,12 @@
 
 #include <QPainter>
 
+#include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "widget/datetimeedit.h"
 
-Deadline::Deadline(const QString& format, QObject* parent)
+Deadline::Deadline(QObject* parent)
     : QStyledItemDelegate { parent }
-    , format_ { format }
 {
 }
 
@@ -16,14 +16,14 @@ QWidget* Deadline::createEditor(QWidget* parent, const QStyleOptionViewItem& opt
     Q_UNUSED(option);
     Q_UNUSED(index);
 
-    return new DateTimeEdit(format_, parent);
+    return new DateTimeEdit(DATE_D, parent);
 }
 
 void Deadline::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto date_time { index.sibling(index.row(), std::to_underlying(TreeColumn::kNodeRule)).data().toBool() == 0
             ? QDateTime()
-            : QDateTime::fromString(index.data().toString(), format_) };
+            : QDateTime::fromString(index.data().toString(), DATE_D) };
 
     qobject_cast<DateTimeEdit*>(editor)->setDateTime(date_time);
 }
@@ -38,7 +38,7 @@ void Deadline::setModelData(QWidget* editor, QAbstractItemModel* model, const QM
 {
     auto string { index.sibling(index.row(), std::to_underlying(TreeColumn::kNodeRule)).data().toBool() == 0
             ? QString()
-            : qobject_cast<DateTimeEdit*>(editor)->dateTime().toString(format_) };
+            : qobject_cast<DateTimeEdit*>(editor)->dateTime().toString(DATE_D) };
 
     model->setData(index, string);
 }
@@ -57,10 +57,4 @@ void Deadline::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
         painter->fillRect(option.rect, palette.highlight());
 
     painter->drawText(option.rect.adjusted(4, 0, 0, 0), Qt::AlignCenter, string);
-}
-
-QSize Deadline::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    auto string { index.data().toString() };
-    return string.isEmpty() ? QSize() : QSize(QFontMetrics(option.font).horizontalAdvance(string) + 8, option.rect.height());
 }

@@ -1,5 +1,5 @@
-#ifndef TREEDOUBLESPINR_H
-#define TREEDOUBLESPINR_H
+#ifndef TREEDOUBLESPINUNITR_H
+#define TREEDOUBLESPINUNITR_H
 
 // read only
 
@@ -8,9 +8,9 @@
 
 #include "component/using.h"
 
-class TreeDoubleSpinR final : public QStyledItemDelegate {
+class TreeDoubleSpinUnitR final : public QStyledItemDelegate {
 public:
-    TreeDoubleSpinR(const int* decimal, CStringHash* unit_symbol_hash, QObject* parent);
+    TreeDoubleSpinUnitR(const int* decimal, CStringHash* unit_symbol_hash, QObject* parent);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -23,4 +23,4 @@ private:
     QLocale locale_ {};
 };
 
-#endif // TREEDOUBLESPINR_H
+#endif // TREEDOUBLESPINUNITR_H

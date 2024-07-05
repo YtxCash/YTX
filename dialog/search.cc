@@ -11,7 +11,7 @@
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespin.h"
 #include "delegate/tree/treecombo.h"
-#include "delegate/tree/treedoublespinr.h"
+#include "delegate/tree/treedoublespinunitr.h"
 #include "ui_search.h"
 
 Search::Search(const Info* info, const Interface* interface, const AbstractTreeModel* tree_model, QSharedPointer<SearchSql> sql,
@@ -73,7 +73,7 @@ void Search::IniTree(QTableView* view, SearchTreeModel* model)
     auto node_rule { new TreeCombo(node_rule_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kNodeRule), node_rule);
 
-    auto total { new TreeDoubleSpinR(&section_rule_->value_decimal, &info_->unit_symbol_hash, view) };
+    auto total { new TreeDoubleSpinUnitR(&section_rule_->value_decimal, &info_->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), total);
 
     auto branch { new CheckState(false, view) };

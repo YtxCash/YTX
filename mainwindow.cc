@@ -18,14 +18,14 @@
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespin.h"
-#include "delegate/tree/deadline.h"
-#include "delegate/tree/treeamountr.h"
+#include "delegate/tree/order/employeer.h"
+#include "delegate/tree/order/ordernamer.h"
+#include "delegate/tree/product/amountr.h"
+#include "delegate/tree/stakeholder/deadline.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedoublespin.h"
 #include "delegate/tree/treedoublespinpercent.h"
-#include "delegate/tree/treedoublespinr.h"
-#include "delegate/tree/treeorderemployee.h"
-#include "delegate/tree/treeordername.h"
+#include "delegate/tree/treedoublespinunitr.h"
 #include "delegate/tree/treeplaintext.h"
 #include "delegate/tree/treespin.h"
 #include "dialog/about.h"
@@ -457,7 +457,7 @@ void MainWindow::DelegateFinance(QTreeView* view, const Info* info, const Sectio
     auto plain_text { new TreePlainText(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kNote), plain_text);
 
-    auto total { new TreeDoubleSpinR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
+    auto total { new TreeDoubleSpinUnitR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), total);
 
     auto unit { new TreeCombo(&info->unit_hash, view) };
@@ -479,10 +479,10 @@ void MainWindow::DelegateProduct(QTreeView* view, const Info* info, const Sectio
     auto plain_text { new TreePlainText(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kNote), plain_text);
 
-    auto quantity { new TreeDoubleSpinR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
+    auto quantity { new TreeDoubleSpinUnitR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), quantity);
 
-    auto amount { new TreeAmountR(&section_rule->ratio_decimal, &finance_data_.info.unit_symbol_hash, &finance_rule_.base_unit, view) };
+    auto amount { new AmountR(&section_rule->ratio_decimal, &finance_data_.info.unit_symbol_hash, &finance_rule_.base_unit, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFinalTotal), amount);
 
     auto unit_price { new TreeDoubleSpin(&section_rule->ratio_decimal, DMIN, DMAX, view) };
@@ -513,7 +513,7 @@ void MainWindow::DelegateStakeholder(QTreeView* view, const Info* info, const Se
     auto tax_rate { new TreeDoubleSpinPercent(&section_rule->ratio_decimal, 0, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kThird), tax_rate);
 
-    auto deadline { new Deadline(DATE_D, view) };
+    auto deadline { new Deadline(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kDateTime), deadline);
 
     auto mark { new TreeCombo(&info->unit_hash, view) };
@@ -531,21 +531,21 @@ void MainWindow::DelegateOrder(QTreeView* view, const Info* info, const SectionR
     auto line { new Line(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kDescription), line);
 
-    auto amount { new TreeDoubleSpinR(&section_rule->ratio_decimal, &info->unit_symbol_hash, view) };
+    auto amount { new TreeDoubleSpinUnitR(&section_rule->ratio_decimal, &info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kInitialTotal), amount);
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFinalTotal), amount);
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFourth), amount);
 
-    auto quantity { new TreeDoubleSpinR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
+    auto quantity { new TreeDoubleSpinUnitR(&section_rule->value_decimal, &info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kThird), quantity);
 
     auto first { new TreeSpin(IMIN, IMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFirst), first);
 
-    auto employee { new TreeOrderEmployee(stakeholder_tree_.model->BranchPath(), view) };
+    auto employee { new EmployeeR(stakeholder_tree_.model->BranchPath(), view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kSecond), employee);
 
-    auto date_time { new Deadline(DATE_D, view) };
+    auto date_time { new Deadline(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kDateTime), date_time);
 
     auto term { new TreeCombo(&info->unit_hash, view) };
@@ -556,7 +556,7 @@ void MainWindow::DelegateOrder(QTreeView* view, const Info* info, const SectionR
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kNodeRule), branch);
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kFifth), branch);
 
-    auto name { new TreeOrderName(stakeholder_tree_.model->BranchPath(), view) };
+    auto name { new OrderName(stakeholder_tree_.model->BranchPath(), view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeColumn::kName), name);
 }
 
@@ -604,25 +604,24 @@ void MainWindow::InsertNode(const QModelIndex& parent, int row)
 
     QDialog* dialog {};
 
-    switch (section_data_->info.section) {
+    switch (info->section) {
     case Section::kFinance:
     case Section::kTask:
         dialog = new EditNodeFinance(node, &interface_.separator, info, parent_path, false, false, this);
         break;
     case Section::kStakeholder:
         node->branch = true;
-        dialog = new EditNodeStakeholder(node, section_rule_, &interface_.separator, info, false, false, parent_path, &node_term_hash_,
-            section_tree_->model->BranchPath(), section_tree_->model->GetNodeHash(), this);
+        dialog = new EditNodeStakeholder(node, section_rule_, &interface_.separator, info, false, false, parent_path, &node_term_hash_, model, this);
         break;
     case Section::kProduct:
         dialog = new EditNodeProduct(node, section_rule_, &interface_.separator, &info->unit_hash, parent_path, false, false, this);
         break;
     case Section::kSales:
-        dialog = new InsertNodeOrder(node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), info, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new InsertNodeOrder(node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), info, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -1432,27 +1431,28 @@ void MainWindow::REditNode()
     bool view_opened { section_table_->contains(node->id) };
     auto parent_path { model->Path(node->parent->id) };
 
+    auto info { &section_data_->info };
+
     QDialog* dialog {};
 
-    switch (section_data_->info.section) {
+    switch (info->section) {
     case Section::kFinance:
     case Section::kTask:
-        dialog = new EditNodeFinance(tmp_node, &interface_.separator, &section_data_->info, parent_path, node_usage, view_opened, this);
+        dialog = new EditNodeFinance(tmp_node, &interface_.separator, info, parent_path, node_usage, view_opened, this);
         break;
     case Section::kStakeholder:
-        dialog = new EditNodeStakeholder(tmp_node, section_rule_, &interface_.separator, &section_data_->info, node_usage, view_opened, parent_path,
-            &node_term_hash_, section_tree_->model->BranchPath(), section_tree_->model->GetNodeHash(), this);
+        dialog = new EditNodeStakeholder(
+            tmp_node, section_rule_, &interface_.separator, info, node_usage, view_opened, parent_path, &node_term_hash_, model, this);
         break;
     case Section::kProduct:
-        dialog
-            = new EditNodeProduct(tmp_node, section_rule_, &interface_.separator, &section_data_->info.unit_hash, parent_path, node_usage, view_opened, this);
+        dialog = new EditNodeProduct(tmp_node, section_rule_, &interface_.separator, &info->unit_hash, parent_path, node_usage, view_opened, this);
         break;
     case Section::kSales:
-        dialog = new InsertNodeOrder(tmp_node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(tmp_node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), info, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new InsertNodeOrder(tmp_node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), &section_data_->info, this);
+        dialog = new InsertNodeOrder(tmp_node, section_rule_, &stakeholder_tree_, product_tree_.model->LeafPath(), info, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:

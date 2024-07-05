@@ -1,14 +1,14 @@
-#include "treeorderemployee.h"
+#include "employeer.h"
 
 #include <QPainter>
 
-TreeOrderEmployee::TreeOrderEmployee(CStringHash* branch_path, QObject* parent)
+EmployeeR::EmployeeR(CStringHash* stakeholder_branch_path, QObject* parent)
     : QStyledItemDelegate { parent }
-    , branch_path_ { branch_path }
+    , stakeholder_branch_path_ { stakeholder_branch_path }
 {
 }
 
-void TreeOrderEmployee::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void EmployeeR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto path { GetPath(index) };
     if (path.isEmpty())
@@ -24,10 +24,10 @@ void TreeOrderEmployee::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawText(option.rect.adjusted(4, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize TreeOrderEmployee::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize EmployeeR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto path { GetPath(index) };
     return path.isEmpty() ? QSize() : QSize(QFontMetrics(option.font).horizontalAdvance(path) + 8, option.rect.height());
 }
 
-QString TreeOrderEmployee::GetPath(const QModelIndex& index) const { return branch_path_->value(index.data().toInt(), QString()); }
+QString EmployeeR::GetPath(const QModelIndex& index) const { return stakeholder_branch_path_->value(index.data().toInt(), QString()); }

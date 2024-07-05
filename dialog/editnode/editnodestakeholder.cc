@@ -6,15 +6,15 @@
 #include "ui_editnodestakeholder.h"
 
 EditNodeStakeholder::EditNodeStakeholder(Node* node, const SectionRule* section_rule, CString* separator, const Info* info, bool node_usage, bool view_opened,
-    CString& parent_path, CStringHash* node_term_hash, CStringHash* branch_path, const NodeHash* node_hash, QWidget* parent)
+    CString& parent_path, CStringHash* node_term_hash, AbstractTreeModel* model, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
     , node_ { node }
     , separator_ { separator }
     , node_term_hash_ { node_term_hash }
-    , branch_path_ { branch_path }
+    , branch_path_ { model->BranchPath() }
     , section_rule_ { section_rule }
-    , node_hash_ { node_hash }
+    , node_hash_ { model->GetNodeHash() }
     , info_ { info }
     , node_usage_ { node_usage }
     , view_opened_ { view_opened }

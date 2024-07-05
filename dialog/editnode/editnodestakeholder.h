@@ -6,6 +6,7 @@
 #include "component/info.h"
 #include "component/settings.h"
 #include "component/using.h"
+#include "tree/abstracttreemodel.h"
 
 namespace Ui {
 class EditNodeStakeholder;
@@ -16,7 +17,7 @@ class EditNodeStakeholder final : public QDialog {
 
 public:
     EditNodeStakeholder(Node* node, const SectionRule* section_rule, CString* separator, const Info* info, bool node_usage, bool view_opened,
-        CString& parent_path, CStringHash* node_term_hash, CStringHash* branch_path, const NodeHash* node_hash, QWidget* parent = nullptr);
+        CString& parent_path, CStringHash* node_term_hash, AbstractTreeModel* model, QWidget* parent = nullptr);
     ~EditNodeStakeholder();
 
 private slots:

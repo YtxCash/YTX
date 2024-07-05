@@ -1,10 +1,10 @@
-#include "treedoublespinr.h"
+#include "treedoublespinunitr.h"
 
 #include <QPainter>
 
 #include "component/enumclass.h"
 
-TreeDoubleSpinR::TreeDoubleSpinR(const int* decimal, CStringHash* unit_symbol_hash, QObject* parent)
+TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int* decimal, CStringHash* unit_symbol_hash, QObject* parent)
     : QStyledItemDelegate { parent }
     , decimal_ { decimal }
     , unit_symbol_hash_ { unit_symbol_hash }
@@ -12,7 +12,7 @@ TreeDoubleSpinR::TreeDoubleSpinR(const int* decimal, CStringHash* unit_symbol_ha
 {
 }
 
-void TreeDoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void TreeDoubleSpinUnitR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto selected { option.state & QStyle::State_Selected };
     auto palette { option.palette };
@@ -24,12 +24,12 @@ void TreeDoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& optio
     painter->drawText(option.rect.adjusted(0, 0, -4, 0), Qt::AlignRight | Qt::AlignVCenter, FormattedString(index));
 }
 
-QSize TreeDoubleSpinR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     return QSize(QFontMetrics(option.font).horizontalAdvance(FormattedString(index)) + 8, option.rect.height());
 }
 
-QString TreeDoubleSpinR::FormattedString(const QModelIndex& index) const
+QString TreeDoubleSpinUnitR::FormattedString(const QModelIndex& index) const
 {
     int unit { index.sibling(index.row(), std::to_underlying(TreeColumn::kUnit)).data().toInt() };
     return unit_symbol_hash_->value(unit, QString()) + locale_.toString(index.data().toDouble(), 'f', *decimal_);

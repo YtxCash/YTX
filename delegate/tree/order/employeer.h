@@ -1,13 +1,13 @@
-#ifndef TREEORDEREMPLOYEE_H
-#define TREEORDEREMPLOYEE_H
+#ifndef EMPLOYEER_H
+#define EMPLOYEER_H
 
 #include <QStyledItemDelegate>
 
 #include "component/using.h"
 
-class TreeOrderEmployee : public QStyledItemDelegate {
+class EmployeeR : public QStyledItemDelegate {
 public:
-    TreeOrderEmployee(CStringHash* branch_path, QObject* parent = nullptr);
+    EmployeeR(CStringHash* stakeholder_branch_path, QObject* parent = nullptr);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -16,7 +16,7 @@ private:
     QString GetPath(const QModelIndex& index) const;
 
 private:
-    CStringHash* branch_path_ {};
+    CStringHash* stakeholder_branch_path_ {};
 };
 
-#endif // TREEORDEREMPLOYEE_H
+#endif // EMPLOYEER_H
