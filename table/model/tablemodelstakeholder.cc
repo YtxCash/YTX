@@ -110,13 +110,13 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(sql_, trans, value.toString());
+        UpdateDateTime(trans, value.toString());
         break;
     case TableEnum::kCode:
-        UpdateCode(sql_, trans, value.toString());
+        UpdateCode(trans, value.toString());
         break;
     case TableEnum::kDescription:
-        UpdateDescription(sql_, trans, value.toString());
+        UpdateDescription(trans, value.toString());
         break;
     case TableEnum::kRatio:
         UpdateRatio(trans, value.toDouble());
@@ -157,7 +157,7 @@ bool TableModelStakeholder::UpdateRatio(Trans* trans, double value)
     *trans->ratio = value;
 
     if (*trans->related_node != 0)
-        sql_->UpdateField(info_.transaction, UNIT_PRICE, value, *trans->id);
+        sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans->id);
 
     return true;
 }
@@ -172,7 +172,7 @@ bool TableModelStakeholder::UpdateCommission(Trans* trans, double value)
     *trans->related_debit = value;
 
     if (*trans->related_node != 0)
-        sql_->UpdateField(info_.transaction, COMMISSION, value, *trans->id);
+        sql_->UpdateField(info_.transaction, value, COMMISSION, *trans->id);
 
     return true;
 }

@@ -53,11 +53,12 @@ QHeaderView::section:last {
     border-right: none;
 }
 
-QTabBar::tab, QTreeView#view_, QWidget QGroupBox#groupBoxTreeWidget_2 {
+QTabBar::tab, QTreeView#treeView, QWidget QGroupBox#groupBoxTreeWidget_2 {
     border-bottom: none;
 }
 
-QWidget QGroupBox#groupBoxTreeWidget, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnOkOrder, QPushButton#pBtnSaveOrder {
+QWidget QGroupBox#groupBoxTreeWidget, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnPostOrder, QPushButton#pBtnDeleteOrder,
+QPushButton#pBtnSaveOrder {
     border-top: none;
 }
 
@@ -89,14 +90,6 @@ QToolBar, QMenuBar {
 
 /*--------------------------------------height-------------------------------------------------*/
 
-QTableView QComboBox, QTableView QAbstractItemView::item {
-    height: 23px;
-}
-
-QTreeView QComboBox, QTreeView QAbstractItemView::item {
-    height: 15px;
-}
-
 QTreeView::item {
     height: 16px;
 }
@@ -107,7 +100,7 @@ QHeaderView::section:horizontal {
 
 /*--------------------------------------min-width-------------------------------------------------*/
 
-QTabBar::tab, QTableView QComboBox, QTreeView QComboBox {
+QTabBar::tab {
     min-width: 40px;
 }
 

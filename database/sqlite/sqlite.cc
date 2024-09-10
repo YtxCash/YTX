@@ -63,7 +63,9 @@ bool Sqlite::RReplaceMulti(int old_node_id, int new_node_id)
     node_trans.remove(new_node_id);
 
     // begin deal with transaction hash
-    for (auto& transaction : std::as_const(transaction_hash_)) {
+    const auto& const_transaction_hash { std::as_const(transaction_hash_) };
+
+    for (auto& transaction : const_transaction_hash) {
         if (transaction->lhs_node == old_node_id && transaction->rhs_node != new_node_id)
             transaction->lhs_node = new_node_id;
 
@@ -225,6 +227,36 @@ void Sqlite::NodeLeafTotal(Node* node)
     int sign = node_rule ? 1 : -1;
     node->initial_total = sign * (initial_total_credit - initial_total_debit);
     node->final_total = sign * (final_total_credit - final_total_debit);
+}
+
+bool Sqlite::UpdateNodeSimple(const Node* node)
+{
+    if (!node || !db_) {
+        qWarning() << "Invalid node or database pointer";
+        return false;
+    }
+
+    QSqlQuery query(*db_);
+
+    auto part = QString(R"(
+    UPDATE %1 SET
+    code = :code, description = :description, note = :note
+    WHERE id = :id
+)")
+                    .arg(info_.node);
+
+    query.prepare(part);
+    query.bindValue(":id", node->id);
+    query.bindValue(":code", node->code);
+    query.bindValue(":description", node->description);
+    query.bindValue(":note", node->note);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to update node simple (ID:" << node->id << "):" << query.lastError().text();
+        return false;
+    }
+
+    return true;
 }
 
 bool Sqlite::RemoveNode(int node_id, bool branch)
@@ -542,7 +574,7 @@ bool Sqlite::UpdateTransaction(int trans_id)
     return true;
 }
 
-bool Sqlite::UpdateField(CString& table, CString& field, CVariant& value, int id)
+bool Sqlite::UpdateField(CString& table, CVariant& new_value, CString& field, int id)
 {
     QSqlQuery query(*db_);
 
@@ -555,7 +587,7 @@ bool Sqlite::UpdateField(CString& table, CString& field, CVariant& value, int id
 
     query.prepare(part);
     query.bindValue(":id", id);
-    query.bindValue(":value", value);
+    query.bindValue(":value", new_value);
 
     if (!query.exec()) {
         qWarning() << "Failed to update record: " << query.lastError().text();

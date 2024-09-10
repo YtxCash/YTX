@@ -5,7 +5,7 @@
 #include "component/constvalue.h"
 #include "ui_editnodeproduct.h"
 
-EditNodeProduct::EditNodeProduct(Node* node, CSectionRule& section_rule, CString& separator, CStringHash& unit_hash, const TreeModel& model,
+EditNodeProduct::EditNodeProduct(Node* node, CSectionRule& section_rule, CString& separator, CStringHash& unit_hash, const AbstractTreeModel& model,
     int parent_id, bool node_usage, bool view_opened, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeProduct)
@@ -70,11 +70,11 @@ void EditNodeProduct::Data(Node* node)
     ui->lineEditDescription->setText(node->description);
     ui->plainTextEdit->setPlainText(node->note);
     ui->dSpinBoxUnitPrice->setValue(node->second);
-    ui->dSpinBoxCommission->setValue(node->third);
+    ui->dSpinBoxCommission->setValue(node->discount);
 
     ui->chkBoxBranch->setChecked(node->branch);
 
-    ui->chkBoxBranch->setEnabled(!node_usage_ && node->children.isEmpty() && !view_opened_);
+    ui->chkBoxBranch->setEnabled(!node_usage_ && model_.ChildrenEmpty(node->id) && !view_opened_);
 }
 
 void EditNodeProduct::REditName(const QString& arg1)
@@ -111,7 +111,7 @@ void EditNodeProduct::on_plainTextEdit_textChanged() { node_->note = ui->plainTe
 
 void EditNodeProduct::on_dSpinBoxUnitPrice_editingFinished() { node_->second = ui->dSpinBoxUnitPrice->value(); }
 
-void EditNodeProduct::on_dSpinBoxCommission_editingFinished() { node_->third = ui->dSpinBoxCommission->value(); }
+void EditNodeProduct::on_dSpinBoxCommission_editingFinished() { node_->discount = ui->dSpinBoxCommission->value(); }
 
 void EditNodeProduct::changeEvent(QEvent* event)
 {

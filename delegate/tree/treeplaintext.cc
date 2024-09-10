@@ -1,11 +1,12 @@
 #include "treeplaintext.h"
 
 #include <QApplication>
-#include <QPlainTextEdit>
 #include <QRect>
 
+#include "widget/plaintextedit.h"
+
 TreePlainText::TreePlainText(QObject* parent)
-    : QStyledItemDelegate { parent }
+    : StyledItemDelegate { parent }
 {
 }
 
@@ -14,14 +15,13 @@ QWidget* TreePlainText::createEditor(QWidget* parent, const QStyleOptionViewItem
     Q_UNUSED(option);
     Q_UNUSED(index);
 
-    auto editor { new QPlainTextEdit(parent) };
-    editor->setTabChangesFocus(true);
+    auto editor { new PlainTextEdit(parent) };
     return editor;
 }
 
 void TreePlainText::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    qobject_cast<QPlainTextEdit*>(editor)->setPlainText(index.data().toString());
+    qobject_cast<PlainTextEdit*>(editor)->setPlainText(index.data().toString());
 }
 
 void TreePlainText::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -37,5 +37,5 @@ void TreePlainText::updateEditorGeometry(QWidget* editor, const QStyleOptionView
 
 void TreePlainText::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    model->setData(index, qobject_cast<QPlainTextEdit*>(editor)->toPlainText());
+    model->setData(index, qobject_cast<PlainTextEdit*>(editor)->toPlainText());
 }

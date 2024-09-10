@@ -3,14 +3,12 @@
 
 // read only
 
-#include <QLocale>
-#include <QStyledItemDelegate>
-
 #include "component/using.h"
+#include "delegate/styleditemdelegate.h"
 
-class TreeDoubleSpinUnitR final : public QStyledItemDelegate {
+class TreeDoubleSpinUnitR final : public StyledItemDelegate {
 public:
-    TreeDoubleSpinUnitR(const int& decimal, CStringHash& unit_symbol_hash, bool format_zero = true, QObject* parent = nullptr);
+    TreeDoubleSpinUnitR(const int& decimal, const int& unit, CStringHash& unit_symbol_hash, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -19,9 +17,8 @@ private:
 
 private:
     const int& decimal_ {};
-    bool format_zero_ { true };
+    const int& unit_ {};
     CStringHash& unit_symbol_hash_;
-    QLocale locale_ {};
 };
 
 #endif // TREEDOUBLESPINUNITR_H

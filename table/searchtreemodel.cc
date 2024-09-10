@@ -2,7 +2,7 @@
 
 #include "component/enumclass.h"
 
-SearchTreeModel::SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent)
+SearchTreeModel::SearchTreeModel(CInfo& info, const AbstractTreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent)
     : QAbstractItemModel { parent }
     , sql_ { sql }
     , info_ { info }
@@ -53,7 +53,7 @@ QVariant SearchTreeModel::data(const QModelIndex& index, int role) const
     case TreeEnum::kCode:
         return node->code;
     case TreeEnum::kThird:
-        return node->third;
+        return node->discount;
     case TreeEnum::kDescription:
         return node->description;
     case TreeEnum::kNote:

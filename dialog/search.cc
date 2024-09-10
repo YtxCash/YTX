@@ -5,16 +5,16 @@
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "delegate/checkstate.h"
-#include "delegate/datetimer.h"
 #include "delegate/search/searchcombor.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespin.h"
+#include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/treecombo.h"
-#include "delegate/tree/treedoublespinunitr.h"
+#include "delegate/tree/treedoublespindynamicunitr.h"
 #include "ui_search.h"
 
-Search::Search(CInfo& info, CInterface& interface, const TreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
+Search::Search(CInfo& info, CInterface& interface, const AbstractTreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
     CStringHash& node_rule, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Search)
@@ -73,7 +73,7 @@ void Search::IniTree(QTableView* view, SearchTreeModel* model)
     auto node_rule { new TreeCombo(node_rule_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNodeRule), node_rule);
 
-    auto total { new TreeDoubleSpinUnitR(section_rule_.value_decimal, info_.unit_symbol_hash, view) };
+    auto total { new TreeDoubleSpinDynamicUnitR(section_rule_.value_decimal, info_.unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), total);
 
     auto branch { new CheckState(false, view) };
@@ -90,13 +90,13 @@ void Search::IniTable(QTableView* view, SearchTableModel* model)
 {
     view->setModel(model);
 
-    auto value { new TableDoubleSpin(section_rule_.value_decimal, DMIN, DMAX, view) };
+    auto value { new TableDoubleSpinR(section_rule_.value_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsCredit), value);
 
-    auto ratio { new TableDoubleSpin(section_rule_.ratio_decimal, DMIN, DMAX, view) };
+    auto ratio { new TableDoubleSpinR(section_rule_.ratio_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsRatio), ratio);
 
@@ -109,9 +109,6 @@ void Search::IniTable(QTableView* view, SearchTableModel* model)
 
     auto document { new TableDbClick(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDocument), document);
-
-    auto date_time { new DateTimeR(section_rule_.hide_time, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDateTime), date_time);
 
     view->setColumnHidden(std::to_underlying(TableEnumSearch::kID), true);
 }
@@ -187,14 +184,14 @@ void Search::RSearch()
 void Search::RDoubleClicked(const QModelIndex& index)
 {
     if (ui->rBtnNode->isChecked()) {
-        int node_id { index.sibling(index.row(), std::to_underlying(TreeEnum::kID)).data().toInt() };
+        int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
         emit STreeLocation(node_id);
     }
 
     if (ui->rBtnTransaction->isChecked()) {
-        int lhs_node_id { index.sibling(index.row(), std::to_underlying(TableEnumSearch::kLhsNode)).data().toInt() };
-        int rhs_node_id { index.sibling(index.row(), std::to_underlying(TableEnumSearch::kRhsNode)).data().toInt() };
-        int trans_id { index.sibling(index.row(), std::to_underlying(TableEnumSearch::kID)).data().toInt() };
+        int lhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kLhsNode)).data().toInt() };
+        int rhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kRhsNode)).data().toInt() };
+        int trans_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kID)).data().toInt() };
         emit STableLocation(trans_id, lhs_node_id, rhs_node_id);
     }
 }

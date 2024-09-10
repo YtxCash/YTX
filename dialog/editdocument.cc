@@ -6,16 +6,17 @@
 
 #include "ui_editdocument.h"
 
-EditDocument::EditDocument(Section section, Trans* trans, CString& document_dir, QWidget* parent)
+EditDocument::EditDocument(Section section, QStringList* document, CString& document_dir, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditDocument)
     , section { section }
-    , trans_ { trans }
+    , document_ { document }
+    , list_model_ { new QStringListModel(this) }
+    , document_dir_ { QDir::homePath() + "/" + document_dir }
 {
     ui->setupUi(this);
-    CreateList(*trans->document);
+    CreateList(document_);
     IniConnect();
-    document_dir_ = QDir::homePath() + "/" + document_dir;
 }
 
 EditDocument::~EditDocument()
@@ -32,11 +33,10 @@ void EditDocument::on_pBtnAdd_clicked()
     if (local_documents.isEmpty())
         return;
 
-    auto existing_documents { trans_->document };
     int row {};
 
     for (const QString& document : local_documents) {
-        if (!existing_documents->contains(document)) {
+        if (!document_->contains(document)) {
             row = list_model_->rowCount();
             list_model_->insertRow(row);
             list_model_->setData(list_model_->index(row), QDir::home().relativeFilePath(document));
@@ -50,7 +50,7 @@ void EditDocument::on_pBtnRemove_clicked()
     list_model_->removeRow(index.row(), QModelIndex());
 }
 
-void EditDocument::RCustomAccept() { *trans_->document = list_model_->stringList(); }
+void EditDocument::RCustomAccept() { *document_ = list_model_->stringList(); }
 
 void EditDocument::on_listView_doubleClicked(const QModelIndex& index)
 {
@@ -69,10 +69,9 @@ void EditDocument::on_listView_doubleClicked(const QModelIndex& index)
     msg.exec();
 }
 
-void EditDocument::CreateList(CStringList& list)
+void EditDocument::CreateList(QStringList* document)
 {
-    list_model_ = new QStringListModel(this);
-    list_model_->setStringList(list);
+    list_model_->setStringList(*document);
     ui->listView->setModel(list_model_);
 }
 

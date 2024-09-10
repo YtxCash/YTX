@@ -190,8 +190,8 @@ QString MainwindowSqlite::NodeStakeholder(CString& table_name)
         node_rule         BOOLEAN    DEFAULT 0,
         branch            BOOLEAN    DEFAULT 0,
         unit              INTEGER,
+        deadline          INTEGER,
         employee          INTEGER,
-        deadline          TEXT,
         payment_period    INTEGER,
         tax_rate          NUMERIC,
         removed           BOOLEAN    DEFAULT 0
@@ -240,7 +240,7 @@ QString MainwindowSqlite::NodeOrder(CString& table_name)
         first             INTEGER,
         second            NUMERIC,
         discount          NUMERIC,
-        refund            BOOLEAN    DEFAULT 0,
+        posted            BOOLEAN    DEFAULT 0,
         initial_total     NUMERIC,
         final_total       NUMERIC,
         removed           BOOLEAN    DEFAULT 0

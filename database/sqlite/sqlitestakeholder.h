@@ -21,6 +21,8 @@ public:
     bool InsertNode(int parent_id, Node* node) override;
     bool NodeInternalReferences(int node_id) const override;
     bool NodeExternalReferences(int node_id) const override;
+    bool UpdateNodeSimple(const Node* node) override;
+    bool RemoveNode(int node_id, bool branch = false) override;
 
     // table
     void BuildTransList(TransList& trans_list, int outside_id) override;

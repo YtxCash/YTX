@@ -7,14 +7,17 @@ class DateTimeEdit final : public QDateTimeEdit {
     Q_OBJECT
 
 public:
-    DateTimeEdit(const QString& format, QWidget* parent = nullptr);
+    DateTimeEdit(QWidget* parent = nullptr);
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
-    void LastMonthEnd(QDateTime& date_time);
-    void NextMonthStart(QDateTime& date_time);
+    bool LastMonthEnd(QDateTime& date_time);
+    bool NextMonthStart(QDateTime& date_time);
+    bool HandleSpecialKeys(int key, QDateTime& date_time);
+    bool AdjustDateTime(QDateTime& date_time, int days = 0, int months = 0, int years = 0);
+    bool SetToCurrentDateTime(QDateTime& date_time);
 };
 
 #endif // DATETIMEEDIT_H

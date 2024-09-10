@@ -17,7 +17,7 @@ class Search final : public QDialog {
     Q_OBJECT
 
 public:
-    Search(CInfo& info, CInterface& interface, const TreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
+    Search(CInfo& info, CInterface& interface, const AbstractTreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
         CStringHash& node_rule, QWidget* parent = nullptr);
     ~Search();
 
@@ -56,7 +56,7 @@ private:
 
     CStringHash& node_rule_;
     CSectionRule& section_rule_;
-    const TreeModel& tree_model_;
+    const AbstractTreeModel& tree_model_;
     CInfo& info_;
     CInterface& interface_;
 };

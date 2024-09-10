@@ -1501,7 +1501,7 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+1"/>
         <source>Second</source>
-        <translation>第二属性</translation>
+        <translation>第二</translation>
     </message>
     <message>
         <location line="-70"/>
@@ -1578,7 +1578,7 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+42"/>
         <source>First</source>
-        <translation>第一属性</translation>
+        <translation>第一</translation>
     </message>
     <message>
         <source>Third</source>
@@ -1601,12 +1601,12 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+0"/>
         <source>Initial Total</source>
-        <translation>实际金额</translation>
+        <translation>实际</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Final Total</source>
-        <translation>结算金额</translation>
+        <translation>结算</translation>
     </message>
     <message>
         <source>PaymentTerm</source>

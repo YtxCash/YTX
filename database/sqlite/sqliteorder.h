@@ -13,6 +13,7 @@ public:
     bool BuildTree(NodeHash& node_hash) override;
     bool InsertNode(int parent_id, Node* node) override;
     void NodeLeafTotal(Node* node) override;
+    bool UpdateNodeSimple(const Node* node) override;
 
     // table
     void BuildTransList(TransList& trans_list, int node_id) override;

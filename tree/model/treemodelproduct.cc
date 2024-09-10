@@ -4,12 +4,12 @@
 #include <QQueue>
 #include <QRegularExpression>
 
-#include "component/constvalue.h"
 #include "component/enumclass.h"
 
 TreeModelProduct::TreeModelProduct(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent)
-    : TreeModel { sql, info, base_unit, table_hash, separator, parent }
+    : AbstractTreeModel { sql, info, base_unit, table_hash, separator, parent }
 {
+    ConstructTree();
 }
 
 void TreeModelProduct::UpdateNode(const Node* tmp_node)
@@ -21,24 +21,23 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     if (*node == *tmp_node)
         return;
 
-    UpdateBranch(node, tmp_node->branch);
-    UpdateCode(node, tmp_node->code);
-    UpdateDescription(node, tmp_node->description);
-    UpdateNote(node, tmp_node->note);
     UpdateNodeRule(node, tmp_node->node_rule);
     UpdateUnit(node, tmp_node->unit);
-    UpdateUnitPrice(node, tmp_node->second);
-    UpdateCommission(node, tmp_node->third);
+    UpdateBranch(node, tmp_node->branch);
 
     if (node->name != tmp_node->name) {
-        UpdateName(node, root_, tmp_node->name);
+        UpdateName(node, tmp_node->name);
         emit SUpdateName(node);
     }
+
+    // update code, description, note, unit_price, commission
+    *node = *tmp_node;
+    sql_->UpdateNodeSimple(node);
 }
 
-bool TreeModelProduct::UpdateUnitPrice(Node* node, double value) { return UpdateField(node, value, UNIT_PRICE, &Node::third); }
+bool TreeModelProduct::UpdateUnitPrice(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::discount); }
 
-bool TreeModelProduct::UpdateCommission(Node* node, double value) { return UpdateField(node, value, COMMISSION, &Node::second); }
+bool TreeModelProduct::UpdateCommission(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::second); }
 
 void TreeModelProduct::sort(int column, Qt::SortOrder order)
 {
@@ -65,7 +64,7 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
         case TreeEnumProduct::kCommission:
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
         case TreeEnumProduct::kUnitPrice:
-            return (order == Qt::AscendingOrder) ? (lhs->third < rhs->third) : (lhs->third > rhs->third);
+            return (order == Qt::AscendingOrder) ? (lhs->discount < rhs->discount) : (lhs->discount > rhs->discount);
         case TreeEnumProduct::kInitialTotal:
             return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
         case TreeEnumProduct::kFinalTotal:
@@ -111,7 +110,7 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
     case TreeEnumProduct::kCommission:
         return node->second == 0 ? QVariant() : node->second;
     case TreeEnumProduct::kUnitPrice:
-        return node->third == 0 ? QVariant() : node->third;
+        return node->discount == 0 ? QVariant() : node->discount;
     case TreeEnumProduct::kInitialTotal:
         return node->initial_total;
     case TreeEnumProduct::kFinalTotal:

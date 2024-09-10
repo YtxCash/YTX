@@ -4,8 +4,8 @@
 #include "database/searchsqlite.h"
 #include "database/sqlite/sqlite.h"
 #include "enumclass.h"
-#include "tree/model/treemodel.h"
-#include "widget/abstracttreewidget.h"
+#include "tree/model/abstracttreemodel.h"
+#include "widget/treewidget/abstracttreewidget.h"
 
 struct Tab {
     Section section {};
@@ -20,7 +20,7 @@ struct Tab {
 
 struct Tree {
     AbstractTreeWidget* widget {};
-    TreeModel* model {};
+    AbstractTreeModel* model {};
 };
 
 struct SectionData {

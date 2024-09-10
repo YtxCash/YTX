@@ -1,10 +1,10 @@
 #ifndef TREEMODELPRODUCT_H
 #define TREEMODELPRODUCT_H
 
-#include "tree/model/treemodel.h"
+#include "tree/model/abstracttreemodel.h"
 #include "widget/tablewidget.h"
 
-class TreeModelProduct final : public TreeModel {
+class TreeModelProduct final : public AbstractTreeModel {
     Q_OBJECT
 
 public:
@@ -19,9 +19,9 @@ public:
 
     void UpdateNode(const Node* tmp_node) override;
 
-protected:
-    bool UpdateUnitPrice(Node* node, double value);
-    bool UpdateCommission(Node* node, double value);
+private:
+    bool UpdateUnitPrice(Node* node, double value, CString& field = UNIT_PRICE);
+    bool UpdateCommission(Node* node, double value, CString& field = COMMISSION);
 };
 
 #endif // TREEMODELPRODUCT_H

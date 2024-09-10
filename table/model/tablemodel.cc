@@ -134,10 +134,10 @@ bool TableModel::RemoveTrans(int row, const QModelIndex& parent)
         auto credit { *trans->credit };
         emit SUpdateOneTotal(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
 
-        auto t_ratio { *trans->related_ratio };
-        auto t_debit { *trans->related_debit };
-        auto t_credit { *trans->related_credit };
-        emit SUpdateOneTotal(*trans->related_node, -t_debit, -t_credit, -t_ratio * t_debit, -t_ratio * t_credit);
+        ratio = *trans->related_ratio;
+        debit = *trans->related_debit;
+        credit = *trans->related_credit;
+        emit SUpdateOneTotal(*trans->related_node, -debit, -credit, -ratio * debit, -ratio * credit);
 
         int trans_id { *trans->id };
         emit SRemoveOne(info_.section, related_node_id, trans_id);
@@ -216,12 +216,12 @@ bool TableModel::UpdateDebit(Trans* trans, double value)
     *trans->debit = (value > credit) ? abs : 0;
     *trans->credit = (value <= credit) ? abs : 0;
 
-    double t_debit { *trans->related_debit };
-    double t_credit { *trans->related_credit };
-    double t_ratio { *trans->related_ratio };
+    double related_debit { *trans->related_debit };
+    double related_credit { *trans->related_credit };
+    double related_ratio { *trans->related_ratio };
 
-    *trans->related_debit = (*trans->credit) * ratio / t_ratio;
-    *trans->related_credit = (*trans->debit) * ratio / t_ratio;
+    *trans->related_debit = (*trans->credit) * ratio / related_ratio;
+    *trans->related_credit = (*trans->debit) * ratio / related_ratio;
 
     if (*trans->related_node == 0)
         return false;
@@ -230,9 +230,10 @@ bool TableModel::UpdateDebit(Trans* trans, double value)
     auto initial_credit_diff { *trans->credit - credit };
     emit SUpdateOneTotal(*trans->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
 
-    auto t_initial_debit_diff { *trans->related_debit - t_debit };
-    auto t_initial_credit_diff { *trans->related_credit - t_credit };
-    emit SUpdateOneTotal(*trans->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff * t_ratio, t_initial_credit_diff * t_ratio);
+    auto related_initial_debit_diff { *trans->related_debit - related_debit };
+    auto related_initial_credit_diff { *trans->related_credit - related_credit };
+    emit SUpdateOneTotal(*trans->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
+        related_initial_credit_diff * related_ratio);
 
     return true;
 }
@@ -252,23 +253,24 @@ bool TableModel::UpdateCredit(Trans* trans, double value)
     *trans->debit = (value > debit) ? 0 : abs;
     *trans->credit = (value <= debit) ? 0 : abs;
 
-    double t_debit { *trans->related_debit };
-    double t_credit { *trans->related_credit };
-    double t_ratio { *trans->related_ratio };
+    double related_debit { *trans->related_debit };
+    double related_credit { *trans->related_credit };
+    double related_ratio { *trans->related_ratio };
 
-    *trans->related_debit = (*trans->credit) * ratio / t_ratio;
-    *trans->related_credit = (*trans->debit) * ratio / t_ratio;
+    *trans->related_debit = (*trans->credit) * ratio / related_ratio;
+    *trans->related_credit = (*trans->debit) * ratio / related_ratio;
 
     if (*trans->related_node == 0)
         return false;
 
     auto initial_debit_diff { *trans->debit - debit };
     auto initial_credit_diff { *trans->credit - credit };
-    emit SUpdateOneTotal(*trans->node, initial_debit_diff * ratio, initial_credit_diff * ratio, initial_debit_diff, initial_credit_diff);
+    emit SUpdateOneTotal(*trans->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
 
-    auto t_initial_debit_diff { *trans->related_debit - t_debit };
-    auto t_initial_credit_diff { *trans->related_credit - t_credit };
-    emit SUpdateOneTotal(*trans->related_node, t_initial_debit_diff * t_ratio, t_initial_credit_diff * t_ratio, t_initial_debit_diff, t_initial_credit_diff);
+    auto related_initial_debit_diff { *trans->related_debit - related_debit };
+    auto related_initial_credit_diff { *trans->related_credit - related_credit };
+    emit SUpdateOneTotal(*trans->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
+        related_initial_credit_diff * related_ratio);
 
     return true;
 }
@@ -286,9 +288,9 @@ bool TableModel::UpdateRatio(Trans* trans, double value)
 
     *trans->ratio = value;
 
-    double t_debit { *trans->related_debit };
-    double t_credit { *trans->related_credit };
-    double t_ratio { *trans->related_ratio };
+    double related_debit { *trans->related_debit };
+    double related_credit { *trans->related_credit };
+    double related_ratio { *trans->related_ratio };
 
     *trans->related_debit *= proportion;
     *trans->related_credit *= proportion;
@@ -298,9 +300,10 @@ bool TableModel::UpdateRatio(Trans* trans, double value)
 
     emit SUpdateOneTotal(*trans->node, 0, 0, *trans->debit * result, *trans->credit * result);
 
-    auto t_initial_debit_diff { *trans->related_debit - t_debit };
-    auto t_initial_credit_diff { *trans->related_credit - t_credit };
-    emit SUpdateOneTotal(*trans->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff * t_ratio, t_initial_credit_diff * t_ratio);
+    auto related_initial_debit_diff { *trans->related_debit - related_debit };
+    auto related_initial_credit_diff { *trans->related_credit - related_credit };
+    emit SUpdateOneTotal(*trans->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
+        related_initial_credit_diff * related_ratio);
 
     return true;
 }
@@ -368,7 +371,7 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
         return *trans->debit == 0 ? QVariant() : *trans->debit;
     case TableEnum::kCredit:
         return *trans->credit == 0 ? QVariant() : *trans->credit;
-    case TableEnum::kBalance:
+    case TableEnum::kSubtotal:
         return trans->subtotal;
     default:
         return QVariant();
@@ -386,29 +389,29 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     auto trans { trans_list_.at(kRow) };
     int old_related_node { *trans->related_node };
 
-    bool tra_changed { false };
+    bool rel_changed { false };
     bool deb_changed { false };
     bool cre_changed { false };
     bool rat_changed { false };
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(sql_, trans, value.toString());
+        UpdateDateTime(trans, value.toString());
         break;
     case TableEnum::kCode:
-        UpdateCode(sql_, trans, value.toString());
+        UpdateCode(trans, value.toString());
         break;
     case TableEnum::kState:
-        UpdateOneState(sql_, trans, value.toBool());
+        UpdateOneState(trans, value.toBool());
         break;
     case TableEnum::kDescription:
-        UpdateDescription(sql_, trans, value.toString());
+        UpdateDescription(trans, value.toString());
         break;
     case TableEnum::kRatio:
         rat_changed = UpdateRatio(trans, value.toDouble());
         break;
     case TableEnum::kRelatedNode:
-        tra_changed = UpdateRelatedNode(trans, value.toInt());
+        rel_changed = UpdateRelatedNode(trans, value.toInt());
         break;
     case TableEnum::kDebit:
         deb_changed = UpdateDebit(trans, value.toDouble());
@@ -421,10 +424,10 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     }
 
     if (old_related_node == 0) {
-        if (tra_changed) {
+        if (rel_changed) {
             sql_->InsertTrans(trans);
             AccumulateSubtotal(kRow, node_rule_);
-            emit SResizeColumnToContents(std::to_underlying(TableEnum::kBalance));
+            emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
             emit SAppendOne(info_.section, trans);
 
             auto ratio { *trans->ratio };
@@ -450,10 +453,10 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
     if (deb_changed || cre_changed) {
         AccumulateSubtotal(kRow, node_rule_);
-        emit SResizeColumnToContents(std::to_underlying(TableEnum::kBalance));
+        emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
     }
 
-    if (tra_changed) {
+    if (rel_changed) {
         sql_->UpdateTransaction(*trans->id);
         emit SMoveMulti(info_.section, old_related_node, *trans->related_node, QList<int> { *trans->id });
 
@@ -517,7 +520,7 @@ Qt::ItemFlags TableModel::flags(const QModelIndex& index) const
 
     switch (kColumn) {
     case TableEnum::kID:
-    case TableEnum::kBalance:
+    case TableEnum::kSubtotal:
     case TableEnum::kDocument:
         flags &= ~Qt::ItemIsEditable;
         break;
@@ -555,6 +558,23 @@ QModelIndex TableModel::GetIndex(int trans_id) const
     return QModelIndex();
 }
 
+QStringList* TableModel::GetDocumentPointer(const QModelIndex& index) const
+{
+    if (!index.isValid() || index.row() < 0 || index.row() >= trans_list_.size()) {
+        qWarning() << "Invalid QModelIndex provided.";
+        return nullptr;
+    }
+
+    auto trans { trans_list_[index.row()] };
+
+    if (!trans || !trans->document) {
+        qWarning() << "Null pointer encountered in trans_list_ or document.";
+        return nullptr;
+    }
+
+    return trans->document;
+}
+
 void TableModel::AccumulateSubtotal(int start, bool node_rule)
 {
     if (start <= -1 || start >= trans_list_.size() || trans_list_.isEmpty())
@@ -568,19 +588,16 @@ void TableModel::AccumulateSubtotal(int start, bool node_rule)
     });
 }
 
-bool TableModel::UpdateDateTime(SPSqlite sql, Trans* trans, CString& new_value, CString& field)
+bool TableModel::UpdateDateTime(Trans* trans, CString& new_value, CString& field) { return UpdateField(trans, new_value, field, &Trans::date_time); }
+
+bool TableModel::UpdateDescription(Trans* trans, CString& new_value, CString& field)
 {
-    return UpdateField(sql, trans, *trans->date_time, new_value, field);
+    return UpdateField(trans, new_value, field, &Trans::description, [this]() { emit SSearch(); });
 }
 
-bool TableModel::UpdateDescription(SPSqlite sql, Trans* trans, CString& new_value, CString& field)
-{
-    return UpdateField(sql, trans, *trans->description, new_value, field, [this]() { emit SSearch(); });
-}
+bool TableModel::UpdateCode(Trans* trans, CString& new_value, CString& field) { return UpdateField(trans, new_value, field, &Trans::code); }
 
-bool TableModel::UpdateCode(SPSqlite sql, Trans* trans, CString& new_value, CString& field) { return UpdateField(sql, trans, *trans->code, new_value, field); }
-
-bool TableModel::UpdateOneState(SPSqlite sql, Trans* trans, bool new_value, CString& field) { return UpdateField(sql, trans, *trans->state, new_value, field); }
+bool TableModel::UpdateOneState(Trans* trans, bool new_value, CString& field) { return UpdateField(trans, new_value, field, &Trans::state); }
 
 bool TableModel::UpdateRelatedNode(Trans* trans, int value)
 {

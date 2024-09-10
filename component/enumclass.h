@@ -5,7 +5,7 @@
 enum class Section { kFinance, kSales, kTask, kStakeholder, kProduct, kPurchase };
 
 // Enum class defining transaction columns
-enum class TableEnum { kID, kDateTime, kCode, kRatio, kDescription, kDocument, kState, kRelatedNode, kDebit, kCredit, kBalance };
+enum class TableEnum { kID, kDateTime, kCode, kRatio, kDescription, kDocument, kState, kRelatedNode, kDebit, kCredit, kSubtotal };
 
 // Enum class defining search transaction columns
 enum class TableEnumSearch {
@@ -79,8 +79,8 @@ enum class TreeEnumStakeholder {
     kNodeRule,
     kBranch,
     kUnit,
-    kEmployee,
     kDeadline,
+    kEmployee,
     kPaymentPeriod,
     kTaxRate,
     kPlaceholder
@@ -101,10 +101,9 @@ enum class TreeEnumOrder {
     kFirst,
     kSecond,
     kDiscount,
-    kRefund,
+    kPosted,
     kInitialTotal,
-    kFinalTotal,
-    kPlaceholder
+    kFinalTotal
 };
 
 // Enum class defining check options

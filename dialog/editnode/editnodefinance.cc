@@ -5,7 +5,7 @@
 #include "ui_editnodefinance.h"
 
 EditNodeFinance::EditNodeFinance(
-    Node* node, CString& separator, CInfo& info, const TreeModel& model, int parent_id, bool node_usage, bool view_opened, QWidget* parent)
+    Node* node, CString& separator, CInfo& info, const AbstractTreeModel& model, int parent_id, bool node_usage, bool view_opened, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
     , node_ { node }
@@ -67,7 +67,7 @@ void EditNodeFinance::Data(Node* node)
     ui->plainNote->setPlainText(node->note);
 
     ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(!node_usage_ && node->children.isEmpty() && !view_opened_);
+    ui->chkBoxBranch->setEnabled(!node_usage_ && model_.ChildrenEmpty(node->id) && !view_opened_);
 }
 
 void EditNodeFinance::REditName(const QString& arg1)

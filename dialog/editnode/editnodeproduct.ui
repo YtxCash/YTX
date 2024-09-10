@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item row="3" column="1" colspan="3">
-    <widget class="QComboBox" name="comboUnit">
+    <widget class="ComboBox" name="comboUnit">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -127,7 +127,7 @@
     </widget>
    </item>
    <item row="2" column="1" colspan="3">
-    <widget class="QLineEdit" name="lineEditDescription">
+    <widget class="LineEdit" name="lineEditDescription">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -137,14 +137,14 @@
     </widget>
    </item>
    <item row="11" column="1" colspan="3">
-    <widget class="QPlainTextEdit" name="plainTextEdit">
+    <widget class="PlainTextEdit" name="plainTextEdit">
      <property name="tabChangesFocus">
       <bool>true</bool>
      </property>
     </widget>
    </item>
    <item row="1" column="1" colspan="3">
-    <widget class="QLineEdit" name="lineEditCode">
+    <widget class="LineEdit" name="lineEditCode">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -196,7 +196,7 @@
     </widget>
    </item>
    <item row="0" column="1" colspan="3">
-    <widget class="QLineEdit" name="lineEditName">
+    <widget class="LineEdit" name="lineEditName">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -273,7 +273,7 @@
        <number>8</number>
       </property>
       <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="dSpinBoxUnitPrice">
+       <widget class="DoubleSpinBox" name="dSpinBoxUnitPrice">
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
@@ -296,7 +296,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="dSpinBoxCommission">
+       <widget class="DoubleSpinBox" name="dSpinBoxCommission">
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
@@ -355,6 +355,28 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header location="global">widget/doublespinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">widget/combobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widget/lineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">widget/plaintextedit.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>lineEditName</tabstop>
   <tabstop>lineEditCode</tabstop>

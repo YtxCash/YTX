@@ -7,6 +7,9 @@
 class AbstractTreeWidget : public QWidget {
     Q_OBJECT
 
+public slots:
+    virtual void RUpdateDSpinBox() = 0;
+
 public:
     AbstractTreeWidget(QWidget* parent = nullptr)
         : QWidget { parent }
@@ -16,13 +19,8 @@ public:
 
     virtual void SetCurrentIndex(const QModelIndex& index) = 0;
     virtual void SetStatus() = 0;
-    virtual void HideStatus() = 0;
-
     virtual QTreeView* View() = 0;
     virtual QHeaderView* Header() = 0;
-
-public slots:
-    virtual void RUpdateDSpinBox() = 0;
 };
 
 #endif // ABSTRACTTREEWIDGET_H

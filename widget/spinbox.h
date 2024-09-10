@@ -7,10 +7,11 @@ class SpinBox final : public QSpinBox {
     Q_OBJECT
 
 public:
-    SpinBox(int min, int max, QWidget* parent = nullptr);
+    SpinBox(QWidget* parent = nullptr);
 
 protected:
     void wheelEvent(QWheelEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 };
 
 #endif // SPINBOX_H

@@ -59,7 +59,7 @@ bool SqliteProduct::InsertNode(int parent_id, Node* node)
             query.bindValue(":branch", node->branch);
             query.bindValue(":unit", node->unit);
             query.bindValue(":commission", node->second);
-            query.bindValue(":unit_price", node->third);
+            query.bindValue(":unit_price", node->discount);
 
             if (!query.exec()) {
                 qWarning() << "Failed to insert node record: " << query.lastError().text();
@@ -90,7 +90,7 @@ bool SqliteProduct::NodeExternalReferences(int node_id) const
     auto string = R"(
     SELECT COUNT(*)
     FROM (
-        SELECT 1 FROM stakeholder_transaction WHERE rhs_node = :node_id AND removed = 0
+        SELECT 1 FROM stakeholder_transaction WHERE inside = :node_id AND removed = 0
         UNION ALL
         SELECT 1 FROM sales_transaction WHERE rhs_node = :node_id AND removed = 0
         UNION ALL
@@ -108,6 +108,38 @@ bool SqliteProduct::NodeExternalReferences(int node_id) const
 
     query.next();
     return query.value(0).toInt() >= 1;
+}
+
+bool SqliteProduct::UpdateNodeSimple(const Node* node)
+{
+    if (!node || !db_) {
+        qWarning() << "Invalid node or database pointer";
+        return false;
+    }
+
+    QSqlQuery query(*db_);
+
+    auto part = QString(R"(
+    UPDATE %1 SET
+    code = :code, description = :description, note = :note, unit_price = :unit_price, commission = :commission
+    WHERE id = :id
+)")
+                    .arg(info_.node);
+
+    query.prepare(part);
+    query.bindValue(":id", node->id);
+    query.bindValue(":code", node->code);
+    query.bindValue(":description", node->description);
+    query.bindValue(":note", node->note);
+    query.bindValue(":unit_price", node->discount);
+    query.bindValue(":commission", node->second);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to update node simple (ID:" << node->id << "):" << query.lastError().text();
+        return false;
+    }
+
+    return true;
 }
 
 void SqliteProduct::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
@@ -128,7 +160,7 @@ void SqliteProduct::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
         node->branch = query.value("branch").toBool();
         node->unit = query.value("unit").toInt();
         node->second = query.value("commission").toDouble();
-        node->third = query.value("unit_price").toDouble();
+        node->discount = query.value("unit_price").toDouble();
         node->initial_total = query.value("initial_total").toDouble();
         node->final_total = query.value("final_total").toDouble();
 

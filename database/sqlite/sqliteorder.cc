@@ -17,7 +17,7 @@ bool SqliteOrder::BuildTree(NodeHash& node_hash)
     query.setForwardOnly(true);
 
     auto part = QString(R"(
-    SELECT name, id, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, refund, initial_total, final_total
+    SELECT name, id, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, posted, initial_total, final_total
     FROM %1
     WHERE removed = 0
 )")
@@ -46,8 +46,8 @@ bool SqliteOrder::InsertNode(int parent_id, Node* node)
     QSqlQuery query(*db_);
 
     auto part = QString(R"(
-    INSERT INTO %1 (name, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, refund, initial_total, final_total)
-    VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :refund, :initial_total, :final_total)
+    INSERT INTO %1 (name, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, posted, initial_total, final_total)
+    VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :posted, :initial_total, :final_total)
 )")
                     .arg(info_.node);
 
@@ -66,8 +66,8 @@ bool SqliteOrder::InsertNode(int parent_id, Node* node)
             query.bindValue(":date_time", node->date_time);
             query.bindValue(":first", node->first);
             query.bindValue(":second", node->second);
-            query.bindValue(":discount", node->third);
-            query.bindValue(":refund", node->fourth);
+            query.bindValue(":discount", node->discount);
+            query.bindValue(":posted", node->posted);
             query.bindValue(":initial_total", node->initial_total);
             query.bindValue(":final_total", node->final_total);
 
@@ -100,6 +100,42 @@ void SqliteOrder::NodeLeafTotal(Node* node)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
     // todo!
+}
+
+bool SqliteOrder::UpdateNodeSimple(const Node* node)
+{
+    if (!node || !db_) {
+        qWarning() << "Invalid node or database pointer";
+        return false;
+    }
+
+    QSqlQuery query(*db_);
+
+    auto part = QString(R"(
+    UPDATE %1 SET
+    code = :code, description = :description, note = :note, date_time = :date_time,
+    node_rule = :node_rule, first = :first, employee = :employee, second = :second
+    WHERE id = :id
+)")
+                    .arg(info_.node);
+
+    query.prepare(part);
+    query.bindValue(":id", node->id);
+    query.bindValue(":code", node->code);
+    query.bindValue(":description", node->description);
+    query.bindValue(":note", node->note);
+    query.bindValue(":date_time", node->date_time);
+    query.bindValue(":node_rule", node->node_rule);
+    query.bindValue(":first", node->first);
+    query.bindValue(":employee", node->employee);
+    query.bindValue(":second", node->second);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to update node simple (ID:" << node->id << "):" << query.lastError().text();
+        return false;
+    }
+
+    return true;
 }
 
 void SqliteOrder::BuildTransList(TransList& trans_list, int node_id)
@@ -204,13 +240,13 @@ void SqliteOrder::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
         node->node_rule = query.value("node_rule").toBool();
         node->branch = query.value("branch").toBool();
         node->unit = query.value("unit").toInt();
-        node->party = query.value("party").toBool();
+        node->party = query.value("party").toInt();
         node->employee = query.value("employee").toInt();
         node->date_time = query.value("date_time").toString();
         node->first = query.value("first").toInt();
         node->second = query.value("second").toDouble();
-        node->third = query.value("discount").toDouble();
-        node->fourth = query.value("refund").toBool();
+        node->discount = query.value("discount").toDouble();
+        node->posted = query.value("posted").toBool();
         node->initial_total = query.value("initial_total").toDouble();
         node->final_total = query.value("final_total").toDouble();
         node_hash.insert(node_id, node);

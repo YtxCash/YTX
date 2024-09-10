@@ -5,7 +5,7 @@
 
 #include "component/info.h"
 #include "component/using.h"
-#include "tree/model/treemodel.h"
+#include "tree/model/abstracttreemodel.h"
 #include "tree/node.h"
 
 namespace Ui {
@@ -16,8 +16,8 @@ class EditNodeFinance final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeFinance(
-        Node* node, CString& separator, CInfo& info, const TreeModel& model, int parent_id, bool node_usage, bool view_opened, QWidget* parent = nullptr);
+    EditNodeFinance(Node* node, CString& separator, CInfo& info, const AbstractTreeModel& model, int parent_id, bool node_usage, bool view_opened,
+        QWidget* parent = nullptr);
     ~EditNodeFinance();
 
 private slots:
@@ -35,7 +35,7 @@ protected:
     void changeEvent(QEvent* event) override;
 
 private:
-    void IniDialog(CStringHash& currency_map);
+    void IniDialog(CStringHash& unit_hash);
     void IniConnect();
     void Data(Node* node);
 
@@ -44,7 +44,7 @@ private:
     Node* node_ {};
     CString& separator_ {};
 
-    const TreeModel& model_;
+    const AbstractTreeModel& model_;
     int parent_id_ {};
 
     bool node_usage_ {};

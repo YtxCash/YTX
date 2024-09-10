@@ -5,7 +5,6 @@
 ComboBox::ComboBox(QWidget* parent)
     : QComboBox { parent }
 {
-    this->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     this->setFrame(false);
     this->setEditable(true);
     this->setInsertPolicy(QComboBox::NoInsert);

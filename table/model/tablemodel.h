@@ -23,7 +23,6 @@ public:
 signals:
     // send to tree model
     void SUpdateOneTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
-    void SUpdateProperty(int node_id, double first, double third, double fourth);
     void SSearch();
 
     // send to signal station
@@ -70,9 +69,9 @@ public:
     // member functions
     bool InsertTrans(const QModelIndex& parent = QModelIndex());
 
-    auto GetRow(int node_id) const -> int;
-    auto GetIndex(int trans_id) const -> QModelIndex;
-    auto GetTrans(const QModelIndex& index) const -> Trans* { return trans_list_.at(index.row()); }
+    int GetRow(int node_id) const;
+    QModelIndex GetIndex(int trans_id) const;
+    QStringList* GetDocumentPointer(const QModelIndex& index) const;
 
     void UpdateAllState(Check state);
 
@@ -89,10 +88,10 @@ protected:
     double Balance(bool node_rule, double debit, double credit) { return (node_rule ? 1 : -1) * (credit - debit); }
     void AccumulateSubtotal(int start, bool node_rule);
 
-    bool UpdateDateTime(SPSqlite sql, Trans* trans, CString& new_value, CString& field = DATE_TIME);
-    bool UpdateDescription(SPSqlite sql, Trans* trans, CString& new_value, CString& field = DESCRIPTION);
-    bool UpdateCode(SPSqlite sql, Trans* trans, CString& new_value, CString& field = CODE);
-    bool UpdateOneState(SPSqlite sql, Trans* trans, bool new_value, CString& field = STATE);
+    bool UpdateDateTime(Trans* trans, CString& new_value, CString& field = DATE_TIME);
+    bool UpdateDescription(Trans* trans, CString& new_value, CString& field = DESCRIPTION);
+    bool UpdateCode(Trans* trans, CString& new_value, CString& field = CODE);
+    bool UpdateOneState(Trans* trans, bool new_value, CString& field = STATE);
     bool UpdateRelatedNode(Trans* trans, int value);
 
 protected:
@@ -106,19 +105,26 @@ protected:
     QList<Trans*> trans_list_ {};
 
 private:
-    template <typename T>
-    bool UpdateField(SPSqlite sql, Trans* trans, T& field_value, const T& new_value, CString& field, const std::function<void()>& action = {})
+    template <typename T> bool UpdateField(Trans* trans, const T& new_value, CString& field, T* Trans::*member, const std::function<void()>& action = {})
     {
-        if (field_value == new_value)
+        if (trans == nullptr || trans->*member == nullptr)
             return false;
 
-        field_value = new_value;
+        if (*(trans->*member) == new_value)
+            return false;
+
+        *(trans->*member) = new_value;
 
         if (*trans->related_node != 0) {
-            sql->UpdateField(info_.transaction, field, new_value, *trans->id);
+            try {
+                sql_->UpdateField(info_.transaction, new_value, field, *trans->id);
 
-            if (action)
-                action();
+                if (action)
+                    action();
+            } catch (const std::exception& e) {
+                qWarning() << "Failed to update field:" << e.what();
+                return false;
+            }
         }
 
         return true;

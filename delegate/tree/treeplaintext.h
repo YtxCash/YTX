@@ -1,9 +1,9 @@
 #ifndef TREEPLAINTEXT_H
 #define TREEPLAINTEXT_H
 
-#include <QStyledItemDelegate>
+#include "delegate/styleditemdelegate.h"
 
-class TreePlainText final : public QStyledItemDelegate {
+class TreePlainText final : public StyledItemDelegate {
 public:
     explicit TreePlainText(QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;

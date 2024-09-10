@@ -61,7 +61,7 @@ bool SqliteStakeholder::InsertNode(int parent_id, Node* node)
             query.bindValue(":branch", node->branch);
             query.bindValue(":unit", node->unit);
             query.bindValue(":employee", node->employee);
-            query.bindValue(":deadline", node->date_time);
+            query.bindValue(":deadline", node->party);
             query.bindValue(":payment_period", node->first);
             query.bindValue(":tax_rate", node->second);
 
@@ -135,6 +135,115 @@ bool SqliteStakeholder::NodeExternalReferences(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
+bool SqliteStakeholder::UpdateNodeSimple(const Node* node)
+{
+    if (!node || !db_) {
+        qWarning() << "Invalid node or database pointer";
+        return false;
+    }
+
+    QSqlQuery query(*db_);
+
+    auto part = QString(R"(
+    UPDATE %1 SET
+    code = :code, description = :description, note = :note, deadline = :deadline, unit = :unit,
+    node_rule = :node_rule, payment_period = :payment_period, employee = :employee, tax_rate = :tax_rate
+    WHERE id = :id
+)")
+                    .arg(info_.node);
+
+    query.prepare(part);
+    query.bindValue(":id", node->id);
+    query.bindValue(":code", node->code);
+    query.bindValue(":description", node->description);
+    query.bindValue(":note", node->note);
+    query.bindValue(":node_rule", node->node_rule);
+    query.bindValue(":unit", node->unit);
+    query.bindValue(":employee", node->employee);
+    query.bindValue(":deadline", node->date_time);
+    query.bindValue(":payment_period", node->first);
+    query.bindValue(":tax_rate", node->second);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to update node simple (ID:" << node->id << "):" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+bool SqliteStakeholder::RemoveNode(int node_id, bool branch)
+{
+    QSqlQuery query(*db_);
+
+    auto part_1st = QString(R"(
+    UPDATE %1
+    SET removed = 1
+    WHERE id = :node_id
+)")
+                        .arg(info_.node);
+
+    auto part_2nd = QString(R"(
+    UPDATE %1
+    SET removed = 1
+    WHERE outside = :node_id
+)")
+                        .arg(info_.transaction);
+
+    if (branch) {
+        part_2nd = QString(R"(
+        WITH related_nodes AS (
+            SELECT DISTINCT fp1.ancestor, fp2.descendant
+            FROM %1 AS fp1
+            INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor
+            WHERE fp2.ancestor = :node_id AND fp2.descendant != :node_id
+            AND fp1.ancestor != :node_id
+        )
+        UPDATE %1
+        SET distance = distance - 1
+        WHERE ancestor IN (SELECT ancestor FROM related_nodes)
+        AND descendant IN (SELECT descendant FROM related_nodes)
+    )")
+                       .arg(info_.path);
+    }
+
+    auto part_3rd = QString("DELETE FROM %1 WHERE (descendant = :node_id OR ancestor = :node_id) AND distance !=0").arg(info_.path);
+
+    if (!DBTransaction([&]() {
+            query.prepare(part_1st);
+            query.bindValue(":node_id", node_id);
+            if (!query.exec()) {
+                qWarning() << "Failed to remove node record 1st step: " << query.lastError().text();
+                return false;
+            }
+
+            query.clear();
+
+            query.prepare(part_2nd);
+            query.bindValue(":node_id", node_id);
+            if (!query.exec()) {
+                qWarning() << "Failed to remove node_path record 2nd step: " << query.lastError().text();
+                return false;
+            }
+
+            query.clear();
+
+            query.prepare(part_3rd);
+            query.bindValue(":node_id", node_id);
+            if (!query.exec()) {
+                qWarning() << "Failed to remove node_path record 3rd step: " << query.lastError().text();
+                return false;
+            }
+
+            return true;
+        })) {
+        qWarning() << "Failed to remove node";
+        return false;
+    }
+
+    return true;
+}
+
 bool SqliteStakeholder::RRemoveMulti(int node_id)
 {
     auto list { TransID(node_id) };
@@ -173,7 +282,9 @@ bool SqliteStakeholder::RReplaceMulti(int old_node_id, int new_node_id)
     auto node_trans { RelatedNodeTrans(old_node_id) };
 
     // begin deal with transaction hash
-    for (auto& transaction : std::as_const(transaction_hash_))
+    const auto& const_transaction_hash { std::as_const(transaction_hash_) };
+
+    for (auto& transaction : const_transaction_hash)
         if (transaction->lhs_node == old_node_id)
             transaction->lhs_node = new_node_id;
     // end deal with transaction hash
@@ -223,7 +334,9 @@ bool SqliteStakeholder::RReplaceReferences(Section origin, int old_node_id, int 
         return false;
     }
 
-    for (auto& transaction : std::as_const(transaction_hash_))
+    const auto& const_transaction_hash { std::as_const(transaction_hash_) };
+
+    for (auto& transaction : const_transaction_hash)
         if (transaction->rhs_node == old_node_id)
             transaction->rhs_node = new_node_id;
 
@@ -331,7 +444,7 @@ void SqliteStakeholder::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
         node->branch = query.value("branch").toBool();
         node->unit = query.value("unit").toInt();
         node->employee = query.value("employee").toInt();
-        node->date_time = query.value("deadline").toString();
+        node->party = query.value("deadline").toInt();
         node->first = query.value("payment_period").toInt();
         node->second = query.value("tax_rate").toDouble();
 

@@ -13,8 +13,8 @@ TableWidget::~TableWidget() { delete ui; }
 
 void TableWidget::SetModel(TableModel* model)
 {
-    ui->view_->setModel(model);
+    ui->tableView->setModel(model);
     model_ = model;
 }
 
-QTableView* TableWidget::View() { return ui->view_; }
+QTableView* TableWidget::View() { return ui->tableView; }

@@ -5,7 +5,7 @@
 #include "component/constvalue.h"
 #include "ui_treewidget.h"
 
-TreeWidget::TreeWidget(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
+TreeWidget::TreeWidget(AbstractTreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
     : AbstractTreeWidget(parent)
     , ui(new Ui::TreeWidget)
     , model_ { model }
@@ -13,7 +13,7 @@ TreeWidget::TreeWidget(TreeModel* model, CInfo& info, CSectionRule& section_rule
     , section_rule_ { section_rule }
 {
     ui->setupUi(this);
-    ui->view_->setModel(model);
+    ui->treeView->setModel(model);
     ui->dspin_box_dynamic_->setRange(DMIN, DMAX);
     ui->dspin_box_static_->setRange(DMIN, DMAX);
     SetStatus();
@@ -21,7 +21,7 @@ TreeWidget::TreeWidget(TreeModel* model, CInfo& info, CSectionRule& section_rule
 
 TreeWidget::~TreeWidget() { delete ui; }
 
-void TreeWidget::SetCurrentIndex(const QModelIndex& index) { ui->view_->setCurrentIndex(index); }
+void TreeWidget::SetCurrentIndex(const QModelIndex& index) { ui->treeView->setCurrentIndex(index); }
 
 void TreeWidget::SetStatus()
 {
@@ -51,15 +51,9 @@ void TreeWidget::SetStatus()
     }
 }
 
-void TreeWidget::HideStatus()
-{
-    ui->dspin_box_dynamic_->setHidden(true);
-    ui->dspin_box_static_->setHidden(true);
-}
+QTreeView* TreeWidget::View() { return ui->treeView; }
 
-QTreeView* TreeWidget::View() { return ui->view_; }
-
-QHeaderView* TreeWidget::Header() { return ui->view_->header(); }
+QHeaderView* TreeWidget::Header() { return ui->treeView->header(); }
 
 void TreeWidget::RUpdateDSpinBox()
 {

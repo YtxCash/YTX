@@ -8,6 +8,22 @@ constexpr int HUNDRED = 100;
 constexpr int IMAX = 1'000'000'000;
 constexpr int IMIN = -1'000'000'000;
 constexpr int ROW_HEIGHT = 24;
+constexpr int THIRTY_ONE = 31;
+
+// Constants for unit
+constexpr int UNIT_CASH = 0;
+constexpr int UNIT_MONTHLY = 1;
+constexpr int UNIT_PENDING = 2;
+constexpr int UNIT_EMPLOYEE = 0;
+constexpr int UNIT_CUSTOMER = 1;
+constexpr int UNIT_VENDOR = 2;
+constexpr int UNIT_PRODUCT = 3;
+
+// Constants for booleans
+constexpr bool DICD = 0;
+constexpr bool DDCI = 1;
+constexpr bool RULE_CASH = 0;
+constexpr bool RULE_MONTHLY = 1;
 
 // Constants for datetime
 constexpr char DATE_D[] = "d";
@@ -52,17 +68,17 @@ constexpr char DISCOUNT[] = "discount";
 constexpr char DOCUMENT[] = "document";
 constexpr char EMPLOYEE[] = "employee";
 constexpr char FINAL_TOTAL[] = "final_total";
-constexpr char FIRST_PROPERTY[] = "first_property";
+constexpr char FIRST[] = "first";
 constexpr char INITIAL_TOTAL[] = "initial_total";
 constexpr char NAME[] = "name";
 constexpr char NODE_ID[] = "node/id";
 constexpr char NODE_RULE[] = "node_rule";
 constexpr char NOTE[] = "note";
 constexpr char PAYMENT_PERIOD[] = "payment_period";
-constexpr char REFUND[] = "refund";
+constexpr char Posted[] = "posted";
+constexpr char SECOND[] = "second";
 constexpr char STATE[] = "state";
 constexpr char TAX_RATE[] = "tax_rate";
-constexpr char THIRD_PROPERTY[] = "third_property";
 constexpr char UNIT[] = "unit";
 constexpr char UNIT_PRICE[] = "unit_price";
 
@@ -89,6 +105,7 @@ constexpr char Finance[] = "Finance";
 constexpr char FINANCE[] = "finance";
 constexpr char FINANCE_PATH[] = "finance_path";
 constexpr char FINANCE_TRANSACTION[] = "finance_transaction";
+constexpr char PARTY[] = "party";
 constexpr char Product[] = "Product";
 constexpr char PRODUCT[] = "product";
 constexpr char PRODUCT_PATH[] = "product_path";

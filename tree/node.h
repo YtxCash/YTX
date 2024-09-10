@@ -32,8 +32,8 @@ public:
 
     int first {};
     double second {};
-    double third {};
-    bool fourth {};
+    double discount {};
+    bool posted {};
 
     // order and stakeholder
     QString date_time {};
@@ -62,16 +62,14 @@ inline Node::Node(const Node& other)
     , unit(other.unit)
     , first(other.first)
     , second(other.second)
-    , third(other.third)
-    , fourth(other.fourth)
+    , discount(other.discount)
+    , posted(other.posted)
     , date_time(other.date_time)
     , employee(other.employee)
     , party(other.party)
     , final_total(other.final_total)
     , initial_total(other.initial_total)
 {
-    parent = nullptr;
-    children.clear();
 }
 
 inline Node& Node::operator=(const Node& other)
@@ -89,26 +87,23 @@ inline Node& Node::operator=(const Node& other)
     unit = other.unit;
     first = other.first;
     second = other.second;
-    third = other.third;
-    fourth = other.fourth;
+    discount = other.discount;
+    posted = other.posted;
     date_time = other.date_time;
     employee = other.employee;
     party = other.party;
     final_total = other.final_total;
     initial_total = other.initial_total;
 
-    parent = nullptr;
-    children.clear();
-
     return *this;
 }
 
 inline bool Node::operator==(const Node& other) const noexcept
 {
-    return std::tie(name, id, code, party, employee, fourth, first, date_time, description, note, node_rule, branch, unit, parent, children)
-        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.fourth, other.first, other.date_time, other.description, other.note,
+    return std::tie(name, id, code, party, employee, posted, first, date_time, description, note, node_rule, branch, unit, parent, children)
+        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.posted, other.first, other.date_time, other.description, other.note,
             other.node_rule, other.branch, other.unit, other.parent, other.children)
-        && std::abs(second - other.second) < tolerance && std::abs(third - other.third) < tolerance;
+        && std::abs(second - other.second) < tolerance && std::abs(discount - other.discount) < tolerance;
 }
 
 inline void Node::Reset()
@@ -119,8 +114,8 @@ inline void Node::Reset()
     party = 0;
     employee = 0;
     second = 0.0;
-    third = 0.0;
-    fourth = false;
+    discount = 0.0;
+    posted = false;
     first = 0;
     date_time.clear();
     description.clear();

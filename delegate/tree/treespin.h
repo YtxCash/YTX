@@ -1,14 +1,13 @@
 #ifndef TREESPIN_H
 #define TREESPIN_H
 
-#include <QStyledItemDelegate>
+#include "delegate/styleditemdelegate.h"
 
-class TreeSpin final : public QStyledItemDelegate {
+class TreeSpin final : public StyledItemDelegate {
 public:
     TreeSpin(int min, int max, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
-    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -16,7 +15,6 @@ public:
 private:
     int max_ {};
     int min_ {};
-    QLocale locale_ {};
 };
 
 #endif // TREESPIN_H

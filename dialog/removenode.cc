@@ -5,7 +5,7 @@
 
 #include "ui_removenode.h"
 
-RemoveNode::RemoveNode(const TreeModel& model, int node_id, QWidget* parent)
+RemoveNode::RemoveNode(const AbstractTreeModel& model, int node_id, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::RemoveNode)
     , node_id_ { node_id }
@@ -66,17 +66,6 @@ void RemoveNode::IniDialog()
     ui->rBtnReplaceRecords->setChecked(true);
     ui->pBtnCancel->setDefault(true);
     this->setWindowTitle(tr("Remove %1").arg(model_.GetPath(node_id_)));
-
-    auto combo { ui->comboBox };
-    combo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    combo->setFrame(false);
-    combo->setEditable(true);
-    combo->setInsertPolicy(QComboBox::NoInsert);
-
-    auto completer { new QCompleter(combo->model(), combo) };
-    completer->setFilterMode(Qt::MatchContains);
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    combo->setCompleter(completer);
 
     model_.ComboPathLeaf(ui->comboBox, node_id_);
 

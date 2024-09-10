@@ -1,11 +1,12 @@
 #include "treecombo.h"
 
+#include <QtWidgets/qapplication.h>
 #include <widget/combobox.h>
 
 #include <QPainter>
 
 TreeCombo::TreeCombo(CStringHash& hash, QObject* parent)
-    : QStyledItemDelegate { parent }
+    : StyledItemDelegate { parent }
     , hash_ { hash }
 {
 }
@@ -33,13 +34,6 @@ void TreeCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
         cast_editor->setCurrentIndex(item_index);
 }
 
-void TreeCombo::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    Q_UNUSED(index);
-
-    editor->setGeometry(option.rect);
-}
-
 void TreeCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     model->setData(index, qobject_cast<ComboBox*>(editor)->currentData().toInt());
@@ -47,20 +41,19 @@ void TreeCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const Q
 
 void TreeCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    QString path { hash_.value(index.data().toInt()) };
-
-    auto selected { option.state & QStyle::State_Selected };
-    auto palette { option.palette };
-
-    painter->setPen(selected ? palette.color(QPalette::HighlightedText) : palette.color(QPalette::Text));
-    if (selected)
-        painter->fillRect(option.rect, palette.highlight());
-
-    painter->drawText(option.rect, Qt::AlignCenter, path);
+    PaintItem(HashValue(index.data().toInt()), painter, option, Qt::AlignCenter);
 }
 
 QSize TreeCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    QString path { hash_.value(index.data().toInt()) };
-    return path.isEmpty() ? QSize() : QSize(QFontMetrics(option.font).horizontalAdvance(path) + 8, option.rect.height());
+    const QString text = HashValue(index.data(Qt::EditRole).toInt());
+    return CalculateSize(text, option, index);
+}
+
+QString TreeCombo::HashValue(int key) const
+{
+    static const QString empty_string {};
+    auto it { hash_.constFind(key) };
+
+    return (it != hash_.constEnd()) ? *it : empty_string;
 }

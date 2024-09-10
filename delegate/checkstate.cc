@@ -6,26 +6,18 @@
 #include <QPainter>
 
 CheckState::CheckState(bool fill_rect, QObject* parent)
-    : QStyledItemDelegate { parent }
+    : StyledItemDelegate { parent }
     , rect_ { 0, 0, 16, 16 }
     , fill_rect_ { fill_rect }
 {
 }
 
-QWidget* CheckState::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    Q_UNUSED(option);
-    Q_UNUSED(index);
-
-    return new QCheckBox(parent);
-}
+QWidget* CheckState::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const { return new QCheckBox(parent); }
 
 void CheckState::setEditorData(QWidget* editor, const QModelIndex& index) const { qobject_cast<QCheckBox*>(editor)->setChecked(index.data().toBool()); }
 
-void CheckState::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void CheckState::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
-    Q_UNUSED(index);
-
     rect_.moveCenter(option.rect.center());
     editor->setGeometry(rect_);
 }

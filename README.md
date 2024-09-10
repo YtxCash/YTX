@@ -4,28 +4,28 @@
 
 ### Relationship Between Node, Sql Node_Table And Header
 
-| Node        |  name   |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |   third    | fourth  | initial_total  | final_total  |
-| ----------- | :-----: | :-----: | :-----: | :---------: | :-----: | :-------: | :-----: | :-----: | :------: | :------: | :-------: | :------------: | :--------: | :--------: | :-----: | :------------: | :----------: |
-| Qt          | QString |   int   | QString |   QString   | QString |   bool    |  bool   |   int   |   int    |   int    |  QString  |      int       |   double   |   double   |  bool   |     double     |    double    |
-| Sqlite3     |  TEXT   | INTEGER |  TEXT   |    TEXT     |  TEXT   |  BOOLEAN  | BOOLEAN | INTEGER | INTEGER  | INTEGER  |   TEXT    |    INTEGER     |  NUMERIC   |  NUMERIC   | BOOLEAN |    NUMERIC     |   NUMERIC    |
-|             |         |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| finance     |  name   |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |     X      |    X    | initial_total  | final_total  |
-|             |  Name   |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |     X      |    X    | Foreign Total  | Local Total  |
-|             |         |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| task        |  name   |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |     X      |    X    | initial_total  | final_total  |
-|             |  Name   |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |     X      |    X    | Quantity Total | Amount Total |
-|             |         |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| product     |  name   |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        | commission | unit_price |    X    | initial_total  | final_total  |
-|             |  Name   |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        | Commission | UnitPrice  |    X    | Quantity Total | Amount Total |
-|             |         |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| stakeholder |  name   |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     | employee | deadline  | payment_period |  tax_rate  |     X      |    X    |       X        |      X       |
-|             |  Name   |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     | Employee | Deadline  | PaymentPeriod  |  TaxRate   |     X      |    X    |       X        |      X       |
-|             |         |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| purchase    |  name   |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | refund  | initial_total  | final_total  |
-|             |  Name   |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |  Vendor  | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Refund  | Initial Total  | Final Total  |
-|             |         |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| sales       |  name   |   id    |  code   | description |  note   | node_rule | branch  |  term   |  party   | employee | date_time |     first      |   second   |  discount  | refund  | initial_total  | final_total  |
-|             |  Name   |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Customer | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Refund  | Initial Total  | Final Total  |
+| Node        |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | posted  | initial_total  | final_total  |
+| ----------- | :---------: | :-----: | :-----: | :---------: | :-----: | :-------: | :-----: | :-----: | :------: | :------: | :-------: | :------------: | :--------: | :--------: | :-----: | :------------: | :----------: |
+| Qt          |   QString   |   int   | QString |   QString   | QString |   bool    |  bool   |   int   |   int    |   int    |  QString  |      int       |   double   |   double   |  bool   |     double     |    double    |
+| Sqlite3     |    TEXT     | INTEGER |  TEXT   |    TEXT     |  TEXT   |  BOOLEAN  | BOOLEAN | INTEGER | INTEGER  | INTEGER  |   TEXT    |    INTEGER     |  NUMERIC   |  NUMERIC   | BOOLEAN |    NUMERIC     |   NUMERIC    |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
+| finance     |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |     X      |    X    | initial_total  | final_total  |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |     X      |    X    | Foreign Total  | Local Total  |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
+| task        |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |     X      |    X    | initial_total  | final_total  |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |     X      |    X    | Quantity Total | Amount Total |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
+| product     |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        | commission | unit_price |    X    | initial_total  | final_total  |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        | Commission | UnitPrice  |    X    | Quantity Total | Amount Total |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
+| stakeholder |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   | deadline | employee |     X     | payment_period |  tax_rate  |     X      |    X    |       X        |      X       |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Deadline | Employee |     X     | PaymentPeriod  |  TaxRate   |     X      |    X    |       X        |      X       |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
+| purchase    | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | posted  | initial_total  | final_total  |
+|             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |  Vendor  | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Posted  | Initial Total  | Final Total  |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
+| sales       | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  term   |  party   | employee | date_time |     first      |   second   |  discount  | posted  | initial_total  | final_total  |
+|             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Customer | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Posted  | Initial Total  | Final Total  |
 
 -- stakeholder-U: Employee = 0, Customer = 1, Vendor = 2, Product = 3
 -- stakeholder-R: Cash = 0, Monthly = 1

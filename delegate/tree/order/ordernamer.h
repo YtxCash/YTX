@@ -1,13 +1,12 @@
 #ifndef ORDERNAMER_H
 #define ORDERNAMER_H
 
-#include <QStyledItemDelegate>
+#include "delegate/styleditemdelegate.h"
+#include "tree/model/abstracttreemodel.h"
 
-#include "tree/model/treemodel.h"
-
-class OrderName : public QStyledItemDelegate {
+class OrderName : public StyledItemDelegate {
 public:
-    OrderName(const TreeModel& model, QObject* parent = nullptr);
+    OrderName(const AbstractTreeModel& model, QObject* parent = nullptr);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -16,7 +15,7 @@ private:
     QString GetPath(const QModelIndex& index) const;
 
 private:
-    const TreeModel& model_;
+    const AbstractTreeModel& model_;
 };
 
 #endif // ORDERNAMER_H

@@ -3,9 +3,9 @@
 
 // tree's branch column 6, table's state column 7, arte different, so they can share this delegate
 
-#include <QStyledItemDelegate>
+#include "delegate/styleditemdelegate.h"
 
-class CheckState final : public QStyledItemDelegate {
+class CheckState final : public StyledItemDelegate {
 public:
     CheckState(bool fill_rect, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;

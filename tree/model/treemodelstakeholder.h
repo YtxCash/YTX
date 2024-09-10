@@ -1,10 +1,10 @@
 #ifndef TREEMODELSTAKEHOLDER_H
 #define TREEMODELSTAKEHOLDER_H
 
-#include "tree/model/treemodel.h"
+#include "tree/model/abstracttreemodel.h"
 #include "widget/tablewidget.h"
 
-class TreeModelStakeholder final : public TreeModel {
+class TreeModelStakeholder final : public AbstractTreeModel {
     Q_OBJECT
 
 public:
@@ -23,12 +23,14 @@ public:
     void UpdateBaseUnit(int base_unit) override { root_->unit = base_unit; }
 
 protected:
-    bool UpdateNodeRule(Node* node, bool value) override;
+    bool UpdateNodeRule(Node* node, bool value) override; // Cash = 0, Monthly = 1
+    void ConstructTree() override;
 
-    bool UpdatePaymentPeriod(Node* node, int value);
-    bool UpdateTaxRate(Node* node, double value);
-    bool UpdateDeadline(Node* node, CString& value);
-    bool UpdateEmployee(Node* node, int value);
+private:
+    bool UpdatePaymentPeriod(Node* node, int value, CString& field = PAYMENT_PERIOD);
+    bool UpdateTaxRate(Node* node, double value, CString& field = TAX_RATE);
+    bool UpdateDeadline(Node* node, int value, CString& field = DEADLINE);
+    bool UpdateEmployee(Node* node, int value, CString& field = EMPLOYEE);
 };
 
 #endif // TREEMODELSTAKEHOLDER_H

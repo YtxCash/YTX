@@ -35,7 +35,7 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
         return *trans->debit == 0 ? QVariant() : *trans->debit;
     case TableEnum::kCredit:
         return *trans->credit == 0 ? QVariant() : *trans->credit;
-    case TableEnum::kBalance:
+    case TableEnum::kSubtotal:
         return trans->subtotal;
     default:
         return QVariant();
@@ -60,16 +60,16 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(sql_, trans, value.toString());
+        UpdateDateTime(trans, value.toString());
         break;
     case TableEnum::kCode:
-        UpdateCode(sql_, trans, value.toString());
+        UpdateCode(trans, value.toString());
         break;
     case TableEnum::kState:
-        UpdateOneState(sql_, trans, value.toBool());
+        UpdateOneState(trans, value.toBool());
         break;
     case TableEnum::kDescription:
-        UpdateDescription(sql_, trans, value.toString());
+        UpdateDescription(trans, value.toString());
         break;
     case TableEnum::kRatio:
         rat_changed = UpdateRatio(trans, value.toDouble());
@@ -91,7 +91,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         if (tra_changed) {
             sql_->InsertTrans(trans);
             AccumulateSubtotal(kRow, node_rule_);
-            emit SResizeColumnToContents(std::to_underlying(TableEnum::kBalance));
+            emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
             emit SAppendOne(info_.section, trans);
 
             auto ratio { *trans->ratio };
@@ -117,7 +117,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 
     if (deb_changed || cre_changed) {
         AccumulateSubtotal(kRow, node_rule_);
-        emit SResizeColumnToContents(std::to_underlying(TableEnum::kBalance));
+        emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
     }
 
     if (tra_changed) {
@@ -185,7 +185,7 @@ Qt::ItemFlags TableModelOrder::flags(const QModelIndex& index) const
 
     switch (kColumn) {
     case TableEnum::kID:
-    case TableEnum::kBalance:
+    case TableEnum::kSubtotal:
     case TableEnum::kDocument:
         flags &= ~Qt::ItemIsEditable;
         break;

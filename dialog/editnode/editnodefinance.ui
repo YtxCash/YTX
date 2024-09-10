@@ -35,7 +35,7 @@
     </widget>
    </item>
    <item row="2" column="1" colspan="3">
-    <widget class="QLineEdit" name="lineDescription">
+    <widget class="LineEdit" name="lineDescription">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -55,7 +55,7 @@
     </widget>
    </item>
    <item row="0" column="1" colspan="3">
-    <widget class="QLineEdit" name="lineName">
+    <widget class="LineEdit" name="lineName">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -65,7 +65,7 @@
     </widget>
    </item>
    <item row="1" column="1" colspan="3">
-    <widget class="QLineEdit" name="lineCode">
+    <widget class="LineEdit" name="lineCode">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -158,7 +158,7 @@
     </widget>
    </item>
    <item row="3" column="1" colspan="3">
-    <widget class="QComboBox" name="comboUnit">
+    <widget class="ComboBox" name="comboUnit">
      <property name="editable">
       <bool>true</bool>
      </property>
@@ -232,7 +232,7 @@
     </widget>
    </item>
    <item row="9" column="1" colspan="3">
-    <widget class="QPlainTextEdit" name="plainNote">
+    <widget class="PlainTextEdit" name="plainNote">
      <property name="tabChangesFocus">
       <bool>true</bool>
      </property>
@@ -259,6 +259,23 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">widget/combobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">widget/lineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">widget/plaintextedit.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>lineName</tabstop>
   <tabstop>lineCode</tabstop>

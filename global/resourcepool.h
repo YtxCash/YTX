@@ -37,9 +37,9 @@ private:
     std::deque<T*> pool_;
     QMutex mutex_;
 
-    static constexpr int kSize { 100 };
-    static constexpr int kExpandThreshold { 20 };
-    static constexpr int kShrinkThreshold { 1001 };
+    static constexpr qsizetype kSize { 100 };
+    static constexpr qsizetype kExpandThreshold { 20 };
+    static constexpr qsizetype kShrinkThreshold { 1001 };
 };
 
 template <Resettable T> ResourcePool<T>& ResourcePool<T>::Instance()

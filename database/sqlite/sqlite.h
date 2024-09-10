@@ -51,6 +51,8 @@ public:
     virtual bool BuildTree(NodeHash& node_hash);
     virtual bool InsertNode(int parent_id, Node* node);
     virtual void NodeLeafTotal(Node* node);
+    virtual bool UpdateNodeSimple(const Node* node);
+    virtual bool RemoveNode(int node_id, bool branch = false);
     virtual bool NodeInternalReferences(int node_id) const;
     virtual bool NodeExternalReferences(int node_id) const
     {
@@ -58,7 +60,6 @@ public:
         return false;
     };
 
-    bool RemoveNode(int node_id, bool branch = false);
     bool DragNode(int destination_node_id, int node_id);
 
     // table
@@ -74,7 +75,7 @@ public:
     QHash<int, Transaction*>* TransactionHash() { return &transaction_hash_; }
 
     // common
-    bool UpdateField(CString& table, CString& column, CVariant& value, int id);
+    bool UpdateField(CString& table, CVariant& new_value, CString& field, int id);
 
 protected:
     // tree
