@@ -240,7 +240,7 @@ QString MainwindowSqlite::NodeOrder(CString& table_name)
         first             INTEGER,
         second            NUMERIC,
         discount          NUMERIC,
-        posted            BOOLEAN    DEFAULT 0,
+        locked            BOOLEAN    DEFAULT 0,
         initial_total     NUMERIC,
         final_total       NUMERIC,
         removed           BOOLEAN    DEFAULT 0

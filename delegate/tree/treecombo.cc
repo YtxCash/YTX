@@ -3,8 +3,6 @@
 #include <QtWidgets/qapplication.h>
 #include <widget/combobox.h>
 
-#include <QPainter>
-
 TreeCombo::TreeCombo(CStringHash& hash, QObject* parent)
     : StyledItemDelegate { parent }
     , hash_ { hash }
@@ -41,13 +39,13 @@ void TreeCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const Q
 
 void TreeCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    PaintItem(HashValue(index.data().toInt()), painter, option, Qt::AlignCenter);
+    PaintText(HashValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
 }
 
 QSize TreeCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString text = HashValue(index.data(Qt::EditRole).toInt());
-    return CalculateSize(text, option, index);
+    return CalculateTextSize(text, option);
 }
 
 QString TreeCombo::HashValue(int key) const

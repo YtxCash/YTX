@@ -1,12 +1,12 @@
 #include "abstracttreemodel.h"
 
 #include <QApplication>
-#include <QLabel>
 #include <QQueue>
 #include <QTimer>
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
+#include "widget/temporarylabel.h"
 
 AbstractTreeModel::AbstractTreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : QAbstractItemModel(parent)
@@ -334,6 +334,7 @@ Qt::ItemFlags AbstractTreeModel::flags(const QModelIndex& index) const
         break;
     case TreeEnumFinanceTask::kInitialTotal:
     case TreeEnumFinanceTask::kFinalTotal:
+    case TreeEnumFinanceTask::kBranch:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:
@@ -620,12 +621,12 @@ bool AbstractTreeModel::UpdateBranch(Node* node, bool value)
     int node_id { node->id };
 
     if (!node->children.isEmpty() || table_hash_.contains(node_id)) {
-        ShowTemporaryTooltip(tr("Cannot change node branch. It might be opened or have children nodes."), 3000);
+        ShowTemporaryTooltip(tr("Cannot change %1's branch. It might be opened or have children nodes.").arg(node->name), 3000);
         return false;
     }
 
     if (sql_->NodeInternalReferences(node_id) || sql_->NodeExternalReferences(node_id)) {
-        ShowTemporaryTooltip(tr("Cannot change unit due to internal or external references"), 3000);
+        ShowTemporaryTooltip(tr("Cannot change %1's branch due to internal or external references").arg(node->name), 3000);
         return false;
     }
 
@@ -711,7 +712,7 @@ bool AbstractTreeModel::UpdateUnit(Node* node, int value)
 
     int node_id { node->id };
     if (sql_->NodeInternalReferences(node_id) || sql_->NodeExternalReferences(node_id)) {
-        ShowTemporaryTooltip(tr("Cannot change unit due to internal or external references"), 3000);
+        ShowTemporaryTooltip(tr("Cannot change %1's unit due to internal or external references").arg(node->name), 3000);
         return false;
     }
 
@@ -794,7 +795,7 @@ void AbstractTreeModel::InitializeRoot(int base_unit)
 
 void AbstractTreeModel::ShowTemporaryTooltip(CString& message, int duration)
 {
-    auto label { new QLabel(message) };
+    auto label { new TemporaryLabel(message) };
     label->setWindowFlags(Qt::ToolTip);
     label->setAlignment(Qt::AlignCenter);
     label->setFixedSize(300, 100);
@@ -809,5 +810,11 @@ void AbstractTreeModel::ShowTemporaryTooltip(CString& message, int duration)
     }
 
     label->show();
-    QTimer::singleShot(duration, label, &QLabel::close);
+
+    QTimer* timer { new QTimer(label) };
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, label, &QLabel::close);
+    timer->start(duration);
+
+    connect(label, &QLabel::destroyed, [timer]() { timer->stop(); });
 }

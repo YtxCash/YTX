@@ -139,7 +139,7 @@ void SearchTableModel::Query(const QString& text)
 
     TransactionList list {};
     if (!text.isEmpty())
-        list = sql_->Trans(text);
+        list = sql_->TransList(text);
 
     beginResetModel();
     for (const auto& trans : list)

@@ -220,6 +220,7 @@ Qt::ItemFlags TableModelStakeholder::flags(const QModelIndex& index) const
     switch (kColumn) {
     case TableEnum::kID:
     case TableEnum::kDocument:
+    case TableEnum::kState:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

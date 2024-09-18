@@ -1,7 +1,5 @@
 #include "treedoublespin.h"
 
-#include <QPainter>
-
 #include "widget/doublespinbox.h"
 
 TreeDoubleSpin::TreeDoubleSpin(const int& decimal, double min, double max, QObject* parent)
@@ -39,11 +37,11 @@ void TreeDoubleSpin::paint(QPainter* painter, const QStyleOptionViewItem& option
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(locale_.toString(value, 'f', decimal_), painter, option, Qt::AlignRight | Qt::AlignVCenter);
+    PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
 QSize TreeDoubleSpin::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto value { index.data().toDouble() };
-    return CalculateSize(locale_.toString(value, 'f', decimal_), option, index);
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_), option);
 }

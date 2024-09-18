@@ -6,7 +6,7 @@
 #include "mainwindow.h"
 
 #ifdef Q_OS_MACOS
-#include "component/app.h"
+#include "component/application.h"
 #endif
 
 int main(int argc, char* argv[])
@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     QString dir_path { QDir::homePath() + "/AppData/Roaming/" + YTX };
 #elif defined(Q_OS_MACOS)
-    App app(argc, argv);
+    Application application(argc, argv);
     QString dir_path { QDir::homePath() + "/.config/" + YTX };
 #endif
 
@@ -33,11 +33,11 @@ int main(int argc, char* argv[])
     // begin set database file, then try to lock it, if false return
     QString file_path {};
 
-    if (app.arguments().size() >= 2) {
+    if (application.arguments().size() >= 2) {
 #ifdef Q_OS_WIN
         file_path = QString::fromLocal8Bit(argv[1]);
 #elif defined(Q_OS_MACOS)
-        file_path = app.arguments().at(1);
+        file_path = application.arguments().at(1);
 #endif
     }
 
@@ -58,8 +58,8 @@ int main(int argc, char* argv[])
         w.ROpenFile(file_path);
 
 #ifdef Q_OS_MACOS
-    QObject::connect(&app, &App::SOpenFile, &w, &MainWindow::ROpenFile);
+    QObject::connect(&application, &Application::SOpenFile, &w, &MainWindow::ROpenFile);
 #endif
 
-    return app.exec();
+    return application.exec();
 }

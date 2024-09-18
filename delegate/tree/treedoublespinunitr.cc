@@ -1,7 +1,5 @@
 #include "treedoublespinunitr.h"
 
-#include <QPainter>
-
 TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int& decimal, const int& unit, CStringHash& unit_symbol_hash, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
@@ -12,10 +10,10 @@ TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int& decimal, const int& unit, CS
 
 void TreeDoubleSpinUnitR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    PaintItem(Format(index), painter, option, Qt::AlignRight | Qt::AlignVCenter);
+    PaintText(Format(index), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateSize(Format(index), option, index); }
+QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(Format(index), option); }
 
 QString TreeDoubleSpinUnitR::Format(const QModelIndex& index) const
 {

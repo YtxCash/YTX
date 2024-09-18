@@ -179,6 +179,7 @@ Qt::ItemFlags TreeModelProduct::flags(const QModelIndex& index) const
         break;
     case TreeEnumProduct::kInitialTotal:
     case TreeEnumProduct::kFinalTotal:
+    case TreeEnumProduct::kBranch:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

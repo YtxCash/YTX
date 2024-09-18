@@ -40,7 +40,7 @@ EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 void EditNodeStakeholder::IniDialog(CStringHash& unit_hash)
 {
     ui->lineEditName->setFocus();
-    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
+    ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
 
     if (!parent_path_.isEmpty())
         parent_path_ += separator_;
@@ -134,20 +134,6 @@ void EditNodeStakeholder::on_spinBoxPaymentPeriod_editingFinished() { node_->fir
 void EditNodeStakeholder::on_spinBoxDeadline_editingFinished() { node_->party = ui->spinBoxDeadline->value(); }
 
 void EditNodeStakeholder::on_dSpinBoxTaxRate_editingFinished() { node_->second = ui->dSpinBoxTaxRate->value() / HUNDRED; }
-
-void EditNodeStakeholder::changeEvent(QEvent* event)
-{
-    if (event->type() == QEvent::ActivationChange && this->isActiveWindow()) {
-        QTimer::singleShot(100, this, [&, this]() {
-            name_list_.clear();
-            model_->ChildrenName(name_list_, parent_id_, node_->id);
-            REditName(ui->lineEditName->text());
-            IniComboEmployee();
-        });
-    }
-
-    QDialog::changeEvent(event);
-}
 
 void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
 {

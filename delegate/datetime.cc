@@ -1,7 +1,5 @@
 #include "datetime.h"
 
-#include <QPainter>
-
 #include "component/constvalue.h"
 #include "widget/datetimeedit.h"
 
@@ -9,7 +7,7 @@ DateTime::DateTime(const QString& date_format, const bool& hide_time, QObject* p
     : StyledItemDelegate { parent }
     , date_format_ { date_format }
     , hide_time_ { hide_time }
-    , time_pattern_ { R"((\s?\S{2}:\S{2}:\S{2}\s?))" }
+    , time_pattern_ { R"((\s?\S{2}:\S{2}\s?))" }
 {
 }
 
@@ -48,13 +46,13 @@ void DateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
     if (!date_time.isValid())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(Format(date_time), painter, option, Qt::AlignCenter);
+    PaintText(Format(date_time), painter, option, index, Qt::AlignCenter);
 }
 
 QSize DateTime::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto text { Format(index.data().toDateTime()) };
-    return CalculateSize(text, option, index);
+    return CalculateTextSize(text, option);
 }
 
 QString DateTime::Format(const QDateTime& date_time) const

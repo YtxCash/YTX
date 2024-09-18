@@ -43,9 +43,9 @@ void OrderEmployee::paint(QPainter* painter, const QStyleOptionViewItem& option,
     if (path.isEmpty())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(path, painter, option, Qt::AlignLeft | Qt::AlignVCenter);
+    PaintText(path, painter, option, index, Qt::AlignLeft | Qt::AlignVCenter);
 }
 
-QSize OrderEmployee::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateSize(GetPath(index), option, index); }
+QSize OrderEmployee::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(GetPath(index), option); }
 
 QString OrderEmployee::GetPath(const QModelIndex& index) const { return stakeholder_tree_model_.GetPath(index.data().toInt()); }

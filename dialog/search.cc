@@ -2,13 +2,11 @@
 
 #include <QHeaderView>
 
-#include "component/constvalue.h"
 #include "component/enumclass.h"
-#include "delegate/checkstate.h"
+#include "delegate/checkbox.h"
 #include "delegate/search/searchcombor.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledbclick.h"
-#include "delegate/table/tabledoublespin.h"
 #include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedoublespindynamicunitr.h"
@@ -76,7 +74,7 @@ void Search::IniTree(QTableView* view, SearchTreeModel* model)
     auto total { new TreeDoubleSpinDynamicUnitR(section_rule_.value_decimal, info_.unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), total);
 
-    auto branch { new CheckState(false, view) };
+    auto branch { new CheckBox(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
 
     auto name { new SearchComboR(tree_model_, view) };
@@ -104,7 +102,7 @@ void Search::IniTable(QTableView* view, SearchTableModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), node_name);
 
-    auto state { new CheckState(false, view) };
+    auto state { new CheckBox(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kState), state);
 
     auto document { new TableDbClick(view) };

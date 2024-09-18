@@ -16,7 +16,7 @@
 #include "database/sqlite/sqliteorder.h"
 #include "database/sqlite/sqliteproduct.h"
 #include "database/sqlite/sqlitestakeholder.h"
-#include "delegate/checkstate.h"
+#include "delegate/checkbox.h"
 #include "delegate/datetime.h"
 #include "delegate/line.h"
 #include "delegate/table/tablecombo.h"
@@ -27,8 +27,8 @@
 #include "delegate/tree/order/orderdatetime.h"
 #include "delegate/tree/order/orderdiscount.h"
 #include "delegate/tree/order/orderemployee.h"
+#include "delegate/tree/order/orderlocked.h"
 #include "delegate/tree/order/ordernamer.h"
-#include "delegate/tree/order/orderposted.h"
 #include "delegate/tree/order/ordertotal.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedoublespin.h"
@@ -45,6 +45,7 @@
 #include "dialog/editnode/editnodeorder.h"
 #include "dialog/editnode/editnodeproduct.h"
 #include "dialog/editnode/editnodestakeholder.h"
+#include "dialog/editnode/insertnodeorder.h"
 #include "dialog/preferences.h"
 #include "dialog/removenode.h"
 #include "dialog/search.h"
@@ -378,7 +379,7 @@ void MainWindow::CreateDelegate(QTableView* view, const AbstractTreeModel* tree_
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
 
-    auto state { new CheckState(false, view) };
+    auto state { new CheckBox(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
 
     auto document { new TableDbClick(view) };
@@ -470,7 +471,7 @@ void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSectionRule* sec
     auto node_rule { new TreeCombo(node_rule_hash_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kNodeRule), node_rule);
 
-    auto branch { new CheckState(true, view) };
+    auto branch { new CheckBox(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kBranch), branch);
 }
 
@@ -499,7 +500,7 @@ void MainWindow::DelegateProduct(QTreeView* view, CInfo* info, CSectionRule* sec
     auto node_rule { new TreeCombo(node_rule_hash_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kNodeRule), node_rule);
 
-    auto branch { new CheckState(true, view) };
+    auto branch { new CheckBox(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kBranch), branch);
 }
 
@@ -524,7 +525,7 @@ void MainWindow::DelegateStakeholder(QTreeView* view, CInfo* info, CSectionRule*
     auto mark { new TreeCombo(info->unit_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kUnit), mark);
 
-    auto branch { new CheckState(true, view) };
+    auto branch { new CheckBox(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kBranch), branch);
 
     auto node_term { new TreeCombo(node_term_hash_, view) };
@@ -562,12 +563,12 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* secti
     auto term { new TreeCombo(info->unit_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kUnit), term);
 
-    auto branch { new CheckState(true, view) };
+    auto branch { new CheckBox(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kBranch), branch);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kNodeRule), branch);
 
-    auto posted { new OrderPosted(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kPosted), posted);
+    auto locked { new OrderLocked(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 
     auto name { new OrderName(*stakeholder_tree_.model, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
@@ -590,17 +591,6 @@ void MainWindow::SetConnect(const QTreeView* view, const AbstractTreeWidget* wid
     connect(table_sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }
 
-void MainWindow::ConnectStakeholderOrder(QDialog* dialog)
-{
-    auto edit_dialog = dynamic_cast<EditNodeOrder*>(dialog);
-
-    if (edit_dialog) {
-        connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, edit_dialog, &EditNodeOrder::RUpdatePartyEmployee);
-    } else {
-        qWarning() << "Failed to cast to TreeModelStakeholder or EditNodeOrder";
-    }
-}
-
 void MainWindow::PrepInsertNode(QTreeView* view)
 {
     auto current_index { view->currentIndex() };
@@ -610,69 +600,6 @@ void MainWindow::PrepInsertNode(QTreeView* view)
     parent_index = parent_index.isValid() ? parent_index : QModelIndex();
 
     InsertNode(parent_index, current_index.row() + 1);
-}
-
-void MainWindow::InsertNode(const QModelIndex& parent, int row)
-{
-    const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
-
-    auto node { ResourcePool<Node>::Instance().Allocate() };
-    auto model { section_tree_->model };
-
-    node->node_rule = model->NodeRule(parent_id);
-    node->unit = model->Unit(parent_id);
-    model->SetParent(node, parent_id);
-
-    const auto& info { section_data_->info };
-    const auto& section { info.section };
-
-    QDialog* dialog {};
-
-    switch (section) {
-    case Section::kFinance:
-        dialog = new EditNodeFinance(node, interface_.separator, finance_data_.info, *model, parent_id, false, false, this);
-        break;
-    case Section::kTask:
-        dialog = new EditNodeFinance(node, interface_.separator, task_data_.info, *model, parent_id, false, false, this);
-        break;
-    case Section::kStakeholder:
-        dialog = new EditNodeStakeholder(
-            node, stakeholder_rule_, interface_.separator, stakeholder_data_.info, false, false, parent_id, node_term_hash_, model, this);
-        break;
-    case Section::kProduct:
-        dialog = new EditNodeProduct(node, product_rule_, interface_.separator, info.unit_hash, *model, parent_id, false, false, this);
-        break;
-    case Section::kSales:
-        dialog = new EditNodeOrder(node, sales_rule_, model, &stakeholder_tree_, *product_tree_.model, info, this);
-        dialog->setWindowTitle(tr(Sales));
-        break;
-    case Section::kPurchase:
-        dialog = new EditNodeOrder(node, purchase_rule_, model, &stakeholder_tree_, *product_tree_.model, info, this);
-        dialog->setWindowTitle(tr(Purchase));
-        break;
-    default:
-        return ResourcePool<Node>::Instance().Recycle(node);
-    }
-
-    dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-
-    connect(dialog, &QDialog::accepted, this, [=, this]() {
-        if (model->InsertNode(row, parent, node)) {
-            auto index = model->index(row, 0, parent);
-            section_tree_->widget->SetCurrentIndex(index);
-        }
-    });
-
-    if (section != Section::kPurchase && section != Section::kSales) {
-        connect(dialog, &QDialog::rejected, this, [=]() { ResourcePool<Node>::Instance().Recycle(node); });
-    }
-
-    if (section == Section::kPurchase || section == Section::kSales)
-        ConnectStakeholderOrder(dialog);
-
-    section_dialog_->append(dialog);
-    dialog->show();
 }
 
 void MainWindow::AppendTrans(QWidget* widget)
@@ -1234,7 +1161,7 @@ void MainWindow::SetHeader()
     };
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Refund"), tr("Branch"), tr("Term"), tr("Party"),
-        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Posted"), tr("Initial Total"), tr("Final Total") };
+        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
 
     purchase_data_.info.tree_header = sales_data_.info.tree_header;
 }
@@ -1386,34 +1313,106 @@ void MainWindow::REditNode()
         dialog = new EditNodeProduct(tmp_node, product_rule_, interface_.separator, info.unit_hash, *model, parent_id, node_usage, view_opened, this);
         break;
     case Section::kSales:
-        dialog = new EditNodeOrder(tmp_node, sales_rule_, model, &stakeholder_tree_, *product_tree_.model, info, this);
+        dialog = new EditNodeOrder(tmp_node, sales_rule_, model, stakeholder_tree_.model, *product_tree_.model, info, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new EditNodeOrder(tmp_node, purchase_rule_, model, &stakeholder_tree_, *product_tree_.model, info, this);
+        dialog = new EditNodeOrder(tmp_node, purchase_rule_, model, stakeholder_tree_.model, *product_tree_.model, info, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(tmp_node);
     }
 
-    dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dialog, &QDialog::rejected, this, [=, this]() {
+        section_dialog_->removeOne(dialog);
+        ResourcePool<Node>::Instance().Recycle(tmp_node);
+    });
 
     if (section != Section::kPurchase && section != Section::kSales) {
         connect(dialog, &QDialog::accepted, this, [=]() {
             model->UpdateNode(tmp_node);
             ResourcePool<Node>::Instance().Recycle(tmp_node);
         });
+
+        dialog->exec();
     }
 
-    if (section == Section::kPurchase || section == Section::kSales)
-        ConnectStakeholderOrder(dialog);
+    if (section == Section::kPurchase || section == Section::kSales) {
+        connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dynamic_cast<EditNodeOrder*>(dialog),
+            &EditNodeOrder::RUpdateStakeholder);
+        section_dialog_->append(dialog);
 
-    connect(dialog, &QDialog::rejected, this, [=]() { ResourcePool<Node>::Instance().Recycle(tmp_node); });
+        dialog->show();
+    }
+}
 
-    section_dialog_->append(dialog);
-    dialog->show();
+void MainWindow::InsertNode(const QModelIndex& parent, int row)
+{
+    const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
+
+    auto node { ResourcePool<Node>::Instance().Allocate() };
+    auto model { section_tree_->model };
+
+    node->node_rule = model->NodeRule(parent_id);
+    node->unit = model->Unit(parent_id);
+    model->SetParent(node, parent_id);
+
+    const auto& info { section_data_->info };
+    const auto& section { info.section };
+
+    QDialog* dialog {};
+
+    switch (section) {
+    case Section::kFinance:
+        dialog = new EditNodeFinance(node, interface_.separator, finance_data_.info, *model, parent_id, false, false, this);
+        break;
+    case Section::kTask:
+        dialog = new EditNodeFinance(node, interface_.separator, task_data_.info, *model, parent_id, false, false, this);
+        break;
+    case Section::kStakeholder:
+        dialog = new EditNodeStakeholder(
+            node, stakeholder_rule_, interface_.separator, stakeholder_data_.info, false, false, parent_id, node_term_hash_, model, this);
+        break;
+    case Section::kProduct:
+        dialog = new EditNodeProduct(node, product_rule_, interface_.separator, info.unit_hash, *model, parent_id, false, false, this);
+        break;
+    case Section::kSales:
+        dialog = new InsertNodeOrder(node, sales_rule_, model, stakeholder_tree_.model, *product_tree_.model, info, this);
+        dialog->setWindowTitle(tr(Sales));
+        break;
+    case Section::kPurchase:
+        dialog = new InsertNodeOrder(node, purchase_rule_, model, stakeholder_tree_.model, *product_tree_.model, info, this);
+        dialog->setWindowTitle(tr(Purchase));
+        break;
+    default:
+        return ResourcePool<Node>::Instance().Recycle(node);
+    }
+
+    connect(dialog, &QDialog::accepted, this, [=, this]() {
+        if (model->InsertNode(row, parent, node)) {
+            auto index = model->index(row, 0, parent);
+            section_tree_->widget->SetCurrentIndex(index);
+        }
+    });
+
+    if (section != Section::kPurchase && section != Section::kSales) {
+        connect(dialog, &QDialog::rejected, this, [=, this]() {
+            ResourcePool<Node>::Instance().Recycle(node);
+            section_dialog_->removeOne(dialog);
+        });
+
+        dialog->exec();
+    }
+
+    if (section == Section::kPurchase || section == Section::kSales) {
+        connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dynamic_cast<InsertNodeOrder*>(dialog),
+            &InsertNodeOrder::RUpdateStakeholder);
+        connect(dialog, &QDialog::rejected, this, [=, this]() { section_dialog_->removeOne(dialog); });
+
+        section_dialog_->append(dialog);
+        dialog->show();
+    }
 }
 
 void MainWindow::REditDocument()

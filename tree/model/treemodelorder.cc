@@ -14,28 +14,77 @@ TreeModelOrder::TreeModelOrder(SPSqlite sql, CInfo& info, int base_unit, CTableH
     TreeModelOrder::ConstructTree();
 }
 
-void TreeModelOrder::UpdateBranchTotal(
-    const Node* node, int first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff)
+void TreeModelOrder::UpdateBranchTotalUp(const Node* node, int first, double second, double discount, double initial_total, double final_total)
 {
     // Cash = 0, Monthly = 1, Pending = 2
     // ignore unposted node and monthly node
-    if (!node || node->unit == UNIT_MONTHLY || !node->posted)
+    if (!node || node->unit == UNIT_MONTHLY)
         return;
 
     const int coefficient { node->node_rule ? -1 : 1 };
     const int unit { node->unit };
 
-    while (node && node->parent && node != root_) {
-        if (node->parent->unit == unit) {
-            node->parent->first += first_diff * coefficient;
-            node->parent->second += second_diff * coefficient;
-            node->parent->discount += discount_diff * coefficient;
-            node->parent->initial_total += initial_total_diff * coefficient;
-            node->parent->final_total += final_total_diff * coefficient;
-        }
+    for (; node && node->parent && node != root_; node = node->parent) {
+        if (node->parent->unit != unit)
+            continue;
 
-        node = node->parent;
+        if (!node->parent->node_rule || (node->parent->node_rule && node->node_rule))
+            UpdateNodeValues(node->parent, first, second, discount, initial_total, final_total, node->parent->node_rule ? 1 : coefficient);
     }
+}
+
+void TreeModelOrder::UpdateBranchTotalDown(Node* node)
+{
+    if (!node || !node->branch)
+        return;
+
+    QQueue<const Node*> queue {};
+    queue.enqueue(node);
+
+    const Node* current {};
+
+    double initial_total { 0.0 };
+    double final_total { 0.0 };
+    double discount_total { 0.0 };
+    double second_total { 0.0 };
+    int first_total { 0 };
+
+    bool equal {};
+
+    const int unit { node->unit };
+    const bool node_rule { node->node_rule };
+
+    while (!queue.isEmpty()) {
+        current = queue.dequeue();
+
+        equal = node_rule ? (current->unit == unit && current->node_rule == node_rule) : (current->unit == unit);
+
+        if (current->branch) {
+            for (const auto& child : current->children)
+                queue.enqueue(child);
+        } else if (equal) {
+            initial_total += current->initial_total;
+            final_total += current->final_total;
+            discount_total += current->discount;
+            second_total += current->second;
+            first_total += current->first;
+        }
+    }
+
+    node->initial_total = initial_total;
+    node->final_total = final_total;
+    node->first = first_total;
+    node->second = second_total;
+    node->discount = discount_total;
+}
+
+void TreeModelOrder::UpdateNodeValues(Node* node, int first, double second, double discount, double initial_total, double final_total, int coefficient)
+{
+    node->first += first * coefficient;
+    node->second += second * coefficient;
+    node->discount += discount * coefficient;
+    node->initial_total += initial_total * coefficient;
+    node->final_total += final_total * coefficient;
 }
 
 void TreeModelOrder::UpdateNode(const Node* tmp_node)
@@ -50,7 +99,8 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
     UpdateParty(node, tmp_node->party);
     UpdateDiscount(node, tmp_node->discount);
     UpdateUnit(node, tmp_node->unit);
-    UpdatePosted(node, tmp_node->posted);
+    UpdateLocked(node, tmp_node->locked);
+    UpdateDescription(node, tmp_node->description);
 
     // update code, description, note, date_time, node_rule, first, employee, second
     *node = *tmp_node;
@@ -71,11 +121,8 @@ void TreeModelOrder::ConstructTree()
     }
 
     for (auto& node : const_node_hash)
-
-        if (!node->branch)
-            // unit: Cash = 0, Monthly = 1, Pending = 2
-            // ignore branch node
-            UpdateBranchTotal(node, node->first, node->second, node->discount, node->initial_total, node->final_total);
+        if (node->locked)
+            UpdateBranchTotalUp(node, node->first, node->second, node->discount, node->initial_total, node->final_total);
 
     node_hash_.insert(-1, root_);
 }
@@ -99,27 +146,31 @@ bool TreeModelOrder::UpdateDiscount(Node* node, double value)
     return true;
 }
 
-bool TreeModelOrder::UpdatePosted(Node* node, bool value)
+bool TreeModelOrder::UpdateLocked(Node* node, bool value)
 {
-    if (node->posted == value)
+    if (node->locked == value)
         return false;
 
+    // should set value before UpdateBranchTotal
+    node->locked = value;
+
     const int coefficient = value ? 1 : -1;
-    UpdateBranchTotal(node, node->first * coefficient, node->second * coefficient, node->discount * coefficient, node->initial_total * coefficient,
+    UpdateBranchTotalUp(node, node->first * coefficient, node->second * coefficient, node->discount * coefficient, node->initial_total * coefficient,
         node->final_total * coefficient);
 
-    node->final_total = value ? node->discount + node->initial_total : 0.0;
-    node->posted = value;
-
-    sql_->UpdateField(info_.node, value, Posted, node->id);
-    sql_->UpdateField(info_.node, node->final_total, FINAL_TOTAL, node->id);
-
+    sql_->UpdateField(info_.node, value, LOCKED, node->id);
     return true;
 }
 
 bool TreeModelOrder::UpdateDateTime(Node* node, CString& value) { return UpdateField(node, value, DATE_TIME, &Node::date_time); }
 
-bool TreeModelOrder::UpdateNodeRule(Node* node, bool value) { return UpdateField(node, value, NODE_RULE, &Node::node_rule); }
+bool TreeModelOrder::UpdateNodeRule(Node* node, bool value)
+{
+    UpdateField(node, value, NODE_RULE, &Node::node_rule);
+    UpdateBranchTotalDown(node);
+
+    return true;
+}
 
 bool TreeModelOrder::UpdateUnit(Node* node, int value)
 {
@@ -128,23 +179,24 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
     if (node->unit == value)
         return false;
 
+    node->unit = value;
+    sql_->UpdateField(info_.node, value, UNIT, node->id);
+
     switch (value) {
     case UNIT_CASH:
     case UNIT_PENDING:
         node->final_total = node->initial_total + node->discount;
         break;
     case UNIT_MONTHLY:
-        node->final_total = 0;
+        node->final_total = 0.0;
         break;
     default:
         return false;
     }
 
-    node->unit = value;
-    sql_->UpdateField(info_.node, value, UNIT, node->id);
-    sql_->UpdateField(info_.node, value, INITIAL_TOTAL, node->id);
+    sql_->UpdateField(info_.node, value, FINAL_TOTAL, node->id);
 
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kInitialTotal));
+    emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kFinalTotal));
     return true;
 }
 
@@ -182,8 +234,8 @@ void TreeModelOrder::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
         case TreeEnumOrder::kDiscount:
             return (order == Qt::AscendingOrder) ? (lhs->discount < rhs->discount) : (lhs->discount > rhs->discount);
-        case TreeEnumOrder::kPosted:
-            return (order == Qt::AscendingOrder) ? (lhs->posted < rhs->posted) : (lhs->posted > rhs->posted);
+        case TreeEnumOrder::kLocked:
+            return (order == Qt::AscendingOrder) ? (lhs->locked < rhs->locked) : (lhs->locked > rhs->locked);
         case TreeEnumOrder::kInitialTotal:
             return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
         case TreeEnumOrder::kFinalTotal:
@@ -212,7 +264,8 @@ bool TreeModelOrder::InsertNode(int row, const QModelIndex& parent, Node* node)
     sql_->InsertNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    UpdateBranchTotal(node, node->first, node->second, node->discount, node->initial_total, node->final_total);
+    if (node->locked)
+        UpdateBranchTotalUp(node, node->first, node->second, node->discount, node->initial_total, node->final_total);
 
     emit SSearch();
     return true;
@@ -243,7 +296,9 @@ bool TreeModelOrder::RemoveNode(int row, const QModelIndex& parent)
         sql_->RemoveNode(node_id, true);
 
     if (!branch) {
-        UpdateBranchTotal(node, -node->first, -node->second, -node->discount, -node->final_total, -node->initial_total);
+        if (node->locked)
+            UpdateBranchTotalUp(node, -node->first, -node->second, -node->discount, -node->final_total, -node->initial_total);
+
         sql_->RemoveNode(node_id, false);
     }
 
@@ -286,7 +341,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kUnit:
         return node->unit;
     case TreeEnumOrder::kParty:
-        return branch || node->party == 0 ? QVariant() : node->party;
+        return node->party;
     case TreeEnumOrder::kEmployee:
         return branch || node->employee == 0 ? QVariant() : node->employee;
     case TreeEnumOrder::kDateTime:
@@ -297,8 +352,8 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
         return node->second == 0 ? QVariant() : node->second;
     case TreeEnumOrder::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
-    case TreeEnumOrder::kPosted:
-        return branch ? QVariant() : node->posted;
+    case TreeEnumOrder::kLocked:
+        return branch ? QVariant() : node->locked;
     case TreeEnumOrder::kInitialTotal:
         return node->initial_total;
     case TreeEnumOrder::kFinalTotal:
@@ -318,7 +373,7 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         return false;
 
     const TreeEnumOrder kColumn { index.column() };
-    const bool posted { node->posted };
+    const bool locked { node->locked };
 
     switch (kColumn) {
     case TreeEnumOrder::kCode:
@@ -331,31 +386,47 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         UpdateNote(node, value.toString());
         break;
     case TreeEnumOrder::kNodeRule:
-        if (!posted)
+        if (!locked)
             UpdateNodeRule(node, value.toBool());
         break;
     case TreeEnumOrder::kUnit:
-        if (!posted)
+        if (!locked)
             UpdateUnit(node, value.toInt());
         break;
     case TreeEnumOrder::kParty:
-        if (!posted)
+        if (!locked)
             UpdateParty(node, value.toInt());
         break;
     case TreeEnumOrder::kEmployee:
-        if (!posted)
+        if (!locked)
             UpdateEmployee(node, value.toInt());
         break;
     case TreeEnumOrder::kDateTime:
-        if (!posted)
+        if (!locked)
             UpdateDateTime(node, value.toString());
         break;
     case TreeEnumOrder::kDiscount:
-        if (!posted)
+        if (!locked)
             UpdateDiscount(node, value.toDouble());
         break;
-    case TreeEnumOrder::kPosted:
-        UpdatePosted(node, value.toBool());
+    case TreeEnumOrder::kLocked:
+        if (UpdateLocked(node, value.toBool())) {
+            QModelIndexList parents {};
+
+            // 收集所有父节点索引
+            auto parent_index { index.parent() };
+            while (parent_index.isValid()) {
+                parents.append(parent_index);
+                parent_index = parent_index.parent();
+            }
+
+            if (!parents.isEmpty()) {
+                int column_start { std::to_underlying(TreeEnumOrder::kDiscount) };
+                int column_end { std::to_underlying(TreeEnumOrder::kInitialTotal) };
+
+                emit dataChanged(this->index(parents.first().row(), column_start), this->index(parents.last().row(), column_end), { Qt::DisplayRole });
+            }
+        }
         break;
     default:
         return false;
@@ -379,6 +450,8 @@ Qt::ItemFlags TreeModelOrder::flags(const QModelIndex& index) const
         flags &= ~Qt::ItemIsEditable;
         break;
     case TreeEnumOrder::kBranch:
+    case TreeEnumOrder::kNodeRule:
+    case TreeEnumOrder::kLocked:
     case TreeEnumOrder::kFirst:
     case TreeEnumOrder::kSecond:
     case TreeEnumOrder::kInitialTotal:
@@ -412,7 +485,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
         return false;
 
     if (node->unit != destination_parent->unit) {
-        node->unit = destination_parent->unit;
+        node->unit = destination_parent->unit; // todo a lot
     }
 
     auto begin_row { row == -1 ? destination_parent->children.size() : row };

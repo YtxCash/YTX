@@ -32,9 +32,11 @@ private:
     bool UpdateEmployee(Node* node, int value);
     bool UpdateDateTime(Node* node, CString& value);
     bool UpdateDiscount(Node* node, double value);
-    bool UpdatePosted(Node* node, bool value); // unposted = 0, posted = 1
+    bool UpdateLocked(Node* node, bool value); // unlocked = 0, locked = 1
 
-    void UpdateBranchTotal(const Node* node, int first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff);
+    void UpdateBranchTotalUp(const Node* node, int first, double second, double discount, double initial_total, double final_total);
+    void UpdateBranchTotalDown(Node* node);
+    void UpdateNodeValues(Node* node, int first, double second, double discount, double initial_total, double final_total, int coefficient);
 };
 
 #endif // TREEMODELORDER_H

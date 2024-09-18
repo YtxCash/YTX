@@ -28,7 +28,8 @@ QTabBar::tab, QToolBar, QToolTip {
 
 /*-------------------------------------disabled border-----------------------------------------------*/
 
-QPushButton:disabled, QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QDateEdit:disabled {
+QPushButton:disabled, QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QDateEdit:disabled,
+QDateTimeEdit:disabled {
     border: 1px solid #586E75;
 }
 
@@ -57,7 +58,7 @@ QTabBar::tab, QTreeView#treeView, QWidget QGroupBox#groupBoxTreeWidget_2 {
     border-bottom: none;
 }
 
-QWidget QGroupBox#groupBoxTreeWidget, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnPostOrder, QPushButton#pBtnDeleteOrder,
+QWidget QGroupBox#groupBoxTreeWidget, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnLockOrder,
 QPushButton#pBtnSaveOrder {
     border-top: none;
 }
@@ -128,7 +129,7 @@ QHeaderView::section, QTabBar::tab{
     color: #93A1A1;
 }
 
-QToolTip, QRadioButton::checked, QCheckBox::checked, QTabBar::tab:selected, QMenuBar::item:selected {
+QToolTip, QRadioButton::checked, QCheckBox::checked, QTabBar::tab:selected, QMenuBar::item:selected, QPushButton#pBtnLockOrder:checked {
     color: #2BB3EB;
 }
 
@@ -147,7 +148,7 @@ QTableView {
 /*-------------------------------------disabled color-----------------------------------------------*/
 
 QPushButton:disabled, QCheckBox:disabled, QRadioButton:disabled, QHeaderView::section:disabled, QTableView:disabled, QLabel:disabled,
-QDoubleSpinBox:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled {
+QDoubleSpinBox:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled, QDateTimeEdit:disabled {
     color: #586E75;
 }
 

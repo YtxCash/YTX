@@ -17,7 +17,7 @@ bool SqliteOrder::BuildTree(NodeHash& node_hash)
     query.setForwardOnly(true);
 
     auto part = QString(R"(
-    SELECT name, id, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, posted, initial_total, final_total
+    SELECT name, id, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, locked, initial_total, final_total
     FROM %1
     WHERE removed = 0
 )")
@@ -46,8 +46,8 @@ bool SqliteOrder::InsertNode(int parent_id, Node* node)
     QSqlQuery query(*db_);
 
     auto part = QString(R"(
-    INSERT INTO %1 (name, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, posted, initial_total, final_total)
-    VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :posted, :initial_total, :final_total)
+    INSERT INTO %1 (name, code, description, note, node_rule, branch, unit, party, employee, date_time, first, second, discount, locked, initial_total, final_total)
+    VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :locked, :initial_total, :final_total)
 )")
                     .arg(info_.node);
 
@@ -67,7 +67,7 @@ bool SqliteOrder::InsertNode(int parent_id, Node* node)
             query.bindValue(":first", node->first);
             query.bindValue(":second", node->second);
             query.bindValue(":discount", node->discount);
-            query.bindValue(":posted", node->posted);
+            query.bindValue(":locked", node->locked);
             query.bindValue(":initial_total", node->initial_total);
             query.bindValue(":final_total", node->final_total);
 
@@ -246,7 +246,7 @@ void SqliteOrder::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
         node->first = query.value("first").toInt();
         node->second = query.value("second").toDouble();
         node->discount = query.value("discount").toDouble();
-        node->posted = query.value("posted").toBool();
+        node->locked = query.value("locked").toBool();
         node->initial_total = query.value("initial_total").toDouble();
         node->final_total = query.value("final_total").toDouble();
         node_hash.insert(node_id, node);

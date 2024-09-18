@@ -4,134 +4,127 @@
 #include <QMessageBox>
 
 #include "component/constvalue.h"
-#include "component/data.h"
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
 
-EditNodeOrder::EditNodeOrder(Node* node, CSectionRule& section_rule, AbstractTreeModel* order_model, Tree* stakeholder, const AbstractTreeModel& product_model,
-    CInfo& info, QWidget* parent)
+EditNodeOrder::EditNodeOrder(Node* node, CSectionRule& section_rule, AbstractTreeModel* order_model, AbstractTreeModel* stakeholder_model,
+    const AbstractTreeModel& product_model, CInfo& info, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeOrder)
     , node_ { node }
     , info_ { info }
     , section_rule_ { section_rule }
-    , stakeholder_ { stakeholder }
+    , stakeholder_model_ { stakeholder_model }
     , order_model_ { order_model }
     , product_model_ { product_model }
-    , saved_ { !node->name.isEmpty() || node->party != 0 }
 {
     ui->setupUi(this);
 
-    ui->comboParty->blockSignals(true);
-    ui->comboEmployee->blockSignals(true);
+    if (bool branch { node->branch }) {
+        SetWidgetsEnabledBranch(false);
+        ui->labelParty->setText(branch ? tr("Branch") : tr("Party"));
+        ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
+        ui->comboParty->lineEdit()->setText(node->name);
+        ui->chkBoxBranch->setChecked(true);
+    }
 
-    IniCombo(ui->comboParty);
-    IniCombo(ui->comboEmployee);
-    IniDialog();
-    IniConnect();
+    if (!node->branch) {
+        ui->comboParty->blockSignals(true);
+        ui->comboEmployee->blockSignals(true);
 
-    ui->comboParty->blockSignals(false);
-    ui->comboEmployee->blockSignals(false);
+        IniDialog();
+        IniConnect();
+        IniData();
+
+        ui->comboParty->blockSignals(false);
+        ui->comboEmployee->blockSignals(false);
+    }
+
+    ui->chkBoxBranch->setEnabled(false);
+    if (node_->locked)
+        SetWidgetsEnabledPost(false);
+
+    ui->pBtnLockOrder->setText(node_->locked ? tr("UnLock") : tr("Lock"));
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }
 
-void EditNodeOrder::accept()
+void EditNodeOrder::RUpdateStakeholder()
 {
-    if (!saved_) {
-        emit QDialog::accepted();
-        saved_ = true;
+    if (node_->branch)
         return;
-    }
 
-    order_model_->UpdateNode(node_);
-}
-
-void EditNodeOrder::reject()
-{
-    if (!saved_)
-        ResourcePool<Node>::Instance().Recycle(node_);
-
-    QDialog::reject();
-    this->close();
-}
-
-void EditNodeOrder::RUpdatePartyEmployee()
-{
     ui->comboParty->blockSignals(true);
     ui->comboEmployee->blockSignals(true);
 
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_->model->ComboPathUnit(ui->comboEmployee, UNIT_EMPLOYEE);
+    stakeholder_model_->ComboPathUnit(ui->comboEmployee, UNIT_EMPLOYEE);
     int unit { info_.section == Section::kSales ? 1 : 2 };
-    stakeholder_->model->ComboPathUnit(ui->comboParty, unit);
+    stakeholder_model_->ComboPathUnit(ui->comboParty, unit);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
-
-    ui->comboParty->blockSignals(false);
-    ui->comboEmployee->blockSignals(false);
 
     auto index_employee { ui->comboEmployee->findData(employee_id) };
     ui->comboEmployee->setCurrentIndex(index_employee);
 
     auto index_party { ui->comboParty->findData(party_id) };
     ui->comboParty->setCurrentIndex(index_party);
-}
 
-void EditNodeOrder::on_chkBoxBranch_toggled(bool checked)
-{
-    ui->comboParty->setCurrentIndex(-1);
-    ui->comboEmployee->setCurrentIndex(-1);
-
-    SetWidgetsEnabledBranch(!checked);
-
-    ui->labelParty->setText(checked ? tr("Branch") : tr("Company"));
-    ui->comboParty->setInsertPolicy(checked ? QComboBox::InsertAtBottom : QComboBox::NoInsert);
-    node_->branch = checked;
-    EnabledPost(false);
+    ui->comboParty->blockSignals(false);
+    ui->comboEmployee->blockSignals(false);
 }
 
 void EditNodeOrder::IniDialog()
 {
-    ui->comboParty->setFocus();
-    ui->comboParty->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
-
     // stakeholder-U: Employee = 0, Customer = 1, Vendor = 2, Product = 3
-    int unit { info_.section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
+    int unit_party { info_.section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
 
-    IniCombo(ui->comboParty, unit);
+    IniCombo(ui->comboParty, unit_party);
     IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
 
-    ui->dateEdit->setDate(QDate::currentDate());
-    ui->dateEdit->setDisplayFormat(DATE_FST);
-
-    EnabledPost(false);
+    ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);
     ui->dSpinDiscount->setDecimals(section_rule_.value_decimal);
-    ui->dSpinFinalTotal->setRange(DMIN, DMAX);
     ui->dSpinFinalTotal->setDecimals(section_rule_.value_decimal);
-    ui->dSpinInitialTotal->setRange(DMIN, DMAX);
+    ui->dSpinFinalTotal->setRange(DMIN, DMAX);
     ui->dSpinInitialTotal->setDecimals(section_rule_.value_decimal);
+    ui->dSpinInitialTotal->setRange(DMIN, DMAX);
 }
 
-void EditNodeOrder::IniCombo(QComboBox* combo)
+void EditNodeOrder::IniData()
 {
-    if (!combo)
-        return;
+    auto party_index { ui->comboParty->findData(node_->party) };
+    ui->comboParty->setCurrentIndex(party_index);
 
-    combo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    combo->setFrame(false);
-    combo->setEditable(true);
-    combo->setInsertPolicy(QComboBox::NoInsert);
+    auto employee_index { ui->comboEmployee->findData(node_->employee) };
+    ui->comboEmployee->setCurrentIndex(employee_index);
 
-    auto completer { new QCompleter(combo->model(), combo) };
-    completer->setFilterMode(Qt::MatchContains);
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    combo->setCompleter(completer);
+    switch (node_->unit) {
+    case UNIT_CASH:
+        ui->rBtnCash->setChecked(true);
+        break;
+    case UNIT_MONTHLY:
+        ui->rBtnMonthly->setChecked(true);
+        break;
+    case UNIT_PENDING:
+        ui->rBtnPending->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    ui->chkBoxRefund->setChecked(node_->node_rule);
+    ui->dSpinInitialTotal->setValue(node_->initial_total);
+    ui->dSpinFinalTotal->setValue(node_->final_total);
+    ui->dSpinDiscount->setValue(node_->discount);
+    ui->chkBoxBranch->setChecked(node_->branch);
+    ui->lineDescription->setText(node_->description);
+    ui->dateTimeEdit->setDateTime(QDateTime::fromString(node_->date_time, DATE_TIME_FST));
+    ui->pBtnLockOrder->setChecked(node_->locked);
 }
 
 void EditNodeOrder::IniCombo(QComboBox* combo, int unit)
@@ -139,49 +132,100 @@ void EditNodeOrder::IniCombo(QComboBox* combo, int unit)
     if (!combo)
         return;
 
-    stakeholder_->model->ComboPathUnit(combo, unit);
+    stakeholder_model_->ComboPathUnit(combo, unit);
     combo->model()->sort(0);
     combo->setCurrentIndex(-1);
 }
 
-void EditNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &EditNodeOrder::accept); }
+void EditNodeOrder::accept()
+{
+    if (is_modified_) {
+        order_model_->UpdateNode(node_);
+        EnableSave(false);
+        ui->pBtnSaveOrder->setEnabled(is_modified_);
+    }
+}
 
-void EditNodeOrder::SetData() { }
+void EditNodeOrder::reject()
+{
+    if (is_modified_) {
+        auto reply { QMessageBox::question(
+            this, tr("Save Modified"), tr("Have unsaved modifications. Save them ?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel) };
+
+        switch (reply) {
+        case QMessageBox::Cancel:
+            return;
+        case QMessageBox::Yes:
+            accept();
+            break;
+        case QMessageBox::No:
+        default:
+            break;
+        }
+    }
+
+    QDialog::reject();
+}
+
+void EditNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &EditNodeOrder::accept); }
 
 void EditNodeOrder::SetWidgetsEnabled(bool enabled)
 {
     ui->labelEmployee->setEnabled(enabled);
-    ui->labelDiscount->setEnabled(enabled);
-    ui->pBtnInsertParty->setEnabled(enabled);
     ui->comboEmployee->setEnabled(enabled);
-    ui->dateEdit->setEnabled(enabled);
-    ui->chkBoxRefund->setEnabled(enabled);
+
+    ui->labelDiscount->setEnabled(enabled);
     ui->dSpinDiscount->setEnabled(enabled);
+
+    ui->pBtnInsertParty->setEnabled(enabled);
+
+    ui->dateTimeEdit->setEnabled(enabled);
+    ui->chkBoxRefund->setEnabled(enabled);
     ui->labelInitialTotal->setEnabled(enabled);
     ui->dSpinInitialTotal->setEnabled(enabled);
 }
 
 void EditNodeOrder::SetWidgetsEnabledBranch(bool enabled)
 {
-    SetWidgetsEnabled(enabled);
+    ui->labelEmployee->setEnabled(enabled);
+    ui->comboEmployee->setEnabled(enabled);
 
+    ui->labelDiscount->setEnabled(enabled);
+    ui->dSpinDiscount->setEnabled(enabled);
+
+    ui->pBtnInsertParty->setEnabled(enabled);
+
+    ui->dateTimeEdit->setEnabled(enabled);
+    ui->chkBoxRefund->setEnabled(enabled);
+    ui->labelInitialTotal->setEnabled(enabled);
+    ui->dSpinInitialTotal->setEnabled(enabled);
     ui->pBtnPrint->setEnabled(enabled);
     ui->dSpinFinalTotal->setEnabled(enabled);
-    ui->pBtnInsertOrder->setEnabled(enabled);
 }
 
 void EditNodeOrder::SetWidgetsEnabledPost(bool enabled)
 {
-    SetWidgetsEnabled(enabled);
-
     ui->labelParty->setEnabled(enabled);
     ui->comboParty->setEnabled(enabled);
+
+    ui->pBtnInsertParty->setEnabled(enabled);
+
+    ui->labelInitialTotal->setEnabled(enabled);
+    ui->dSpinInitialTotal->setEnabled(enabled);
+
+    ui->labelDiscount->setEnabled(enabled);
+    ui->dSpinDiscount->setEnabled(enabled);
+
+    ui->labelEmployee->setEnabled(enabled);
+    ui->comboEmployee->setEnabled(enabled);
+
     ui->rBtnCash->setEnabled(enabled);
     ui->rBtnMonthly->setEnabled(enabled);
-    ui->chkBoxBranch->setEnabled(enabled);
-    ui->pBtnSaveOrder->setEnabled(enabled);
-    ui->pBtnDeleteOrder->setEnabled(enabled);
     ui->rBtnPending->setEnabled(enabled);
+    ui->dateTimeEdit->setEnabled(enabled);
+
+    ui->chkBoxRefund->setEnabled(enabled);
+    ui->pBtnPrint->setEnabled(!enabled);
 }
 
 void EditNodeOrder::ZeroSettlement()
@@ -190,7 +234,11 @@ void EditNodeOrder::ZeroSettlement()
     ui->dSpinFinalTotal->setValue(0.0);
 }
 
-void EditNodeOrder::EnabledPost(bool enabled) { ui->pBtnPostOrder->setEnabled(enabled); }
+void EditNodeOrder::EnableSave(bool enable)
+{
+    is_modified_ = enable;
+    ui->pBtnSaveOrder->setEnabled(enable);
+}
 
 void EditNodeOrder::on_comboParty_currentTextChanged(const QString& arg1)
 {
@@ -198,13 +246,11 @@ void EditNodeOrder::on_comboParty_currentTextChanged(const QString& arg1)
         return;
 
     node_->name = arg1;
-    EnabledPost(true);
+    EnableSave(true);
 }
 
-void EditNodeOrder::on_comboParty_currentIndexChanged(int index)
+void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
 {
-    Q_UNUSED(index)
-
     if (node_->branch)
         return;
 
@@ -212,25 +258,22 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int index)
     if (party_id <= 0)
         return;
 
-    EnabledPost(true);
+    EnableSave(true);
     node_->party = party_id;
 
-    auto stakehoder_model { stakeholder_->model };
-
-    auto employee_index { ui->comboEmployee->findData(stakehoder_model->Employee(party_id)) };
+    auto employee_index { ui->comboEmployee->findData(stakeholder_model_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakehoder_model->NodeRule(party_id) == 0);
-    ui->rBtnMonthly->setChecked(stakehoder_model->NodeRule(party_id) == 1);
+    ui->rBtnCash->setChecked(stakeholder_model_->NodeRule(party_id) == 0);
+    ui->rBtnMonthly->setChecked(stakeholder_model_->NodeRule(party_id) == 1);
 }
 
-void EditNodeOrder::on_chkBoxRefund_toggled(bool checked) { node_->posted = checked; }
+void EditNodeOrder::on_chkBoxRefund_toggled(bool checked) { node_->node_rule = checked; }
 
-void EditNodeOrder::on_comboEmployee_currentIndexChanged(int index)
+void EditNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
 {
-    Q_UNUSED(index)
-
     node_->employee = ui->comboEmployee->currentData().toInt();
+    EnableSave(true);
 }
 
 void EditNodeOrder::on_rBtnCash_toggled(bool checked)
@@ -239,6 +282,7 @@ void EditNodeOrder::on_rBtnCash_toggled(bool checked)
         return;
 
     node_->unit = UNIT_CASH;
+    EnableSave(true);
 }
 
 void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
@@ -248,6 +292,7 @@ void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
 
     node_->unit = UNIT_MONTHLY;
     ZeroSettlement();
+    EnableSave(true);
 }
 
 void EditNodeOrder::on_rBtnPending_toggled(bool checked)
@@ -257,6 +302,7 @@ void EditNodeOrder::on_rBtnPending_toggled(bool checked)
 
     node_->unit = UNIT_PENDING;
     ZeroSettlement();
+    EnableSave(true);
 }
 
 void EditNodeOrder::on_pBtnInsertParty_clicked()
@@ -265,46 +311,47 @@ void EditNodeOrder::on_pBtnInsertParty_clicked()
     if (node_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
         return;
 
-    auto model { stakeholder_->model };
-
     auto node { ResourcePool<Node>::Instance().Allocate() };
-    node->node_rule = model->NodeRule(-1);
-    model->SetParent(node, -1);
+    node->node_rule = stakeholder_model_->NodeRule(-1);
+    stakeholder_model_->SetParent(node, -1);
     node->name = name;
 
     int unit { info_.section == Section::kSales ? 1 : 2 };
     node->unit = unit;
 
-    if (model->InsertNode(0, QModelIndex(), node)) {
-        auto index = model->index(0, 0, QModelIndex());
-        stakeholder_->widget->SetCurrentIndex(index);
-    }
+    stakeholder_model_->InsertNode(0, QModelIndex(), node);
+
+    int party_index { ui->comboParty->findData(node->id) };
+    ui->comboParty->setCurrentIndex(party_index);
 }
 
-void EditNodeOrder::on_dateEdit_dateChanged(const QDate& date) { node_->date_time = date.toString(DATE_FST); }
-
-void EditNodeOrder::on_pBtnPostOrder_toggled(bool checked)
+void EditNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
 {
-    node_->posted = checked;
+    node_->date_time = date_time.toString(DATE_TIME_FST);
+    EnableSave(true);
+}
+
+void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
+{
+    node_->locked = checked;
     SetWidgetsEnabledPost(!checked);
-    ui->pBtnPostOrder->setText(checked ? tr("UnPost") : tr("Post"));
+    ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
 
     if (checked) {
         accept();
-        ui->pBtnPrint->setFocus();
     }
-
-    ui->pBtnPrint->setDefault(checked);
 }
 
-void EditNodeOrder::on_dSpinDiscount_editingFinished()
+void EditNodeOrder::on_lineDescription_textChanged(const QString& arg1)
 {
-    auto discount { ui->dSpinDiscount };
+    node_->description = arg1;
+    EnableSave(true);
+}
 
-    if (discount->cleanText().isEmpty())
-        discount->setValue(0.0);
-
-    node_->initial_total -= (discount->value() - node_->discount);
-    node_->discount = discount->value();
+void EditNodeOrder::on_dSpinDiscount_valueChanged(double arg1)
+{
+    node_->initial_total = node_->initial_total + node_->discount - arg1;
     ui->dSpinInitialTotal->setValue(node_->initial_total);
+    node_->discount = arg1;
+    EnableSave(true);
 }

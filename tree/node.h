@@ -33,7 +33,7 @@ public:
     int first {};
     double second {};
     double discount {};
-    bool posted {};
+    bool locked {};
 
     // order and stakeholder
     QString date_time {};
@@ -63,7 +63,7 @@ inline Node::Node(const Node& other)
     , first(other.first)
     , second(other.second)
     , discount(other.discount)
-    , posted(other.posted)
+    , locked(other.locked)
     , date_time(other.date_time)
     , employee(other.employee)
     , party(other.party)
@@ -88,7 +88,7 @@ inline Node& Node::operator=(const Node& other)
     first = other.first;
     second = other.second;
     discount = other.discount;
-    posted = other.posted;
+    locked = other.locked;
     date_time = other.date_time;
     employee = other.employee;
     party = other.party;
@@ -100,8 +100,8 @@ inline Node& Node::operator=(const Node& other)
 
 inline bool Node::operator==(const Node& other) const noexcept
 {
-    return std::tie(name, id, code, party, employee, posted, first, date_time, description, note, node_rule, branch, unit, parent, children)
-        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.posted, other.first, other.date_time, other.description, other.note,
+    return std::tie(name, id, code, party, employee, locked, first, date_time, description, note, node_rule, branch, unit, parent, children)
+        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.locked, other.first, other.date_time, other.description, other.note,
             other.node_rule, other.branch, other.unit, other.parent, other.children)
         && std::abs(second - other.second) < tolerance && std::abs(discount - other.discount) < tolerance;
 }
@@ -115,7 +115,7 @@ inline void Node::Reset()
     employee = 0;
     second = 0.0;
     discount = 0.0;
-    posted = false;
+    locked = false;
     first = 0;
     date_time.clear();
     description.clear();

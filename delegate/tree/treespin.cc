@@ -1,7 +1,5 @@
 #include "treespin.h"
 
-#include <QPainter>
-
 #include "widget/spinbox.h"
 
 TreeSpin::TreeSpin(int min, int max, QObject* parent)
@@ -38,11 +36,11 @@ void TreeSpin::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(locale_.toString(value), painter, option, Qt::AlignCenter);
+    PaintText(locale_.toString(value), painter, option, index, Qt::AlignCenter);
 }
 
 QSize TreeSpin::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto value { index.data().toInt() };
-    return CalculateSize(locale_.toString(value), option, index);
+    return CalculateTextSize(locale_.toString(value), option);
 }

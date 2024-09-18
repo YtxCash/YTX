@@ -31,9 +31,6 @@ private slots:
     void on_chkBoxBranch_toggled(bool checked);
     void on_plainNote_textChanged();
 
-protected:
-    void changeEvent(QEvent* event) override;
-
 private:
     void IniDialog(CStringHash& unit_hash);
     void IniConnect();

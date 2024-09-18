@@ -1,7 +1,5 @@
 #include "treedoublespindynamicunitr.h"
 
-#include <QPainter>
-
 #include "component/enumclass.h"
 
 TreeDoubleSpinDynamicUnitR::TreeDoubleSpinDynamicUnitR(const int& decimal, CStringHash& unit_symbol_hash, QObject* parent)
@@ -13,12 +11,12 @@ TreeDoubleSpinDynamicUnitR::TreeDoubleSpinDynamicUnitR(const int& decimal, CStri
 
 void TreeDoubleSpinDynamicUnitR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    PaintItem(Format(index), painter, option, Qt::AlignRight | Qt::AlignVCenter);
+    PaintText(Format(index), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
 QSize TreeDoubleSpinDynamicUnitR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    return CalculateSize(Format(index), option, index);
+    return CalculateTextSize(Format(index), option);
 }
 
 QString TreeDoubleSpinDynamicUnitR::Format(const QModelIndex& index) const

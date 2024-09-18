@@ -30,7 +30,7 @@
 -- stakeholder-U: Employee = 0, Customer = 1, Vendor = 2, Product = 3
 -- stakeholder-R: Cash = 0, Monthly = 1
 -- order-U: Cash = 0, Monthly = 1, Pending = 2
--- order-R: UnPosted = 0, Posted = 1
+-- order-R: Order=0 = 0, Refund = 1
 -- R: DICD = 0, DDCI = 1
 -- B: Branch
 -- U: Unit

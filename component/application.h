@@ -1,10 +1,10 @@
-#ifndef APP_H
-#define APP_H
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
 #include <QApplication>
 #include <QFileOpenEvent>
 
-class App : public QApplication {
+class Application : public QApplication {
     Q_OBJECT
 
 signals:
@@ -13,7 +13,7 @@ signals:
 
 public:
     // Constructor for the custom application class
-    App(int& argc, char** argv)
+    Application(int& argc, char** argv)
         : QApplication(argc, argv)
     {
     }
@@ -34,4 +34,4 @@ protected:
     }
 };
 
-#endif // APP_H
+#endif // APPLICATION_H

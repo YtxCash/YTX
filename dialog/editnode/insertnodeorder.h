@@ -1,5 +1,5 @@
-#ifndef EDITNODEORDER_H
-#define EDITNODEORDER_H
+#ifndef INSERTNODEORDER_H
+#define INSERTNODEORDER_H
 
 #include <QComboBox>
 #include <QDialog>
@@ -9,16 +9,16 @@
 #include "tree/model/abstracttreemodel.h"
 
 namespace Ui {
-class EditNodeOrder;
+class InsertNodeOrder;
 }
 
-class EditNodeOrder final : public QDialog {
+class InsertNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeOrder(Node* node, CSectionRule& section_rule, AbstractTreeModel* order_model, AbstractTreeModel* stakeholder_model,
+    InsertNodeOrder(Node* node, CSectionRule& section_rule, AbstractTreeModel* order_model, AbstractTreeModel* stakeholder_model,
         const AbstractTreeModel& product_model, CInfo& info, QWidget* parent = nullptr);
-    ~EditNodeOrder();
+    ~InsertNodeOrder();
 
 public slots:
     void accept() override;
@@ -26,6 +26,7 @@ public slots:
     void RUpdateStakeholder();
 
 private slots:
+    void on_chkBoxBranch_toggled(bool checked);
     void on_comboParty_currentTextChanged(const QString& arg1);
     void on_comboParty_currentIndexChanged(int index);
     void on_chkBoxRefund_toggled(bool checked);
@@ -35,25 +36,25 @@ private slots:
     void on_rBtnPending_toggled(bool checked);
     void on_pBtnInsertParty_clicked();
     void on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time);
-    void on_pBtnLockOrder_toggled(bool checked);
+    void on_pBtnPostOrder_toggled(bool checked);
 
-    void on_lineDescription_textChanged(const QString& arg1);
-
-    void on_dSpinDiscount_valueChanged(double arg1);
+    void on_dSpinDiscount_editingFinished();
 
 private:
     void IniDialog();
-    void IniData();
+    void IniCombo(QComboBox* combo);
     void IniCombo(QComboBox* combo, int mark);
     void IniConnect();
+    void SetData();
     void SetWidgetsEnabled(bool enabled);
     void SetWidgetsEnabledBranch(bool enabled);
     void SetWidgetsEnabledPost(bool enabled);
     void ZeroSettlement();
-    void EnableSave(bool enable);
+    void EnabledPost(bool enabled);
+    void Save();
 
 private:
-    Ui::EditNodeOrder* ui;
+    Ui::InsertNodeOrder* ui;
 
     Node* node_ {};
     CInfo& info_ {};
@@ -61,7 +62,8 @@ private:
     AbstractTreeModel* stakeholder_model_ {};
     AbstractTreeModel* order_model_ {};
     const AbstractTreeModel& product_model_;
+    bool is_saved_ { false };
     bool is_modified_ { false };
 };
 
-#endif // EDITNODEORDER_H
+#endif // INSERTNODEORDER_H

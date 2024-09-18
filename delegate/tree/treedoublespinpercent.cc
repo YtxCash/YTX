@@ -1,7 +1,5 @@
 #include "treedoublespinpercent.h"
 
-#include <QPainter>
-
 #include "component/constvalue.h"
 #include "widget/doublespinbox.h"
 
@@ -44,11 +42,11 @@ void TreeDoubleSpinPercent::paint(QPainter* painter, const QStyleOptionViewItem&
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, painter, option, Qt::AlignRight | Qt::AlignVCenter);
+    PaintText(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
 QSize TreeDoubleSpinPercent::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto value { index.data().toDouble() * HUNDRED };
-    return CalculateSize(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, option, index);
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, option);
 }

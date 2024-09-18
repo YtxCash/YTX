@@ -12,13 +12,14 @@ public:
     void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 protected:
-    const QStyle* GetStyle(const QStyleOptionViewItem& opt) const;
+    static const QStyle* GetStyle(const QStyleOptionViewItem& opt);
+    static QSize CalculateTextSize(CString& text, const QStyleOptionViewItem& option);
 
-    QSize CalculateSize(CString& text, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-    void PaintItem(CString& text, QPainter* painter, const QStyleOptionViewItem& option, Qt::Alignment alignment) const;
+    void PaintText(CString& text, QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, Qt::Alignment alignment) const;
+    void PaintCheckBox(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
 protected:
-    QLocale locale_ {};
+    static const QLocale locale_;
 };
 
 #endif // STYLEDITEMDELEGATE_H

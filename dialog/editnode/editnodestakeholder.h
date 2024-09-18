@@ -35,9 +35,6 @@ private slots:
     void on_comboEmployee_currentIndexChanged(int index);
     void on_rBtnMonthly_toggled(bool checked);
 
-protected:
-    void changeEvent(QEvent* event) override;
-
 private:
     void IniDialog(CStringHash& currency_map);
     void IniComboUnit(CStringHash& mark_hash);

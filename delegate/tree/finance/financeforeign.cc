@@ -1,7 +1,5 @@
 #include "financeforeign.h"
 
-#include <QPainter>
-
 #include "component/enumclass.h"
 
 FinanceForeign::FinanceForeign(const int& decimal, const int& base_unit, CStringHash& unit_symbol_hash, QObject* parent)
@@ -14,10 +12,10 @@ FinanceForeign::FinanceForeign(const int& decimal, const int& base_unit, CString
 
 void FinanceForeign::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    PaintItem(Format(index), painter, option, Qt::AlignRight | Qt::AlignVCenter);
+    PaintText(Format(index), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize FinanceForeign::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateSize(Format(index), option, index); }
+QSize FinanceForeign::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(Format(index), option); }
 
 QString FinanceForeign::Format(const QModelIndex& index) const
 {

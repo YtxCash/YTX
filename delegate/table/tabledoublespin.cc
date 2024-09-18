@@ -1,7 +1,5 @@
 #include "tabledoublespin.h"
 
-#include <QPainter>
-
 #include "widget/doublespinbox.h"
 
 TableDoubleSpin::TableDoubleSpin(const int& decimal, double min, double max, QObject* parent)
@@ -42,11 +40,11 @@ void TableDoubleSpin::paint(QPainter* painter, const QStyleOptionViewItem& optio
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(locale_.toString(value, 'f', decimal_), painter, option, Qt::AlignRight | Qt::AlignVCenter);
+    PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
 QSize TableDoubleSpin::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto value { index.data().toDouble() };
-    return CalculateSize(locale_.toString(value, 'f', decimal_), option, index);
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_), option);
 }

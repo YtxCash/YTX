@@ -30,7 +30,7 @@ constexpr char DATE_D[] = "d";
 constexpr char DATE_FORMAT[] = "date_format";
 constexpr char DATE_FST[] = "yyyy-MM-dd";
 constexpr char DATE_TIME[] = "date_time";
-constexpr char DATE_TIME_FST[] = "yyyy-MM-dd hh:mm:ss";
+constexpr char DATE_TIME_FST[] = "yyyy-MM-dd hh:mm";
 
 // Constants for separators
 constexpr char COLON[] = ":";
@@ -75,7 +75,7 @@ constexpr char NODE_ID[] = "node/id";
 constexpr char NODE_RULE[] = "node_rule";
 constexpr char NOTE[] = "note";
 constexpr char PAYMENT_PERIOD[] = "payment_period";
-constexpr char Posted[] = "posted";
+constexpr char LOCKED[] = "locked";
 constexpr char SECOND[] = "second";
 constexpr char STATE[] = "state";
 constexpr char TAX_RATE[] = "tax_rate";

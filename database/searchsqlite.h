@@ -12,7 +12,7 @@ public:
     SearchSqlite(CInfo& info, QHash<int, Transaction*>* transaction_hash);
 
     QList<int> Node(CString& text);
-    TransactionList Trans(CString& text);
+    TransactionList TransList(CString& text);
 
 private:
     QSqlDatabase* db_ {};

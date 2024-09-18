@@ -522,6 +522,7 @@ Qt::ItemFlags TableModel::flags(const QModelIndex& index) const
     case TableEnum::kID:
     case TableEnum::kSubtotal:
     case TableEnum::kDocument:
+    case TableEnum::kState:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

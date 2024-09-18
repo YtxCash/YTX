@@ -33,9 +33,6 @@ private slots:
     void on_dSpinBoxUnitPrice_editingFinished();
     void on_dSpinBoxCommission_editingFinished();
 
-protected:
-    void changeEvent(QEvent* event) override;
-
 private:
     void IniDialog(CStringHash& currency_map);
     void IniConnect();

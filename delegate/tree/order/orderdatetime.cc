@@ -43,5 +43,5 @@ void OrderDateTime::paint(QPainter* painter, const QStyleOptionViewItem& option,
     if (string.isEmpty())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(string, painter, option, Qt::AlignCenter);
+    PaintText(string, painter, option, index, Qt::AlignCenter);
 }

@@ -122,10 +122,10 @@ private:
 
     void SetView(QTreeView* view);
     void SetConnect(const QTreeView* view, const AbstractTreeWidget* widget, const AbstractTreeModel* model, const Sqlite* table_sql);
-    void ConnectStakeholderOrder(QDialog* dialog);
 
     void PrepInsertNode(QTreeView* view);
     void InsertNode(const QModelIndex& parent, int row);
+
     void AppendTrans(QWidget* widget);
 
     void SwitchTab(int node_id, int trans_id = 0);

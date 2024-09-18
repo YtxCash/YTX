@@ -48,7 +48,7 @@ QList<int> SearchSqlite::Node(CString& text)
     return node_list;
 }
 
-TransactionList SearchSqlite::Trans(CString& text)
+TransactionList SearchSqlite::TransList(CString& text)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);

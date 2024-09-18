@@ -1,7 +1,5 @@
 #include "searchcombor.h"
 
-#include <QPainter>
-
 #include "component/enumclass.h"
 
 SearchComboR::SearchComboR(const AbstractTreeModel& model, QObject* parent)
@@ -16,13 +14,13 @@ void SearchComboR::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     if (path.isEmpty())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(path, painter, option, Qt::AlignLeft | Qt::AlignVCenter);
+    PaintText(path, painter, option, index, Qt::AlignLeft | Qt::AlignVCenter);
 }
 
 QSize SearchComboR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto path { GetPath(index) };
-    return CalculateSize(path, option, index);
+    return CalculateTextSize(path, option);
 }
 
 QString SearchComboR::GetPath(const QModelIndex& index) const

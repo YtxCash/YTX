@@ -1,8 +1,5 @@
 #include "tablecombo.h"
 
-#include <QFontMetrics>
-#include <QPainter>
-
 #include "widget/combobox.h"
 
 TableCombo::TableCombo(const AbstractTreeModel& model, int exclude, QObject* parent)
@@ -45,7 +42,7 @@ void TableCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, co
     if (path.isEmpty())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(path, painter, option, Qt::AlignLeft | Qt::AlignVCenter);
+    PaintText(path, painter, option, index, Qt::AlignLeft | Qt::AlignVCenter);
 
     // 高度自定义
     // const int text_margin { CalculateTextMargin(style, opt.widget) };
@@ -56,5 +53,5 @@ void TableCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, co
 QSize TableCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString text = model_.GetPath(index.data().toInt());
-    return CalculateSize(text, option, index);
+    return CalculateTextSize(text, option);
 }

@@ -34,6 +34,9 @@ signals:
     // send to its table view
     void SResizeColumnToContents(int column);
 
+    // send to edit/insert order dialog
+    void SUpdateOrderDescription(const QString& value);
+
 public slots:
     // receive from table sql
     void RRemoveMulti(const QMultiHash<int, int>& node_trans);

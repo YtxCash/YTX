@@ -16,13 +16,13 @@ void OrderName::paint(QPainter* painter, const QStyleOptionViewItem& option, con
     if (path.isEmpty())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintItem(path, painter, option, Qt::AlignLeft | Qt::AlignVCenter);
+    PaintText(path, painter, option, index, Qt::AlignLeft | Qt::AlignVCenter);
 }
 
 QSize OrderName::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto path { GetPath(index) };
-    return CalculateSize(path, option, index);
+    return CalculateTextSize(path, option);
 }
 
 QString OrderName::GetPath(const QModelIndex& index) const

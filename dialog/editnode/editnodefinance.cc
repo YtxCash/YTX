@@ -35,7 +35,7 @@ EditNodeFinance::~EditNodeFinance() { delete ui; }
 void EditNodeFinance::IniDialog(CStringHash& unit_hash)
 {
     ui->lineName->setFocus();
-    ui->lineName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
+    ui->lineName->setValidator(&LineEdit::GetInputValidator());
 
     if (!parent_path_.isEmpty())
         parent_path_ += separator_;
@@ -101,16 +101,3 @@ void EditNodeFinance::on_rBtnDDCI_toggled(bool checked)
 void EditNodeFinance::on_chkBoxBranch_toggled(bool checked) { node_->branch = checked; }
 
 void EditNodeFinance::on_plainNote_textChanged() { node_->note = ui->plainNote->toPlainText(); }
-
-void EditNodeFinance::changeEvent(QEvent* event)
-{
-    if (event->type() == QEvent::ActivationChange && this->isActiveWindow()) {
-        QTimer::singleShot(100, this, [&, this]() {
-            name_list_.clear();
-            model_.ChildrenName(name_list_, parent_id_, node_->id);
-            REditName(ui->lineName->text());
-        });
-    }
-
-    QDialog::changeEvent(event);
-}

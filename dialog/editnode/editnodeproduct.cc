@@ -34,7 +34,7 @@ EditNodeProduct::~EditNodeProduct() { delete ui; }
 void EditNodeProduct::IniDialog(CStringHash& unit_hash)
 {
     ui->lineEditName->setFocus();
-    ui->lineEditName->setValidator(new QRegularExpressionValidator(QRegularExpression("[\\p{L} ()（）\\d]*"), this));
+    ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
 
     if (!parent_path_.isEmpty())
         parent_path_ += separator_;
@@ -112,16 +112,3 @@ void EditNodeProduct::on_plainTextEdit_textChanged() { node_->note = ui->plainTe
 void EditNodeProduct::on_dSpinBoxUnitPrice_editingFinished() { node_->second = ui->dSpinBoxUnitPrice->value(); }
 
 void EditNodeProduct::on_dSpinBoxCommission_editingFinished() { node_->discount = ui->dSpinBoxCommission->value(); }
-
-void EditNodeProduct::changeEvent(QEvent* event)
-{
-    if (event->type() == QEvent::ActivationChange && this->isActiveWindow()) {
-        QTimer::singleShot(100, this, [&, this]() {
-            name_list_.clear();
-            model_.ChildrenName(name_list_, parent_id_, node_->id);
-            REditName(ui->lineEditName->text());
-        });
-    }
-
-    QDialog::changeEvent(event);
-}

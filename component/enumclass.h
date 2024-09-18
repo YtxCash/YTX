@@ -101,7 +101,7 @@ enum class TreeEnumOrder {
     kFirst,
     kSecond,
     kDiscount,
-    kPosted,
+    kLocked,
     kInitialTotal,
     kFinalTotal
 };
