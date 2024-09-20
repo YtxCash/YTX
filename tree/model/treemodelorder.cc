@@ -87,6 +87,20 @@ void TreeModelOrder::UpdateNodeValues(Node* node, int first, double second, doub
     node->final_total += final_total * coefficient;
 }
 
+void TreeModelOrder::RefreshAncestorData(const QModelIndex& index, int column_start, int column_end)
+{
+    QModelIndexList parents {};
+
+    auto parent_index { index.parent() };
+    while (parent_index.isValid()) {
+        parents.append(parent_index);
+        parent_index = parent_index.parent();
+    }
+
+    if (!parents.isEmpty())
+        emit dataChanged(this->index(parents.first().row(), column_start), this->index(parents.last().row(), column_end), { Qt::DisplayRole });
+}
+
 void TreeModelOrder::UpdateNode(const Node* tmp_node)
 {
     if (!tmp_node)
@@ -96,6 +110,7 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
     if (*node == *tmp_node)
         return;
 
+    UpdateName(node, tmp_node->name);
     UpdateParty(node, tmp_node->party);
     UpdateDiscount(node, tmp_node->discount);
     UpdateUnit(node, tmp_node->unit);
@@ -197,6 +212,15 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
     sql_->UpdateField(info_.node, value, FINAL_TOTAL, node->id);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kFinalTotal));
+    return true;
+}
+
+bool TreeModelOrder::UpdateName(Node* node, CString& value)
+{
+    node->name = value;
+    sql_->UpdateField(info_.node, value, NAME, node->id);
+
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     return true;
 }
 
@@ -325,7 +349,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
 
     switch (kColumn) {
     case TreeEnumOrder::kName:
-        return node->name;
+        return node->name.isEmpty() ? QVariant() : node->name;
     case TreeEnumOrder::kID:
         return node->id;
     case TreeEnumOrder::kCode:
@@ -337,11 +361,11 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kNodeRule:
         return node->node_rule;
     case TreeEnumOrder::kBranch:
-        return node->branch;
+        return branch ? node->branch : QVariant();
     case TreeEnumOrder::kUnit:
         return node->unit;
     case TreeEnumOrder::kParty:
-        return node->party;
+        return branch || node->party == 0 ? QVariant() : node->party;
     case TreeEnumOrder::kEmployee:
         return branch || node->employee == 0 ? QVariant() : node->employee;
     case TreeEnumOrder::kDateTime:
@@ -353,7 +377,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
     case TreeEnumOrder::kLocked:
-        return branch ? QVariant() : node->locked;
+        return node->locked;
     case TreeEnumOrder::kInitialTotal:
         return node->initial_total;
     case TreeEnumOrder::kFinalTotal:
@@ -369,63 +393,53 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         return false;
 
     auto node { GetNodeByIndex(index) };
-    if (node->id == -1 || node->branch)
+    if (node->id == -1)
         return false;
 
     const TreeEnumOrder kColumn { index.column() };
-    const bool locked { node->locked };
+    const bool editable { !node->branch && !node->locked };
 
     switch (kColumn) {
     case TreeEnumOrder::kCode:
         UpdateCode(node, value.toString());
         break;
     case TreeEnumOrder::kDescription:
-        UpdateDescription(node, value.toString());
+        if (!node->locked)
+            UpdateDescription(node, value.toString());
         break;
     case TreeEnumOrder::kNote:
         UpdateNote(node, value.toString());
         break;
     case TreeEnumOrder::kNodeRule:
-        if (!locked)
+        if (!node->locked)
             UpdateNodeRule(node, value.toBool());
         break;
     case TreeEnumOrder::kUnit:
-        if (!locked)
+        if (editable)
             UpdateUnit(node, value.toInt());
         break;
     case TreeEnumOrder::kParty:
-        if (!locked)
+        if (editable)
             UpdateParty(node, value.toInt());
         break;
     case TreeEnumOrder::kEmployee:
-        if (!locked)
+        if (editable)
             UpdateEmployee(node, value.toInt());
         break;
     case TreeEnumOrder::kDateTime:
-        if (!locked)
+        if (editable)
             UpdateDateTime(node, value.toString());
         break;
     case TreeEnumOrder::kDiscount:
-        if (!locked)
+        if (editable)
             UpdateDiscount(node, value.toDouble());
         break;
     case TreeEnumOrder::kLocked:
         if (UpdateLocked(node, value.toBool())) {
-            QModelIndexList parents {};
+            int column_start { std::to_underlying(TreeEnumOrder::kDiscount) };
+            int column_end { std::to_underlying(TreeEnumOrder::kInitialTotal) };
 
-            // 收集所有父节点索引
-            auto parent_index { index.parent() };
-            while (parent_index.isValid()) {
-                parents.append(parent_index);
-                parent_index = parent_index.parent();
-            }
-
-            if (!parents.isEmpty()) {
-                int column_start { std::to_underlying(TreeEnumOrder::kDiscount) };
-                int column_end { std::to_underlying(TreeEnumOrder::kInitialTotal) };
-
-                emit dataChanged(this->index(parents.first().row(), column_start), this->index(parents.last().row(), column_end), { Qt::DisplayRole });
-            }
+            RefreshAncestorData(index, column_start, column_end);
         }
         break;
     default:
@@ -454,6 +468,7 @@ Qt::ItemFlags TreeModelOrder::flags(const QModelIndex& index) const
     case TreeEnumOrder::kLocked:
     case TreeEnumOrder::kFirst:
     case TreeEnumOrder::kSecond:
+    case TreeEnumOrder::kDiscount:
     case TreeEnumOrder::kInitialTotal:
     case TreeEnumOrder::kFinalTotal:
         flags &= ~Qt::ItemIsEditable;

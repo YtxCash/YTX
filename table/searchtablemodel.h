@@ -30,7 +30,7 @@ public:
 private:
     QSharedPointer<SearchSqlite> sql_ {};
 
-    TransactionList transaction_list_ {};
+    TransList trans_list_ {};
     CInfo* info_ {};
 };
 

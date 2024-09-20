@@ -19,8 +19,8 @@ template <Resettable T> class ResourcePool {
 public:
     static ResourcePool& Instance();
     T* Allocate();
-    void Recycle(T* trans);
-    template <Iterable Container> void Recycle(Container& trans_list);
+    void Recycle(T* resource);
+    template <Iterable Container> void Recycle(Container& resource_list);
 
 private:
     ResourcePool();
@@ -59,24 +59,24 @@ template <Resettable T> T* ResourcePool<T>::Allocate()
         return new T();
     }
 
-    T* trans { pool_.front() };
+    T* resource { pool_.front() };
     pool_.pop_front();
-    return trans;
+    return resource;
 }
 
-template <Resettable T> void ResourcePool<T>::Recycle(T* trans)
+template <Resettable T> void ResourcePool<T>::Recycle(T* resource)
 {
-    if (!trans)
+    if (!resource)
         return;
 
     if (pool_.size() >= kShrinkThreshold) {
-        delete trans;
+        delete resource;
         return;
     }
 
     QMutexLocker locker(&mutex_);
-    trans->Reset();
-    pool_.push_back(trans);
+    resource->Reset();
+    pool_.push_back(resource);
 }
 
 template <Resettable T> template <Iterable Container> void ResourcePool<T>::Recycle(Container& container)
@@ -89,10 +89,10 @@ template <Resettable T> template <Iterable Container> void ResourcePool<T>::Recy
     } else {
         QMutexLocker locker(&mutex_);
 
-        for (T* trans : container) {
-            if (trans) {
-                trans->Reset();
-                pool_.push_back(trans);
+        for (T* resource : container) {
+            if (resource) {
+                resource->Reset();
+                pool_.push_back(resource);
             }
         }
     }

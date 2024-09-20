@@ -15,17 +15,17 @@ bool TableModelStakeholder::RemoveTrans(int row, const QModelIndex& parent)
     if (row <= -1)
         return false;
 
-    auto trans { trans_list_.at(row) };
-    int related_node_id { *trans->related_node };
+    auto trans_shadow { trans_shadow_list_.at(row) };
+    int related_node_id { *trans_shadow->related_node };
 
     beginRemoveRows(parent, row, row);
-    trans_list_.removeAt(row);
+    trans_shadow_list_.removeAt(row);
     endRemoveRows();
 
     if (related_node_id != 0)
-        sql_->RemoveTransaction(*trans->id);
+        sql_->RemoveTrans(*trans_shadow->id);
 
-    ResourcePool<Trans>::Instance().Recycle(trans);
+    ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
     return true;
 }
 
@@ -34,12 +34,12 @@ bool TableModelStakeholder::RemoveMulti(const QList<int>& trans_id_list)
     int min_row {};
     int trans_id {};
 
-    for (int i = 0; i != trans_list_.size(); ++i) {
-        trans_id = *trans_list_.at(i)->id;
+    for (int i = 0; i != trans_shadow_list_.size(); ++i) {
+        trans_id = *trans_shadow_list_.at(i)->id;
 
         if (trans_id_list.contains(trans_id)) {
             beginRemoveRows(QModelIndex(), i, i);
-            ResourcePool<Trans>::Instance().Recycle(trans_list_.takeAt(i));
+            ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
             endRemoveRows();
 
             if (min_row == 0)
@@ -54,12 +54,12 @@ bool TableModelStakeholder::RemoveMulti(const QList<int>& trans_id_list)
 
 bool TableModelStakeholder::InsertMulti(int node_id, const QList<int>& trans_id_list)
 {
-    auto row { trans_list_.size() };
-    TransList trans_list {};
+    auto row { trans_shadow_list_.size() };
+    TransShadowList trans_shadow_list {};
 
-    sql_->BuildTransList(trans_list, node_id, trans_id_list);
-    beginInsertRows(QModelIndex(), row, row + trans_list.size() - 1);
-    trans_list_.append(trans_list);
+    sql_->BuildTransShadowList(trans_shadow_list, node_id, trans_id_list);
+    beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
+    trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();
 
     return true;
@@ -70,26 +70,26 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto trans { trans_list_.at(index.row()) };
+    auto trans_shadow { trans_shadow_list_.at(index.row()) };
     const TableEnum kColumn { index.column() };
 
     switch (kColumn) {
     case TableEnum::kID:
-        return *trans->id;
+        return *trans_shadow->id;
     case TableEnum::kDateTime:
-        return *trans->date_time;
+        return *trans_shadow->date_time;
     case TableEnum::kCode:
-        return *trans->code;
+        return *trans_shadow->code;
     case TableEnum::kRatio:
-        return mark_ == 0 ? QVariant() : *trans->ratio;
+        return mark_ == 0 ? QVariant() : *trans_shadow->ratio;
     case TableEnum::kDescription:
-        return *trans->description;
+        return *trans_shadow->description;
     case TableEnum::kDebit:
-        return mark_ == 0 ? *trans->related_debit : QVariant();
+        return mark_ == 0 ? *trans_shadow->related_debit : QVariant();
     case TableEnum::kRelatedNode:
-        return *trans->related_node == 0 ? QVariant() : *trans->related_node;
+        return *trans_shadow->related_node == 0 ? QVariant() : *trans_shadow->related_node;
     case TableEnum::kDocument:
-        return trans->document->isEmpty() ? QVariant() : QString::number(trans->document->size());
+        return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
     default:
         return QVariant();
     }
@@ -103,29 +103,29 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     const TableEnum kColumn { index.column() };
     const int kRow { index.row() };
 
-    auto trans { trans_list_.at(kRow) };
-    int old_related_node { *trans->related_node };
+    auto trans_shadow { trans_shadow_list_.at(kRow) };
+    int old_related_node { *trans_shadow->related_node };
 
     bool rel_changed { false };
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(trans, value.toString());
+        UpdateDateTime(trans_shadow, value.toString());
         break;
     case TableEnum::kCode:
-        UpdateCode(trans, value.toString());
+        UpdateCode(trans_shadow, value.toString());
         break;
     case TableEnum::kDescription:
-        UpdateDescription(trans, value.toString());
+        UpdateDescription(trans_shadow, value.toString());
         break;
     case TableEnum::kRatio:
-        UpdateRatio(trans, value.toDouble());
+        UpdateRatio(trans_shadow, value.toDouble());
         break;
     case TableEnum::kDebit:
-        UpdateCommission(trans, value.toDouble());
+        UpdateCommission(trans_shadow, value.toDouble());
         break;
     case TableEnum::kRelatedNode:
-        rel_changed = UpdateRelatedNode(trans, value.toInt());
+        rel_changed = UpdateRelatedNode(trans_shadow, value.toInt());
         break;
     default:
         return false;
@@ -133,7 +133,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     if (old_related_node == 0) {
         if (rel_changed) {
-            sql_->InsertTrans(trans);
+            sql_->InsertTransShadow(trans_shadow);
         }
 
         emit SResizeColumnToContents(index.column());
@@ -141,38 +141,38 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     }
 
     if (rel_changed)
-        sql_->UpdateTransaction(*trans->id);
+        sql_->UpdateTrans(*trans_shadow->id);
 
     emit SResizeColumnToContents(index.column());
     return true;
 }
 
-bool TableModelStakeholder::UpdateRatio(Trans* trans, double value)
+bool TableModelStakeholder::UpdateRatio(TransShadow* trans_shadow, double value)
 {
     const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
 
-    if (std::abs(*trans->ratio - value) < tolerance || mark_ == 0)
+    if (std::abs(*trans_shadow->ratio - value) < tolerance || mark_ == 0)
         return false;
 
-    *trans->ratio = value;
+    *trans_shadow->ratio = value;
 
-    if (*trans->related_node != 0)
-        sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans->id);
+    if (*trans_shadow->related_node != 0)
+        sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
 
     return true;
 }
 
-bool TableModelStakeholder::UpdateCommission(Trans* trans, double value)
+bool TableModelStakeholder::UpdateCommission(TransShadow* trans_shadow, double value)
 {
     const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
 
-    if (std::abs(*trans->related_debit - value) < tolerance || mark_ != 0)
+    if (std::abs(*trans_shadow->related_debit - value) < tolerance || mark_ != 0)
         return false;
 
-    *trans->related_debit = value;
+    *trans_shadow->related_debit = value;
 
-    if (*trans->related_node != 0)
-        sql_->UpdateField(info_.transaction, value, COMMISSION, *trans->id);
+    if (*trans_shadow->related_node != 0)
+        sql_->UpdateField(info_.transaction, value, COMMISSION, *trans_shadow->id);
 
     return true;
 }
@@ -183,7 +183,7 @@ void TableModelStakeholder::sort(int column, Qt::SortOrder order)
     if (column <= -1 || column >= info_.part_table_header.size() - 1)
         return;
 
-    auto Compare = [column, order](Trans* lhs, Trans* rhs) -> bool {
+    auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {
         const TableEnum kColumn { column };
 
         switch (kColumn) {
@@ -205,7 +205,7 @@ void TableModelStakeholder::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    std::sort(trans_list_.begin(), trans_list_.end(), Compare);
+    std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 }
 

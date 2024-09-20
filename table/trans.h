@@ -1,10 +1,10 @@
-#ifndef TRANSACTION_H
-#define TRANSACTION_H
+#ifndef TRANS_H
+#define TRANS_H
 
 #include <QSharedPointer>
 #include <QStringList>
 
-struct Transaction {
+struct Trans {
     int id {};
     QString date_time {};
     QString code {};
@@ -39,7 +39,7 @@ struct Transaction {
     }
 };
 
-struct Trans {
+struct TransShadow {
     int* id {};
     QString* date_time {};
     QString* code {};
@@ -78,7 +78,7 @@ struct Trans {
     }
 };
 
-using TransactionList = QList<Transaction*>;
 using TransList = QList<Trans*>;
+using TransShadowList = QList<TransShadow*>;
 
-#endif // TRANSACTION_H
+#endif // TRANS_H

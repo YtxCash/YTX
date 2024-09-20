@@ -138,7 +138,7 @@ bool SqliteOrder::UpdateNodeSimple(const Node* node)
     return true;
 }
 
-void SqliteOrder::BuildTransList(TransList& trans_list, int node_id)
+void SqliteOrder::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -158,10 +158,10 @@ void SqliteOrder::BuildTransList(TransList& trans_list, int node_id)
         return;
     }
 
-    QueryTransList(trans_list, node_id, query);
+    QueryTransShadowList(trans_shadow_list, node_id, query);
 }
 
-bool SqliteOrder::InsertTrans(Trans* trans)
+bool SqliteOrder::InsertTransShadow(TransShadow* trans_shadow)
 {
     QSqlQuery query(*db_);
     auto part = QString(R"(
@@ -171,31 +171,31 @@ bool SqliteOrder::InsertTrans(Trans* trans)
                     .arg(info_.transaction);
 
     query.prepare(part);
-    query.bindValue(":date_time", *trans->date_time);
-    query.bindValue(":lhs_node", *trans->node);
-    query.bindValue(":lhs_ratio", *trans->ratio);
-    query.bindValue(":lhs_debit", *trans->debit);
-    query.bindValue(":lhs_credit", *trans->credit);
-    query.bindValue(":rhs_node", *trans->related_node);
-    query.bindValue(":rhs_ratio", *trans->related_ratio);
-    query.bindValue(":rhs_debit", *trans->related_debit);
-    query.bindValue(":rhs_credit", *trans->related_credit);
-    query.bindValue(":state", *trans->state);
-    query.bindValue(":description", *trans->description);
-    query.bindValue(":code", *trans->code);
-    query.bindValue(":document", trans->document->join(SEMICOLON));
+    query.bindValue(":date_time", *trans_shadow->date_time);
+    query.bindValue(":lhs_node", *trans_shadow->node);
+    query.bindValue(":lhs_ratio", *trans_shadow->ratio);
+    query.bindValue(":lhs_debit", *trans_shadow->debit);
+    query.bindValue(":lhs_credit", *trans_shadow->credit);
+    query.bindValue(":rhs_node", *trans_shadow->related_node);
+    query.bindValue(":rhs_ratio", *trans_shadow->related_ratio);
+    query.bindValue(":rhs_debit", *trans_shadow->related_debit);
+    query.bindValue(":rhs_credit", *trans_shadow->related_credit);
+    query.bindValue(":state", *trans_shadow->state);
+    query.bindValue(":description", *trans_shadow->description);
+    query.bindValue(":code", *trans_shadow->code);
+    query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
 
     if (!query.exec()) {
         qWarning() << "Failed to insert record in transaction table" << query.lastError().text();
         return false;
     }
 
-    *trans->id = query.lastInsertId().toInt();
-    transaction_hash_.insert(*trans->id, last_transaction_);
+    *trans_shadow->id = query.lastInsertId().toInt();
+    trans_hash_.insert(*trans_shadow->id, last_trans_);
     return true;
 }
 
-void SqliteOrder::BuildTransList(TransList& trans_list, int node_id, const QList<int>& trans_id_list)
+void SqliteOrder::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -220,7 +220,7 @@ void SqliteOrder::BuildTransList(TransList& trans_list, int node_id, const QList
         return;
     }
 
-    QueryTransList(trans_list, node_id, query);
+    QueryTransShadowList(trans_shadow_list, node_id, query);
 }
 
 void SqliteOrder::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
@@ -253,44 +253,44 @@ void SqliteOrder::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
     }
 }
 
-void SqliteOrder::QueryTransList(TransList& trans_list, int node_id, QSqlQuery& query)
+void SqliteOrder::QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query)
 {
+    TransShadow* trans_shadow {};
     Trans* trans {};
-    Transaction* transaction {};
     int id {};
 
     while (query.next()) {
         id = query.value("id").toInt();
-        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans_shadow = ResourcePool<TransShadow>::Instance().Allocate();
 
-        if (transaction_hash_.contains(id)) {
-            transaction = transaction_hash_.value(id);
-            Convert(transaction, trans, node_id == transaction->lhs_node);
-            trans_list.emplaceBack(trans);
+        if (trans_hash_.contains(id)) {
+            trans = trans_hash_.value(id);
+            Convert(trans, trans_shadow, node_id == trans->lhs_node);
+            trans_shadow_list.emplaceBack(trans_shadow);
             continue;
         }
 
-        transaction = ResourcePool<Transaction>::Instance().Allocate();
-        transaction->id = id;
+        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans->id = id;
 
-        transaction->lhs_node = query.value("lhs_node").toInt();
-        transaction->lhs_ratio = query.value("lhs_ratio").toDouble();
-        transaction->lhs_debit = query.value("lhs_debit").toDouble();
-        transaction->lhs_credit = query.value("lhs_credit").toDouble();
+        trans->lhs_node = query.value("lhs_node").toInt();
+        trans->lhs_ratio = query.value("lhs_ratio").toDouble();
+        trans->lhs_debit = query.value("lhs_debit").toDouble();
+        trans->lhs_credit = query.value("lhs_credit").toDouble();
 
-        transaction->rhs_node = query.value("rhs_node").toInt();
-        transaction->rhs_ratio = query.value("rhs_ratio").toDouble();
-        transaction->rhs_debit = query.value("rhs_debit").toDouble();
-        transaction->rhs_credit = query.value("rhs_credit").toDouble();
+        trans->rhs_node = query.value("rhs_node").toInt();
+        trans->rhs_ratio = query.value("rhs_ratio").toDouble();
+        trans->rhs_debit = query.value("rhs_debit").toDouble();
+        trans->rhs_credit = query.value("rhs_credit").toDouble();
 
-        transaction->code = query.value("code").toString();
-        transaction->description = query.value("description").toString();
-        transaction->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
-        transaction->date_time = query.value("date_time").toString();
-        transaction->state = query.value("state").toBool();
+        trans->code = query.value("code").toString();
+        trans->description = query.value("description").toString();
+        trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
+        trans->date_time = query.value("date_time").toString();
+        trans->state = query.value("state").toBool();
 
-        transaction_hash_.insert(id, transaction);
-        Convert(transaction, trans, node_id == transaction->lhs_node);
-        trans_list.emplaceBack(trans);
+        trans_hash_.insert(id, trans);
+        Convert(trans, trans_shadow, node_id == trans->lhs_node);
+        trans_shadow_list.emplaceBack(trans_shadow);
     }
 }

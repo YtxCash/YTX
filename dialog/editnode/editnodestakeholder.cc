@@ -1,24 +1,15 @@
 #include "editnodestakeholder.h"
 
-#include <QTimer>
-
 #include "component/constvalue.h"
 #include "ui_editnodestakeholder.h"
 
-EditNodeStakeholder::EditNodeStakeholder(Node* node, CSectionRule& section_rule, CString& separator, CInfo& info, bool node_usage, bool view_opened,
-    int parent_id, CStringHash& term_hash, AbstractTreeModel* model, QWidget* parent)
+EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch,
+    int ratio_decimal, AbstractTreeModel* model, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
     , node_ { node }
-    , separator_ { separator }
-    , term_hash_ { term_hash }
-    , section_rule_ { section_rule }
-    , info_ { info }
-    , model_ { model }
-    , parent_id_ { parent_id }
-    , node_usage_ { node_usage }
-    , view_opened_ { view_opened }
-    , parent_path_ { model->GetPath(parent_id) }
+    , parent_path_ { parent_path }
+    , name_list_ { name_list }
 {
     ui->setupUi(this);
 
@@ -26,9 +17,9 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CSectionRule& section_rule,
     ui->comboEmployee->blockSignals(true);
     ui->chkBoxBranch->blockSignals(true);
 
-    IniDialog(info.unit_hash);
+    IniDialog(unit_hash, model, ratio_decimal);
     IniConnect();
-    Data(node);
+    Data(node, enable_branch);
 
     ui->comboUnit->blockSignals(false);
     ui->comboEmployee->blockSignals(false);
@@ -37,48 +28,45 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CSectionRule& section_rule,
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 
-void EditNodeStakeholder::IniDialog(CStringHash& unit_hash)
+void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, AbstractTreeModel* model, int ratio_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
 
-    if (!parent_path_.isEmpty())
-        parent_path_ += separator_;
-
     this->setWindowTitle(parent_path_ + node_->name);
 
-    IniComboUnit(unit_hash);
-    IniComboEmployee();
+    IniComboWithStringHash(ui->comboUnit, unit_hash);
+    IniComboEmployee(model);
 
     ui->spinBoxPaymentPeriod->setRange(0, IMAX);
     ui->dSpinBoxTaxRate->setRange(0.0, DMAX);
-    ui->dSpinBoxTaxRate->setDecimals(section_rule_.ratio_decimal);
+    ui->dSpinBoxTaxRate->setDecimals(ratio_decimal);
 }
 
-void EditNodeStakeholder::IniComboUnit(CStringHash& unit_hash)
+void EditNodeStakeholder::IniComboWithStringHash(QComboBox* combo, CStringHash& hash)
 {
-    ui->comboUnit->clear();
+    combo->clear();
 
-    for (auto it = unit_hash.cbegin(); it != unit_hash.cend(); ++it)
-        ui->comboUnit->addItem(it.value(), it.key());
+    for (auto it = hash.cbegin(); it != hash.cend(); ++it)
+        combo->addItem(it.value(), it.key());
 
-    ui->comboUnit->model()->sort(0);
+    combo->model()->sort(0);
 }
 
-void EditNodeStakeholder::IniComboEmployee()
+void EditNodeStakeholder::IniComboEmployee(AbstractTreeModel* model)
 {
     ui->comboEmployee->clear();
 
-    model_->ComboPathUnit(ui->comboEmployee, 0);
+    model->ComboPathUnit(ui->comboEmployee, 0);
 
     ui->comboEmployee->insertItem(0, QString(), 0);
     ui->comboEmployee->setCurrentIndex(0);
     ui->comboEmployee->model()->sort(0);
 }
 
-void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::REditName); }
+void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::RNameEdited); }
 
-void EditNodeStakeholder::Data(Node* node)
+void EditNodeStakeholder::Data(Node* node, bool enable_branch)
 {
     int unit_index { ui->comboUnit->findData(node_->unit) };
     ui->comboUnit->setCurrentIndex(unit_index);
@@ -103,10 +91,10 @@ void EditNodeStakeholder::Data(Node* node)
     ui->spinBoxDeadline->setValue(node->party);
 
     ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(!node_usage_ && model_->ChildrenEmpty(node->id) && !view_opened_);
+    ui->chkBoxBranch->setEnabled(enable_branch);
 }
 
-void EditNodeStakeholder::REditName(const QString& arg1)
+void EditNodeStakeholder::RNameEdited(const QString& arg1)
 {
     auto simplified { arg1.simplified() };
     this->setWindowTitle(parent_path_ + simplified);

@@ -7,9 +7,9 @@
 #include "global/resourcepool.h"
 #include "global/sqlconnection.h"
 
-SearchSqlite::SearchSqlite(CInfo& info, QHash<int, Transaction*>* transaction_hash)
+SearchSqlite::SearchSqlite(CInfo& info, QHash<int, Trans*>* trans_hash)
     : db_ { SqlConnection::Instance().Allocate(info.section) }
-    , transaction_hash_ { transaction_hash }
+    , trans_hash_ { trans_hash }
     , info_ { info }
 {
 }
@@ -48,7 +48,7 @@ QList<int> SearchSqlite::Node(CString& text)
     return node_list;
 }
 
-TransactionList SearchSqlite::TransList(CString& text)
+TransList SearchSqlite::QueryTransList(CString& text)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -64,43 +64,43 @@ TransactionList SearchSqlite::TransList(CString& text)
     query.bindValue(":text", text);
     if (!query.exec()) {
         qWarning() << "Error in Construct Search Transaction model" << query.lastError().text();
-        return TransactionList();
+        return TransList();
     }
 
-    Transaction* transaction {};
-    TransactionList transaction_list {};
+    Trans* trans {};
+    TransList trans_list {};
     int id {};
 
     while (query.next()) {
         id = query.value("id").toInt();
 
-        if (transaction_hash_->contains(id)) {
-            transaction = transaction_hash_->value(id);
-            transaction_list.emplaceBack(transaction);
+        if (trans_hash_->contains(id)) {
+            trans = trans_hash_->value(id);
+            trans_list.emplaceBack(trans);
             continue;
         }
 
-        transaction = ResourcePool<Transaction>::Instance().Allocate();
-        transaction->id = id;
+        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans->id = id;
 
-        transaction->lhs_node = query.value("lhs_node").toInt();
-        transaction->lhs_ratio = query.value("lhs_ratio").toDouble();
-        transaction->lhs_debit = query.value("lhs_debit").toDouble();
-        transaction->lhs_credit = query.value("lhs_credit").toDouble();
+        trans->lhs_node = query.value("lhs_node").toInt();
+        trans->lhs_ratio = query.value("lhs_ratio").toDouble();
+        trans->lhs_debit = query.value("lhs_debit").toDouble();
+        trans->lhs_credit = query.value("lhs_credit").toDouble();
 
-        transaction->rhs_node = query.value("rhs_node").toInt();
-        transaction->rhs_ratio = query.value("rhs_ratio").toDouble();
-        transaction->rhs_debit = query.value("rhs_debit").toDouble();
-        transaction->rhs_credit = query.value("rhs_credit").toDouble();
+        trans->rhs_node = query.value("rhs_node").toInt();
+        trans->rhs_ratio = query.value("rhs_ratio").toDouble();
+        trans->rhs_debit = query.value("rhs_debit").toDouble();
+        trans->rhs_credit = query.value("rhs_credit").toDouble();
 
-        transaction->code = query.value("code").toString();
-        transaction->description = query.value("description").toString();
-        transaction->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
-        transaction->date_time = query.value("date_time").toString();
-        transaction->state = query.value("state").toBool();
+        trans->code = query.value("code").toString();
+        trans->description = query.value("description").toString();
+        trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
+        trans->date_time = query.value("date_time").toString();
+        trans->state = query.value("state").toBool();
 
-        transaction_list.emplaceBack(transaction);
+        trans_list.emplaceBack(trans);
     }
 
-    return transaction_list;
+    return trans_list;
 }

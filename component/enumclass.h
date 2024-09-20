@@ -4,10 +4,10 @@
 // Enum class defining sections
 enum class Section { kFinance, kSales, kTask, kStakeholder, kProduct, kPurchase };
 
-// Enum class defining transaction columns
+// Enum class defining trans columns
 enum class TableEnum { kID, kDateTime, kCode, kRatio, kDescription, kDocument, kState, kRelatedNode, kDebit, kCredit, kSubtotal };
 
-// Enum class defining search transaction columns
+// Enum class defining search trans columns
 enum class TableEnumSearch {
     kID,
     kDateTime,

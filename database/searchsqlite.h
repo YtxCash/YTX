@@ -5,18 +5,18 @@
 
 #include "component/info.h"
 #include "component/using.h"
-#include "table/transaction.h"
+#include "table/trans.h"
 
 class SearchSqlite {
 public:
-    SearchSqlite(CInfo& info, QHash<int, Transaction*>* transaction_hash);
+    SearchSqlite(CInfo& info, QHash<int, Trans*>* trans_hash);
 
     QList<int> Node(CString& text);
-    TransactionList TransList(CString& text);
+    TransList QueryTransList(CString& text);
 
 private:
     QSqlDatabase* db_ {};
-    QHash<int, Transaction*>* transaction_hash_ {};
+    QHash<int, Trans*>* trans_hash_ {};
     CInfo& info_;
 };
 

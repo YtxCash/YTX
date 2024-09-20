@@ -18,6 +18,7 @@ QWidget* TreeSpin::createEditor(QWidget* parent, const QStyleOptionViewItem& opt
     editor->setMinimum(min_);
     editor->setMaximum(max_);
     editor->setAlignment(Qt::AlignCenter);
+    editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
     return editor;
 }

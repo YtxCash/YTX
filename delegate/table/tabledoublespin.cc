@@ -19,6 +19,7 @@ QWidget* TableDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewIt
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);
     editor->setMaximum(max_);
+    editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
     return editor;
 }

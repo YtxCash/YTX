@@ -1,43 +1,33 @@
 #include "editnodeproduct.h"
 
-#include <QTimer>
-
 #include "component/constvalue.h"
 #include "ui_editnodeproduct.h"
 
-EditNodeProduct::EditNodeProduct(Node* node, CSectionRule& section_rule, CString& separator, CStringHash& unit_hash, const AbstractTreeModel& model,
-    int parent_id, bool node_usage, bool view_opened, QWidget* parent)
+EditNodeProduct::EditNodeProduct(
+    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int ratio_decimal, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeProduct)
     , node_ { node }
-    , separator_ { separator }
-    , section_rule_ { section_rule }
-    , model_ { model }
-    , parent_id_ { parent_id }
-    , node_usage_ { node_usage }
-    , view_opened_ { view_opened }
-    , parent_path_ { model.GetPath(parent_id) }
+    , parent_path_ { parent_path }
+    , name_list_ { name_list }
 {
     ui->setupUi(this);
 
     ui->comboUnit->blockSignals(true);
 
-    IniDialog(unit_hash);
+    IniDialog(unit_hash, ratio_decimal);
     IniConnect();
-    Data(node);
+    Data(node, enable_branch);
 
     ui->comboUnit->blockSignals(false);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }
 
-void EditNodeProduct::IniDialog(CStringHash& unit_hash)
+void EditNodeProduct::IniDialog(CStringHash& unit_hash, int ratio_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
-
-    if (!parent_path_.isEmpty())
-        parent_path_ += separator_;
 
     this->setWindowTitle(parent_path_ + node_->name);
 
@@ -48,13 +38,13 @@ void EditNodeProduct::IniDialog(CStringHash& unit_hash)
 
     ui->dSpinBoxUnitPrice->setRange(0.0, DMAX);
     ui->dSpinBoxCommission->setRange(0.0, DMAX);
-    ui->dSpinBoxUnitPrice->setDecimals(section_rule_.ratio_decimal);
-    ui->dSpinBoxCommission->setDecimals(section_rule_.ratio_decimal);
+    ui->dSpinBoxUnitPrice->setDecimals(ratio_decimal);
+    ui->dSpinBoxCommission->setDecimals(ratio_decimal);
 }
 
-void EditNodeProduct::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeProduct::REditName); }
+void EditNodeProduct::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeProduct::RNameEdited); }
 
-void EditNodeProduct::Data(Node* node)
+void EditNodeProduct::Data(Node* node, bool enable_branch)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);
@@ -69,15 +59,14 @@ void EditNodeProduct::Data(Node* node)
     ui->lineEditCode->setText(node->code);
     ui->lineEditDescription->setText(node->description);
     ui->plainTextEdit->setPlainText(node->note);
-    ui->dSpinBoxUnitPrice->setValue(node->second);
-    ui->dSpinBoxCommission->setValue(node->discount);
+    ui->dSpinBoxUnitPrice->setValue(node->discount);
+    ui->dSpinBoxCommission->setValue(node->second);
 
     ui->chkBoxBranch->setChecked(node->branch);
-
-    ui->chkBoxBranch->setEnabled(!node_usage_ && model_.ChildrenEmpty(node->id) && !view_opened_);
+    ui->chkBoxBranch->setEnabled(enable_branch);
 }
 
-void EditNodeProduct::REditName(const QString& arg1)
+void EditNodeProduct::RNameEdited(const QString& arg1)
 {
     auto simplified { arg1.simplified() };
     this->setWindowTitle(parent_path_ + simplified);
@@ -109,6 +98,6 @@ void EditNodeProduct::on_chkBoxBranch_toggled(bool checked) { node_->branch = ch
 
 void EditNodeProduct::on_plainTextEdit_textChanged() { node_->note = ui->plainTextEdit->toPlainText(); }
 
-void EditNodeProduct::on_dSpinBoxUnitPrice_editingFinished() { node_->second = ui->dSpinBoxUnitPrice->value(); }
+void EditNodeProduct::on_dSpinBoxUnitPrice_editingFinished() { node_->discount = ui->dSpinBoxUnitPrice->value(); }
 
-void EditNodeProduct::on_dSpinBoxCommission_editingFinished() { node_->discount = ui->dSpinBoxCommission->value(); }
+void EditNodeProduct::on_dSpinBoxCommission_editingFinished() { node_->second = ui->dSpinBoxCommission->value(); }

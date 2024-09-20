@@ -7,13 +7,13 @@
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
 
-EditNodeOrder::EditNodeOrder(Node* node, CSectionRule& section_rule, AbstractTreeModel* order_model, AbstractTreeModel* stakeholder_model,
-    const AbstractTreeModel& product_model, CInfo& info, QWidget* parent)
+EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, AbstractTreeModel* stakeholder_model, const AbstractTreeModel& product_model,
+    int value_decimal, int unit_party, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeOrder)
     , node_ { node }
-    , info_ { info }
-    , section_rule_ { section_rule }
+    , unit_party_ { unit_party }
+    , value_decimal_ { value_decimal }
     , stakeholder_model_ { stakeholder_model }
     , order_model_ { order_model }
     , product_model_ { product_model }
@@ -61,8 +61,7 @@ void EditNodeOrder::RUpdateStakeholder()
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
     stakeholder_model_->ComboPathUnit(ui->comboEmployee, UNIT_EMPLOYEE);
-    int unit { info_.section == Section::kSales ? 1 : 2 };
-    stakeholder_model_->ComboPathUnit(ui->comboParty, unit);
+    stakeholder_model_->ComboPathUnit(ui->comboParty, unit_party_);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -79,19 +78,16 @@ void EditNodeOrder::RUpdateStakeholder()
 
 void EditNodeOrder::IniDialog()
 {
-    // stakeholder-U: Employee = 0, Customer = 1, Vendor = 2, Product = 3
-    int unit_party { info_.section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-
-    IniCombo(ui->comboParty, unit_party);
+    IniCombo(ui->comboParty, unit_party_);
     IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);
-    ui->dSpinDiscount->setDecimals(section_rule_.value_decimal);
-    ui->dSpinFinalTotal->setDecimals(section_rule_.value_decimal);
+    ui->dSpinDiscount->setDecimals(value_decimal_);
+    ui->dSpinFinalTotal->setDecimals(value_decimal_);
     ui->dSpinFinalTotal->setRange(DMIN, DMAX);
-    ui->dSpinInitialTotal->setDecimals(section_rule_.value_decimal);
+    ui->dSpinInitialTotal->setDecimals(value_decimal_);
     ui->dSpinInitialTotal->setRange(DMIN, DMAX);
 }
 
@@ -240,7 +236,7 @@ void EditNodeOrder::EnableSave(bool enable)
     ui->pBtnSaveOrder->setEnabled(enable);
 }
 
-void EditNodeOrder::on_comboParty_currentTextChanged(const QString& arg1)
+void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
 {
     if (!node_->branch || arg1.isEmpty())
         return;
@@ -316,8 +312,7 @@ void EditNodeOrder::on_pBtnInsertParty_clicked()
     stakeholder_model_->SetParent(node, -1);
     node->name = name;
 
-    int unit { info_.section == Section::kSales ? 1 : 2 };
-    node->unit = unit;
+    node->unit = unit_party_;
 
     stakeholder_model_->InsertNode(0, QModelIndex(), node);
 

@@ -20,12 +20,12 @@ public:
     bool RemoveTrans(int row, const QModelIndex& parent = QModelIndex()) override;
 
 protected:
-    bool RemoveMulti(const QList<int>& trans_id_list) override; // just remove trnas, keep related transaction
+    bool RemoveMulti(const QList<int>& trans_id_list) override; // just remove trnas_shadow, keep related trans
     bool InsertMulti(int node_id, const QList<int>& trans_id_list) override;
 
 private:
-    bool UpdateRatio(Trans* trans, double value) override;
-    bool UpdateCommission(Trans* trans, double value);
+    bool UpdateRatio(TransShadow* trans_shadow, double value) override;
+    bool UpdateCommission(TransShadow* trans_shadow, double value);
 
 private:
     int mark_ {};

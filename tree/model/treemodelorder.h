@@ -26,6 +26,7 @@ protected:
     void ConstructTree() override;
     bool UpdateNodeRule(Node* node, bool value) override; // bill = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
+    bool UpdateName(Node* node, CString& value) override;
 
 private:
     bool UpdateParty(Node* node, int value);
@@ -37,6 +38,8 @@ private:
     void UpdateBranchTotalUp(const Node* node, int first, double second, double discount, double initial_total, double final_total);
     void UpdateBranchTotalDown(Node* node);
     void UpdateNodeValues(Node* node, int first, double second, double discount, double initial_total, double final_total, int coefficient);
+
+    void RefreshAncestorData(const QModelIndex& index, int column_start, int column_end);
 };
 
 #endif // TREEMODELORDER_H

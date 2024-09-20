@@ -11,32 +11,32 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto trans { trans_list_.at(index.row()) };
+    auto trans_shadow { trans_shadow_list_.at(index.row()) };
     const TableEnum kColumn { index.column() };
 
     switch (kColumn) {
     case TableEnum::kID:
-        return *trans->id;
+        return *trans_shadow->id;
     case TableEnum::kDateTime:
-        return *trans->date_time;
+        return *trans_shadow->date_time;
     case TableEnum::kCode:
-        return *trans->code;
+        return *trans_shadow->code;
     case TableEnum::kRatio:
-        return *trans->ratio;
+        return *trans_shadow->ratio;
     case TableEnum::kDescription:
-        return *trans->description;
+        return *trans_shadow->description;
     case TableEnum::kRelatedNode:
-        return *trans->related_node == 0 ? QVariant() : *trans->related_node;
+        return *trans_shadow->related_node == 0 ? QVariant() : *trans_shadow->related_node;
     case TableEnum::kState:
-        return *trans->state;
+        return *trans_shadow->state;
     case TableEnum::kDocument:
-        return trans->document->isEmpty() ? QVariant() : QString::number(trans->document->size());
+        return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
     case TableEnum::kDebit:
-        return *trans->debit == 0 ? QVariant() : *trans->debit;
+        return *trans_shadow->debit == 0 ? QVariant() : *trans_shadow->debit;
     case TableEnum::kCredit:
-        return *trans->credit == 0 ? QVariant() : *trans->credit;
+        return *trans_shadow->credit == 0 ? QVariant() : *trans_shadow->credit;
     case TableEnum::kSubtotal:
-        return trans->subtotal;
+        return trans_shadow->subtotal;
     default:
         return QVariant();
     }
@@ -50,8 +50,8 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
     const TableEnum kColumn { index.column() };
     const int kRow { index.row() };
 
-    auto trans { trans_list_.at(kRow) };
-    int old_related_node { *trans->related_node };
+    auto trans_shadow { trans_shadow_list_.at(kRow) };
+    int old_related_node { *trans_shadow->related_node };
 
     bool tra_changed { false };
     bool deb_changed { false };
@@ -60,28 +60,28 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(trans, value.toString());
+        UpdateDateTime(trans_shadow, value.toString());
         break;
     case TableEnum::kCode:
-        UpdateCode(trans, value.toString());
+        UpdateCode(trans_shadow, value.toString());
         break;
     case TableEnum::kState:
-        UpdateOneState(trans, value.toBool());
+        UpdateOneState(trans_shadow, value.toBool());
         break;
     case TableEnum::kDescription:
-        UpdateDescription(trans, value.toString());
+        UpdateDescription(trans_shadow, value.toString());
         break;
     case TableEnum::kRatio:
-        rat_changed = UpdateRatio(trans, value.toDouble());
+        rat_changed = UpdateRatio(trans_shadow, value.toDouble());
         break;
     case TableEnum::kRelatedNode:
-        tra_changed = UpdateRelatedNode(trans, value.toInt());
+        tra_changed = UpdateRelatedNode(trans_shadow, value.toInt());
         break;
     case TableEnum::kDebit:
-        deb_changed = UpdateDebit(trans, value.toDouble());
+        deb_changed = UpdateDebit(trans_shadow, value.toDouble());
         break;
     case TableEnum::kCredit:
-        cre_changed = UpdateCredit(trans, value.toDouble());
+        cre_changed = UpdateCredit(trans_shadow, value.toDouble());
         break;
     default:
         return false;
@@ -89,20 +89,20 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 
     if (old_related_node == 0) {
         if (tra_changed) {
-            sql_->InsertTrans(trans);
+            sql_->InsertTransShadow(trans_shadow);
             AccumulateSubtotal(kRow, node_rule_);
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
-            emit SAppendOne(info_.section, trans);
+            emit SAppendOne(info_.section, trans_shadow);
 
-            auto ratio { *trans->ratio };
-            auto debit { *trans->debit };
-            auto credit { *trans->credit };
+            auto ratio { *trans_shadow->ratio };
+            auto debit { *trans_shadow->debit };
+            auto credit { *trans_shadow->credit };
             emit SUpdateOneTotal(node_id_, debit, credit, ratio * debit, ratio * credit);
 
-            ratio = *trans->related_ratio;
-            debit = *trans->related_debit;
-            credit = *trans->related_credit;
-            emit SUpdateOneTotal(*trans->related_node, debit, credit, ratio * debit, ratio * credit);
+            ratio = *trans_shadow->related_ratio;
+            debit = *trans_shadow->related_debit;
+            credit = *trans_shadow->related_credit;
+            emit SUpdateOneTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
         }
 
         emit SResizeColumnToContents(index.column());
@@ -110,9 +110,9 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
     }
 
     if (deb_changed || cre_changed || rat_changed) {
-        sql_->UpdateTransaction(*trans->id);
+        sql_->UpdateTrans(*trans_shadow->id);
         emit SSearch();
-        emit SUpdateBalance(info_.section, old_related_node, *trans->id);
+        emit SUpdateBalance(info_.section, old_related_node, *trans_shadow->id);
     }
 
     if (deb_changed || cre_changed) {
@@ -121,13 +121,13 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
     }
 
     if (tra_changed) {
-        sql_->UpdateTransaction(*trans->id);
-        emit SMoveMulti(info_.section, old_related_node, *trans->related_node, QList<int> { *trans->id });
+        sql_->UpdateTrans(*trans_shadow->id);
+        emit SMoveMulti(info_.section, old_related_node, *trans_shadow->related_node, QList<int> { *trans_shadow->id });
 
-        auto ratio { *trans->related_ratio };
-        auto debit { *trans->related_debit };
-        auto credit { *trans->related_credit };
-        emit SUpdateOneTotal(*trans->related_node, debit, credit, ratio * debit, ratio * credit);
+        auto ratio { *trans_shadow->related_ratio };
+        auto debit { *trans_shadow->related_debit };
+        auto credit { *trans_shadow->related_credit };
+        emit SUpdateOneTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
         emit SUpdateOneTotal(old_related_node, -debit, -credit, -ratio * debit, -ratio * credit);
     }
 
@@ -141,7 +141,7 @@ void TableModelOrder::sort(int column, Qt::SortOrder order)
     if (column <= -1 || column >= info_.part_table_header.size() - 1)
         return;
 
-    auto Compare = [column, order](Trans* lhs, Trans* rhs) -> bool {
+    auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {
         const TableEnum kColumn { column };
 
         switch (kColumn) {
@@ -169,7 +169,7 @@ void TableModelOrder::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    std::sort(trans_list_.begin(), trans_list_.end(), Compare);
+    std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 
     AccumulateSubtotal(0, node_rule_);

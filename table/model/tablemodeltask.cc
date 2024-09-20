@@ -1,90 +1,88 @@
 #include "tablemodeltask.h"
 
-#include "global/resourcepool.h"
-
 TableModelTask::TableModelTask(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent)
     : TableModel { sql, node_rule, node_id, info, section_rule, parent }
 {
     AccumulateSubtotal(0, node_rule);
 }
 
-bool TableModelTask::UpdateDebit(Trans* trans, double value)
+bool TableModelTask::UpdateDebit(TransShadow* trans_shadow, double value)
 {
-    double debit { *trans->debit };
+    double debit { *trans_shadow->debit };
     const double tolerance { std::pow(10, -section_rule_.value_decimal - 2) };
 
     if (std::abs(debit - value) <= tolerance)
         return false;
 
-    double credit { *trans->credit };
-    double ratio { *trans->ratio };
+    double credit { *trans_shadow->credit };
+    double ratio { *trans_shadow->ratio };
 
     double abs { qAbs(value - credit) };
-    *trans->debit = (value > credit) ? abs : 0;
-    *trans->credit = (value <= credit) ? abs : 0;
+    *trans_shadow->debit = (value > credit) ? abs : 0;
+    *trans_shadow->credit = (value <= credit) ? abs : 0;
 
-    double t_debit { *trans->related_debit };
-    double t_credit { *trans->related_credit };
+    double t_debit { *trans_shadow->related_debit };
+    double t_credit { *trans_shadow->related_credit };
 
-    *trans->related_debit = *trans->credit;
-    *trans->related_credit = *trans->debit;
+    *trans_shadow->related_debit = *trans_shadow->credit;
+    *trans_shadow->related_credit = *trans_shadow->debit;
 
-    if (*trans->related_node == 0)
+    if (*trans_shadow->related_node == 0)
         return false;
 
-    auto initial_debit_diff { *trans->debit - debit };
-    auto initial_credit_diff { *trans->credit - credit };
-    emit SUpdateOneTotal(*trans->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
+    auto initial_debit_diff { *trans_shadow->debit - debit };
+    auto initial_credit_diff { *trans_shadow->credit - credit };
+    emit SUpdateOneTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
 
-    auto t_initial_debit_diff { *trans->related_debit - t_debit };
-    auto t_initial_credit_diff { *trans->related_credit - t_credit };
-    emit SUpdateOneTotal(*trans->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff * ratio, t_initial_credit_diff * ratio);
+    auto t_initial_debit_diff { *trans_shadow->related_debit - t_debit };
+    auto t_initial_credit_diff { *trans_shadow->related_credit - t_credit };
+    emit SUpdateOneTotal(*trans_shadow->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff * ratio, t_initial_credit_diff * ratio);
 
     return true;
 }
 
-bool TableModelTask::UpdateCredit(Trans* trans, double value)
+bool TableModelTask::UpdateCredit(TransShadow* trans_shadow, double value)
 {
-    double credit { *trans->credit };
+    double credit { *trans_shadow->credit };
     const double tolerance { std::pow(10, -section_rule_.value_decimal - 2) };
 
     if (std::abs(credit - value) <= tolerance)
         return false;
 
-    double debit { *trans->debit };
+    double debit { *trans_shadow->debit };
 
     double abs { qAbs(value - debit) };
-    *trans->debit = (value > debit) ? 0 : abs;
-    *trans->credit = (value <= debit) ? 0 : abs;
+    *trans_shadow->debit = (value > debit) ? 0 : abs;
+    *trans_shadow->credit = (value <= debit) ? 0 : abs;
 
-    double t_debit { *trans->related_debit };
-    double t_credit { *trans->related_credit };
+    double t_debit { *trans_shadow->related_debit };
+    double t_credit { *trans_shadow->related_credit };
 
-    *trans->related_debit = *trans->credit;
-    *trans->related_credit = *trans->debit;
+    *trans_shadow->related_debit = *trans_shadow->credit;
+    *trans_shadow->related_credit = *trans_shadow->debit;
 
-    if (*trans->related_node == 0)
+    if (*trans_shadow->related_node == 0)
         return false;
 
-    auto initial_debit_diff { *trans->debit - debit };
-    auto initial_credit_diff { *trans->credit - credit };
-    emit SUpdateOneTotal(*trans->node, initial_debit_diff, initial_credit_diff, initial_debit_diff, initial_credit_diff);
+    auto initial_debit_diff { *trans_shadow->debit - debit };
+    auto initial_credit_diff { *trans_shadow->credit - credit };
+    emit SUpdateOneTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff, initial_credit_diff);
 
-    auto t_initial_debit_diff { *trans->related_debit - t_debit };
-    auto t_initial_credit_diff { *trans->related_credit - t_credit };
-    emit SUpdateOneTotal(*trans->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff, t_initial_credit_diff);
+    auto t_initial_debit_diff { *trans_shadow->related_debit - t_debit };
+    auto t_initial_credit_diff { *trans_shadow->related_credit - t_credit };
+    emit SUpdateOneTotal(*trans_shadow->related_node, t_initial_debit_diff, t_initial_credit_diff, t_initial_debit_diff, t_initial_credit_diff);
 
     return true;
 }
 
-bool TableModelTask::UpdateRatio(Trans* trans, double value)
+bool TableModelTask::UpdateRatio(TransShadow* trans_shadow, double value)
 {
     const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
-    double ratio { *trans->ratio };
+    double ratio { *trans_shadow->ratio };
 
     if (std::abs(ratio - value) <= tolerance || value <= 0)
         return false;
 
-    *trans->ratio = value;
+    *trans_shadow->ratio = value;
     return true;
 }

@@ -6,9 +6,8 @@
 #include "component/enumclass.h"
 #include "widget/datetimeedit.h"
 
-OrderDateTime::OrderDateTime(const QString& date_format, QObject* parent)
+OrderDateTime::OrderDateTime(QObject* parent)
     : StyledItemDelegate { parent }
-    , date_format_ { date_format }
 {
 }
 
@@ -21,7 +20,7 @@ QWidget* OrderDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem
         return nullptr;
 
     auto editor { new DateTimeEdit(parent) };
-    editor->setDisplayFormat(date_format_);
+    editor->setDisplayFormat(DATE_TIME_FST);
 
     return editor;
 }

@@ -426,16 +426,20 @@ void AbstractTreeModel::ComboPathLeafBranch(QComboBox* combo) const
         combo->addItem(path, id);
 }
 
-void AbstractTreeModel::ChildrenName(QStringList& list, int node_id, int exclude_child) const
+QStringList AbstractTreeModel::ChildrenName(int node_id, int exclude_child) const
 {
     const Node* node { node_hash_.value(node_id, nullptr) };
     if (!node)
-        return;
+        return {};
+
+    QStringList list {};
 
     for (const auto* child : node->children) {
         if (child->id != exclude_child)
             list.emplaceBack(child->name);
     }
+
+    return list;
 }
 
 void AbstractTreeModel::SetParent(Node* node, int parent_id) const

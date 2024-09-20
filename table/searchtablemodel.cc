@@ -9,7 +9,7 @@ SearchTableModel::SearchTableModel(CInfo* info, QSharedPointer<SearchSqlite> sql
 {
 }
 
-SearchTableModel::~SearchTableModel() { transaction_list_.clear(); }
+SearchTableModel::~SearchTableModel() { trans_list_.clear(); }
 
 QModelIndex SearchTableModel::index(int row, int column, const QModelIndex& parent) const
 {
@@ -28,7 +28,7 @@ QModelIndex SearchTableModel::parent(const QModelIndex& index) const
 int SearchTableModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return transaction_list_.size();
+    return trans_list_.size();
 }
 
 int SearchTableModel::columnCount(const QModelIndex& parent) const
@@ -42,38 +42,38 @@ QVariant SearchTableModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto transaction { transaction_list_.at(index.row()) };
+    auto trans { trans_list_.at(index.row()) };
     const TableEnumSearch kColumn { index.column() };
 
     switch (kColumn) {
     case TableEnumSearch::kID:
-        return transaction->id;
+        return trans->id;
     case TableEnumSearch::kDateTime:
-        return transaction->date_time;
+        return trans->date_time;
     case TableEnumSearch::kCode:
-        return transaction->code;
+        return trans->code;
     case TableEnumSearch::kLhsNode:
-        return transaction->lhs_node;
+        return trans->lhs_node;
     case TableEnumSearch::kLhsRatio:
-        return transaction->lhs_ratio;
+        return trans->lhs_ratio;
     case TableEnumSearch::kLhsDebit:
-        return transaction->lhs_debit == 0 ? QVariant() : transaction->lhs_debit;
+        return trans->lhs_debit == 0 ? QVariant() : trans->lhs_debit;
     case TableEnumSearch::kLhsCredit:
-        return transaction->lhs_credit == 0 ? QVariant() : transaction->lhs_credit;
+        return trans->lhs_credit == 0 ? QVariant() : trans->lhs_credit;
     case TableEnumSearch::kDescription:
-        return transaction->description;
+        return trans->description;
     case TableEnumSearch::kRhsNode:
-        return transaction->rhs_node;
+        return trans->rhs_node;
     case TableEnumSearch::kRhsRatio:
-        return transaction->rhs_ratio;
+        return trans->rhs_ratio;
     case TableEnumSearch::kRhsDebit:
-        return transaction->rhs_debit == 0 ? QVariant() : transaction->rhs_debit;
+        return trans->rhs_debit == 0 ? QVariant() : trans->rhs_debit;
     case TableEnumSearch::kRhsCredit:
-        return transaction->rhs_credit == 0 ? QVariant() : transaction->rhs_credit;
+        return trans->rhs_credit == 0 ? QVariant() : trans->rhs_credit;
     case TableEnumSearch::kState:
-        return transaction->state;
+        return trans->state;
     case TableEnumSearch::kDocument:
-        return transaction->document.isEmpty() ? QVariant() : QString::number(transaction->document.size());
+        return trans->document.isEmpty() ? QVariant() : QString::number(trans->document.size());
     default:
         return QVariant();
     }
@@ -92,7 +92,7 @@ void SearchTableModel::sort(int column, Qt::SortOrder order)
     if (column <= -1 || column >= info_->table_header.size() - 1)
         return;
 
-    auto Compare = [column, order](const Transaction* lhs, const Transaction* rhs) -> bool {
+    auto Compare = [column, order](const Trans* lhs, const Trans* rhs) -> bool {
         const TableEnumSearch kColumn { column };
 
         switch (kColumn) {
@@ -128,22 +128,22 @@ void SearchTableModel::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    std::sort(transaction_list_.begin(), transaction_list_.end(), Compare);
+    std::sort(trans_list_.begin(), trans_list_.end(), Compare);
     emit layoutChanged();
 }
 
 void SearchTableModel::Query(const QString& text)
 {
-    if (!transaction_list_.isEmpty())
-        transaction_list_.clear();
+    if (!trans_list_.isEmpty())
+        trans_list_.clear();
 
-    TransactionList list {};
+    TransList trans_list {};
     if (!text.isEmpty())
-        list = sql_->TransList(text);
+        trans_list = sql_->QueryTransList(text);
 
     beginResetModel();
-    for (const auto& trans : list)
-        transaction_list_.emplace_back(trans);
+    for (const auto& trans : trans_list)
+        trans_list_.emplace_back(trans);
 
     endResetModel();
 }

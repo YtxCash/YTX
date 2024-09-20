@@ -6,87 +6,87 @@ TableModelProduct::TableModelProduct(SPSqlite sql, bool node_rule, const int nod
     AccumulateSubtotal(0, node_rule);
 }
 
-bool TableModelProduct::UpdateDebit(Trans* trans, double value)
+bool TableModelProduct::UpdateDebit(TransShadow* trans_shadow, double value)
 {
-    double debit { *trans->debit };
+    double debit { *trans_shadow->debit };
     const double tolerance { std::pow(10, -section_rule_.value_decimal - 2) };
 
     if (std::abs(debit - value) < tolerance)
         return false;
 
-    double credit { *trans->credit };
+    double credit { *trans_shadow->credit };
 
     double abs { qAbs(value - credit) };
-    *trans->debit = (value > credit) ? abs : 0;
-    *trans->credit = (value <= credit) ? abs : 0;
+    *trans_shadow->debit = (value > credit) ? abs : 0;
+    *trans_shadow->credit = (value <= credit) ? abs : 0;
 
-    *trans->related_debit = *trans->credit;
-    *trans->related_credit = *trans->debit;
+    *trans_shadow->related_debit = *trans_shadow->credit;
+    *trans_shadow->related_credit = *trans_shadow->debit;
 
-    if (*trans->related_node == 0)
+    if (*trans_shadow->related_node == 0)
         return false;
 
-    auto unit_cost { *trans->ratio };
-    auto quantity_debit_diff { *trans->debit - debit };
-    auto quantity_credit_diff { *trans->credit - credit };
+    auto unit_cost { *trans_shadow->ratio };
+    auto quantity_debit_diff { *trans_shadow->debit - debit };
+    auto quantity_credit_diff { *trans_shadow->credit - credit };
     auto amount_debit_diff { quantity_debit_diff * unit_cost };
     auto amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateOneTotal(*trans->node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
-    emit SUpdateOneTotal(*trans->related_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
+    emit SUpdateOneTotal(*trans_shadow->node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
+    emit SUpdateOneTotal(*trans_shadow->related_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
 
     return true;
 }
 
-bool TableModelProduct::UpdateCredit(Trans* trans, double value)
+bool TableModelProduct::UpdateCredit(TransShadow* trans_shadow, double value)
 {
-    double credit { *trans->credit };
+    double credit { *trans_shadow->credit };
     const double tolerance { std::pow(10, -section_rule_.value_decimal - 2) };
 
     if (std::abs(credit - value) < tolerance)
         return false;
 
-    double debit { *trans->debit };
+    double debit { *trans_shadow->debit };
 
     double abs { qAbs(value - debit) };
-    *trans->debit = (value > debit) ? 0 : abs;
-    *trans->credit = (value <= debit) ? 0 : abs;
+    *trans_shadow->debit = (value > debit) ? 0 : abs;
+    *trans_shadow->credit = (value <= debit) ? 0 : abs;
 
-    *trans->related_debit = *trans->credit;
-    *trans->related_credit = *trans->debit;
+    *trans_shadow->related_debit = *trans_shadow->credit;
+    *trans_shadow->related_credit = *trans_shadow->debit;
 
-    if (*trans->related_node == 0)
+    if (*trans_shadow->related_node == 0)
         return false;
 
-    auto unit_cost { *trans->ratio };
-    auto quantity_debit_diff { *trans->debit - debit };
-    auto quantity_credit_diff { *trans->credit - credit };
+    auto unit_cost { *trans_shadow->ratio };
+    auto quantity_debit_diff { *trans_shadow->debit - debit };
+    auto quantity_credit_diff { *trans_shadow->credit - credit };
     auto amount_debit_diff { quantity_debit_diff * unit_cost };
     auto amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateOneTotal(*trans->node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
-    emit SUpdateOneTotal(*trans->related_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
+    emit SUpdateOneTotal(*trans_shadow->node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
+    emit SUpdateOneTotal(*trans_shadow->related_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
 
     return true;
 }
 
-bool TableModelProduct::UpdateRatio(Trans* trans, double value)
+bool TableModelProduct::UpdateRatio(TransShadow* trans_shadow, double value)
 {
     const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
-    double ratio { *trans->ratio };
+    double ratio { *trans_shadow->ratio };
 
     if (std::abs(ratio - value) < tolerance || value < 0)
         return false;
 
     auto result { value - ratio };
-    *trans->ratio = value;
-    *trans->related_ratio = value;
+    *trans_shadow->ratio = value;
+    *trans_shadow->related_ratio = value;
 
-    if (*trans->related_node == 0)
+    if (*trans_shadow->related_node == 0)
         return false;
 
-    emit SUpdateOneTotal(*trans->node, 0, 0, *trans->debit * result, *trans->credit * result);
-    emit SUpdateOneTotal(*trans->related_node, 0, 0, *trans->related_debit * result, *trans->related_credit * result);
+    emit SUpdateOneTotal(*trans_shadow->node, 0, 0, *trans_shadow->debit * result, *trans_shadow->credit * result);
+    emit SUpdateOneTotal(*trans_shadow->related_node, 0, 0, *trans_shadow->related_debit * result, *trans_shadow->related_credit * result);
 
     return true;
 }

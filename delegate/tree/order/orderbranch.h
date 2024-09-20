@@ -1,15 +1,13 @@
-#ifndef ORDERLOCKED_H
-#define ORDERLOCKED_H
-
-// tree's branch column 6, table's state column 7, arte different, so they can share this delegate
+#ifndef ORDERBRANCH_H
+#define ORDERBRANCH_H
 
 #include "delegate/styleditemdelegate.h"
 
-class OrderLocked final : public StyledItemDelegate {
+class OrderBranch final : public StyledItemDelegate {
 public:
-    explicit OrderLocked(QObject* parent = nullptr);
+    explicit OrderBranch(QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     inline bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 };
 
-#endif // ORDERLOCKED_H
+#endif // ORDERBRANCH_H

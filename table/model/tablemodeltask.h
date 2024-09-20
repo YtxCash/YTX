@@ -11,9 +11,9 @@ public:
     ~TableModelTask() override = default;
 
 private:
-    bool UpdateDebit(Trans* trans, double value) override;
-    bool UpdateCredit(Trans* trans, double value) override;
-    bool UpdateRatio(Trans* trans, double value) override;
+    bool UpdateDebit(TransShadow* trans_shadow, double value) override;
+    bool UpdateCredit(TransShadow* trans_shadow, double value) override;
+    bool UpdateRatio(TransShadow* trans_shadow, double value) override;
 };
 
 #endif // TABLEMODELTASK_H

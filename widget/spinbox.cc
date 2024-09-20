@@ -6,7 +6,6 @@ SpinBox::SpinBox(QWidget* parent)
     : QSpinBox { parent }
 {
     this->setStepType(QAbstractSpinBox::AdaptiveDecimalStepType);
-    this->setButtonSymbols(QAbstractSpinBox::NoButtons);
     this->setGroupSeparatorShown(true);
 }
 

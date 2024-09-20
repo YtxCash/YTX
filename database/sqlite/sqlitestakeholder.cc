@@ -269,10 +269,10 @@ bool SqliteStakeholder::RRemoveMulti(int node_id)
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
 
-    // begin deal with transaction hash
+    // begin deal with trans hash
     for (int trans_id : list)
-        ResourcePool<Transaction>::Instance().Recycle(transaction_hash_.take(trans_id));
-    // end deal with transaction hash
+        ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
+    // end deal with trans hash
 
     return true;
 }
@@ -281,13 +281,13 @@ bool SqliteStakeholder::RReplaceMulti(int old_node_id, int new_node_id)
 {
     auto node_trans { RelatedNodeTrans(old_node_id) };
 
-    // begin deal with transaction hash
-    const auto& const_transaction_hash { std::as_const(transaction_hash_) };
+    // begin deal with trans hash
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
 
-    for (auto& transaction : const_transaction_hash)
-        if (transaction->lhs_node == old_node_id)
-            transaction->lhs_node = new_node_id;
-    // end deal with transaction hash
+    for (auto& trans : const_trans_hash)
+        if (trans->lhs_node == old_node_id)
+            trans->lhs_node = new_node_id;
+    // end deal with trans hash
 
     // begin deal with database
     QSqlQuery query(*db_);
@@ -334,16 +334,16 @@ bool SqliteStakeholder::RReplaceReferences(Section origin, int old_node_id, int 
         return false;
     }
 
-    const auto& const_transaction_hash { std::as_const(transaction_hash_) };
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
 
-    for (auto& transaction : const_transaction_hash)
-        if (transaction->rhs_node == old_node_id)
-            transaction->rhs_node = new_node_id;
+    for (auto& trans : const_trans_hash)
+        if (trans->rhs_node == old_node_id)
+            trans->rhs_node = new_node_id;
 
     return true;
 }
 
-void SqliteStakeholder::BuildTransList(TransList& trans_list, int outside_id)
+void SqliteStakeholder::BuildTransShadowList(TransShadowList& trans_shadow_list, int outside_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -363,10 +363,10 @@ void SqliteStakeholder::BuildTransList(TransList& trans_list, int outside_id)
         return;
     }
 
-    QueryTransList(trans_list, outside_id, query);
+    QueryTransShadowList(trans_shadow_list, outside_id, query);
 }
 
-bool SqliteStakeholder::InsertTrans(Trans* trans)
+bool SqliteStakeholder::InsertTransShadow(TransShadow* trans_shadow)
 {
     QSqlQuery query(*db_);
     auto part = QString(R"(
@@ -378,27 +378,27 @@ bool SqliteStakeholder::InsertTrans(Trans* trans)
                     .arg(info_.transaction);
 
     query.prepare(part);
-    query.bindValue(":date_time", *trans->date_time);
-    query.bindValue(":code", *trans->code);
-    query.bindValue(":outside", *trans->node);
-    query.bindValue(":unit_price", *trans->ratio);
-    query.bindValue(":commission", *trans->related_debit);
-    query.bindValue(":description", *trans->description);
-    query.bindValue(":state", *trans->related_ratio);
-    query.bindValue(":document", trans->document->join(SEMICOLON));
-    query.bindValue(":inside", *trans->related_node);
+    query.bindValue(":date_time", *trans_shadow->date_time);
+    query.bindValue(":code", *trans_shadow->code);
+    query.bindValue(":outside", *trans_shadow->node);
+    query.bindValue(":unit_price", *trans_shadow->ratio);
+    query.bindValue(":commission", *trans_shadow->related_debit);
+    query.bindValue(":description", *trans_shadow->description);
+    query.bindValue(":state", *trans_shadow->related_ratio);
+    query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
+    query.bindValue(":inside", *trans_shadow->related_node);
 
     if (!query.exec()) {
-        qWarning() << "sqlstakeholder: bool SqlStakeholder::Insert(Trans*trans)" << query.lastError().text();
+        qWarning() << "sqlstakeholder: bool SqlStakeholder::Insert(Trans*trans_shadow)" << query.lastError().text();
         return false;
     }
 
-    *trans->id = query.lastInsertId().toInt();
-    transaction_hash_.insert(*trans->id, last_transaction_);
+    *trans_shadow->id = query.lastInsertId().toInt();
+    trans_hash_.insert(*trans_shadow->id, last_trans_);
     return true;
 }
 
-void SqliteStakeholder::BuildTransList(TransList& trans_list, int node_id, const QList<int>& trans_id_list)
+void SqliteStakeholder::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -423,7 +423,7 @@ void SqliteStakeholder::BuildTransList(TransList& trans_list, int node_id, const
         return;
     }
 
-    QueryTransList(trans_list, node_id, query);
+    QueryTransShadowList(trans_shadow_list, node_id, query);
 }
 
 void SqliteStakeholder::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
@@ -452,41 +452,41 @@ void SqliteStakeholder::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
     }
 }
 
-void SqliteStakeholder::QueryTransList(TransList& trans_list, int node_id, QSqlQuery& query)
+void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query)
 {
     Q_UNUSED(node_id)
 
+    TransShadow* trans_shadow {};
     Trans* trans {};
-    Transaction* transaction {};
     int id {};
 
     while (query.next()) {
         id = query.value("id").toInt();
-        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans_shadow = ResourcePool<TransShadow>::Instance().Allocate();
 
-        if (transaction_hash_.contains(id)) {
-            transaction = transaction_hash_.value(id);
-            Convert(transaction, trans, true);
-            trans_list.emplaceBack(trans);
+        if (trans_hash_.contains(id)) {
+            trans = trans_hash_.value(id);
+            Convert(trans, trans_shadow, true);
+            trans_shadow_list.emplaceBack(trans_shadow);
             continue;
         }
 
-        transaction = ResourcePool<Transaction>::Instance().Allocate();
-        transaction->id = id;
+        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans->id = id;
 
-        transaction->lhs_node = query.value("outside").toInt();
-        transaction->rhs_node = query.value("inside").toInt();
-        transaction->lhs_ratio = query.value("unit_price").toDouble();
-        transaction->rhs_ratio = query.value("commission").toDouble();
-        transaction->code = query.value("code").toString();
-        transaction->description = query.value("description").toString();
-        transaction->state = query.value("state").toBool();
-        transaction->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
-        transaction->date_time = query.value("date_time").toString();
+        trans->lhs_node = query.value("outside").toInt();
+        trans->rhs_node = query.value("inside").toInt();
+        trans->lhs_ratio = query.value("unit_price").toDouble();
+        trans->rhs_ratio = query.value("commission").toDouble();
+        trans->code = query.value("code").toString();
+        trans->description = query.value("description").toString();
+        trans->state = query.value("state").toBool();
+        trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
+        trans->date_time = query.value("date_time").toString();
 
-        transaction_hash_.insert(id, transaction);
-        Convert(transaction, trans, true);
-        trans_list.emplaceBack(trans);
+        trans_hash_.insert(id, trans);
+        Convert(trans, trans_shadow, true);
+        trans_shadow_list.emplaceBack(trans_shadow);
     }
 }
 

@@ -1,33 +1,23 @@
 #include "editnodefinance.h"
 
-#include <QTimer>
-
 #include "ui_editnodefinance.h"
 
-EditNodeFinance::EditNodeFinance(
-    Node* node, CString& separator, CInfo& info, const AbstractTreeModel& model, int parent_id, bool node_usage, bool view_opened, QWidget* parent)
+EditNodeFinance::EditNodeFinance(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
     , node_ { node }
-    , separator_ { separator }
-    , model_ { model }
-    , parent_id_ { parent_id }
-    , node_usage_ { node_usage }
-    , view_opened_ { view_opened }
-    , parent_path_ { model.GetPath(parent_id) }
+    , parent_path_ { parent_path }
+    , name_list_ { name_list }
 {
     ui->setupUi(this);
 
     ui->comboUnit->blockSignals(true);
 
-    IniDialog(info.unit_hash);
+    IniDialog(unit_hash);
     IniConnect();
-    Data(node);
+    Data(node, enable_branch);
 
     ui->comboUnit->blockSignals(false);
-
-    if (info.section == Section::kFinance)
-        ui->labUnit->setText(tr("Currency"));
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }
@@ -37,9 +27,6 @@ void EditNodeFinance::IniDialog(CStringHash& unit_hash)
     ui->lineName->setFocus();
     ui->lineName->setValidator(&LineEdit::GetInputValidator());
 
-    if (!parent_path_.isEmpty())
-        parent_path_ += separator_;
-
     this->setWindowTitle(parent_path_ + node_->name);
 
     for (auto it = unit_hash.cbegin(); it != unit_hash.cend(); ++it)
@@ -48,9 +35,9 @@ void EditNodeFinance::IniDialog(CStringHash& unit_hash)
     ui->comboUnit->model()->sort(0);
 }
 
-void EditNodeFinance::IniConnect() { connect(ui->lineName, &QLineEdit::textEdited, this, &EditNodeFinance::REditName); }
+void EditNodeFinance::IniConnect() { connect(ui->lineName, &QLineEdit::textEdited, this, &EditNodeFinance::RNameEdited); }
 
-void EditNodeFinance::Data(Node* node)
+void EditNodeFinance::Data(Node* node, bool enable_branch)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);
@@ -67,10 +54,10 @@ void EditNodeFinance::Data(Node* node)
     ui->plainNote->setPlainText(node->note);
 
     ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(!node_usage_ && model_.ChildrenEmpty(node->id) && !view_opened_);
+    ui->chkBoxBranch->setEnabled(enable_branch);
 }
 
-void EditNodeFinance::REditName(const QString& arg1)
+void EditNodeFinance::RNameEdited(const QString& arg1)
 {
     auto simplified { arg1.simplified() };
     this->setWindowTitle(parent_path_ + simplified);

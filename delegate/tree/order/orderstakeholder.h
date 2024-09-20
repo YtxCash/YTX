@@ -1,12 +1,12 @@
-#ifndef ORDEREMPLOYEE_H
-#define ORDEREMPLOYEE_H
+#ifndef ORDERSTAKEHOLDER_H
+#define ORDERSTAKEHOLDER_H
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/abstracttreemodel.h"
 
-class OrderEmployee : public StyledItemDelegate {
+class OrderStakeholder : public StyledItemDelegate {
 public:
-    OrderEmployee(const AbstractTreeModel& stakeholder_tree_model, QObject* parent = nullptr);
+    OrderStakeholder(const AbstractTreeModel& stakeholder_tree_model, int unit, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -18,6 +18,7 @@ private:
 
 private:
     const AbstractTreeModel& stakeholder_tree_model_;
+    int unit_ {};
 };
 
-#endif // ORDEREMPLOYEE_H
+#endif // ORDERSTAKEHOLDER_H

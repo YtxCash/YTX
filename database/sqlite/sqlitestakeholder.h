@@ -25,17 +25,17 @@ public:
     bool RemoveNode(int node_id, bool branch = false) override;
 
     // table
-    void BuildTransList(TransList& trans_list, int outside_id) override;
-    bool InsertTrans(Trans* trans) override;
+    void BuildTransShadowList(TransShadowList& trans_shadow_list, int outside_id) override;
+    bool InsertTransShadow(TransShadow* trans_shadow) override;
 
-    void BuildTransList(TransList& trans_list, int node_id, const QList<int>& trans_id_list) override;
+    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list) override;
 
 private:
     // tree
     void BuildNodeHash(QSqlQuery& query, NodeHash& node_hash) override;
 
     // table
-    void QueryTransList(TransList& trans_list, int node_id, QSqlQuery& query) override;
+    void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
 
     QList<int> TransID(int node_id, bool lhs = true);
 };

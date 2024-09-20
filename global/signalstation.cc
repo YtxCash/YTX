@@ -16,40 +16,40 @@ void SignalStation::RegisterModel(Section section, int node_id, const TableModel
 
 void SignalStation::DeregisterModel(Section section, int node_id) { model_hash_[section].remove(node_id); }
 
-void SignalStation::RAppendOne(Section section, const Trans* trans)
+void SignalStation::RAppendOne(Section section, const TransShadow* trans_shadow)
 {
     auto section_model_hash { model_hash_.value(section) };
-    int related_node_id { *trans->related_node };
+    int related_node_id { *trans_shadow->related_node };
 
     auto model { section_model_hash.value(related_node_id, nullptr) };
     if (!model)
         return;
 
     connect(this, &SignalStation::SAppendOne, model, &TableModel::RAppendOne);
-    emit SAppendOne(trans);
+    emit SAppendOne(trans_shadow);
     disconnect(this, &SignalStation::SAppendOne, model, &TableModel::RAppendOne);
 }
 
-void SignalStation::RRetrieveOne(Section section, Trans* trans)
+void SignalStation::RRetrieveOne(Section section, TransShadow* trans_shadow)
 {
     auto section_model_hash { model_hash_.value(section) };
 
-    int related_node_id { *trans->related_node };
+    int related_node_id { *trans_shadow->related_node };
     auto related_model { section_model_hash.value(related_node_id, nullptr) };
     if (!related_model)
         return;
 
     connect(this, &SignalStation::SAppendOne, related_model, &TableModel::RAppendOne);
-    emit SAppendOne(trans);
+    emit SAppendOne(trans_shadow);
     disconnect(this, &SignalStation::SAppendOne, related_model, &TableModel::RAppendOne);
 
-    int node { *trans->node };
+    int node { *trans_shadow->node };
     auto model { section_model_hash.value(node, nullptr) };
     if (!model)
         return;
 
     connect(this, &SignalStation::SRetrieveOne, model, &TableModel::RRetrieveOne);
-    emit SRetrieveOne(trans);
+    emit SRetrieveOne(trans_shadow);
     disconnect(this, &SignalStation::SRetrieveOne, model, &TableModel::RRetrieveOne);
 }
 

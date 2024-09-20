@@ -9,7 +9,7 @@
 #include "component/enumclass.h"
 #include "component/info.h"
 #include "component/using.h"
-#include "table/transaction.h"
+#include "table/trans.h"
 #include "tree/node.h"
 
 class Sqlite : public QObject {
@@ -63,16 +63,16 @@ public:
     bool DragNode(int destination_node_id, int node_id);
 
     // table
-    virtual void BuildTransList(TransList& trans_list, int node_id);
-    virtual void BuildTransList(TransList& trans_list, int node_id, const QList<int>& trans_id_list);
-    virtual bool InsertTrans(Trans* trans);
+    virtual void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id);
+    virtual void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
+    virtual bool InsertTransShadow(TransShadow* trans_shadow);
 
-    bool RemoveTransaction(int trans_id);
-    bool UpdateTransaction(int trans_id);
+    bool RemoveTrans(int trans_id);
+    bool UpdateTrans(int trans_id);
     bool UpdateCheckState(CString& column, CVariant& value, Check state);
 
-    Trans* AllocateTrans();
-    QHash<int, Transaction*>* TransactionHash() { return &transaction_hash_; }
+    TransShadow* AllocateTransShadow();
+    QHash<int, Trans*>* TransHash() { return &trans_hash_; } // 需要改变设计
 
     // common
     bool UpdateField(CString& table, CVariant& new_value, CString& field, int id);
@@ -86,14 +86,14 @@ protected:
     void WriteRelationship(QSqlQuery& query, int node_id, int parent_id);
 
     // table
-    virtual void QueryTransList(TransList& trans_list, int node_id, QSqlQuery& query);
+    virtual void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
     virtual QMultiHash<int, int> RelatedNodeTrans(int node_id) const;
 
-    void Convert(Transaction* transaction, Trans* trans, bool left);
+    void Convert(Trans* trans, TransShadow* trans_shadow, bool left);
 
 protected:
-    QHash<int, Transaction*> transaction_hash_ {};
-    Transaction* last_transaction_ {};
+    QHash<int, Trans*> trans_hash_ {};
+    Trans* last_trans_ {};
 
     QSqlDatabase* db_ {};
     CInfo& info_;

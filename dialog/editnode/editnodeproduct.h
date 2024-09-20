@@ -3,9 +3,7 @@
 
 #include <QDialog>
 
-#include "component/settings.h"
 #include "component/using.h"
-#include "tree/model/abstracttreemodel.h"
 #include "tree/node.h"
 
 namespace Ui {
@@ -16,41 +14,37 @@ class EditNodeProduct final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeProduct(Node* node, CSectionRule& section_rule, CString& separator, CStringHash& unit_hash, const AbstractTreeModel& model, int parent_id,
-        bool node_usage, bool view_opened, QWidget* parent = nullptr);
+    EditNodeProduct(
+        Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int ratio_decimal, QWidget* parent = nullptr);
     ~EditNodeProduct();
 
 private slots:
-    void REditName(const QString& arg1);
+    void RNameEdited(const QString& arg1);
 
     void on_lineEditName_editingFinished();
     void on_lineEditCode_editingFinished();
     void on_lineEditDescription_editingFinished();
-    void on_comboUnit_currentIndexChanged(int index);
-    void on_rBtnDDCI_toggled(bool checked);
-    void on_chkBoxBranch_toggled(bool checked);
-    void on_plainTextEdit_textChanged();
     void on_dSpinBoxUnitPrice_editingFinished();
     void on_dSpinBoxCommission_editingFinished();
 
+    void on_comboUnit_currentIndexChanged(int index);
+
+    void on_rBtnDDCI_toggled(bool checked);
+    void on_chkBoxBranch_toggled(bool checked);
+
+    void on_plainTextEdit_textChanged();
+
 private:
-    void IniDialog(CStringHash& currency_map);
+    void IniDialog(CStringHash& unit_hash, int ratio_decimal);
     void IniConnect();
-    void Data(Node* node);
+    void Data(Node* node, bool enable_branch);
 
 private:
     Ui::EditNodeProduct* ui;
     Node* node_ {};
-    CString& separator_ {};
-    CSectionRule& section_rule_ {};
 
-    const AbstractTreeModel& model_;
-    int parent_id_ {};
-
-    bool node_usage_ {};
-    bool view_opened_ {};
-    QStringList name_list_ {};
-    QString parent_path_ {};
+    CString& parent_path_ {};
+    CStringList& name_list_ {};
 };
 
 #endif // EDITNODEPRODUCT_H

@@ -119,13 +119,19 @@ public:
         static const QString empty_string {};
         return leaf_path_.value(node_id, branch_path_.value(node_id, empty_string));
     }
+    void GetNodeShadow(NodeShadow& node_shadow, int node_id) const
+    {
+        auto it = node_hash_.constFind(node_id);
+        if (it != node_hash_.constEnd())
+            node_shadow = *it;
+    }
     QModelIndex GetIndex(int node_id) const;
 
     void ComboPathUnit(QComboBox* combo, int unit) const;
     void ComboPathLeaf(QComboBox* combo, int exclude) const;
     void ComboPathLeafBranch(QComboBox* combo) const;
 
-    void ChildrenName(QStringList& list, int node_id, int exclude_child) const;
+    QStringList ChildrenName(int node_id, int exclude_child) const;
 
     void SetParent(Node* node, int parent_id) const;
     void CopyNode(Node* tmp_node, int node_id) const;
@@ -137,6 +143,7 @@ protected:
     virtual void ConstructTree();
     virtual bool UpdateNodeRule(Node* node, bool value);
     virtual bool UpdateUnit(Node* node, int value);
+    virtual bool UpdateName(Node* node, CString& value);
 
     // member functions
 
@@ -152,12 +159,11 @@ protected:
     void UpdateBranchTotal(const Node* node, double initial_diff, double final_diff);
     void UpdatePath(const Node* node);
     void UpdateBranchUnit(Node* node) const;
-    bool UpdateName(Node* node, CString& new_value);
     bool UpdateBranch(Node* node, bool new_value);
 
-    bool UpdateCode(Node* node, CString& new_value, CString& field = CODE);
-    bool UpdateDescription(Node* node, CString& new_value, CString& field = DESCRIPTION);
-    bool UpdateNote(Node* node, CString& new_value, CString& field = NOTE);
+    bool UpdateCode(Node* node, CString& value, CString& field = CODE);
+    bool UpdateDescription(Node* node, CString& value, CString& field = DESCRIPTION);
+    bool UpdateNote(Node* node, CString& value, CString& field = NOTE);
 
     void InitializeRoot(int base_unit);
     void ShowTemporaryTooltip(CString& message, int duration = 3000);
@@ -165,7 +171,7 @@ protected:
 protected:
     template <typename T> std::optional<T> GetValue(int node_id, T Node::*member) const
     {
-        if (auto it = node_hash_.find(node_id); it != node_hash_.end())
+        if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
             return (*it)->*member;
 
         return std::nullopt;

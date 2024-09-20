@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>366</width>
-    <height>574</height>
+    <width>285</width>
+    <height>512</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0,0,0">
@@ -275,13 +275,19 @@
       <property name="bottomMargin">
        <number>8</number>
       </property>
-      <property name="spacing">
+      <property name="horizontalSpacing">
        <number>12</number>
       </property>
-      <item row="0" column="1">
+      <property name="verticalSpacing">
+       <number>8</number>
+      </property>
+      <item row="1" column="2">
        <widget class="DoubleSpinBox" name="dSpinBoxUnitPrice">
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
         <property name="stepType">
          <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
@@ -289,32 +295,9 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="labCommission">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Commission</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="DoubleSpinBox" name="dSpinBoxCommission">
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-        </property>
-        <property name="stepType">
-         <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
        <widget class="QLabel" name="labUnitPrice">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -324,7 +307,33 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2" rowspan="2">
+      <item row="0" column="2">
+       <widget class="DoubleSpinBox" name="dSpinBoxCommission">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="stepType">
+         <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labCommission">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Commission</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
        <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>

@@ -1,24 +1,19 @@
-#include "orderlocked.h"
+#include "orderbranch.h"
 
 #include <QMouseEvent>
 
-#include "component/enumclass.h"
-
-OrderLocked::OrderLocked(QObject* parent)
+OrderBranch::OrderBranch(QObject* parent)
     : StyledItemDelegate { parent }
 {
 }
 
-void OrderLocked::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool() };
-    if (branch)
+void OrderBranch::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
+    if(!index.data().toBool())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintCheckBox(painter, option, index);
-}
+     PaintCheckBox(painter, option, index); }
 
-bool OrderLocked::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
+bool OrderBranch::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     if (event->type() == QEvent::MouseButtonRelease || event->type() == QEvent::MouseButtonDblClick) {
         QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);

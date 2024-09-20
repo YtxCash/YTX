@@ -14,7 +14,7 @@ Sqlite::Sqlite(CInfo& info, QObject* parent)
 {
 }
 
-Sqlite::~Sqlite() { qDeleteAll(transaction_hash_); }
+Sqlite::~Sqlite() { qDeleteAll(trans_hash_); }
 
 bool Sqlite::RRemoveMulti(int node_id)
 {
@@ -47,10 +47,10 @@ bool Sqlite::RRemoveMulti(int node_id)
     emit SRemoveMulti(node_trans);
     emit SUpdateMultiTotal(node_trans.uniqueKeys());
 
-    // begin deal with transaction hash
+    // begin deal with trans hash
     for (int trans_id : trans_id_list)
-        ResourcePool<Transaction>::Instance().Recycle(transaction_hash_.take(trans_id));
-    // end deal with transaction hash
+        ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
+    // end deal with trans hash
 
     return true;
 }
@@ -62,17 +62,17 @@ bool Sqlite::RReplaceMulti(int old_node_id, int new_node_id)
 
     node_trans.remove(new_node_id);
 
-    // begin deal with transaction hash
-    const auto& const_transaction_hash { std::as_const(transaction_hash_) };
+    // begin deal with trans hash
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
 
-    for (auto& transaction : const_transaction_hash) {
-        if (transaction->lhs_node == old_node_id && transaction->rhs_node != new_node_id)
-            transaction->lhs_node = new_node_id;
+    for (auto& trans : const_trans_hash) {
+        if (trans->lhs_node == old_node_id && trans->rhs_node != new_node_id)
+            trans->lhs_node = new_node_id;
 
-        if (transaction->rhs_node == old_node_id && transaction->lhs_node != new_node_id)
-            transaction->rhs_node = new_node_id;
+        if (trans->rhs_node == old_node_id && trans->lhs_node != new_node_id)
+            trans->rhs_node = new_node_id;
     }
-    // end deal with transaction hash
+    // end deal with trans hash
 
     // begin deal with database
     QSqlQuery query(*db_);
@@ -428,7 +428,7 @@ bool Sqlite::NodeInternalReferences(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-void Sqlite::BuildTransList(TransList& trans_list, int node_id)
+void Sqlite::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -448,44 +448,44 @@ void Sqlite::BuildTransList(TransList& trans_list, int node_id)
         return;
     }
 
-    QueryTransList(trans_list, node_id, query);
+    QueryTransShadowList(trans_shadow_list, node_id, query);
 }
 
-void Sqlite::Convert(Transaction* transaction, Trans* trans, bool left)
+void Sqlite::Convert(Trans* trans, TransShadow* trans_shadow, bool left)
 {
-    trans->id = &transaction->id;
-    trans->state = &transaction->state;
-    trans->date_time = &transaction->date_time;
-    trans->code = &transaction->code;
-    trans->document = &transaction->document;
-    trans->description = &transaction->description;
+    trans_shadow->id = &trans->id;
+    trans_shadow->state = &trans->state;
+    trans_shadow->date_time = &trans->date_time;
+    trans_shadow->code = &trans->code;
+    trans_shadow->document = &trans->document;
+    trans_shadow->description = &trans->description;
 
     if (left) {
-        trans->node = &transaction->lhs_node;
-        trans->ratio = &transaction->lhs_ratio;
-        trans->debit = &transaction->lhs_debit;
-        trans->credit = &transaction->lhs_credit;
+        trans_shadow->node = &trans->lhs_node;
+        trans_shadow->ratio = &trans->lhs_ratio;
+        trans_shadow->debit = &trans->lhs_debit;
+        trans_shadow->credit = &trans->lhs_credit;
 
-        trans->related_node = &transaction->rhs_node;
-        trans->related_ratio = &transaction->rhs_ratio;
-        trans->related_debit = &transaction->rhs_debit;
-        trans->related_credit = &transaction->rhs_credit;
+        trans_shadow->related_node = &trans->rhs_node;
+        trans_shadow->related_ratio = &trans->rhs_ratio;
+        trans_shadow->related_debit = &trans->rhs_debit;
+        trans_shadow->related_credit = &trans->rhs_credit;
 
         return;
     }
 
-    trans->node = &transaction->rhs_node;
-    trans->ratio = &transaction->rhs_ratio;
-    trans->debit = &transaction->rhs_debit;
-    trans->credit = &transaction->rhs_credit;
+    trans_shadow->node = &trans->rhs_node;
+    trans_shadow->ratio = &trans->rhs_ratio;
+    trans_shadow->debit = &trans->rhs_debit;
+    trans_shadow->credit = &trans->rhs_credit;
 
-    trans->related_node = &transaction->lhs_node;
-    trans->related_ratio = &transaction->lhs_ratio;
-    trans->related_debit = &transaction->lhs_debit;
-    trans->related_credit = &transaction->lhs_credit;
+    trans_shadow->related_node = &trans->lhs_node;
+    trans_shadow->related_ratio = &trans->lhs_ratio;
+    trans_shadow->related_debit = &trans->lhs_debit;
+    trans_shadow->related_credit = &trans->lhs_credit;
 }
 
-bool Sqlite::InsertTrans(Trans* trans)
+bool Sqlite::InsertTransShadow(TransShadow* trans_shadow)
 {
     QSqlQuery query(*db_);
     auto part = QString(R"(
@@ -497,31 +497,31 @@ bool Sqlite::InsertTrans(Trans* trans)
                     .arg(info_.transaction);
 
     query.prepare(part);
-    query.bindValue(":date_time", *trans->date_time);
-    query.bindValue(":lhs_node", *trans->node);
-    query.bindValue(":lhs_ratio", *trans->ratio);
-    query.bindValue(":lhs_debit", *trans->debit);
-    query.bindValue(":lhs_credit", *trans->credit);
-    query.bindValue(":rhs_node", *trans->related_node);
-    query.bindValue(":rhs_ratio", *trans->related_ratio);
-    query.bindValue(":rhs_debit", *trans->related_debit);
-    query.bindValue(":rhs_credit", *trans->related_credit);
-    query.bindValue(":state", *trans->state);
-    query.bindValue(":description", *trans->description);
-    query.bindValue(":code", *trans->code);
-    query.bindValue(":document", trans->document->join(SEMICOLON));
+    query.bindValue(":date_time", *trans_shadow->date_time);
+    query.bindValue(":lhs_node", *trans_shadow->node);
+    query.bindValue(":lhs_ratio", *trans_shadow->ratio);
+    query.bindValue(":lhs_debit", *trans_shadow->debit);
+    query.bindValue(":lhs_credit", *trans_shadow->credit);
+    query.bindValue(":rhs_node", *trans_shadow->related_node);
+    query.bindValue(":rhs_ratio", *trans_shadow->related_ratio);
+    query.bindValue(":rhs_debit", *trans_shadow->related_debit);
+    query.bindValue(":rhs_credit", *trans_shadow->related_credit);
+    query.bindValue(":state", *trans_shadow->state);
+    query.bindValue(":description", *trans_shadow->description);
+    query.bindValue(":code", *trans_shadow->code);
+    query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
 
     if (!query.exec()) {
         qWarning() << "Failed to insert record in transaction table" << query.lastError().text();
         return false;
     }
 
-    *trans->id = query.lastInsertId().toInt();
-    transaction_hash_.insert(*trans->id, last_transaction_);
+    *trans_shadow->id = query.lastInsertId().toInt();
+    trans_hash_.insert(*trans_shadow->id, last_trans_);
     return true;
 }
 
-bool Sqlite::RemoveTransaction(int trans_id)
+bool Sqlite::RemoveTrans(int trans_id)
 {
     QSqlQuery query(*db_);
     auto part = QString(R"(
@@ -538,14 +538,14 @@ bool Sqlite::RemoveTransaction(int trans_id)
         return false;
     }
 
-    ResourcePool<Transaction>::Instance().Recycle(transaction_hash_.take(trans_id));
+    ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
     return true;
 }
 
-bool Sqlite::UpdateTransaction(int trans_id)
+bool Sqlite::UpdateTrans(int trans_id)
 {
     QSqlQuery query(*db_);
-    auto transaction { transaction_hash_.value(trans_id) };
+    auto trans { trans_hash_.value(trans_id) };
 
     auto part = QString(R"(
     UPDATE %1 SET
@@ -556,14 +556,14 @@ bool Sqlite::UpdateTransaction(int trans_id)
                     .arg(info_.transaction);
 
     query.prepare(part);
-    query.bindValue(":lhs_node", transaction->lhs_node);
-    query.bindValue(":lhs_ratio", transaction->lhs_ratio);
-    query.bindValue(":lhs_debit", transaction->lhs_debit);
-    query.bindValue(":lhs_credit", transaction->lhs_credit);
-    query.bindValue(":rhs_node", transaction->rhs_node);
-    query.bindValue(":rhs_ratio", transaction->rhs_ratio);
-    query.bindValue(":rhs_debit", transaction->rhs_debit);
-    query.bindValue(":rhs_credit", transaction->rhs_credit);
+    query.bindValue(":lhs_node", trans->lhs_node);
+    query.bindValue(":lhs_ratio", trans->lhs_ratio);
+    query.bindValue(":lhs_debit", trans->lhs_debit);
+    query.bindValue(":lhs_credit", trans->lhs_credit);
+    query.bindValue(":rhs_node", trans->rhs_node);
+    query.bindValue(":rhs_ratio", trans->rhs_ratio);
+    query.bindValue(":rhs_debit", trans->rhs_debit);
+    query.bindValue(":rhs_credit", trans->rhs_credit);
     query.bindValue(":id", trans_id);
 
     if (!query.exec()) {
@@ -623,7 +623,7 @@ bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state)
     return true;
 }
 
-void Sqlite::BuildTransList(TransList& trans_list, int node_id, const QList<int>& trans_id_list)
+void Sqlite::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -648,16 +648,16 @@ void Sqlite::BuildTransList(TransList& trans_list, int node_id, const QList<int>
         return;
     }
 
-    QueryTransList(trans_list, node_id, query);
+    QueryTransShadowList(trans_shadow_list, node_id, query);
 }
 
-Trans* Sqlite::AllocateTrans()
+TransShadow* Sqlite::AllocateTransShadow()
 {
-    last_transaction_ = ResourcePool<Transaction>::Instance().Allocate();
-    auto trans { ResourcePool<Trans>::Instance().Allocate() };
+    last_trans_ = ResourcePool<Trans>::Instance().Allocate();
+    auto trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
 
-    Convert(last_transaction_, trans, true);
-    return trans;
+    Convert(last_trans_, trans_shadow, true);
+    return trans_shadow;
 }
 
 void Sqlite::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
@@ -780,44 +780,44 @@ QMultiHash<int, int> Sqlite::RelatedNodeTrans(int node_id) const
     return hash;
 }
 
-void Sqlite::QueryTransList(TransList& trans_list, int node_id, QSqlQuery& query)
+void Sqlite::QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query)
 {
+    TransShadow* trans_shadow {};
     Trans* trans {};
-    Transaction* transaction {};
     int id {};
 
     while (query.next()) {
         id = query.value("id").toInt();
-        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans_shadow = ResourcePool<TransShadow>::Instance().Allocate();
 
-        if (transaction_hash_.contains(id)) {
-            transaction = transaction_hash_.value(id);
-            Convert(transaction, trans, node_id == transaction->lhs_node);
-            trans_list.emplaceBack(trans);
+        if (trans_hash_.contains(id)) {
+            trans = trans_hash_.value(id);
+            Convert(trans, trans_shadow, node_id == trans->lhs_node);
+            trans_shadow_list.emplaceBack(trans_shadow);
             continue;
         }
 
-        transaction = ResourcePool<Transaction>::Instance().Allocate();
-        transaction->id = id;
+        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans->id = id;
 
-        transaction->lhs_node = query.value("lhs_node").toInt();
-        transaction->lhs_ratio = query.value("lhs_ratio").toDouble();
-        transaction->lhs_debit = query.value("lhs_debit").toDouble();
-        transaction->lhs_credit = query.value("lhs_credit").toDouble();
+        trans->lhs_node = query.value("lhs_node").toInt();
+        trans->lhs_ratio = query.value("lhs_ratio").toDouble();
+        trans->lhs_debit = query.value("lhs_debit").toDouble();
+        trans->lhs_credit = query.value("lhs_credit").toDouble();
 
-        transaction->rhs_node = query.value("rhs_node").toInt();
-        transaction->rhs_ratio = query.value("rhs_ratio").toDouble();
-        transaction->rhs_debit = query.value("rhs_debit").toDouble();
-        transaction->rhs_credit = query.value("rhs_credit").toDouble();
+        trans->rhs_node = query.value("rhs_node").toInt();
+        trans->rhs_ratio = query.value("rhs_ratio").toDouble();
+        trans->rhs_debit = query.value("rhs_debit").toDouble();
+        trans->rhs_credit = query.value("rhs_credit").toDouble();
 
-        transaction->code = query.value("code").toString();
-        transaction->description = query.value("description").toString();
-        transaction->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
-        transaction->date_time = query.value("date_time").toString();
-        transaction->state = query.value("state").toBool();
+        trans->code = query.value("code").toString();
+        trans->description = query.value("description").toString();
+        trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
+        trans->date_time = query.value("date_time").toString();
+        trans->state = query.value("state").toBool();
 
-        transaction_hash_.insert(id, transaction);
-        Convert(transaction, trans, node_id == transaction->lhs_node);
-        trans_list.emplaceBack(trans);
+        trans_hash_.insert(id, trans);
+        Convert(trans, trans_shadow, node_id == trans->lhs_node);
+        trans_shadow_list.emplaceBack(trans_shadow);
     }
 }

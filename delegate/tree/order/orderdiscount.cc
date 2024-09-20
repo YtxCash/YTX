@@ -25,6 +25,7 @@ QWidget* OrderDiscount::createEditor(QWidget* parent, const QStyleOptionViewItem
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);
     editor->setMaximum(max_);
+    editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
     return editor;
 }

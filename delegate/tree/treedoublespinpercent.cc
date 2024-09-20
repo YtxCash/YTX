@@ -21,6 +21,7 @@ QWidget* TreeDoubleSpinPercent::createEditor(QWidget* parent, const QStyleOption
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);
     editor->setMaximum(max_);
+    editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
     return editor;
 }

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>409</width>
-    <height>554</height>
+    <width>313</width>
+    <height>544</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -202,17 +202,14 @@
       <property name="bottomMargin">
        <number>8</number>
       </property>
-      <property name="spacing">
+      <property name="horizontalSpacing">
        <number>12</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>8</number>
       </property>
       <item row="0" column="0">
        <widget class="QRadioButton" name="rBtnCash">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
          <string>Cash</string>
         </property>
@@ -227,12 +224,6 @@
       </item>
       <item row="0" column="1">
        <widget class="QRadioButton" name="rBtnMonthly">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
          <string>Monthly</string>
         </property>
@@ -264,18 +255,21 @@
        <number>8</number>
       </property>
       <property name="topMargin">
-       <number>8</number>
+       <number>4</number>
       </property>
       <property name="rightMargin">
        <number>8</number>
       </property>
       <property name="bottomMargin">
-       <number>8</number>
+       <number>4</number>
       </property>
-      <property name="spacing">
+      <property name="horizontalSpacing">
        <number>12</number>
       </property>
-      <item row="0" column="4">
+      <property name="verticalSpacing">
+       <number>4</number>
+      </property>
+      <item row="1" column="4">
        <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -288,47 +282,52 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelDeadline">
-        <property name="text">
-         <string>Deadline</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="SpinBox" name="spinBoxPaymentPeriod">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+      <item row="3" column="1">
+       <widget class="SpinBox" name="spinBoxDeadline">
         <property name="frame">
          <bool>false</bool>
         </property>
         <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="SpinBox" name="spinBoxPaymentPeriod">
+        <property name="frame">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
         <property name="stepType">
          <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelPaymentPeriod">
+        <property name="text">
+         <string>PaymentPeriod</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelDeadline">
+        <property name="text">
+         <string>Deadline</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
        <widget class="QLabel" name="labelTaxRate">
         <property name="text">
          <string>TaxRate</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="3">
+      <item row="0" column="1">
        <widget class="DoubleSpinBox" name="dSpinBoxTaxRate">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="frame">
          <bool>false</bool>
         </property>
@@ -340,35 +339,6 @@
         </property>
         <property name="stepType">
          <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="SpinBox" name="spinBoxDeadline">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="frame">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelPaymentPeriod">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>PaymentPeriod</string>
         </property>
        </widget>
       </item>

@@ -11,7 +11,7 @@
 #include "component/settings.h"
 #include "component/using.h"
 #include "database/sqlite/sqlite.h"
-#include "table/transaction.h"
+#include "table/trans.h"
 
 class TableModel : public QAbstractItemModel {
     Q_OBJECT
@@ -26,7 +26,7 @@ signals:
     void SSearch();
 
     // send to signal station
-    void SAppendOne(Section section, const Trans* trans);
+    void SAppendOne(Section section, const TransShadow* trans_shadow);
     void SRemoveOne(Section section, int node_id, int trans_id);
     void SUpdateBalance(Section section, int node_id, int trans_id);
     void SMoveMulti(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
@@ -45,8 +45,8 @@ public slots:
     void RNodeRule(int node_id, bool node_rule);
 
     // receive from signal station
-    void RAppendOne(const Trans* trans);
-    void RRetrieveOne(Trans* trans);
+    void RAppendOne(const TransShadow* trans_shadow);
+    void RRetrieveOne(TransShadow* trans_shadow);
     void RRemoveOne(int node_id, int trans_id);
     void RUpdateBalance(int node_id, int trans_id);
     void RMoveMulti(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
@@ -80,22 +80,22 @@ public:
 
 protected:
     // virtual functions
-    virtual bool UpdateDebit(Trans* trans, double value);
-    virtual bool UpdateCredit(Trans* trans, double value);
-    virtual bool UpdateRatio(Trans* trans, double value);
+    virtual bool UpdateDebit(TransShadow* trans_shadow, double value);
+    virtual bool UpdateCredit(TransShadow* trans_shadow, double value);
+    virtual bool UpdateRatio(TransShadow* trans_shadow, double value);
 
-    virtual bool RemoveMulti(const QList<int>& trans_id_list); // just remove trnas, keep related transaction
+    virtual bool RemoveMulti(const QList<int>& trans_id_list); // just remove trnas_shadow, keep related trans
     virtual bool InsertMulti(int node_id, const QList<int>& trans_id_list);
 
     // member functions
     double Balance(bool node_rule, double debit, double credit) { return (node_rule ? 1 : -1) * (credit - debit); }
     void AccumulateSubtotal(int start, bool node_rule);
 
-    bool UpdateDateTime(Trans* trans, CString& new_value, CString& field = DATE_TIME);
-    bool UpdateDescription(Trans* trans, CString& new_value, CString& field = DESCRIPTION);
-    bool UpdateCode(Trans* trans, CString& new_value, CString& field = CODE);
-    bool UpdateOneState(Trans* trans, bool new_value, CString& field = STATE);
-    bool UpdateRelatedNode(Trans* trans, int value);
+    bool UpdateDateTime(TransShadow* trans_shadow, CString& new_value, CString& field = DATE_TIME);
+    bool UpdateDescription(TransShadow* trans_shadow, CString& new_value, CString& field = DESCRIPTION);
+    bool UpdateCode(TransShadow* trans_shadow, CString& new_value, CString& field = CODE);
+    bool UpdateOneState(TransShadow* trans_shadow, bool new_value, CString& field = STATE);
+    bool UpdateRelatedNode(TransShadow* trans_shadow, int value);
 
 protected:
     SPSqlite sql_ {};
@@ -105,22 +105,23 @@ protected:
     CSectionRule& section_rule_;
     const int node_id_ {};
 
-    QList<Trans*> trans_list_ {};
+    QList<TransShadow*> trans_shadow_list_ {};
 
 private:
-    template <typename T> bool UpdateField(Trans* trans, const T& new_value, CString& field, T* Trans::*member, const std::function<void()>& action = {})
+    template <typename T>
+    bool UpdateField(TransShadow* trans_shadow, const T& new_value, CString& field, T* TransShadow::*member, const std::function<void()>& action = {})
     {
-        if (trans == nullptr || trans->*member == nullptr)
+        if (trans_shadow == nullptr || trans_shadow->*member == nullptr)
             return false;
 
-        if (*(trans->*member) == new_value)
+        if (*(trans_shadow->*member) == new_value)
             return false;
 
-        *(trans->*member) = new_value;
+        *(trans_shadow->*member) = new_value;
 
-        if (*trans->related_node != 0) {
+        if (*trans_shadow->related_node != 0) {
             try {
-                sql_->UpdateField(info_.transaction, new_value, field, *trans->id);
+                sql_->UpdateField(info_.transaction, new_value, field, *trans_shadow->id);
 
                 if (action)
                     action();
