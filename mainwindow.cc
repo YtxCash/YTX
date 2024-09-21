@@ -1345,6 +1345,8 @@ void MainWindow::REditNode()
     if (section == Section::kPurchase || section == Section::kSales) {
         connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dynamic_cast<EditNodeOrder*>(dialog),
             &EditNodeOrder::RUpdateStakeholder);
+
+        connect(model, &AbstractTreeModel::SUpdateOrder, dynamic_cast<EditNodeOrder*>(dialog), &EditNodeOrder::RUpdateOrder);
         section_dialog_->append(dialog);
 
         dialog->show();

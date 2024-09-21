@@ -39,6 +39,7 @@ signals:
 
     // send to EditNodeOrder and TableWidgetOrder
     void SUpdateOrderPartyEmployee();
+    void SUpdateOrder(const QVariant& value, TreeEnumOrder column);
 
 public slots:
     // receive from table sql

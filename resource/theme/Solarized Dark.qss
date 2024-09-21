@@ -148,7 +148,7 @@ QTableView {
 /*-------------------------------------disabled color-----------------------------------------------*/
 
 QPushButton:disabled, QCheckBox:disabled, QRadioButton:disabled, QHeaderView::section:disabled, QTableView:disabled, QLabel:disabled,
-QDoubleSpinBox:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled, QDateTimeEdit:disabled {
+QDoubleSpinBox:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled, QDateTimeEdit:disabled, QLineEdit:disabled {
     color: #586E75;
 }
 

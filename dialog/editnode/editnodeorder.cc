@@ -76,6 +76,49 @@ void EditNodeOrder::RUpdateStakeholder()
     ui->comboEmployee->blockSignals(false);
 }
 
+void EditNodeOrder::RUpdateOrder(const QVariant& value, TreeEnumOrder column)
+{
+    switch (column) {
+    case TreeEnumOrder::kDescription:
+        ui->lineDescription->setText(value.toString());
+        break;
+    case TreeEnumOrder::kNodeRule:
+        ui->chkBoxRefund->setChecked(value.toBool());
+        break;
+    case TreeEnumOrder::kUnit: {
+        switch (value.toInt()) {
+        case UNIT_CASH:
+            ui->rBtnCash->setChecked(true);
+            break;
+        case UNIT_MONTHLY:
+            ui->rBtnMonthly->setChecked(true);
+            break;
+        case UNIT_PENDING:
+            ui->rBtnPending->setChecked(true);
+            break;
+        default:
+            break;
+        }
+    } break;
+    case TreeEnumOrder::kParty: {
+        auto index_party { ui->comboParty->findData(value.toInt()) };
+        ui->comboParty->setCurrentIndex(index_party);
+    } break;
+    case TreeEnumOrder::kEmployee: {
+        auto employee_index { ui->comboEmployee->findData(value.toInt()) };
+        ui->comboEmployee->setCurrentIndex(employee_index);
+    } break;
+    case TreeEnumOrder::kDateTime:
+        ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), DATE_TIME_FST));
+        break;
+    case TreeEnumOrder::kLocked:
+        ui->pBtnLockOrder->setChecked(value.toBool());
+        break;
+    default:
+        break;
+    }
+}
+
 void EditNodeOrder::IniDialog()
 {
     IniCombo(ui->comboParty, unit_party_);
@@ -221,6 +264,7 @@ void EditNodeOrder::SetWidgetsEnabledPost(bool enabled)
     ui->dateTimeEdit->setEnabled(enabled);
 
     ui->chkBoxRefund->setEnabled(enabled);
+    ui->lineDescription->setEnabled(enabled);
     ui->pBtnPrint->setEnabled(!enabled);
 }
 
@@ -256,6 +300,9 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
 
     EnableSave(true);
     node_->party = party_id;
+
+    if (ui->comboEmployee->currentIndex() != -1)
+        return;
 
     auto employee_index { ui->comboEmployee->findData(stakeholder_model_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
@@ -334,6 +381,13 @@ void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 
     if (checked) {
         accept();
+        ui->pBtnPrint->setFocus();
+        ui->pBtnPrint->setDefault(true);
+    }
+
+    if (!checked) {
+        ui->tableViewOrder->setFocus();
+        ui->pBtnLockOrder->setDefault(true);
     }
 }
 

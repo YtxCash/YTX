@@ -124,7 +124,6 @@ void InsertNodeOrder::SetWidgetsDisabledBranch(bool disabled)
     ui->pBtnInsertParty->setDisabled(disabled);
 
     ui->dateTimeEdit->setDisabled(disabled);
-    ui->chkBoxRefund->setDisabled(disabled);
     ui->labelInitialTotal->setDisabled(disabled);
     ui->dSpinInitialTotal->setDisabled(disabled);
     ui->pBtnPrint->setDisabled(disabled);

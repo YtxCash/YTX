@@ -133,16 +133,16 @@
          <number>8</number>
         </property>
         <item>
-         <widget class="QRadioButton" name="rBtnMonthly">
+         <widget class="QRadioButton" name="rBtnCash">
           <property name="text">
-           <string>Monthly</string>
+           <string>Cash</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="rBtnCash">
+         <widget class="QRadioButton" name="rBtnMonthly">
           <property name="text">
-           <string>Cash</string>
+           <string>Monthly</string>
           </property>
          </widget>
         </item>

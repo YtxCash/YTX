@@ -32,8 +32,8 @@ private:
     bool UpdateParty(Node* node, int value);
     bool UpdateEmployee(Node* node, int value);
     bool UpdateDateTime(Node* node, CString& value);
-    bool UpdateDiscount(Node* node, double value);
     bool UpdateLocked(Node* node, bool value); // unlocked = 0, locked = 1
+    bool UpdateDiscount(Node* node, double value_discount, double value_initial_total);
 
     void UpdateBranchTotalUp(const Node* node, int first, double second, double discount, double initial_total, double final_total);
     void UpdateBranchTotalDown(Node* node);

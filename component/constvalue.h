@@ -26,7 +26,6 @@ constexpr bool RULE_CASH = 0;
 constexpr bool RULE_MONTHLY = 1;
 
 // Constants for datetime
-constexpr char DATE_D[] = "d";
 constexpr char DATE_FORMAT[] = "date_format";
 constexpr char DATE_FST[] = "yyyy-MM-dd";
 constexpr char DATE_TIME[] = "date_time";

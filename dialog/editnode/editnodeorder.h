@@ -22,6 +22,7 @@ public slots:
     void accept() override;
     void reject() override;
     void RUpdateStakeholder();
+    void RUpdateOrder(const QVariant& value, TreeEnumOrder column);
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);
