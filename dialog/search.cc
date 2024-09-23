@@ -10,6 +10,7 @@
 #include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedoublespindynamicunitr.h"
+#include "dialog/signalblocker.h"
 #include "ui_search.h"
 
 Search::Search(CInfo& info, CInterface& interface, const AbstractTreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
@@ -24,6 +25,7 @@ Search::Search(CInfo& info, CInterface& interface, const AbstractTreeModel& tree
     , interface_ { interface }
 {
     ui->setupUi(this);
+    SignalBlocker blocker(this);
 
     IniDialog();
 

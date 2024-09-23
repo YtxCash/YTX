@@ -43,7 +43,7 @@ bool AbstractTreeModel::RUpdateMultiTotal(const QList<int>& node_list)
         final_diff = node->final_total - old_final_total;
         initial_diff = node->initial_total - old_initial_total;
 
-        UpdateBranchTotal(node, initial_diff, final_diff);
+        RecalculateAncestor(node, initial_diff, final_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -72,7 +72,7 @@ void AbstractTreeModel::RUpdateOneTotal(int node_id, double initial_debit_diff, 
     node->final_total += final_diff;
 
     UpdateLeafTotal(node, INITIAL_TOTAL, FINAL_TOTAL);
-    UpdateBranchTotal(node, initial_diff, final_diff);
+    RecalculateAncestor(node, initial_diff, final_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -105,7 +105,7 @@ bool AbstractTreeModel::RemoveNode(int row, const QModelIndex& parent)
     }
 
     if (!branch) {
-        UpdateBranchTotal(node, -node->initial_total, -node->final_total);
+        RecalculateAncestor(node, -node->initial_total, -node->final_total);
         leaf_path_.remove(node_id);
         sql_->RemoveNode(node_id, false);
     }
@@ -369,11 +369,11 @@ bool AbstractTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction actio
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        UpdateBranchTotal(node, -node->initial_total, -node->final_total);
+        RecalculateAncestor(node, -node->initial_total, -node->final_total);
 
         destination_parent->children.insert(begin_row, node);
         node->parent = destination_parent;
-        UpdateBranchTotal(node, node->initial_total, node->final_total);
+        RecalculateAncestor(node, node->initial_total, node->final_total);
 
         endMoveRows();
     }
@@ -577,23 +577,21 @@ void AbstractTreeModel::SortIterative(Node* node, std::function<bool(const Node*
     }
 }
 
-void AbstractTreeModel::UpdateBranchTotal(const Node* node, double initial_diff, double final_diff)
+void AbstractTreeModel::RecalculateAncestor(Node* node, double initial_diff, double final_diff)
 {
-    if (!node)
+    if (!node || node == root_ || !node->parent || node->parent == root_)
         return;
 
     bool equal {};
     const int unit { node->unit };
     const bool node_rule { node->node_rule };
 
-    while (node && node != root_) {
-        equal = node->parent->node_rule == node_rule;
-        node->parent->final_total += (equal ? 1 : -1) * final_diff;
+    for (node = node->parent; node && node != root_; node = node->parent) {
+        equal = node->node_rule == node_rule;
+        node->final_total += (equal ? 1 : -1) * final_diff;
 
-        if (node->parent->unit == unit)
-            node->parent->initial_total += (equal ? 1 : -1) * initial_diff;
-
-        node = node->parent;
+        if (node->unit == unit)
+            node->initial_total += (equal ? 1 : -1) * initial_diff;
     }
 }
 
@@ -676,7 +674,7 @@ void AbstractTreeModel::ConstructTree()
             continue;
         }
 
-        UpdateBranchTotal(node, node->initial_total, node->final_total);
+        RecalculateAncestor(node, node->initial_total, node->final_total);
         leaf_path_.insert(node->id, path);
     }
 

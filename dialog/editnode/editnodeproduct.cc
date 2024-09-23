@@ -1,6 +1,7 @@
 #include "editnodeproduct.h"
 
 #include "component/constvalue.h"
+#include "dialog/signalblocker.h"
 #include "ui_editnodeproduct.h"
 
 EditNodeProduct::EditNodeProduct(
@@ -12,14 +13,11 @@ EditNodeProduct::EditNodeProduct(
     , name_list_ { name_list }
 {
     ui->setupUi(this);
-
-    ui->comboUnit->blockSignals(true);
+    SignalBlocker blocker(this);
 
     IniDialog(unit_hash, ratio_decimal);
     IniConnect();
     Data(node, enable_branch);
-
-    ui->comboUnit->blockSignals(false);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }

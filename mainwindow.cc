@@ -24,9 +24,7 @@
 #include "delegate/table/tabledoublespin.h"
 #include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/finance/financeforeign.h"
-#include "delegate/tree/order/orderbranch.h"
 #include "delegate/tree/order/orderdatetime.h"
-#include "delegate/tree/order/orderdiscount.h"
 #include "delegate/tree/order/orderstakeholder.h"
 #include "delegate/tree/order/ordertotal.h"
 #include "delegate/tree/treecombo.h"
@@ -237,6 +235,9 @@ void MainWindow::dropEvent(QDropEvent* event) { ROpenFile(event->mimeData()->url
 void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
 {
     if (index.column() != 0)
+        return;
+
+    if (section_data_->info.section == Section::kSales || section_data_->info.section == Section::kPurchase)
         return;
 
     bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
@@ -500,7 +501,7 @@ void MainWindow::DelegateStakeholder(QTreeView* view, CSectionRule* section_rule
     auto tax_rate { new TreeDoubleSpinPercent(section_rule->ratio_decimal, DZERO, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
-    auto deadline { new TreeSpin(0, THIRTY_ONE, view) };
+    auto deadline { new TreeSpin(IZERO, THIRTY_ONE, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 }
 
@@ -516,7 +517,7 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* secti
     auto first { new TreeSpinR(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), first);
 
-    auto discount { new OrderDiscount(section_rule->value_decimal, DMIN, DMAX, view) };
+    auto discount { new TreeDoubleSpinR(section_rule->value_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), discount);
 
     auto employee { new OrderStakeholder(*stakeholder_tree_.model, UNIT_EMPLOYEE, view) };
@@ -918,8 +919,8 @@ void MainWindow::SetStakeholderData()
     info.path = STAKEHOLDER_PATH;
     info.transaction = STAKEHOLDER_TRANSACTION;
 
-    info.rule_hash.insert(IZERO, tr(Cash));
-    info.rule_hash.insert(IONE, tr(Monthly));
+    info.rule_hash.insert(0, tr("Cash"));
+    info.rule_hash.insert(1, tr("Monthly"));
 
     QStringList unit_list { "E", "C", "V", "P" };
     auto& unit_hash { info.unit_hash };
@@ -977,10 +978,10 @@ void MainWindow::SetSalesData()
     info.path = SALES_PATH;
     info.transaction = SALES_TRANSACTION;
 
-    info.rule_hash.insert(IZERO, tr(Charge));
-    info.rule_hash.insert(IONE, tr(Refund));
+    info.rule_hash.insert(0, tr("Charge"));
+    info.rule_hash.insert(1, tr("Refund"));
 
-    QStringList unit_list { tr(Cash), tr(Monthly), tr(Pending) };
+    QStringList unit_list { tr("Cash"), tr("Monthly"), tr("Pending") };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1010,10 +1011,10 @@ void MainWindow::SetPurchaseData()
     info.path = PURCHASE_PATH;
     info.transaction = PURCHASE_TRANSACTION;
 
-    info.rule_hash.insert(IZERO, tr(Charge));
-    info.rule_hash.insert(IONE, tr(Refund));
+    info.rule_hash.insert(0, tr("Charge"));
+    info.rule_hash.insert(1, tr("Refund"));
 
-    QStringList unit_list { tr(Cash), tr(Monthly), tr(Pending) };
+    QStringList unit_list { tr("Cash"), tr("Monthly"), tr("Pending") };
 
     auto& unit_hash { info.unit_hash };
 

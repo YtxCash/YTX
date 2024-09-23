@@ -4,6 +4,7 @@
 #include <QMessageBox>
 
 #include "component/constvalue.h"
+#include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
 
@@ -19,6 +20,7 @@ EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, Abstrac
     , product_model_ { product_model }
 {
     ui->setupUi(this);
+    SignalBlocker blocker(this);
 
     bool branch { node->branch };
 
@@ -27,24 +29,21 @@ EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, Abstrac
         ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
         ui->comboParty->lineEdit()->setText(node->name);
         ui->chkBoxBranch->setChecked(true);
+        UpdateUnit(node_->unit);
 
         ui->pBtnLockOrder->setText(node_->locked ? tr("UnLock") : tr("Lock"));
         ui->pBtnLockOrder->setChecked(node->locked);
     }
 
     if (!branch) {
-        ui->comboParty->blockSignals(true);
-        ui->comboEmployee->blockSignals(true);
-
         IniDialog();
-        IniConnect();
         IniData();
-
-        ui->comboParty->blockSignals(false);
-        ui->comboEmployee->blockSignals(false);
     }
 
+    IniConnect();
+
     ui->chkBoxBranch->setEnabled(false);
+    ui->pBtnSaveOrder->setEnabled(false);
     LockWidgets(node->locked, branch);
 }
 
@@ -155,16 +154,13 @@ void EditNodeOrder::IniCombo(QComboBox* combo, int unit)
 
 void EditNodeOrder::accept()
 {
-    if (is_modified_) {
-        order_model_->UpdateNode(node_);
-        EnableSave(false);
-        ui->pBtnSaveOrder->setEnabled(is_modified_);
-    }
+    order_model_->UpdateNode(node_);
+    ui->pBtnSaveOrder->setEnabled(false);
 }
 
 void EditNodeOrder::reject()
 {
-    if (is_modified_) {
+    if (ui->pBtnSaveOrder->isEnabled()) {
         auto reply { QMessageBox::question(
             this, tr("Save Modified"), tr("Have unsaved modifications. Save them ?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel) };
 
@@ -206,12 +202,12 @@ void EditNodeOrder::LockWidgets(bool locked, bool branch)
     ui->labelEmployee->setEnabled(not_branch_enable);
     ui->comboEmployee->setEnabled(not_branch_enable);
 
-    ui->rBtnCash->setEnabled(basic_enable);
-    ui->rBtnMonthly->setEnabled(basic_enable);
-    ui->rBtnPending->setEnabled(basic_enable);
+    ui->rBtnCash->setEnabled(not_branch_enable);
+    ui->rBtnMonthly->setEnabled(not_branch_enable);
+    ui->rBtnPending->setEnabled(not_branch_enable);
     ui->dateTimeEdit->setEnabled(not_branch_enable);
 
-    ui->chkBoxRefund->setEnabled(basic_enable);
+    ui->chkBoxRefund->setEnabled(not_branch_enable);
     ui->lineDescription->setEnabled(basic_enable);
 
     ui->pBtnPrint->setEnabled(locked && !branch);
@@ -249,12 +245,6 @@ void EditNodeOrder::ZeroSettlement()
     ui->dSpinFinalTotal->setValue(0.0);
 }
 
-void EditNodeOrder::EnableSave(bool enable)
-{
-    is_modified_ = enable;
-    ui->pBtnSaveOrder->setEnabled(enable);
-}
-
 void EditNodeOrder::UpdateUnit(int unit)
 {
     switch (unit) {
@@ -278,7 +268,7 @@ void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
         return;
 
     node_->name = arg1;
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
@@ -290,7 +280,7 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     if (party_id <= 0)
         return;
 
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
     node_->party = party_id;
 
     if (ui->comboEmployee->currentIndex() != -1)
@@ -308,7 +298,7 @@ void EditNodeOrder::on_chkBoxRefund_toggled(bool checked) { node_->node_rule = c
 void EditNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
 {
     node_->employee = ui->comboEmployee->currentData().toInt();
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_rBtnCash_toggled(bool checked)
@@ -317,7 +307,7 @@ void EditNodeOrder::on_rBtnCash_toggled(bool checked)
         return;
 
     node_->unit = UNIT_CASH;
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
@@ -327,7 +317,7 @@ void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
 
     node_->unit = UNIT_MONTHLY;
     ZeroSettlement();
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_rBtnPending_toggled(bool checked)
@@ -337,7 +327,7 @@ void EditNodeOrder::on_rBtnPending_toggled(bool checked)
 
     node_->unit = UNIT_PENDING;
     ZeroSettlement();
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_pBtnInsertParty_clicked()
@@ -362,7 +352,7 @@ void EditNodeOrder::on_pBtnInsertParty_clicked()
 void EditNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
 {
     node_->date_time = date_time.toString(DATE_TIME_FST);
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
@@ -374,7 +364,9 @@ void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
     order_model_->UpdateNodeLocked(node_);
 
     if (checked) {
-        accept();
+        if (ui->pBtnSaveOrder->isEnabled())
+            accept();
+
         ui->pBtnPrint->setFocus();
         ui->pBtnPrint->setDefault(true);
     }
@@ -388,7 +380,7 @@ void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 void EditNodeOrder::on_lineDescription_textChanged(const QString& arg1)
 {
     node_->description = arg1;
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_dSpinDiscount_valueChanged(double arg1)
@@ -396,5 +388,5 @@ void EditNodeOrder::on_dSpinDiscount_valueChanged(double arg1)
     node_->initial_total = node_->initial_total + node_->discount - arg1;
     ui->dSpinInitialTotal->setValue(node_->initial_total);
     node_->discount = arg1;
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
 }

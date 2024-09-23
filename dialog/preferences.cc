@@ -5,6 +5,7 @@
 #include <QFileDialog>
 
 #include "component/constvalue.h"
+#include "dialog/signalblocker.h"
 #include "ui_preferences.h"
 
 Preferences::Preferences(
@@ -17,16 +18,7 @@ Preferences::Preferences(
 
 {
     ui->setupUi(this);
-
-    ui->comboDateTime->blockSignals(true);
-    ui->comboLanguage->blockSignals(true);
-    ui->comboSeparator->blockSignals(true);
-    ui->comboTheme->blockSignals(true);
-    ui->comboBaseUnit->blockSignals(true);
-    ui->comboDynamicLhs->blockSignals(true);
-    ui->comboStatic->blockSignals(true);
-    ui->comboOperation->blockSignals(true);
-    ui->comboDynamicRhs->blockSignals(true);
+    SignalBlocker blocker(this);
 
     IniStringList();
     IniDialog(info.unit_hash, date_format_list);
@@ -34,16 +26,6 @@ Preferences::Preferences(
 
     Data();
     RenameLable(info.section);
-
-    ui->comboDateTime->blockSignals(false);
-    ui->comboLanguage->blockSignals(false);
-    ui->comboSeparator->blockSignals(false);
-    ui->comboTheme->blockSignals(false);
-    ui->comboBaseUnit->blockSignals(false);
-    ui->comboDynamicLhs->blockSignals(false);
-    ui->comboStatic->blockSignals(false);
-    ui->comboOperation->blockSignals(false);
-    ui->comboDynamicRhs->blockSignals(false);
 }
 
 Preferences::~Preferences() { delete ui; }

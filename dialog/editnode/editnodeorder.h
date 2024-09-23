@@ -51,7 +51,6 @@ private:
     void LockWidgets(bool locked, bool branch);
     void SetWidgetsEnabledPost(bool enabled);
     void ZeroSettlement();
-    void EnableSave(bool enable);
     void UpdateUnit(int unit);
 
 private:
@@ -63,7 +62,6 @@ private:
     AbstractTreeModel* stakeholder_model_ {};
     AbstractTreeModel* order_model_ {};
     const AbstractTreeModel& product_model_;
-    bool is_modified_ { false };
 };
 
 #endif // EDITNODEORDER_H

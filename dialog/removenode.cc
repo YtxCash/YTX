@@ -3,6 +3,7 @@
 #include <QCompleter>
 #include <QMessageBox>
 
+#include "dialog/signalblocker.h"
 #include "ui_removenode.h"
 
 RemoveNode::RemoveNode(const AbstractTreeModel& model, int node_id, QWidget* parent)
@@ -12,6 +13,8 @@ RemoveNode::RemoveNode(const AbstractTreeModel& model, int node_id, QWidget* par
     , model_ { model }
 {
     ui->setupUi(this);
+    SignalBlocker blocker(this);
+
     IniDialog();
     IniConnect();
 }

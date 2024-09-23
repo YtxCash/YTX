@@ -1,5 +1,6 @@
 #include "editnodefinance.h"
 
+#include "dialog/signalblocker.h"
 #include "ui_editnodefinance.h"
 
 EditNodeFinance::EditNodeFinance(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, QWidget* parent)
@@ -10,14 +11,11 @@ EditNodeFinance::EditNodeFinance(Node* node, CStringHash& unit_hash, CString& pa
     , name_list_ { name_list }
 {
     ui->setupUi(this);
-
-    ui->comboUnit->blockSignals(true);
+    SignalBlocker blocker(this);
 
     IniDialog(unit_hash);
     IniConnect();
     Data(node, enable_branch);
-
-    ui->comboUnit->blockSignals(false);
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }

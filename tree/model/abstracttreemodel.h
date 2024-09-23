@@ -121,12 +121,6 @@ public:
         static const QString empty_string {};
         return leaf_path_.value(node_id, branch_path_.value(node_id, empty_string));
     }
-    void GetNodeShadow(NodeShadow& node_shadow, int node_id) const
-    {
-        auto it = node_hash_.constFind(node_id);
-        if (it != node_hash_.constEnd())
-            node_shadow = *it;
-    }
     QModelIndex GetIndex(int node_id) const;
 
     void ComboPathUnit(QComboBox* combo, int unit) const;
@@ -158,7 +152,7 @@ protected:
 
     // jsus store leaf's total into sqlite3 table, ignore branch's total
     bool UpdateLeafTotal(const Node* node, CString& initial_field, CString& final_field = QString());
-    void UpdateBranchTotal(const Node* node, double initial_diff, double final_diff);
+    void RecalculateAncestor(Node* node, double initial_diff, double final_diff);
     void UpdatePath(const Node* node);
     void UpdateBranchUnit(Node* node) const;
     bool UpdateBranch(Node* node, bool new_value);

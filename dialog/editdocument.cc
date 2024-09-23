@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include "dialog/signalblocker.h"
 #include "ui_editdocument.h"
 
 EditDocument::EditDocument(Section section, QStringList* document, CString& document_dir, QWidget* parent)
@@ -15,6 +16,8 @@ EditDocument::EditDocument(Section section, QStringList* document, CString& docu
     , document_dir_ { QDir::homePath() + "/" + document_dir }
 {
     ui->setupUi(this);
+    SignalBlocker blocker(this);
+
     CreateList(document_);
     IniConnect();
 }

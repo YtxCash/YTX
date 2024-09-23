@@ -1,6 +1,7 @@
 #include "editnodestakeholder.h"
 
 #include "component/constvalue.h"
+#include "dialog/signalblocker.h"
 #include "ui_editnodestakeholder.h"
 
 EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch,
@@ -12,18 +13,11 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CSt
     , name_list_ { name_list }
 {
     ui->setupUi(this);
-
-    ui->comboUnit->blockSignals(true);
-    ui->comboEmployee->blockSignals(true);
-    ui->chkBoxBranch->blockSignals(true);
+    SignalBlocker blocker(this);
 
     IniDialog(unit_hash, model, ratio_decimal);
     IniConnect();
     Data(node, enable_branch);
-
-    ui->comboUnit->blockSignals(false);
-    ui->comboEmployee->blockSignals(false);
-    ui->chkBoxBranch->blockSignals(false);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }

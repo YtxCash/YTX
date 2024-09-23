@@ -350,7 +350,7 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+66"/>
         <source>yyyy/MM/dd HH:mm</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+198"/>
@@ -846,7 +846,7 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+66"/>
         <source>yyyy/MM/dd HH:mm</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+198"/>
@@ -856,7 +856,7 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+49"/>
         <source>&amp;Lock</source>
-        <translation type="unfinished">锁定(&amp;L)</translation>
+        <translation>锁定(&amp;L)</translation>
     </message>
     <message>
         <location line="-199"/>
@@ -933,12 +933,12 @@ Rage, rage against the dying of the light.</source>
         <location filename="../../dialog/editnode/insertnodeorder.cc" line="+71"/>
         <location line="+193"/>
         <source>Lock</source>
-        <translation type="unfinished">锁定</translation>
+        <translation>锁定</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>UnLock</source>
-        <translation type="unfinished">解锁</translation>
+        <translation>解锁</translation>
     </message>
 </context>
 <context>
@@ -1246,7 +1246,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">科目</translation>
     </message>
     <message>
-        <location filename="../../mainwindow.cc" line="+1039"/>
+        <location filename="../../mainwindow.cc" line="+1037"/>
         <location line="+2"/>
         <location line="+3"/>
         <location line="+16"/>
@@ -1482,19 +1482,25 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">借-贷+</translation>
     </message>
     <message>
+        <location line="-203"/>
+        <location line="+62"/>
+        <location line="+33"/>
         <source>Cash</source>
-        <translation type="vanished">现结</translation>
+        <translation>现结</translation>
     </message>
     <message>
+        <location line="-94"/>
+        <location line="+61"/>
+        <location line="+33"/>
         <source>Monthly</source>
-        <translation type="vanished">月结</translation>
+        <translation>月结</translation>
     </message>
     <message>
         <source>Balance</source>
         <translation type="vanished">余额</translation>
     </message>
     <message>
-        <location line="-83"/>
+        <location line="+25"/>
         <location line="+11"/>
         <location line="+10"/>
         <location line="+11"/>
@@ -1552,7 +1558,19 @@ Rage, rage against the dying of the light.</source>
         <translation>右借方</translation>
     </message>
     <message>
-        <location line="-79"/>
+        <location line="-138"/>
+        <location line="+33"/>
+        <source>Charge</source>
+        <translation>收款</translation>
+    </message>
+    <message>
+        <location line="-30"/>
+        <location line="+33"/>
+        <source>Pending</source>
+        <translation>挂帐</translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <location line="+21"/>
         <location line="+21"/>
         <location line="+21"/>
@@ -1745,15 +1763,17 @@ Rage, rage against the dying of the light.</source>
         <translation>优惠</translation>
     </message>
     <message>
+        <location line="-143"/>
+        <location line="+33"/>
         <source>Refund</source>
-        <translation type="vanished">退单</translation>
+        <translation>退款</translation>
     </message>
     <message>
         <source>P</source>
         <translation type="vanished">P</translation>
     </message>
     <message>
-        <location line="+0"/>
+        <location line="+110"/>
         <source>Initial Total</source>
         <translation>实际</translation>
     </message>
