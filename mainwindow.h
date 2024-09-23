@@ -91,7 +91,7 @@ private:
 private:
     void SetTabWidget();
     void SetConnect();
-    void SetHash();
+    void SetDateFormat();
     void SetHeader();
     void SetAction();
     void SetClearMenuAction();
@@ -115,9 +115,10 @@ private:
     void UpdateLastTab();
 
     void CreateDelegate(QTreeView* view, CInfo* info, CSectionRule* section_rule);
+    void DelegateCommon(QTreeView* view, CInfo* info);
     void DelegateFinance(QTreeView* view, CInfo* info, CSectionRule* section_rule);
     void DelegateProduct(QTreeView* view, CInfo* info, CSectionRule* section_rule);
-    void DelegateStakeholder(QTreeView* view, CInfo* info, CSectionRule* section_rule);
+    void DelegateStakeholder(QTreeView* view, CSectionRule* section_rule);
     void DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* section_rule);
 
     void SetView(QTreeView* view);
@@ -210,8 +211,6 @@ private:
 
     Interface interface_ {};
 
-    StringHash node_rule_hash_ {};
-    StringHash node_term_hash_ {};
     QStringList date_format_list_ {};
 
     Tree* section_tree_ {};

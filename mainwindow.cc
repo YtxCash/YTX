@@ -75,7 +75,7 @@ MainWindow::MainWindow(CString& dir_path, QWidget* parent)
     ui->setupUi(this);
     SetTabWidget();
     SetConnect();
-    SetHash();
+    SetDateFormat();
     SetHeader();
     SetAction();
 
@@ -378,7 +378,7 @@ void MainWindow::CreateDelegate(QTableView* view, const AbstractTreeModel* tree_
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
 
-    auto state { new CheckBox(view) };
+    auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
 
     auto document { new TableDbClick(view) };
@@ -429,13 +429,15 @@ void MainWindow::CreateSection(Tree& tree, CString& name, SectionData* data, Tab
 
 void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSectionRule* section_rule)
 {
+    DelegateCommon(view, info);
+
     switch (info->section) {
     case Section::kFinance:
     case Section::kTask:
         DelegateFinance(view, info, section_rule);
         break;
     case Section::kStakeholder:
-        DelegateStakeholder(view, info, section_rule);
+        DelegateStakeholder(view, section_rule);
         break;
     case Section::kProduct:
         DelegateProduct(view, info, section_rule);
@@ -449,40 +451,36 @@ void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSectionRule* sect
     }
 }
 
-void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSectionRule* section_rule)
+void MainWindow::DelegateCommon(QTreeView* view, CInfo* info)
 {
     auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kCode), line);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kCode), line);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kDescription), line);
 
     auto plain_text { new TreePlainText(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kNote), plain_text);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNote), plain_text);
 
+    auto node_rule { new TreeCombo(info->rule_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNodeRule), node_rule);
+
+    auto branch { new CheckBox(QEvent::MouseButtonDblClick, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
+
+    auto unit { new TreeCombo(info->unit_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
+}
+
+void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSectionRule* section_rule)
+{
     auto final_total { new TreeDoubleSpinUnitR(section_rule->value_decimal, section_rule->base_unit, info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kFinalTotal), final_total);
 
     auto initial_total { new FinanceForeign(section_rule->value_decimal, section_rule->base_unit, info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kInitialTotal), initial_total);
-
-    auto unit { new TreeCombo(info->unit_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kUnit), unit);
-
-    auto node_rule { new TreeCombo(node_rule_hash_, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kNodeRule), node_rule);
-
-    auto branch { new CheckBox(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kBranch), branch);
 }
 
 void MainWindow::DelegateProduct(QTreeView* view, CInfo* info, CSectionRule* section_rule)
 {
-    auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCode), line);
-
-    auto plain_text { new TreePlainText(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kNote), plain_text);
-
     auto quantity { new TreeDoubleSpinDynamicUnitR(section_rule->value_decimal, info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kInitialTotal), quantity);
 
@@ -492,54 +490,22 @@ void MainWindow::DelegateProduct(QTreeView* view, CInfo* info, CSectionRule* sec
     auto price { new TreeDoubleSpin(section_rule->ratio_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
-
-    auto unit { new TreeCombo(info->unit_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnit), unit);
-
-    auto node_rule { new TreeCombo(node_rule_hash_, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kNodeRule), node_rule);
-
-    auto branch { new CheckBox(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kBranch), branch);
 }
 
-void MainWindow::DelegateStakeholder(QTreeView* view, CInfo* info, CSectionRule* section_rule)
+void MainWindow::DelegateStakeholder(QTreeView* view, CSectionRule* section_rule)
 {
-    auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kCode), line);
-
-    auto plain_text { new TreePlainText(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kNote), plain_text);
-
-    auto payment_period { new TreeSpin(0, IMAX, view) };
+    auto payment_period { new TreeSpin(IZERO, IMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
-    auto tax_rate { new TreeDoubleSpinPercent(section_rule->ratio_decimal, 0, DMAX, view) };
+    auto tax_rate { new TreeDoubleSpinPercent(section_rule->ratio_decimal, DZERO, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
     auto deadline { new TreeSpin(0, THIRTY_ONE, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
-
-    auto mark { new TreeCombo(info->unit_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kUnit), mark);
-
-    auto branch { new CheckBox(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kBranch), branch);
-
-    auto node_term { new TreeCombo(node_term_hash_, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kNodeRule), node_term);
 }
 
 void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* section_rule)
 {
-    auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kCode), line);
-
-    auto plain_text { new TreePlainText(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kNote), plain_text);
-
     auto total { new OrderTotalR(section_rule->value_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kInitialTotal), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFinalTotal), total);
@@ -563,15 +529,8 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* secti
     auto date_time { new OrderDateTime(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
-    auto term { new TreeCombo(info->unit_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kUnit), term);
-
-    auto check_box { new CheckBox(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kNodeRule), check_box);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), check_box);
-
-    auto branch { new OrderBranch(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kBranch), branch);
+    auto locked { new CheckBox(QEvent::MouseButtonDblClick, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 
 void MainWindow::SetConnect(const QTreeView* view, const AbstractTreeWidget* widget, const AbstractTreeModel* model, const Sqlite* table_sql)
@@ -959,6 +918,9 @@ void MainWindow::SetStakeholderData()
     info.path = STAKEHOLDER_PATH;
     info.transaction = STAKEHOLDER_TRANSACTION;
 
+    info.rule_hash.insert(IZERO, tr(Cash));
+    info.rule_hash.insert(IONE, tr(Monthly));
+
     QStringList unit_list { "E", "C", "V", "P" };
     auto& unit_hash { info.unit_hash };
 
@@ -1015,7 +977,10 @@ void MainWindow::SetSalesData()
     info.path = SALES_PATH;
     info.transaction = SALES_TRANSACTION;
 
-    QStringList unit_list { "C", "M", "P" };
+    info.rule_hash.insert(IZERO, tr(Charge));
+    info.rule_hash.insert(IONE, tr(Refund));
+
+    QStringList unit_list { tr(Cash), tr(Monthly), tr(Pending) };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1045,7 +1010,11 @@ void MainWindow::SetPurchaseData()
     info.path = PURCHASE_PATH;
     info.transaction = PURCHASE_TRANSACTION;
 
-    QStringList unit_list { "C", "M", "P" };
+    info.rule_hash.insert(IZERO, tr(Charge));
+    info.rule_hash.insert(IONE, tr(Refund));
+
+    QStringList unit_list { tr(Cash), tr(Monthly), tr(Pending) };
+
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1063,16 +1032,7 @@ void MainWindow::SetPurchaseData()
     connect(stakeholder_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
 }
 
-void MainWindow::SetHash()
-{
-    node_rule_hash_.insert(0, "DICD");
-    node_rule_hash_.insert(1, "DDCI");
-
-    node_term_hash_.insert(0, "C");
-    node_term_hash_.insert(1, "M");
-
-    date_format_list_.emplaceBack(DATE_TIME_FST);
-}
+void MainWindow::SetDateFormat() { date_format_list_.emplaceBack(DATE_TIME_FST); }
 
 void MainWindow::SetHeader()
 {
@@ -1160,7 +1120,7 @@ void MainWindow::SetHeader()
         tr("RhsNode"),
     };
 
-    sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Refund"), tr("Branch"), tr("Term"), tr("Party"),
+    sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("NodeRule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
 
     purchase_data_.info.tree_header = sales_data_.info.tree_header;
@@ -1710,7 +1670,8 @@ void MainWindow::RSearchTriggered()
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    auto dialog { new Search(section_data_->info, interface_, *section_tree_->model, section_data_->search_sql, *section_rule_, node_rule_hash_, this) };
+    auto dialog { new Search(
+        section_data_->info, interface_, *section_tree_->model, section_data_->search_sql, *section_rule_, section_data_->info.rule_hash, this) };
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);
     connect(dialog, &Search::STableLocation, this, &MainWindow::RTableLocation);
     connect(section_tree_->model, &AbstractTreeModel::SSearch, dialog, &Search::RSearch);

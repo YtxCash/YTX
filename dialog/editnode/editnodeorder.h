@@ -48,11 +48,11 @@ private:
     void IniData();
     void IniCombo(QComboBox* combo, int mark);
     void IniConnect();
-    void SetWidgetsEnabled(bool enabled);
-    void SetWidgetsEnabledBranch(bool enabled);
+    void LockWidgets(bool locked, bool branch);
     void SetWidgetsEnabledPost(bool enabled);
     void ZeroSettlement();
     void EnableSave(bool enable);
+    void UpdateUnit(int unit);
 
 private:
     Ui::EditNodeOrder* ui;

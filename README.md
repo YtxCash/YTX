@@ -24,13 +24,13 @@
 | purchase    | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | locked  | initial_total  | final_total  |
 |             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |  Vendor  | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Locked  | Initial Total  | Final Total  |
 |             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| sales       | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  term   |  party   | employee | date_time |     first      |   second   |  discount  | locked  | initial_total  | final_total  |
+| sales       | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | locked  | initial_total  | final_total  |
 |             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Customer | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Locked  | Initial Total  | Final Total  |
 
 -- stakeholder-U: Employee = 0, Customer = 1, Vendor = 2, Product = 3
 -- stakeholder-R: Cash = 0, Monthly = 1
 -- order-U: Cash = 0, Monthly = 1, Pending = 2
--- order-R: Bill = 0, Refund = 1
+-- order-R: Charge = 0, Refund = 1
 -- R: DICD = 0, DDCI = 1
 -- B: Branch
 -- U: Unit

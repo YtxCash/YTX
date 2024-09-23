@@ -4,11 +4,13 @@
 // Constants for values
 constexpr double DMAX = 1'000'000'000.00;
 constexpr double DMIN = -1'000'000'000.00;
+constexpr double DZERO = 0.0;
 constexpr int HUNDRED = 100;
 constexpr int IMAX = 1'000'000'000;
-constexpr int IMIN = -1'000'000'000;
 constexpr int ROW_HEIGHT = 24;
 constexpr int THIRTY_ONE = 31;
+constexpr int IZERO = 0;
+constexpr int IONE = 1;
 
 // Constants for unit
 constexpr int UNIT_CASH = 0;
@@ -17,13 +19,17 @@ constexpr int UNIT_PENDING = 2;
 constexpr int UNIT_EMPLOYEE = 0;
 constexpr int UNIT_CUSTOMER = 1;
 constexpr int UNIT_VENDOR = 2;
-constexpr int UNIT_PRODUCT = 3;
+
+constexpr char Cash[] = "Cash";
+constexpr char Monthly[] = "Monthly";
+constexpr char Pending[] = "Pending";
 
 // Constants for booleans
-constexpr bool DICD = 0;
-constexpr bool DDCI = 1;
-constexpr bool RULE_CASH = 0;
-constexpr bool RULE_MONTHLY = 1;
+
+constexpr char DICD[] = "DICD";
+constexpr char DDCI[] = "DDCI";
+constexpr char Charge[] = "Charge";
+constexpr char Refund[] = "Refund";
 
 // Constants for datetime
 constexpr char DATE_FORMAT[] = "date_format";

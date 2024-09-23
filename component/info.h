@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QStringList>
 
+#include "component/constvalue.h"
 #include "enumclass.h"
 
 struct Info {
@@ -19,6 +20,7 @@ struct Info {
 
     QHash<int, QString> unit_hash {};
     QHash<int, QString> unit_symbol_hash {};
+    QHash<int, QString> rule_hash { { IZERO, DICD }, { IONE, DDCI } };
 };
 
 using CInfo = const Info;

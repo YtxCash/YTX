@@ -21,10 +21,11 @@ public:
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     void UpdateNode(const Node* tmp_node) override;
+    void UpdateNodeLocked(const Node* tmp_node) override;
 
 protected:
     void ConstructTree() override;
-    bool UpdateNodeRule(Node* node, bool value) override; // bill = 0, refund = 1
+    bool UpdateNodeRule(Node* node, bool value) override; // charge = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
     bool UpdateName(Node* node, CString& value) override;
 
@@ -35,11 +36,11 @@ private:
     bool UpdateLocked(Node* node, bool value); // unlocked = 0, locked = 1
     bool UpdateDiscount(Node* node, double value_discount, double value_initial_total);
 
-    void UpdateBranchTotalUp(const Node* node, int first, double second, double discount, double initial_total, double final_total);
-    void UpdateBranchTotalDown(Node* node);
-    void UpdateNodeValues(Node* node, int first, double second, double discount, double initial_total, double final_total, int coefficient);
+    void RecalculateAncestor(const Node* node, int first, double second, double discount, double initial_total, double final_total);
+    void RecalculateBranch(Node* node);
+    void RecalculateNode(Node* node, int first, double second, double discount, double initial_total, double final_total);
 
-    void RefreshAncestorData(const QModelIndex& index, int column_start, int column_end);
+    void RefreshAncestor(const QModelIndex& index, int column_start, int column_end);
 };
 
 #endif // TREEMODELORDER_H

@@ -74,7 +74,7 @@ void Search::IniTree(QTableView* view, SearchTreeModel* model)
     auto total { new TreeDoubleSpinDynamicUnitR(section_rule_.value_decimal, info_.unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), total);
 
-    auto branch { new CheckBox(view) };
+    auto branch { new CheckBox(QEvent::MouseButtonDblClick, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
 
     auto name { new SearchComboR(tree_model_, view) };
@@ -102,7 +102,7 @@ void Search::IniTable(QTableView* view, SearchTableModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), node_name);
 
-    auto state { new CheckBox(view) };
+    auto state { new CheckBox(QEvent::MouseButtonDblClick, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kState), state);
 
     auto document { new TableDbClick(view) };

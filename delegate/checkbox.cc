@@ -2,8 +2,9 @@
 
 #include <QMouseEvent>
 
-CheckBox::CheckBox(QObject* parent)
+CheckBox::CheckBox(QEvent::Type type, QObject* parent)
     : StyledItemDelegate { parent }
+    , type_ { type }
 {
 }
 
@@ -11,14 +12,13 @@ void CheckBox::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
 
 bool CheckBox::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    if (event->type() == QEvent::MouseButtonRelease || event->type() == QEvent::MouseButtonDblClick) {
-        QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+    if (event->type() != type_)
+        return false;
 
-        if (mouse_event->button() == Qt::LeftButton && option.rect.contains(mouse_event->pos())) {
-            bool checked = index.data().toBool();
-            return model->setData(index, !checked, Qt::EditRole);
-        }
-    }
+    auto mouse_event { static_cast<QMouseEvent*>(event) };
+    if (mouse_event->button() != Qt::LeftButton || !option.rect.contains(mouse_event->pos()))
+        return false;
 
-    return QStyledItemDelegate::editorEvent(event, model, option, index);
+    bool checked = index.data().toBool();
+    return model->setData(index, !checked, Qt::EditRole);
 }

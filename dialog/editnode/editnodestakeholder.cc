@@ -38,7 +38,7 @@ void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, AbstractTreeModel* m
     IniComboWithStringHash(ui->comboUnit, unit_hash);
     IniComboEmployee(model);
 
-    ui->spinBoxPaymentPeriod->setRange(0, IMAX);
+    ui->spinBoxPaymentPeriod->setRange(IZERO, IMAX);
     ui->dSpinBoxTaxRate->setRange(0.0, DMAX);
     ui->dSpinBoxTaxRate->setDecimals(ratio_decimal);
 }

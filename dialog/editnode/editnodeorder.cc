@@ -20,15 +20,19 @@ EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, Abstrac
 {
     ui->setupUi(this);
 
-    if (bool branch { node->branch }) {
-        SetWidgetsEnabledBranch(false);
+    bool branch { node->branch };
+
+    if (branch) {
         ui->labelParty->setText(branch ? tr("Branch") : tr("Party"));
         ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
         ui->comboParty->lineEdit()->setText(node->name);
         ui->chkBoxBranch->setChecked(true);
+
+        ui->pBtnLockOrder->setText(node_->locked ? tr("UnLock") : tr("Lock"));
+        ui->pBtnLockOrder->setChecked(node->locked);
     }
 
-    if (!node->branch) {
+    if (!branch) {
         ui->comboParty->blockSignals(true);
         ui->comboEmployee->blockSignals(true);
 
@@ -41,10 +45,7 @@ EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, Abstrac
     }
 
     ui->chkBoxBranch->setEnabled(false);
-    if (node_->locked)
-        SetWidgetsEnabledPost(false);
-
-    ui->pBtnLockOrder->setText(node_->locked ? tr("UnLock") : tr("Lock"));
+    LockWidgets(node->locked, branch);
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }
@@ -86,19 +87,7 @@ void EditNodeOrder::RUpdateOrder(const QVariant& value, TreeEnumOrder column)
         ui->chkBoxRefund->setChecked(value.toBool());
         break;
     case TreeEnumOrder::kUnit: {
-        switch (value.toInt()) {
-        case UNIT_CASH:
-            ui->rBtnCash->setChecked(true);
-            break;
-        case UNIT_MONTHLY:
-            ui->rBtnMonthly->setChecked(true);
-            break;
-        case UNIT_PENDING:
-            ui->rBtnPending->setChecked(true);
-            break;
-        default:
-            break;
-        }
+        UpdateUnit(value.toInt());
     } break;
     case TreeEnumOrder::kParty: {
         auto index_party { ui->comboParty->findData(value.toInt()) };
@@ -142,19 +131,7 @@ void EditNodeOrder::IniData()
     auto employee_index { ui->comboEmployee->findData(node_->employee) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    switch (node_->unit) {
-    case UNIT_CASH:
-        ui->rBtnCash->setChecked(true);
-        break;
-    case UNIT_MONTHLY:
-        ui->rBtnMonthly->setChecked(true);
-        break;
-    case UNIT_PENDING:
-        ui->rBtnPending->setChecked(true);
-        break;
-    default:
-        break;
-    }
+    UpdateUnit(node_->unit);
 
     ui->chkBoxRefund->setChecked(node_->node_rule);
     ui->dSpinInitialTotal->setValue(node_->initial_total);
@@ -208,38 +185,36 @@ void EditNodeOrder::reject()
 
 void EditNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &EditNodeOrder::accept); }
 
-void EditNodeOrder::SetWidgetsEnabled(bool enabled)
+void EditNodeOrder::LockWidgets(bool locked, bool branch)
 {
-    ui->labelEmployee->setEnabled(enabled);
-    ui->comboEmployee->setEnabled(enabled);
+    bool basic_enable { !locked };
+    bool not_branch_enable { !locked && !branch };
 
-    ui->labelDiscount->setEnabled(enabled);
-    ui->dSpinDiscount->setEnabled(enabled);
+    ui->labelParty->setEnabled(basic_enable);
+    ui->comboParty->setEnabled(basic_enable);
 
-    ui->pBtnInsertParty->setEnabled(enabled);
+    ui->pBtnInsertParty->setEnabled(not_branch_enable);
 
-    ui->dateTimeEdit->setEnabled(enabled);
-    ui->chkBoxRefund->setEnabled(enabled);
-    ui->labelInitialTotal->setEnabled(enabled);
-    ui->dSpinInitialTotal->setEnabled(enabled);
-}
+    ui->labelInitialTotal->setEnabled(not_branch_enable);
+    ui->dSpinInitialTotal->setEnabled(not_branch_enable);
 
-void EditNodeOrder::SetWidgetsEnabledBranch(bool enabled)
-{
-    ui->labelEmployee->setEnabled(enabled);
-    ui->comboEmployee->setEnabled(enabled);
+    ui->dSpinFinalTotal->setEnabled(!branch);
 
-    ui->labelDiscount->setEnabled(enabled);
-    ui->dSpinDiscount->setEnabled(enabled);
+    ui->labelDiscount->setEnabled(not_branch_enable);
+    ui->dSpinDiscount->setEnabled(not_branch_enable);
 
-    ui->pBtnInsertParty->setEnabled(enabled);
+    ui->labelEmployee->setEnabled(not_branch_enable);
+    ui->comboEmployee->setEnabled(not_branch_enable);
 
-    ui->dateTimeEdit->setEnabled(enabled);
-    ui->chkBoxRefund->setEnabled(enabled);
-    ui->labelInitialTotal->setEnabled(enabled);
-    ui->dSpinInitialTotal->setEnabled(enabled);
-    ui->pBtnPrint->setEnabled(enabled);
-    ui->dSpinFinalTotal->setEnabled(enabled);
+    ui->rBtnCash->setEnabled(basic_enable);
+    ui->rBtnMonthly->setEnabled(basic_enable);
+    ui->rBtnPending->setEnabled(basic_enable);
+    ui->dateTimeEdit->setEnabled(not_branch_enable);
+
+    ui->chkBoxRefund->setEnabled(basic_enable);
+    ui->lineDescription->setEnabled(basic_enable);
+
+    ui->pBtnPrint->setEnabled(locked && !branch);
 }
 
 void EditNodeOrder::SetWidgetsEnabledPost(bool enabled)
@@ -278,6 +253,23 @@ void EditNodeOrder::EnableSave(bool enable)
 {
     is_modified_ = enable;
     ui->pBtnSaveOrder->setEnabled(enable);
+}
+
+void EditNodeOrder::UpdateUnit(int unit)
+{
+    switch (unit) {
+    case UNIT_CASH:
+        ui->rBtnCash->setChecked(true);
+        break;
+    case UNIT_MONTHLY:
+        ui->rBtnMonthly->setChecked(true);
+        break;
+    case UNIT_PENDING:
+        ui->rBtnPending->setChecked(true);
+        break;
+    default:
+        break;
+    }
 }
 
 void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
@@ -376,8 +368,10 @@ void EditNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
 void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 {
     node_->locked = checked;
-    SetWidgetsEnabledPost(!checked);
     ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
+
+    LockWidgets(checked, node_->branch);
+    order_model_->UpdateNodeLocked(node_);
 
     if (checked) {
         accept();
