@@ -41,7 +41,13 @@ private slots:
 
     void on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time);
 
-    void on_dSpinDiscount_valueChanged(double arg1);
+    void on_spinFirst_valueChanged(int arg1);
+
+    void on_dSpinSecond_valueChanged(double arg1);
+
+    void on_dSpinInitialTotal_editingFinished();
+
+    void on_dSpinDiscount_editingFinished();
 
 private:
     void IniDialog();
@@ -49,8 +55,6 @@ private:
     void IniCombo(QComboBox* combo, int mark);
     void IniConnect();
     void LockWidgets(bool locked, bool branch);
-    void SetWidgetsEnabledPost(bool enabled);
-    void ZeroSettlement();
     void UpdateUnit(int unit);
 
 private:

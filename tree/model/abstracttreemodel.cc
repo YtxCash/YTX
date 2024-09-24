@@ -159,9 +159,9 @@ void AbstractTreeModel::UpdateNode(const Node* tmp_node)
         emit SUpdateName(node);
     }
 
-    // update code, description, note
-    *node = *tmp_node;
-    sql_->UpdateNodeSimple(node);
+    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
+    UpdateField(node, tmp_node->code, CODE, &Node::code);
+    UpdateField(node, tmp_node->note, NOTE, &Node::note);
 }
 
 void AbstractTreeModel::UpdateBaseUnit(int base_unit)
@@ -258,13 +258,13 @@ bool AbstractTreeModel::setData(const QModelIndex& index, const QVariant& value,
 
     switch (kColumn) {
     case TreeEnumFinanceTask::kCode:
-        UpdateCode(node, value.toString());
+        UpdateField(node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumFinanceTask::kDescription:
-        UpdateDescription(node, value.toString());
+        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumFinanceTask::kNote:
-        UpdateNote(node, value.toString());
+        UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumFinanceTask::kNodeRule:
         UpdateNodeRule(node, value.toBool());
@@ -608,12 +608,6 @@ bool AbstractTreeModel::UpdateLeafTotal(const Node* node, CString& initial_field
 
     return true;
 }
-
-bool AbstractTreeModel::UpdateCode(Node* node, CString& value, CString& field) { return UpdateField(node, value, field, &Node::code); }
-
-bool AbstractTreeModel::UpdateDescription(Node* node, CString& value, CString& field) { return UpdateField(node, value, field, &Node::description); }
-
-bool AbstractTreeModel::UpdateNote(Node* node, CString& value, CString& field) { return UpdateField(node, value, field, &Node::note); }
 
 bool AbstractTreeModel::UpdateBranch(Node* node, bool value)
 {

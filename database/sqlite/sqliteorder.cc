@@ -102,42 +102,6 @@ void SqliteOrder::NodeLeafTotal(Node* node)
     // todo!
 }
 
-bool SqliteOrder::UpdateNodeSimple(const Node* node)
-{
-    if (!node || !db_) {
-        qWarning() << "Invalid node or database pointer";
-        return false;
-    }
-
-    QSqlQuery query(*db_);
-
-    auto part = QString(R"(
-    UPDATE %1 SET
-    code = :code, description = :description, note = :note, date_time = :date_time,
-    node_rule = :node_rule, first = :first, employee = :employee, second = :second
-    WHERE id = :id
-)")
-                    .arg(info_.node);
-
-    query.prepare(part);
-    query.bindValue(":id", node->id);
-    query.bindValue(":code", node->code);
-    query.bindValue(":description", node->description);
-    query.bindValue(":note", node->note);
-    query.bindValue(":date_time", node->date_time);
-    query.bindValue(":node_rule", node->node_rule);
-    query.bindValue(":first", node->first);
-    query.bindValue(":employee", node->employee);
-    query.bindValue(":second", node->second);
-
-    if (!query.exec()) {
-        qWarning() << "Failed to update node simple (ID:" << node->id << "):" << query.lastError().text();
-        return false;
-    }
-
-    return true;
-}
-
 void SqliteOrder::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);

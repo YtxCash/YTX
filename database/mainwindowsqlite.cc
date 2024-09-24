@@ -316,13 +316,13 @@ QString MainwindowSqlite::TransactionStakeholder(CString& table_name)
         id             INTEGER PRIMARY KEY AUTOINCREMENT,
         date_time      DATE,
         code           TEXT,
-        outside        INTEGER,
+        lhs_node       INTEGER,
         unit_price     NUMERIC,
         description    TEXT,
         document       TEXT,
         state          BOOLEAN    DEFAULT 0,
         commission     NUMERIC,
-        inside         INTEGER,
+        rhs_node       INTEGER,
         removed        BOOLEAN    DEFAULT 0
     );
 )")

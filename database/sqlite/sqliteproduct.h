@@ -11,7 +11,6 @@ public:
     bool BuildTree(NodeHash& node_hash) override;
     bool InsertNode(int parent_id, Node* node) override;
     bool NodeExternalReferences(int node_id) const override;
-    bool UpdateNodeSimple(const Node* node) override;
 
 private:
     // tree

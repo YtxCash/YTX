@@ -57,7 +57,7 @@ public:
     virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex());
     virtual bool InsertNode(int row, const QModelIndex& parent, Node* node);
     virtual void UpdateNode(const Node* tmp_node);
-    virtual void UpdateNodeLocked(const Node* /*tmp_node*/) {};
+    virtual void UpdateNodeLocked(const Node* /*tmp_node*/) { };
     virtual void UpdateBaseUnit(int base_unit);
 
     // implemented functions
@@ -157,15 +157,11 @@ protected:
     void UpdateBranchUnit(Node* node) const;
     bool UpdateBranch(Node* node, bool new_value);
 
-    bool UpdateCode(Node* node, CString& value, CString& field = CODE);
-    bool UpdateDescription(Node* node, CString& value, CString& field = DESCRIPTION);
-    bool UpdateNote(Node* node, CString& value, CString& field = NOTE);
-
     void InitializeRoot(int base_unit);
     void ShowTemporaryTooltip(CString& message, int duration = 3000);
 
 protected:
-    template <typename T> std::optional<T> GetValue(int node_id, T Node::*member) const
+    template <typename T> std::optional<T> GetValue(int node_id, T Node::* member) const
     {
         if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
             return (*it)->*member;
@@ -173,12 +169,12 @@ protected:
         return std::nullopt;
     }
 
-    template <typename T> T GetValueOrDefault(int node_id, T Node::*member, const T& default_value = T {}) const
+    template <typename T> T GetValueOrDefault(int node_id, T Node::* member, const T& default_value = T {}) const
     {
         return GetValue(node_id, member).value_or(default_value);
     }
 
-    template <typename T> bool UpdateField(Node* node, const T& value, CString& field, T Node::*member)
+    template <typename T> bool UpdateField(Node* node, const T& value, CString& field, T Node::* member)
     {
         if constexpr (std::is_floating_point_v<T>) {
             static const T tolerance = static_cast<T>(std::pow(10, -9));

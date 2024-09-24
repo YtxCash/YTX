@@ -96,23 +96,50 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
     if (*node == *tmp_node)
         return;
 
-    UpdateName(node, tmp_node->name);
-    UpdateParty(node, tmp_node->party);
-    UpdateDiscount(node, tmp_node->discount, tmp_node->initial_total);
-    UpdateUnit(node, tmp_node->unit);
-    UpdateDescription(node, tmp_node->description);
+    if (node->branch)
+        UpdateName(node, tmp_node->name);
 
-    // update code, description, note, date_time, node_rule, first, employee, second
-    *node = *tmp_node;
-    sql_->UpdateNodeSimple(node);
-    sql_->UpdateField(info_.node, node->initial_total, INITIAL_TOTAL, node->id);
-    sql_->UpdateField(info_.node, node->final_total, FINAL_TOTAL, node->id);
+    std::array<std::variant<int, double>, 5> diff = {
+        tmp_node->first - node->first, // int
+        tmp_node->second - node->second, // double
+        tmp_node->discount - node->discount, // double
+        tmp_node->initial_total - node->initial_total, // double
+        tmp_node->final_total - node->final_total // double
+    };
+
+    bool update_ancestor { false };
+
+    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
+    UpdateField(node, tmp_node->party, PARTY, &Node::party);
+    UpdateField(node, tmp_node->employee, EMPLOYEE, &Node::employee);
+
+    UpdateNodeRule(node, tmp_node->node_rule);
+    UpdateUnit(node, tmp_node->unit);
+
+    update_ancestor = UpdateField(node, tmp_node->first, FIRST, &Node::first) || update_ancestor;
+    update_ancestor = UpdateField(node, tmp_node->second, SECOND, &Node::second) || update_ancestor;
+    update_ancestor = UpdateField(node, tmp_node->discount, DISCOUNT, &Node::discount) || update_ancestor;
+    update_ancestor = UpdateField(node, tmp_node->initial_total, INITIAL_TOTAL, &Node::initial_total) || update_ancestor;
+    update_ancestor = UpdateField(node, tmp_node->final_total, FINAL_TOTAL, &Node::final_total) || update_ancestor;
+
+    auto current { GetIndex(node->id) };
+    emit dataChanged(current.siblingAtColumn(std::to_underlying(TreeEnumOrder::kName)), current.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFinalTotal)),
+        { Qt::DisplayRole });
+
+    if (update_ancestor)
+        RecalculateAncestor(
+            node, std::get<int>(diff[0]), std::get<double>(diff[1]), std::get<double>(diff[2]), std::get<double>(diff[3]), std::get<double>(diff[4]));
 }
 
 void TreeModelOrder::UpdateNodeLocked(const Node* tmp_node)
 {
     auto node { node_hash_.value(tmp_node->id) };
-    UpdateLocked(node, tmp_node->locked);
+    UpdateField(node, tmp_node->locked, LOCKED, &Node::locked);
+
+    auto current { GetIndex(node->id) };
+
+    emit dataChanged(current.siblingAtColumn(std::to_underlying(TreeEnumOrder::kLocked)), current.siblingAtColumn(std::to_underlying(TreeEnumOrder::kLocked)),
+        { Qt::DisplayRole });
 }
 
 void TreeModelOrder::ConstructTree()
@@ -134,23 +161,6 @@ void TreeModelOrder::ConstructTree()
 
     node_hash_.insert(-1, root_);
 }
-
-bool TreeModelOrder::UpdateParty(Node* node, int value) { return UpdateField(node, value, PARTY, &Node::party); }
-
-bool TreeModelOrder::UpdateEmployee(Node* node, int value) { return UpdateField(node, value, EMPLOYEE, &Node::employee); }
-
-bool TreeModelOrder::UpdateLocked(Node* node, bool value)
-{
-    if (node->locked == value)
-        return false;
-
-    node->locked = value;
-    sql_->UpdateField(info_.node, value, LOCKED, node->id);
-
-    return true;
-}
-
-bool TreeModelOrder::UpdateDateTime(Node* node, CString& value) { return UpdateField(node, value, DATE_TIME, &Node::date_time); }
 
 bool TreeModelOrder::UpdateNodeRule(Node* node, bool value)
 {
@@ -196,9 +206,9 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
 
     switch (value) {
     case UNIT_CASH:
-    case UNIT_PENDING:
-        node->final_total = node->initial_total + node->discount;
+        node->final_total = node->initial_total - node->discount;
         break;
+    case UNIT_PENDING:
     case UNIT_MONTHLY:
         node->final_total = 0.0;
         break;
@@ -221,21 +231,6 @@ bool TreeModelOrder::UpdateName(Node* node, CString& value)
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kName));
-    return true;
-}
-
-bool TreeModelOrder::UpdateDiscount(Node* node, double value_discount, double value_initial_total)
-{
-    if (node->discount == value_discount)
-        return false;
-
-    node->initial_total = value_initial_total;
-    node->discount = value_discount;
-
-    sql_->UpdateField(info_.node, value_discount, DISCOUNT, node->id);
-    sql_->UpdateField(info_.node, value_discount, INITIAL_TOTAL, node->id);
-
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kInitialTotal));
     return true;
 }
 
@@ -416,14 +411,14 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
 
     switch (kColumn) {
     case TreeEnumOrder::kCode:
-        UpdateCode(node, value.toString());
+        UpdateField(node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumOrder::kDescription:
         if (unlocked)
-            special_case = UpdateDescription(node, value.toString());
+            UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumOrder::kNote:
-        UpdateNote(node, value.toString());
+        UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumOrder::kNodeRule:
         if (editable)
@@ -435,18 +430,19 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         break;
     case TreeEnumOrder::kParty:
         if (editable)
-            UpdateParty(node, value.toInt());
+            UpdateField(node, value.toInt(), PARTY, &Node::party);
         break;
     case TreeEnumOrder::kEmployee:
         if (editable)
-            UpdateEmployee(node, value.toInt());
+            UpdateField(node, value.toInt(), EMPLOYEE, &Node::employee);
         break;
     case TreeEnumOrder::kDateTime:
         if (editable)
-            UpdateDateTime(node, value.toString());
+            UpdateField(node, value.toString(), DATE_TIME, &Node::date_time);
         break;
     case TreeEnumOrder::kLocked:
-        special_case = UpdateLocked(node, value.toBool());
+        special_case = UpdateField(node, value.toBool(), LOCKED, &Node::locked);
+
         break;
     default:
         return false;

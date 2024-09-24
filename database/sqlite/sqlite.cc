@@ -229,36 +229,6 @@ void Sqlite::NodeLeafTotal(Node* node)
     node->final_total = sign * (final_total_credit - final_total_debit);
 }
 
-bool Sqlite::UpdateNodeSimple(const Node* node)
-{
-    if (!node || !db_) {
-        qWarning() << "Invalid node or database pointer";
-        return false;
-    }
-
-    QSqlQuery query(*db_);
-
-    auto part = QString(R"(
-    UPDATE %1 SET
-    code = :code, description = :description, note = :note
-    WHERE id = :id
-)")
-                    .arg(info_.node);
-
-    query.prepare(part);
-    query.bindValue(":id", node->id);
-    query.bindValue(":code", node->code);
-    query.bindValue(":description", node->description);
-    query.bindValue(":note", node->note);
-
-    if (!query.exec()) {
-        qWarning() << "Failed to update node simple (ID:" << node->id << "):" << query.lastError().text();
-        return false;
-    }
-
-    return true;
-}
-
 bool Sqlite::RemoveNode(int node_id, bool branch)
 {
     QSqlQuery query(*db_);

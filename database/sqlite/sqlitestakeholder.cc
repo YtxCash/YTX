@@ -93,7 +93,7 @@ bool SqliteStakeholder::NodeInternalReferences(int node_id) const
 
     auto string = QString(R"(
     SELECT COUNT(*) FROM %1
-    WHERE outside = :node_id AND removed = 0
+    WHERE lhs_node = :node_id AND removed = 0
 )")
                       .arg(info_.transaction);
 
@@ -135,43 +135,6 @@ bool SqliteStakeholder::NodeExternalReferences(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-bool SqliteStakeholder::UpdateNodeSimple(const Node* node)
-{
-    if (!node || !db_) {
-        qWarning() << "Invalid node or database pointer";
-        return false;
-    }
-
-    QSqlQuery query(*db_);
-
-    auto part = QString(R"(
-    UPDATE %1 SET
-    code = :code, description = :description, note = :note, deadline = :deadline, unit = :unit,
-    node_rule = :node_rule, payment_period = :payment_period, employee = :employee, tax_rate = :tax_rate
-    WHERE id = :id
-)")
-                    .arg(info_.node);
-
-    query.prepare(part);
-    query.bindValue(":id", node->id);
-    query.bindValue(":code", node->code);
-    query.bindValue(":description", node->description);
-    query.bindValue(":note", node->note);
-    query.bindValue(":node_rule", node->node_rule);
-    query.bindValue(":unit", node->unit);
-    query.bindValue(":employee", node->employee);
-    query.bindValue(":deadline", node->date_time);
-    query.bindValue(":payment_period", node->first);
-    query.bindValue(":tax_rate", node->second);
-
-    if (!query.exec()) {
-        qWarning() << "Failed to update node simple (ID:" << node->id << "):" << query.lastError().text();
-        return false;
-    }
-
-    return true;
-}
-
 bool SqliteStakeholder::RemoveNode(int node_id, bool branch)
 {
     QSqlQuery query(*db_);
@@ -186,7 +149,7 @@ bool SqliteStakeholder::RemoveNode(int node_id, bool branch)
     auto part_2nd = QString(R"(
     UPDATE %1
     SET removed = 1
-    WHERE outside = :node_id
+    WHERE lhs_node = :node_id
 )")
                         .arg(info_.transaction);
 
@@ -343,27 +306,27 @@ bool SqliteStakeholder::RReplaceReferences(Section origin, int old_node_id, int 
     return true;
 }
 
-void SqliteStakeholder::BuildTransShadowList(TransShadowList& trans_shadow_list, int outside_id)
+void SqliteStakeholder::BuildTransShadowList(TransShadowList& trans_shadow_list, int lhs_node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
     auto part = QString(R"(
-    SELECT id, date_time, code, outside, unit_price, commission, description, document, state, inside
+    SELECT id, date_time, code, lhs_node, unit_price, commission, description, document, state, rhs_node
     FROM %1
-    WHERE outside = :outside_id AND removed = 0
+    WHERE lhs_node = :lhs_node_id AND removed = 0
 )")
                     .arg(info_.transaction);
 
     query.prepare(part);
-    query.bindValue(":outside_id", outside_id);
+    query.bindValue(":lhs_node_id", lhs_node_id);
 
     if (!query.exec()) {
-        qWarning() << "sqlstakeholder: SPTransList SqlStakeholder::TransList(int outside_id)" << query.lastError().text();
+        qWarning() << "sqlstakeholder: SPTransList SqlStakeholder::TransList(int lhs_node_id)" << query.lastError().text();
         return;
     }
 
-    QueryTransShadowList(trans_shadow_list, outside_id, query);
+    QueryTransShadowList(trans_shadow_list, lhs_node_id, query);
 }
 
 bool SqliteStakeholder::InsertTransShadow(TransShadow* trans_shadow)
@@ -371,22 +334,22 @@ bool SqliteStakeholder::InsertTransShadow(TransShadow* trans_shadow)
     QSqlQuery query(*db_);
     auto part = QString(R"(
     INSERT INTO %1
-    (date_time, code, outside, unit_price, commission, description, document, state, inside)
+    (date_time, code, lhs_node, unit_price, commission, description, document, state, rhs_node)
     VALUES
-    (:date_time, :code, :outside, :unit_price, :commission, :description, :document, :state, :inside)
+    (:date_time, :code, :lhs_node, :unit_price, :commission, :description, :document, :state, :rhs_node)
 )")
                     .arg(info_.transaction);
 
     query.prepare(part);
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":code", *trans_shadow->code);
-    query.bindValue(":outside", *trans_shadow->node);
+    query.bindValue(":lhs_node", *trans_shadow->node);
     query.bindValue(":unit_price", *trans_shadow->ratio);
     query.bindValue(":commission", *trans_shadow->related_debit);
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":state", *trans_shadow->related_ratio);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
-    query.bindValue(":inside", *trans_shadow->related_node);
+    query.bindValue(":rhs_node", *trans_shadow->related_node);
 
     if (!query.exec()) {
         qWarning() << "sqlstakeholder: bool SqlStakeholder::Insert(Trans*trans_shadow)" << query.lastError().text();
@@ -409,9 +372,9 @@ void SqliteStakeholder::BuildTransShadowList(TransShadowList& trans_shadow_list,
         list.append(QString::number(id));
 
     auto part = QString(R"(
-    SELECT id, date_time, code, outside, unit_price, commission, description, document, state, inside
+    SELECT id, date_time, code, lhs_node, unit_price, commission, description, document, state, rhs_node
     FROM %1
-    WHERE id IN (%2) AND outside = :node_id AND removed = 0
+    WHERE id IN (%2) AND lhs_node = :node_id AND removed = 0
 )")
                     .arg(info_.transaction, list.join(", "));
 
@@ -474,8 +437,8 @@ void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list,
         trans = ResourcePool<Trans>::Instance().Allocate();
         trans->id = id;
 
-        trans->lhs_node = query.value("outside").toInt();
-        trans->rhs_node = query.value("inside").toInt();
+        trans->lhs_node = query.value("lhs_node").toInt();
+        trans->rhs_node = query.value("rhs_node").toInt();
         trans->lhs_ratio = query.value("unit_price").toDouble();
         trans->rhs_ratio = query.value("commission").toDouble();
         trans->code = query.value("code").toString();

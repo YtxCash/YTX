@@ -30,9 +30,11 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
         emit SUpdateName(node);
     }
 
-    // update code, description, note, unit_price, commission
-    *node = *tmp_node;
-    sql_->UpdateNodeSimple(node);
+    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
+    UpdateField(node, tmp_node->code, CODE, &Node::code);
+    UpdateField(node, tmp_node->note, NOTE, &Node::note);
+    UpdateField(node, tmp_node->second, UNIT_PRICE, &Node::discount);
+    UpdateField(node, tmp_node->second, COMMISSION, &Node::second);
 }
 
 bool TreeModelProduct::UpdateUnitPrice(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::discount); }
@@ -133,13 +135,13 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
 
     switch (kColumn) {
     case TreeEnumProduct::kCode:
-        UpdateCode(node, value.toString());
+        UpdateField(node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumProduct::kDescription:
-        UpdateDescription(node, value.toString());
+        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumProduct::kNote:
-        UpdateNote(node, value.toString());
+        UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumProduct::kNodeRule:
         UpdateNodeRule(node, value.toBool());

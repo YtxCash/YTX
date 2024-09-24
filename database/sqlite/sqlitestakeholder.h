@@ -21,11 +21,10 @@ public:
     bool InsertNode(int parent_id, Node* node) override;
     bool NodeInternalReferences(int node_id) const override;
     bool NodeExternalReferences(int node_id) const override;
-    bool UpdateNodeSimple(const Node* node) override;
     bool RemoveNode(int node_id, bool branch = false) override;
 
     // table
-    void BuildTransShadowList(TransShadowList& trans_shadow_list, int outside_id) override;
+    void BuildTransShadowList(TransShadowList& trans_shadow_list, int lhs_node_id) override;
     bool InsertTransShadow(TransShadow* trans_shadow) override;
 
     void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list) override;

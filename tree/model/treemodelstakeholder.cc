@@ -30,9 +30,15 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
         emit SUpdateName(node);
     }
 
-    // update code, description, note, dealine, node_rule, payment_period, employee, tax_rate, unit
-    *node = *tmp_node;
-    sql_->UpdateNodeSimple(node);
+    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
+    UpdateField(node, tmp_node->code, CODE, &Node::code);
+    UpdateField(node, tmp_node->note, NOTE, &Node::note);
+    UpdateField(node, tmp_node->first, PAYMENT_PERIOD, &Node::first);
+    UpdateField(node, tmp_node->second, TAX_RATE, &Node::second);
+    UpdateField(node, tmp_node->party, DEADLINE, &Node::party);
+    UpdateField(node, tmp_node->node_rule, NODE_RULE, &Node::node_rule);
+    UpdateField(node, tmp_node->employee, EMPLOYEE, &Node::employee);
+    UpdateField(node, tmp_node->unit, UNIT, &Node::unit);
 }
 
 bool TreeModelStakeholder::UpdateTaxRate(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::second); }
@@ -208,13 +214,13 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
 
     switch (kColumn) {
     case TreeEnumStakeholder::kCode:
-        UpdateCode(node, value.toString());
+        UpdateField(node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumStakeholder::kDescription:
-        UpdateDescription(node, value.toString());
+        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumStakeholder::kNote:
-        UpdateNote(node, value.toString());
+        UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumStakeholder::kNodeRule:
         UpdateNodeRule(node, value.toBool());

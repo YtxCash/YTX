@@ -7,6 +7,7 @@ constexpr double DMIN = -1'000'000'000.00;
 constexpr double DZERO = 0.0;
 constexpr int HUNDRED = 100;
 constexpr int IMAX = 1'000'000'000;
+constexpr int IMIN = -1'000'000'000;
 constexpr int ROW_HEIGHT = 24;
 constexpr int THIRTY_ONE = 31;
 constexpr int IZERO = 0;

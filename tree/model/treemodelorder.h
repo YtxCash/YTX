@@ -30,12 +30,6 @@ protected:
     bool UpdateName(Node* node, CString& value) override;
 
 private:
-    bool UpdateParty(Node* node, int value);
-    bool UpdateEmployee(Node* node, int value);
-    bool UpdateDateTime(Node* node, CString& value);
-    bool UpdateLocked(Node* node, bool value); // unlocked = 0, locked = 1
-    bool UpdateDiscount(Node* node, double value_discount, double value_initial_total);
-
     void RecalculateAncestor(Node* node, int first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff);
     void RecalculateAncestor(Node* node, int old_unit, double old_final_total);
 };

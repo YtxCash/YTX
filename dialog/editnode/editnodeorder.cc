@@ -25,13 +25,11 @@ EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, Abstrac
     bool branch { node->branch };
 
     if (branch) {
-        ui->labelParty->setText(branch ? tr("Branch") : tr("Party"));
         ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
         ui->comboParty->lineEdit()->setText(node->name);
         ui->chkBoxBranch->setChecked(true);
         UpdateUnit(node_->unit);
 
-        ui->pBtnLockOrder->setText(node_->locked ? tr("UnLock") : tr("Lock"));
         ui->pBtnLockOrder->setChecked(node->locked);
     }
 
@@ -44,6 +42,10 @@ EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, Abstrac
 
     ui->chkBoxBranch->setEnabled(false);
     ui->pBtnSaveOrder->setEnabled(false);
+
+    ui->pBtnLockOrder->setText(node_->locked ? tr("UnLock") : tr("Lock"));
+    ui->labelParty->setText(branch ? tr("Branch") : tr("Party"));
+
     LockWidgets(node->locked, branch);
 }
 
@@ -120,6 +122,9 @@ void EditNodeOrder::IniDialog()
     ui->dSpinFinalTotal->setRange(DMIN, DMAX);
     ui->dSpinInitialTotal->setDecimals(value_decimal_);
     ui->dSpinInitialTotal->setRange(DMIN, DMAX);
+    ui->dSpinSecond->setRange(DMIN, DMAX);
+    ui->dSpinSecond->setDecimals(value_decimal_);
+    ui->spinFirst->setRange(IMIN, IMAX);
 }
 
 void EditNodeOrder::IniData()
@@ -130,16 +135,17 @@ void EditNodeOrder::IniData()
     auto employee_index { ui->comboEmployee->findData(node_->employee) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
+    ui->dSpinInitialTotal->setValue(node_->initial_total);
+    ui->dSpinDiscount->setValue(node_->discount);
     UpdateUnit(node_->unit);
 
     ui->chkBoxRefund->setChecked(node_->node_rule);
-    ui->dSpinInitialTotal->setValue(node_->initial_total);
-    ui->dSpinFinalTotal->setValue(node_->final_total);
-    ui->dSpinDiscount->setValue(node_->discount);
     ui->chkBoxBranch->setChecked(node_->branch);
     ui->lineDescription->setText(node_->description);
     ui->dateTimeEdit->setDateTime(QDateTime::fromString(node_->date_time, DATE_TIME_FST));
     ui->pBtnLockOrder->setChecked(node_->locked);
+    ui->spinFirst->setValue(node_->first);
+    ui->dSpinSecond->setValue(node_->second);
 }
 
 void EditNodeOrder::IniCombo(QComboBox* combo, int unit)
@@ -213,48 +219,19 @@ void EditNodeOrder::LockWidgets(bool locked, bool branch)
     ui->pBtnPrint->setEnabled(locked && !branch);
 }
 
-void EditNodeOrder::SetWidgetsEnabledPost(bool enabled)
-{
-    ui->labelParty->setEnabled(enabled);
-    ui->comboParty->setEnabled(enabled);
-
-    ui->pBtnInsertParty->setEnabled(enabled);
-
-    ui->labelInitialTotal->setEnabled(enabled);
-    ui->dSpinInitialTotal->setEnabled(enabled);
-
-    ui->labelDiscount->setEnabled(enabled);
-    ui->dSpinDiscount->setEnabled(enabled);
-
-    ui->labelEmployee->setEnabled(enabled);
-    ui->comboEmployee->setEnabled(enabled);
-
-    ui->rBtnCash->setEnabled(enabled);
-    ui->rBtnMonthly->setEnabled(enabled);
-    ui->rBtnPending->setEnabled(enabled);
-    ui->dateTimeEdit->setEnabled(enabled);
-
-    ui->chkBoxRefund->setEnabled(enabled);
-    ui->lineDescription->setEnabled(enabled);
-    ui->pBtnPrint->setEnabled(!enabled);
-}
-
-void EditNodeOrder::ZeroSettlement()
-{
-    ui->dSpinDiscount->setValue(0.0);
-    ui->dSpinFinalTotal->setValue(0.0);
-}
-
 void EditNodeOrder::UpdateUnit(int unit)
 {
     switch (unit) {
     case UNIT_CASH:
         ui->rBtnCash->setChecked(true);
+        ui->dSpinFinalTotal->setValue(ui->dSpinInitialTotal->value() - ui->dSpinDiscount->value());
         break;
     case UNIT_MONTHLY:
+        ui->dSpinFinalTotal->setValue(0.0);
         ui->rBtnMonthly->setChecked(true);
         break;
     case UNIT_PENDING:
+        ui->dSpinFinalTotal->setValue(0.0);
         ui->rBtnPending->setChecked(true);
         break;
     default:
@@ -307,6 +284,8 @@ void EditNodeOrder::on_rBtnCash_toggled(bool checked)
         return;
 
     node_->unit = UNIT_CASH;
+    ui->dSpinFinalTotal->setValue(ui->dSpinInitialTotal->value() - ui->dSpinDiscount->value());
+    node_->final_total = ui->dSpinFinalTotal->value();
     ui->pBtnSaveOrder->setEnabled(true);
 }
 
@@ -316,7 +295,8 @@ void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
         return;
 
     node_->unit = UNIT_MONTHLY;
-    ZeroSettlement();
+    ui->dSpinFinalTotal->setValue(0.0);
+    node_->final_total = 0.0;
     ui->pBtnSaveOrder->setEnabled(true);
 }
 
@@ -326,7 +306,8 @@ void EditNodeOrder::on_rBtnPending_toggled(bool checked)
         return;
 
     node_->unit = UNIT_PENDING;
-    ZeroSettlement();
+    ui->dSpinFinalTotal->setValue(0.0);
+    node_->final_total = 0.0;
     ui->pBtnSaveOrder->setEnabled(true);
 }
 
@@ -370,11 +351,6 @@ void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
         ui->pBtnPrint->setFocus();
         ui->pBtnPrint->setDefault(true);
     }
-
-    if (!checked) {
-        ui->tableViewOrder->setFocus();
-        ui->pBtnLockOrder->setDefault(true);
-    }
 }
 
 void EditNodeOrder::on_lineDescription_textChanged(const QString& arg1)
@@ -383,10 +359,37 @@ void EditNodeOrder::on_lineDescription_textChanged(const QString& arg1)
     ui->pBtnSaveOrder->setEnabled(true);
 }
 
-void EditNodeOrder::on_dSpinDiscount_valueChanged(double arg1)
+void EditNodeOrder::on_spinFirst_valueChanged(int arg1)
 {
-    node_->initial_total = node_->initial_total + node_->discount - arg1;
-    ui->dSpinInitialTotal->setValue(node_->initial_total);
-    node_->discount = arg1;
+    node_->first = arg1;
+    ui->pBtnSaveOrder->setEnabled(true);
+}
+
+void EditNodeOrder::on_dSpinSecond_valueChanged(double arg1)
+{
+    node_->second = arg1;
+    ui->pBtnSaveOrder->setEnabled(true);
+}
+
+void EditNodeOrder::on_dSpinInitialTotal_editingFinished()
+{
+    auto value { ui->dSpinInitialTotal->value() };
+
+    node_->final_total = value - node_->discount;
+    ui->dSpinFinalTotal->setValue(node_->final_total);
+    node_->initial_total = value;
+    ui->pBtnSaveOrder->setEnabled(true);
+}
+
+void EditNodeOrder::on_dSpinDiscount_editingFinished()
+{
+    auto value { ui->dSpinDiscount->value() };
+
+    if (node_->node_rule == UNIT_CASH) {
+        node_->final_total = node_->initial_total - value;
+        ui->dSpinFinalTotal->setValue(node_->final_total);
+    }
+
+    node_->discount = value;
     ui->pBtnSaveOrder->setEnabled(true);
 }

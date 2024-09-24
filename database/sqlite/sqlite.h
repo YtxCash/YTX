@@ -51,7 +51,6 @@ public:
     virtual bool BuildTree(NodeHash& node_hash);
     virtual bool InsertNode(int parent_id, Node* node);
     virtual void NodeLeafTotal(Node* node);
-    virtual bool UpdateNodeSimple(const Node* node);
     virtual bool RemoveNode(int node_id, bool branch = false);
     virtual bool NodeInternalReferences(int node_id) const;
     virtual bool NodeExternalReferences(int node_id) const
