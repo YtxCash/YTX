@@ -8,7 +8,7 @@
 #include "component/info.h"
 #include "component/settings.h"
 #include "component/using.h"
-#include "tree/model/abstracttreemodel.h"
+#include "tree/model/treemodel.h"
 
 namespace Ui {
 class Preferences;
@@ -19,7 +19,7 @@ class Preferences final : public QDialog {
 
 public:
     Preferences(
-        CInfo& info, const AbstractTreeModel& model, CStringList& date_format_list, Interface interface, SectionRule section_rule, QWidget* parent = nullptr);
+        CInfo& info, const TreeModel& model, CStringList& date_format_list, Interface interface, SectionRule section_rule, QWidget* parent = nullptr);
     ~Preferences();
 
 signals:
@@ -50,7 +50,7 @@ private slots:
 
 private:
     void IniDialog(CStringHash& unit_hash, CStringList& date_format_list);
-    void IniCombo(QComboBox* combo, const AbstractTreeModel& model);
+    void IniCombo(QComboBox* combo, const TreeModel& model);
     void IniCombo(QComboBox* combo, CStringList& list);
     void IniCombo(QComboBox* combo, CStringHash& hash);
 
@@ -73,7 +73,7 @@ private:
 
     Interface interface_ {};
     SectionRule section_rule_ {};
-    const AbstractTreeModel& model_;
+    const TreeModel& model_;
 };
 
 #endif // PREFERENCES_H

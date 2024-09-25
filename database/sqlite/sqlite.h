@@ -16,8 +16,10 @@ class Sqlite : public QObject {
     Q_OBJECT
 
 public:
-    Sqlite(CInfo& info, QObject* parent = nullptr);
     virtual ~Sqlite();
+
+protected:
+    Sqlite(CInfo& info, QObject* parent = nullptr);
 
 signals:
     // send to all table model

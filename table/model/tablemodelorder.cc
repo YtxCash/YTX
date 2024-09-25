@@ -1,9 +1,10 @@
 #include "tablemodelorder.h"
 
+#include "component/constvalue.h"
+
 TableModelOrder::TableModelOrder(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent)
     : TableModel { sql, node_rule, node_id, info, section_rule, parent }
 {
-    AccumulateSubtotal(0, node_rule);
 }
 
 QVariant TableModelOrder::data(const QModelIndex& index, int role) const
@@ -60,16 +61,16 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), DATE_TIME, &TransShadow::date_time);
         break;
     case TableEnum::kCode:
-        UpdateCode(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnum::kState:
-        UpdateOneState(trans_shadow, value.toBool());
+        UpdateField(trans_shadow, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnum::kDescription:
-        UpdateDescription(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnum::kRatio:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());

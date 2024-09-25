@@ -9,7 +9,7 @@
 #include "ui_preferences.h"
 
 Preferences::Preferences(
-    CInfo& info, const AbstractTreeModel& model, CStringList& date_format_list, Interface interface, SectionRule section_rule, QWidget* parent)
+    CInfo& info, const TreeModel& model, CStringList& date_format_list, Interface interface, SectionRule section_rule, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Preferences)
     , interface_ { interface }
@@ -50,7 +50,7 @@ void Preferences::IniDialog(CStringHash& unit_hash, CStringList& date_format_lis
     IniCombo(ui->comboDynamicRhs, model_);
 }
 
-void Preferences::IniCombo(QComboBox* combo, const AbstractTreeModel& model)
+void Preferences::IniCombo(QComboBox* combo, const TreeModel& model)
 {
     combo->blockSignals(true);
 

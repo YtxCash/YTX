@@ -9,7 +9,7 @@
 #include "global/resourcepool.h"
 
 TreeModelOrder::TreeModelOrder(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent)
-    : AbstractTreeModel { sql, info, base_unit, table_hash, separator, parent }
+    : TreeModel { sql, info, base_unit, table_hash, separator, parent }
 {
     TreeModelOrder::ConstructTree();
 }
@@ -219,7 +219,7 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
     RecalculateAncestor(node, old_unit, old_final_total);
 
     sql_->UpdateField(info_.node, value, UNIT, node->id);
-    sql_->UpdateField(info_.node, value, FINAL_TOTAL, node->id);
+    sql_->UpdateField(info_.node, node->final_total, FINAL_TOTAL, node->id);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kFinalTotal));
     return true;

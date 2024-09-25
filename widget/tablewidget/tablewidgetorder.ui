@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>EditNodeOrder</class>
- <widget class="QDialog" name="EditNodeOrder">
+ <class>TableWidgetOrder</class>
+ <widget class="QWidget" name="TableWidgetOrder">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1098</width>
-    <height>683</height>
+    <width>954</width>
+    <height>666</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Order</string>
+   <string/>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <property name="verticalSpacing">
@@ -492,9 +492,6 @@
    <header location="global">widget/spinbox.h</header>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>tableViewOrder</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

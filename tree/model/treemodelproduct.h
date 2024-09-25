@@ -1,10 +1,9 @@
 #ifndef TREEMODELPRODUCT_H
 #define TREEMODELPRODUCT_H
 
-#include "tree/model/abstracttreemodel.h"
-#include "widget/tablewidget.h"
+#include "tree/model/treemodel.h"
 
-class TreeModelProduct final : public AbstractTreeModel {
+class TreeModelProduct final : public TreeModel {
     Q_OBJECT
 
 public:

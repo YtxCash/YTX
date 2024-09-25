@@ -1,10 +1,9 @@
 #ifndef TREEMODELSTAKEHOLDER_H
 #define TREEMODELSTAKEHOLDER_H
 
-#include "tree/model/abstracttreemodel.h"
-#include "widget/tablewidget.h"
+#include "tree/model/treemodel.h"
 
-class TreeModelStakeholder final : public AbstractTreeModel {
+class TreeModelStakeholder final : public TreeModel {
     Q_OBJECT
 
 public:

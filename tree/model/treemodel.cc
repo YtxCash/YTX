@@ -1,4 +1,4 @@
-#include "abstracttreemodel.h"
+#include "treemodel.h"
 
 #include <QApplication>
 #include <QQueue>
@@ -8,7 +8,7 @@
 #include "global/resourcepool.h"
 #include "widget/temporarylabel.h"
 
-AbstractTreeModel::AbstractTreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent)
+TreeModel::TreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : QAbstractItemModel(parent)
     , sql_ { sql }
     , info_ { info }
@@ -18,9 +18,9 @@ AbstractTreeModel::AbstractTreeModel(SPSqlite sql, CInfo& info, int base_unit, C
     InitializeRoot(base_unit);
 }
 
-AbstractTreeModel::~AbstractTreeModel() { qDeleteAll(node_hash_); }
+TreeModel::~TreeModel() { qDeleteAll(node_hash_); }
 
-bool AbstractTreeModel::RUpdateMultiTotal(const QList<int>& node_list)
+bool TreeModel::RUpdateMultiTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};
@@ -50,7 +50,7 @@ bool AbstractTreeModel::RUpdateMultiTotal(const QList<int>& node_list)
     return true;
 }
 
-bool AbstractTreeModel::RRemoveNode(int node_id)
+bool TreeModel::RRemoveNode(int node_id)
 {
     auto index { GetIndex(node_id) };
     auto row { index.row() };
@@ -60,7 +60,7 @@ bool AbstractTreeModel::RRemoveNode(int node_id)
     return true;
 }
 
-void AbstractTreeModel::RUpdateOneTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff)
+void TreeModel::RUpdateOneTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff)
 {
     auto node { GetNodeByID(node_id) };
     auto node_rule { node->node_rule };
@@ -76,7 +76,7 @@ void AbstractTreeModel::RUpdateOneTotal(int node_id, double initial_debit_diff, 
     emit SUpdateDSpinBox();
 }
 
-bool AbstractTreeModel::RemoveNode(int row, const QModelIndex& parent)
+bool TreeModel::RemoveNode(int row, const QModelIndex& parent)
 {
     if (row <= -1 || row >= rowCount(parent))
         return false;
@@ -119,7 +119,7 @@ bool AbstractTreeModel::RemoveNode(int row, const QModelIndex& parent)
     return true;
 }
 
-bool AbstractTreeModel::InsertNode(int row, const QModelIndex& parent, Node* node)
+bool TreeModel::InsertNode(int row, const QModelIndex& parent, Node* node)
 {
     if (row <= -1)
         return false;
@@ -141,7 +141,7 @@ bool AbstractTreeModel::InsertNode(int row, const QModelIndex& parent, Node* nod
     return true;
 }
 
-void AbstractTreeModel::UpdateNode(const Node* tmp_node)
+void TreeModel::UpdateNode(const Node* tmp_node)
 {
     if (!tmp_node)
         return;
@@ -164,7 +164,7 @@ void AbstractTreeModel::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->note, NOTE, &Node::note);
 }
 
-void AbstractTreeModel::UpdateBaseUnit(int base_unit)
+void TreeModel::UpdateBaseUnit(int base_unit)
 {
     if (root_->unit == base_unit)
         return;
@@ -178,7 +178,7 @@ void AbstractTreeModel::UpdateBaseUnit(int base_unit)
             UpdateBranchUnit(node);
 }
 
-QModelIndex AbstractTreeModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -189,7 +189,7 @@ QModelIndex AbstractTreeModel::index(int row, int column, const QModelIndex& par
     return node ? createIndex(row, column, node) : QModelIndex();
 }
 
-QModelIndex AbstractTreeModel::parent(const QModelIndex& index) const
+QModelIndex TreeModel::parent(const QModelIndex& index) const
 { // root_'s index is QModelIndex();
 
     if (!index.isValid())
@@ -206,9 +206,9 @@ QModelIndex AbstractTreeModel::parent(const QModelIndex& index) const
     return createIndex(parent_node->parent->children.indexOf(parent_node), 0, parent_node);
 }
 
-int AbstractTreeModel::rowCount(const QModelIndex& parent) const { return GetNodeByIndex(parent)->children.size(); }
+int TreeModel::rowCount(const QModelIndex& parent) const { return GetNodeByIndex(parent)->children.size(); }
 
-QVariant AbstractTreeModel::data(const QModelIndex& index, int role) const
+QVariant TreeModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
@@ -245,7 +245,7 @@ QVariant AbstractTreeModel::data(const QModelIndex& index, int role) const
     }
 }
 
-bool AbstractTreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!index.isValid() || role != Qt::EditRole)
         return false;
@@ -283,7 +283,7 @@ bool AbstractTreeModel::setData(const QModelIndex& index, const QVariant& value,
     return true;
 }
 
-void AbstractTreeModel::sort(int column, Qt::SortOrder order)
+void TreeModel::sort(int column, Qt::SortOrder order)
 {
     if (column <= -1 || column >= info_.tree_header.size())
         return;
@@ -319,7 +319,7 @@ void AbstractTreeModel::sort(int column, Qt::SortOrder order)
     emit layoutChanged();
 }
 
-Qt::ItemFlags AbstractTreeModel::flags(const QModelIndex& index) const
+Qt::ItemFlags TreeModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
@@ -345,7 +345,7 @@ Qt::ItemFlags AbstractTreeModel::flags(const QModelIndex& index) const
     return flags;
 }
 
-bool AbstractTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
     if (!canDropMimeData(data, action, row, column, parent))
         return false;
@@ -386,7 +386,7 @@ bool AbstractTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction actio
     return true;
 }
 
-void AbstractTreeModel::ComboPathUnit(QComboBox* combo, int unit) const
+void TreeModel::ComboPathUnit(QComboBox* combo, int unit) const
 {
     if (!combo)
         return;
@@ -403,7 +403,7 @@ void AbstractTreeModel::ComboPathUnit(QComboBox* combo, int unit) const
         }
 }
 
-void AbstractTreeModel::ComboPathLeaf(QComboBox* combo, int exclude) const
+void TreeModel::ComboPathLeaf(QComboBox* combo, int exclude) const
 {
     if (!combo)
         return;
@@ -414,7 +414,7 @@ void AbstractTreeModel::ComboPathLeaf(QComboBox* combo, int exclude) const
     }
 }
 
-void AbstractTreeModel::ComboPathLeafBranch(QComboBox* combo) const
+void TreeModel::ComboPathLeafBranch(QComboBox* combo) const
 {
     if (!combo)
         return;
@@ -426,7 +426,7 @@ void AbstractTreeModel::ComboPathLeafBranch(QComboBox* combo) const
         combo->addItem(path, id);
 }
 
-QStringList AbstractTreeModel::ChildrenName(int node_id, int exclude_child) const
+QStringList TreeModel::ChildrenName(int node_id, int exclude_child) const
 {
     const Node* node { node_hash_.value(node_id, nullptr) };
     if (!node)
@@ -442,7 +442,7 @@ QStringList AbstractTreeModel::ChildrenName(int node_id, int exclude_child) cons
     return list;
 }
 
-void AbstractTreeModel::SetParent(Node* node, int parent_id) const
+void TreeModel::SetParent(Node* node, int parent_id) const
 {
     if (!node)
         return;
@@ -452,7 +452,7 @@ void AbstractTreeModel::SetParent(Node* node, int parent_id) const
     node->parent = it == node_hash_.constEnd() ? nullptr : it.value();
 }
 
-void AbstractTreeModel::CopyNode(Node* tmp_node, int node_id) const
+void TreeModel::CopyNode(Node* tmp_node, int node_id) const
 {
     if (!tmp_node)
         return;
@@ -464,7 +464,7 @@ void AbstractTreeModel::CopyNode(Node* tmp_node, int node_id) const
     *tmp_node = *(it.value());
 }
 
-QModelIndex AbstractTreeModel::GetIndex(int node_id) const
+QModelIndex TreeModel::GetIndex(int node_id) const
 {
     if (node_id == -1)
         return QModelIndex();
@@ -485,7 +485,7 @@ QModelIndex AbstractTreeModel::GetIndex(int node_id) const
     return createIndex(row, 0, node);
 }
 
-void AbstractTreeModel::NodeList(QList<const Node*>& node_list, const QList<int>& id_list) const
+void TreeModel::NodeList(QList<const Node*>& node_list, const QList<int>& id_list) const
 {
     node_list.reserve(id_list.size());
 
@@ -497,13 +497,13 @@ void AbstractTreeModel::NodeList(QList<const Node*>& node_list, const QList<int>
     }
 }
 
-bool AbstractTreeModel::ChildrenEmpty(int node_id) const
+bool TreeModel::ChildrenEmpty(int node_id) const
 {
     auto it { node_hash_.constFind(node_id) };
     return (it == node_hash_.constEnd()) ? true : it.value()->children.isEmpty();
 }
 
-bool AbstractTreeModel::IsDescendant(Node* lhs, Node* rhs) const
+bool TreeModel::IsDescendant(Node* lhs, Node* rhs) const
 {
     if (!lhs || !rhs || lhs == rhs)
         return false;
@@ -514,7 +514,7 @@ bool AbstractTreeModel::IsDescendant(Node* lhs, Node* rhs) const
     return lhs == rhs;
 }
 
-QString AbstractTreeModel::ConstructPath(const Node* node) const
+QString TreeModel::ConstructPath(const Node* node) const
 {
     if (!node || node == root_)
         return QString();
@@ -529,7 +529,7 @@ QString AbstractTreeModel::ConstructPath(const Node* node) const
     return tmp.join(separator_);
 }
 
-void AbstractTreeModel::UpdatePath(const Node* node)
+void TreeModel::UpdatePath(const Node* node)
 {
     QQueue<const Node*> queue {};
     queue.enqueue(node);
@@ -554,7 +554,7 @@ void AbstractTreeModel::UpdatePath(const Node* node)
     }
 }
 
-void AbstractTreeModel::SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare)
+void TreeModel::SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare)
 {
     if (!node)
         return;
@@ -577,7 +577,7 @@ void AbstractTreeModel::SortIterative(Node* node, std::function<bool(const Node*
     }
 }
 
-void AbstractTreeModel::RecalculateAncestor(Node* node, double initial_diff, double final_diff)
+void TreeModel::RecalculateAncestor(Node* node, double initial_diff, double final_diff)
 {
     if (!node || node == root_ || !node->parent || node->parent == root_)
         return;
@@ -595,7 +595,7 @@ void AbstractTreeModel::RecalculateAncestor(Node* node, double initial_diff, dou
     }
 }
 
-bool AbstractTreeModel::UpdateLeafTotal(const Node* node, CString& initial_field, CString& final_field)
+bool TreeModel::UpdateLeafTotal(const Node* node, CString& initial_field, CString& final_field)
 {
     if (!node || node->branch)
         return false;
@@ -609,7 +609,7 @@ bool AbstractTreeModel::UpdateLeafTotal(const Node* node, CString& initial_field
     return true;
 }
 
-bool AbstractTreeModel::UpdateBranch(Node* node, bool value)
+bool TreeModel::UpdateBranch(Node* node, bool value)
 {
     if (node->branch == value)
         return false;
@@ -633,7 +633,7 @@ bool AbstractTreeModel::UpdateBranch(Node* node, bool value)
     return true;
 }
 
-void AbstractTreeModel::UpdateSeparator(CString& old_separator, CString& new_separator)
+void TreeModel::UpdateSeparator(CString& old_separator, CString& new_separator)
 {
     if (old_separator == new_separator || new_separator.isEmpty())
         return;
@@ -647,7 +647,7 @@ void AbstractTreeModel::UpdateSeparator(CString& old_separator, CString& new_sep
     UpdatePaths(branch_path_);
 }
 
-void AbstractTreeModel::ConstructTree()
+void TreeModel::ConstructTree()
 {
     sql_->BuildTree(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };
@@ -675,7 +675,7 @@ void AbstractTreeModel::ConstructTree()
     node_hash_.insert(-1, root_);
 }
 
-bool AbstractTreeModel::UpdateNodeRule(Node* node, bool value)
+bool TreeModel::UpdateNodeRule(Node* node, bool value)
 {
     if (node->node_rule == value)
         return false;
@@ -693,7 +693,7 @@ bool AbstractTreeModel::UpdateNodeRule(Node* node, bool value)
     return true;
 }
 
-Node* AbstractTreeModel::GetNodeByIndex(const QModelIndex& index) const
+Node* TreeModel::GetNodeByIndex(const QModelIndex& index) const
 {
     if (index.isValid() && index.internalPointer())
         return static_cast<Node*>(index.internalPointer());
@@ -701,7 +701,7 @@ Node* AbstractTreeModel::GetNodeByIndex(const QModelIndex& index) const
     return root_;
 }
 
-bool AbstractTreeModel::UpdateUnit(Node* node, int value)
+bool TreeModel::UpdateUnit(Node* node, int value)
 {
     if (node->unit == value)
         return false;
@@ -721,7 +721,7 @@ bool AbstractTreeModel::UpdateUnit(Node* node, int value)
     return true;
 }
 
-QMimeData* AbstractTreeModel::mimeData(const QModelIndexList& indexes) const
+QMimeData* TreeModel::mimeData(const QModelIndexList& indexes) const
 {
     auto mime_data { new QMimeData() };
     if (indexes.isEmpty())
@@ -737,7 +737,7 @@ QMimeData* AbstractTreeModel::mimeData(const QModelIndexList& indexes) const
     return mime_data;
 }
 
-void AbstractTreeModel::UpdateBranchUnit(Node* node) const
+void TreeModel::UpdateBranchUnit(Node* node) const
 {
     if (!node || !node->branch || node->unit == root_->unit)
         return;
@@ -765,7 +765,7 @@ void AbstractTreeModel::UpdateBranchUnit(Node* node) const
     node->initial_total = initial_total;
 }
 
-bool AbstractTreeModel::UpdateName(Node* node, CString& value)
+bool TreeModel::UpdateName(Node* node, CString& value)
 {
     node->name = value;
     sql_->UpdateField(info_.node, value, NAME, node->id);
@@ -777,7 +777,7 @@ bool AbstractTreeModel::UpdateName(Node* node, CString& value)
     return true;
 }
 
-void AbstractTreeModel::InitializeRoot(int base_unit)
+void TreeModel::InitializeRoot(int base_unit)
 {
     if (root_ == nullptr) {
         root_ = ResourcePool<Node>::Instance().Allocate();
@@ -789,7 +789,7 @@ void AbstractTreeModel::InitializeRoot(int base_unit)
     assert(root_ != nullptr && "Root node should not be null after initialization");
 }
 
-void AbstractTreeModel::ShowTemporaryTooltip(CString& message, int duration)
+void TreeModel::ShowTemporaryTooltip(CString& message, int duration)
 {
     auto label { new TemporaryLabel(message) };
     label->setWindowFlags(Qt::ToolTip);

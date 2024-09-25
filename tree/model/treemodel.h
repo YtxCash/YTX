@@ -1,5 +1,5 @@
-#ifndef ABSTRACTTREEMODEL_H
-#define ABSTRACTTREEMODEL_H
+#ifndef TREEMODEL_H
+#define TREEMODEL_H
 
 #include <QAbstractItemModel>
 #include <QComboBox>
@@ -8,20 +8,22 @@
 #include "component/constvalue.h"
 #include "component/using.h"
 #include "database/sqlite/sqlite.h"
-#include "widget/tablewidget.h"
+#include "widget/tablewidget/tablewidget.h"
 
-class AbstractTreeModel : public QAbstractItemModel {
+class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
-protected:
-    AbstractTreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    virtual ~AbstractTreeModel();
+public:
+    virtual ~TreeModel();
 
-    AbstractTreeModel() = delete;
-    AbstractTreeModel(const AbstractTreeModel&) = delete;
-    AbstractTreeModel& operator=(const AbstractTreeModel&) = delete;
-    AbstractTreeModel(AbstractTreeModel&&) = delete;
-    AbstractTreeModel& operator=(AbstractTreeModel&&) = delete;
+protected:
+    TreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+
+    TreeModel() = delete;
+    TreeModel(const TreeModel&) = delete;
+    TreeModel& operator=(const TreeModel&) = delete;
+    TreeModel(TreeModel&&) = delete;
+    TreeModel& operator=(TreeModel&&) = delete;
 
 signals:
     // send to related table model
@@ -203,4 +205,4 @@ protected:
     CString& separator_;
 };
 
-#endif // ABSTRACTTREEMODEL_H
+#endif // TREEMODEL_H

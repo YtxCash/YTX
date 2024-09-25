@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "tree/model/abstracttreemodel.h"
+#include "tree/model/treemodel.h"
 
 namespace Ui {
 class RemoveNode;
@@ -13,7 +13,7 @@ class RemoveNode final : public QDialog {
     Q_OBJECT
 
 public:
-    RemoveNode(const AbstractTreeModel& model, int node_id, QWidget* parent = nullptr);
+    RemoveNode(const TreeModel& model, int node_id, QWidget* parent = nullptr);
     ~RemoveNode();
 
     void DisableRemove();
@@ -35,7 +35,7 @@ private:
     int node_id_ {};
     int section_ {};
 
-    const AbstractTreeModel& model_;
+    const TreeModel& model_;
 };
 
 #endif // REMOVENODE_H

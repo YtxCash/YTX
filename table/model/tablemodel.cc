@@ -1,5 +1,6 @@
 #include "tablemodel.h"
 
+#include "component/constvalue.h"
 #include "global/resourcepool.h"
 
 TableModel::TableModel(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent)
@@ -396,16 +397,16 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), DATE_TIME, &TransShadow::date_time);
         break;
     case TableEnum::kCode:
-        UpdateCode(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnum::kState:
-        UpdateOneState(trans_shadow, value.toBool());
+        UpdateField(trans_shadow, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnum::kDescription:
-        UpdateDescription(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnum::kRatio:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
@@ -587,26 +588,6 @@ void TableModel::AccumulateSubtotal(int start, bool node_rule)
         trans_shadow->subtotal = Balance(node_rule, *trans_shadow->debit, *trans_shadow->credit) + current_subtotal;
         return trans_shadow->subtotal;
     });
-}
-
-bool TableModel::UpdateDateTime(TransShadow* trans_shadow, CString& new_value, CString& field)
-{
-    return UpdateField(trans_shadow, new_value, field, &TransShadow::date_time);
-}
-
-bool TableModel::UpdateDescription(TransShadow* trans_shadow, CString& new_value, CString& field)
-{
-    return UpdateField(trans_shadow, new_value, field, &TransShadow::description, [this]() { emit SSearch(); });
-}
-
-bool TableModel::UpdateCode(TransShadow* trans_shadow, CString& new_value, CString& field)
-{
-    return UpdateField(trans_shadow, new_value, field, &TransShadow::code);
-}
-
-bool TableModel::UpdateOneState(TransShadow* trans_shadow, bool new_value, CString& field)
-{
-    return UpdateField(trans_shadow, new_value, field, &TransShadow::state);
 }
 
 bool TableModel::UpdateRelatedNode(TransShadow* trans_shadow, int value)

@@ -1,10 +1,9 @@
 #ifndef TREEMODELORDER_H
 #define TREEMODELORDER_H
 
-#include "tree/model/abstracttreemodel.h"
-#include "widget/tablewidget.h"
+#include "tree/model/treemodel.h"
 
-class TreeModelOrder final : public AbstractTreeModel {
+class TreeModelOrder final : public TreeModel {
     Q_OBJECT
 
 public:

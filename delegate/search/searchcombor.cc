@@ -2,7 +2,7 @@
 
 #include "component/enumclass.h"
 
-SearchComboR::SearchComboR(const AbstractTreeModel& model, QObject* parent)
+SearchComboR::SearchComboR(const TreeModel& model, QObject* parent)
     : StyledItemDelegate { parent }
     , model_ { model }
 {

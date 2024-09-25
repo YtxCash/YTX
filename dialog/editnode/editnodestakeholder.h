@@ -5,7 +5,7 @@
 #include <QDialog>
 
 #include "component/using.h"
-#include "tree/model/abstracttreemodel.h"
+#include "tree/model/treemodel.h"
 #include "tree/node.h"
 
 namespace Ui {
@@ -17,7 +17,7 @@ class EditNodeStakeholder final : public QDialog {
 
 public:
     EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int ratio_decimal,
-        AbstractTreeModel* model, QWidget* parent = nullptr);
+        TreeModel* model, QWidget* parent = nullptr);
     ~EditNodeStakeholder();
 
 private slots:
@@ -39,9 +39,9 @@ private slots:
     void on_plainTextEdit_textChanged();
 
 private:
-    void IniDialog(CStringHash& unit_hash, AbstractTreeModel* model, int ratio_decimal);
+    void IniDialog(CStringHash& unit_hash, TreeModel* model, int ratio_decimal);
     void IniComboWithStringHash(QComboBox* combo, CStringHash& hash);
-    void IniComboEmployee(AbstractTreeModel* model);
+    void IniComboEmployee(TreeModel* model);
     void IniConnect();
     void Data(Node* node, bool enable_branch);
 

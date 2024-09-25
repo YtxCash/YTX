@@ -5,7 +5,6 @@
 
 #include <QAbstractItemModel>
 
-#include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "component/info.h"
 #include "component/settings.h"
@@ -17,8 +16,10 @@ class TableModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    TableModel(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent = nullptr);
     virtual ~TableModel();
+
+protected:
+    TableModel(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent = nullptr);
 
 signals:
     // send to tree model
@@ -91,37 +92,23 @@ protected:
     double Balance(bool node_rule, double debit, double credit) { return (node_rule ? 1 : -1) * (credit - debit); }
     void AccumulateSubtotal(int start, bool node_rule);
 
-    bool UpdateDateTime(TransShadow* trans_shadow, CString& new_value, CString& field = DATE_TIME);
-    bool UpdateDescription(TransShadow* trans_shadow, CString& new_value, CString& field = DESCRIPTION);
-    bool UpdateCode(TransShadow* trans_shadow, CString& new_value, CString& field = CODE);
-    bool UpdateOneState(TransShadow* trans_shadow, bool new_value, CString& field = STATE);
     bool UpdateRelatedNode(TransShadow* trans_shadow, int value);
 
 protected:
-    SPSqlite sql_ {};
-    bool node_rule_ {};
-
-    CInfo& info_;
-    CSectionRule& section_rule_;
-    const int node_id_ {};
-
-    QList<TransShadow*> trans_shadow_list_ {};
-
-private:
     template <typename T>
-    bool UpdateField(TransShadow* trans_shadow, const T& new_value, CString& field, T* TransShadow::*member, const std::function<void()>& action = {})
+    bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {})
     {
         if (trans_shadow == nullptr || trans_shadow->*member == nullptr)
             return false;
 
-        if (*(trans_shadow->*member) == new_value)
+        if (*(trans_shadow->*member) == value)
             return false;
 
-        *(trans_shadow->*member) = new_value;
+        *(trans_shadow->*member) = value;
 
         if (*trans_shadow->related_node != 0) {
             try {
-                sql_->UpdateField(info_.transaction, new_value, field, *trans_shadow->id);
+                sql_->UpdateField(info_.transaction, value, field, *trans_shadow->id);
 
                 if (action)
                     action();
@@ -133,6 +120,16 @@ private:
 
         return true;
     }
+
+protected:
+    SPSqlite sql_ {};
+    bool node_rule_ {};
+
+    CInfo& info_;
+    CSectionRule& section_rule_;
+    const int node_id_ {};
+
+    QList<TransShadow*> trans_shadow_list_ {};
 };
 
 #endif // TABLEMODEL_H

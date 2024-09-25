@@ -1,23 +1,23 @@
 #ifndef TREEWIDGETSTAKEHOLDER_H
 #define TREEWIDGETSTAKEHOLDER_H
 
-#include "abstracttreewidget.h"
+#include "treewidget.h"
 #include "component/info.h"
 #include "component/settings.h"
-#include "tree/model/abstracttreemodel.h"
+#include "tree/model/treemodel.h"
 
 namespace Ui {
 class TreeWidgetStakeholder;
 }
 
-class TreeWidgetStakeholder final : public AbstractTreeWidget {
+class TreeWidgetStakeholder final : public TreeWidget {
     Q_OBJECT
 
 public slots:
     void RUpdateDSpinBox() override {};
 
 public:
-    TreeWidgetStakeholder(AbstractTreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent = nullptr);
+    TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent = nullptr);
     ~TreeWidgetStakeholder() override;
 
     QTreeView* View() override;
@@ -29,7 +29,7 @@ public:
 private:
     Ui::TreeWidgetStakeholder* ui;
 
-    AbstractTreeModel* model_ {};
+    TreeModel* model_ {};
     CInfo& info_ {};
     CSectionRule& section_rule_ {};
 };

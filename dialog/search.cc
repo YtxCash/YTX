@@ -13,7 +13,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
-Search::Search(CInfo& info, CInterface& interface, const AbstractTreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
+Search::Search(CInfo& info, CInterface& interface, const TreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
     CStringHash& node_rule, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Search)

@@ -8,7 +8,7 @@
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
 
-EditNodeOrder::EditNodeOrder(Node* node, AbstractTreeModel* order_model, AbstractTreeModel* stakeholder_model, const AbstractTreeModel& product_model,
+EditNodeOrder::EditNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel& product_model,
     int value_decimal, int unit_party, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeOrder)
@@ -107,6 +107,8 @@ void EditNodeOrder::RUpdateOrder(const QVariant& value, TreeEnumOrder column)
     default:
         break;
     }
+
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::IniDialog()
@@ -160,6 +162,9 @@ void EditNodeOrder::IniCombo(QComboBox* combo, int unit)
 
 void EditNodeOrder::accept()
 {
+    if (auto focus_widget { this->focusWidget() })
+        focus_widget->clearFocus();
+
     order_model_->UpdateNode(node_);
     ui->pBtnSaveOrder->setEnabled(false);
 }
@@ -353,24 +358,6 @@ void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
     }
 }
 
-void EditNodeOrder::on_lineDescription_textChanged(const QString& arg1)
-{
-    node_->description = arg1;
-    ui->pBtnSaveOrder->setEnabled(true);
-}
-
-void EditNodeOrder::on_spinFirst_valueChanged(int arg1)
-{
-    node_->first = arg1;
-    ui->pBtnSaveOrder->setEnabled(true);
-}
-
-void EditNodeOrder::on_dSpinSecond_valueChanged(double arg1)
-{
-    node_->second = arg1;
-    ui->pBtnSaveOrder->setEnabled(true);
-}
-
 void EditNodeOrder::on_dSpinInitialTotal_editingFinished()
 {
     auto value { ui->dSpinInitialTotal->value() };
@@ -378,7 +365,6 @@ void EditNodeOrder::on_dSpinInitialTotal_editingFinished()
     node_->final_total = value - node_->discount;
     ui->dSpinFinalTotal->setValue(node_->final_total);
     node_->initial_total = value;
-    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void EditNodeOrder::on_dSpinDiscount_editingFinished()
@@ -391,5 +377,14 @@ void EditNodeOrder::on_dSpinDiscount_editingFinished()
     }
 
     node_->discount = value;
-    ui->pBtnSaveOrder->setEnabled(true);
 }
+
+void EditNodeOrder::on_spinFirst_editingFinished() { node_->first = ui->spinFirst->value(); }
+void EditNodeOrder::on_dSpinSecond_editingFinished() { node_->second = ui->dSpinSecond->value(); }
+void EditNodeOrder::on_lineDescription_editingFinished() { node_->description = ui->lineDescription->text(); }
+
+void EditNodeOrder::on_dSpinInitialTotal_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(true); }
+void EditNodeOrder::on_dSpinDiscount_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(true); }
+void EditNodeOrder::on_spinFirst_valueChanged(int /*arg1*/) { ui->pBtnSaveOrder->setEnabled(true); }
+void EditNodeOrder::on_dSpinSecond_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(true); }
+void EditNodeOrder::on_lineDescription_textChanged(const QString& /*arg1*/) { ui->pBtnSaveOrder->setEnabled(true); }

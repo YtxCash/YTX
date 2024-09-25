@@ -1,43 +1,28 @@
 #ifndef TREEWIDGET_H
 #define TREEWIDGET_H
 
-#include "abstracttreewidget.h"
-#include "component/info.h"
-#include "component/settings.h"
-#include "tree/model/abstracttreemodel.h"
+#include <QTreeView>
+#include <QWidget>
 
-namespace Ui {
-class TreeWidget;
-}
-
-class TreeWidget final : public AbstractTreeWidget {
+class TreeWidget : public QWidget {
     Q_OBJECT
 
 public slots:
-    void RUpdateDSpinBox() override;
+    virtual void RUpdateDSpinBox() = 0;
 
 public:
-    TreeWidget(AbstractTreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent = nullptr);
-    ~TreeWidget() override;
+    virtual ~TreeWidget() = default;
 
-    QTreeView* View() override;
-    QHeaderView* Header() override;
-    void SetCurrentIndex(const QModelIndex& index) override;
-    void SetStatus() override;
+    virtual void SetCurrentIndex(const QModelIndex& index) = 0;
+    virtual void SetStatus() = 0;
+    virtual QTreeView* View() = 0;
+    virtual QHeaderView* Header() = 0;
 
-private:
-    void DynamicStatus(int lhs_node_id, int rhs_node_id);
-    void StaticStatus(int node_id);
-    double Operate(double lhs, double rhs, const QString& operation);
-
-private:
-    Ui::TreeWidget* ui;
-
-    AbstractTreeModel* model_ {};
-    CInfo& info_ {};
-    CSectionRule& section_rule_ {};
-
-    bool equal_unit { false };
+protected:
+    TreeWidget(QWidget* parent = nullptr)
+        : QWidget { parent }
+    {
+    }
 };
 
 #endif // TREEWIDGET_H

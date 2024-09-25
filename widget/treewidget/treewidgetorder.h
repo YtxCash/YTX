@@ -1,16 +1,16 @@
 #ifndef TREEWIDGETORDER_H
 #define TREEWIDGETORDER_H
 
-#include "abstracttreewidget.h"
+#include "treewidget.h"
 #include "component/info.h"
 #include "component/settings.h"
-#include "tree/model/abstracttreemodel.h"
+#include "tree/model/treemodel.h"
 
 namespace Ui {
 class TreeWidgetOrder;
 }
 
-class TreeWidgetOrder final : public AbstractTreeWidget {
+class TreeWidgetOrder final : public TreeWidget {
     Q_OBJECT
 
 public slots:
@@ -20,7 +20,7 @@ public slots:
     void on_dateEditEnd_dateChanged(const QDate& date);
 
 public:
-    TreeWidgetOrder(AbstractTreeModel* model, CInfo& info, const SectionRule& section_rule, QWidget* parent = nullptr);
+    TreeWidgetOrder(TreeModel* model, CInfo& info, const SectionRule& section_rule, QWidget* parent = nullptr);
     ~TreeWidgetOrder() override;
 
     QTreeView* View() override;
@@ -32,7 +32,7 @@ public:
 private:
     Ui::TreeWidgetOrder* ui;
 
-    AbstractTreeModel* model_ {};
+    TreeModel* model_ {};
     CInfo& info_;
     const SectionRule& section_rule_;
 };

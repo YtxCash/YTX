@@ -1,28 +1,31 @@
-#ifndef EDITNODEORDER_H
-#define EDITNODEORDER_H
+#ifndef TABLEWIDGETORDER_H
+#define TABLEWIDGETORDER_H
 
 #include <QComboBox>
-#include <QDialog>
 
+#include "table/model/tablemodel.h"
 #include "tree/model/treemodel.h"
+#include "widget/tablewidget/tablewidget.h"
 
 namespace Ui {
-class EditNodeOrder;
+class TableWidgetOrder;
 }
 
-class EditNodeOrder final : public QDialog {
+class TableWidgetOrder final : public TableWidget {
     Q_OBJECT
 
-public:
-    EditNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel& product_model, int value_decimal,
-        int unit_party, QWidget* parent = nullptr);
-    ~EditNodeOrder();
-
 public slots:
-    void accept() override;
-    void reject() override;
     void RUpdateStakeholder();
     void RUpdateOrder(const QVariant& value, TreeEnumOrder column);
+
+public:
+    explicit TableWidgetOrder(QWidget* parent = nullptr);
+    ~TableWidgetOrder();
+
+    void SetModel(TableModel* model) override;
+
+    TableModel* Model() override { return order_table_model_; }
+    QTableView* View() override;
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);
@@ -61,14 +64,15 @@ private:
     void UpdateUnit(int unit);
 
 private:
-    Ui::EditNodeOrder* ui;
+    Ui::TableWidgetOrder* ui;
+    TableModel* order_table_model_ {};
 
     Node* node_ {};
     int unit_party_ {};
     int value_decimal_ {};
     TreeModel* stakeholder_model_ {};
     TreeModel* order_model_ {};
-    const TreeModel& product_model_;
+    const TreeModel* product_model_ {};
 };
 
-#endif // EDITNODEORDER_H
+#endif // TABLEWIDGETORDER_H

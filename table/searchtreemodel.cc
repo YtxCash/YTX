@@ -2,7 +2,7 @@
 
 #include "component/enumclass.h"
 
-SearchTreeModel::SearchTreeModel(CInfo& info, const AbstractTreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent)
+SearchTreeModel::SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent)
     : QAbstractItemModel { parent }
     , sql_ { sql }
     , info_ { info }

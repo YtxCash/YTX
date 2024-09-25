@@ -2,11 +2,11 @@
 #define ORDERSTAKEHOLDER_H
 
 #include "delegate/styleditemdelegate.h"
-#include "tree/model/abstracttreemodel.h"
+#include "tree/model/treemodel.h"
 
 class OrderStakeholder : public StyledItemDelegate {
 public:
-    OrderStakeholder(const AbstractTreeModel& stakeholder_tree_model, int unit, QObject* parent = nullptr);
+    OrderStakeholder(const TreeModel& stakeholder_tree_model, int unit, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -17,7 +17,7 @@ private:
     QString GetPath(const QModelIndex& index) const;
 
 private:
-    const AbstractTreeModel& stakeholder_tree_model_;
+    const TreeModel& stakeholder_tree_model_;
     int unit_ {};
 };
 

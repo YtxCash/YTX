@@ -4,30 +4,30 @@
 #include <QMessageBox>
 
 #include "component/constvalue.h"
+#include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_insertnodeorder.h"
 
-InsertNodeOrder::InsertNodeOrder(Node* node, CSectionRule& section_rule, AbstractTreeModel* order_model, AbstractTreeModel* stakeholder_model,
-    const AbstractTreeModel& product_model, int unit_party, QWidget* parent)
+InsertNodeOrder::InsertNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel& product_model,
+    int value_decimal, int unit_party, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::InsertNodeOrder)
     , node_ { node }
     , unit_party_ { unit_party }
-    , section_rule_ { section_rule }
+    , value_decimal_ { value_decimal }
     , stakeholder_model_ { stakeholder_model }
     , order_model_ { order_model }
     , product_model_ { product_model }
 {
     ui->setupUi(this);
-
-    ui->comboParty->blockSignals(true);
-    ui->comboEmployee->blockSignals(true);
+    SignalBlocker blocker(this);
 
     IniDialog();
     IniConnect();
 
-    ui->comboParty->blockSignals(false);
-    ui->comboEmployee->blockSignals(false);
+    ui->pBtnSaveOrder->setEnabled(false);
+    ui->pBtnLockOrder->setText(tr("Lock"));
+    ui->labelParty->setText(tr("Party"));
 }
 
 InsertNodeOrder::~InsertNodeOrder() { delete ui; }
@@ -59,23 +59,56 @@ void InsertNodeOrder::RUpdateStakeholder()
     ui->comboEmployee->blockSignals(false);
 }
 
+void InsertNodeOrder::RUpdateOrder(const QVariant& value, TreeEnumOrder column)
+{
+    switch (column) {
+    case TreeEnumOrder::kDescription:
+        ui->lineDescription->setText(value.toString());
+        break;
+    case TreeEnumOrder::kNodeRule:
+        ui->chkBoxRefund->setChecked(value.toBool());
+        break;
+    case TreeEnumOrder::kUnit: {
+        UpdateUnit(value.toInt());
+    } break;
+    case TreeEnumOrder::kParty: {
+        auto index_party { ui->comboParty->findData(value.toInt()) };
+        ui->comboParty->setCurrentIndex(index_party);
+    } break;
+    case TreeEnumOrder::kEmployee: {
+        auto employee_index { ui->comboEmployee->findData(value.toInt()) };
+        ui->comboEmployee->setCurrentIndex(employee_index);
+    } break;
+    case TreeEnumOrder::kDateTime:
+        ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), DATE_TIME_FST));
+        break;
+    case TreeEnumOrder::kLocked:
+        ui->pBtnLockOrder->setChecked(value.toBool());
+        break;
+    default:
+        break;
+    }
+
+    ui->pBtnSaveOrder->setEnabled(true);
+}
+
 void InsertNodeOrder::IniDialog()
 {
     IniCombo(ui->comboParty, unit_party_);
     IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
-    ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
-
-    ui->pBtnLockOrder->setChecked(false);
-    ui->pBtnLockOrder->setText(tr("Lock"));
+    ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);
-    ui->dSpinDiscount->setDecimals(section_rule_.value_decimal);
-    ui->dSpinFinalTotal->setDecimals(section_rule_.value_decimal);
+    ui->dSpinDiscount->setDecimals(value_decimal_);
+    ui->dSpinFinalTotal->setDecimals(value_decimal_);
     ui->dSpinFinalTotal->setRange(DMIN, DMAX);
-    ui->dSpinInitialTotal->setDecimals(section_rule_.value_decimal);
+    ui->dSpinInitialTotal->setDecimals(value_decimal_);
     ui->dSpinInitialTotal->setRange(DMIN, DMAX);
+    ui->dSpinSecond->setRange(DMIN, DMAX);
+    ui->dSpinSecond->setDecimals(value_decimal_);
+    ui->spinFirst->setRange(IMIN, IMAX);
 }
 
 void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
@@ -90,17 +123,19 @@ void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
 
 void InsertNodeOrder::accept()
 {
-    if (is_modified_) {
-        if (!is_saved_) {
-            emit QDialog::accepted();
-            is_saved_ = true;
-        }
+    if (auto focus_widget { this->focusWidget() })
+        focus_widget->clearFocus();
 
-        if (is_saved_)
-            order_model_->UpdateNode(node_);
-
-        is_modified_ = false;
+    if (!is_saved_) {
+        emit QDialog::accepted();
+        is_saved_ = true;
+        ui->chkBoxBranch->setEnabled(false);
     }
+
+    if (is_saved_)
+        order_model_->UpdateNode(node_);
+
+    ui->pBtnSaveOrder->setEnabled(false);
 }
 
 void InsertNodeOrder::reject()
@@ -108,63 +143,77 @@ void InsertNodeOrder::reject()
     if (!is_saved_)
         ResourcePool<Node>::Instance().Recycle(node_);
 
+    if (is_saved_ && ui->pBtnSaveOrder->isEnabled()) {
+        auto reply { QMessageBox::question(
+            this, tr("Save Modified"), tr("Have unsaved modifications. Save them ?"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel) };
+
+        switch (reply) {
+        case QMessageBox::Cancel:
+            return;
+        case QMessageBox::Yes:
+            accept();
+            break;
+        case QMessageBox::No:
+        default:
+            break;
+        }
+    }
+
     QDialog::reject();
 }
 
 void InsertNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &InsertNodeOrder::accept); }
 
-void InsertNodeOrder::SetWidgetsDisabledBranch(bool disabled)
+void InsertNodeOrder::LockWidgets(bool locked, bool branch)
 {
-    ui->labelEmployee->setDisabled(disabled);
-    ui->comboEmployee->setDisabled(disabled);
+    bool basic_enable { !locked };
+    bool not_branch_enable { !locked && !branch };
 
-    ui->labelDiscount->setDisabled(disabled);
-    ui->dSpinDiscount->setDisabled(disabled);
+    ui->labelParty->setEnabled(basic_enable);
+    ui->comboParty->setEnabled(basic_enable);
 
-    ui->pBtnInsertParty->setDisabled(disabled);
+    ui->pBtnInsertParty->setEnabled(not_branch_enable);
 
-    ui->dateTimeEdit->setDisabled(disabled);
-    ui->labelInitialTotal->setDisabled(disabled);
-    ui->dSpinInitialTotal->setDisabled(disabled);
-    ui->pBtnPrint->setDisabled(disabled);
-    ui->dSpinFinalTotal->setDisabled(disabled);
+    ui->labelInitialTotal->setEnabled(not_branch_enable);
+    ui->dSpinInitialTotal->setEnabled(not_branch_enable);
+
+    ui->dSpinFinalTotal->setEnabled(!branch);
+
+    ui->labelDiscount->setEnabled(not_branch_enable);
+    ui->dSpinDiscount->setEnabled(not_branch_enable);
+
+    ui->labelEmployee->setEnabled(not_branch_enable);
+    ui->comboEmployee->setEnabled(not_branch_enable);
+
+    ui->rBtnCash->setEnabled(not_branch_enable);
+    ui->rBtnMonthly->setEnabled(not_branch_enable);
+    ui->rBtnPending->setEnabled(not_branch_enable);
+    ui->dateTimeEdit->setEnabled(not_branch_enable);
+
+    ui->chkBoxRefund->setEnabled(not_branch_enable);
+    ui->lineDescription->setEnabled(basic_enable);
+
+    ui->pBtnPrint->setEnabled(locked && !branch);
 }
 
-void InsertNodeOrder::SetWidgetsEnabledPost(bool enabled)
+void InsertNodeOrder::UpdateUnit(int unit)
 {
-    ui->labelParty->setEnabled(enabled);
-    ui->comboParty->setEnabled(enabled);
-
-    ui->pBtnInsertParty->setEnabled(enabled);
-
-    ui->labelInitialTotal->setEnabled(enabled);
-    ui->dSpinInitialTotal->setEnabled(enabled);
-
-    ui->labelDiscount->setEnabled(enabled);
-    ui->dSpinDiscount->setEnabled(enabled);
-
-    ui->labelEmployee->setEnabled(enabled);
-    ui->comboEmployee->setEnabled(enabled);
-
-    ui->rBtnCash->setEnabled(enabled);
-    ui->rBtnMonthly->setEnabled(enabled);
-    ui->rBtnPending->setEnabled(enabled);
-    ui->dateTimeEdit->setEnabled(enabled);
-
-    ui->chkBoxRefund->setEnabled(enabled);
-    ui->pBtnPrint->setEnabled(!enabled);
-}
-
-void InsertNodeOrder::ZeroSettlement()
-{
-    ui->dSpinDiscount->setValue(0.0);
-    ui->dSpinFinalTotal->setValue(0.0);
-}
-
-void InsertNodeOrder::EnableSave(bool enable)
-{
-    is_modified_ = enable;
-    ui->pBtnSaveOrder->setEnabled(enable);
+    switch (unit) {
+    case UNIT_CASH:
+        ui->rBtnCash->setChecked(true);
+        ui->dSpinFinalTotal->setValue(ui->dSpinInitialTotal->value() - ui->dSpinDiscount->value());
+        break;
+    case UNIT_MONTHLY:
+        ui->dSpinFinalTotal->setValue(0.0);
+        ui->rBtnMonthly->setChecked(true);
+        break;
+    case UNIT_PENDING:
+        ui->dSpinFinalTotal->setValue(0.0);
+        ui->rBtnPending->setChecked(true);
+        break;
+    default:
+        break;
+    }
 }
 
 void InsertNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
@@ -173,7 +222,8 @@ void InsertNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
         return;
 
     node_->name = arg1;
-    EnableSave(true);
+    enable_save_ = true;
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
@@ -185,8 +235,12 @@ void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     if (party_id <= 0)
         return;
 
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(true);
     node_->party = party_id;
+    enable_save_ = true;
+
+    if (ui->comboEmployee->currentIndex() != -1)
+        return;
 
     auto employee_index { ui->comboEmployee->findData(stakeholder_model_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
@@ -200,7 +254,8 @@ void InsertNodeOrder::on_chkBoxRefund_toggled(bool checked) { node_->node_rule =
 void InsertNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
 {
     node_->employee = ui->comboEmployee->currentData().toInt();
-    EnableSave(true);
+    enable_save_ = true;
+    ui->pBtnSaveOrder->setEnabled(true);
 }
 
 void InsertNodeOrder::on_rBtnCash_toggled(bool checked)
@@ -209,7 +264,9 @@ void InsertNodeOrder::on_rBtnCash_toggled(bool checked)
         return;
 
     node_->unit = UNIT_CASH;
-    EnableSave(true);
+    ui->dSpinFinalTotal->setValue(ui->dSpinInitialTotal->value() - ui->dSpinDiscount->value());
+    node_->final_total = ui->dSpinFinalTotal->value();
+    ui->pBtnSaveOrder->setEnabled(enable_save_);
 }
 
 void InsertNodeOrder::on_rBtnMonthly_toggled(bool checked)
@@ -218,8 +275,9 @@ void InsertNodeOrder::on_rBtnMonthly_toggled(bool checked)
         return;
 
     node_->unit = UNIT_MONTHLY;
-    ZeroSettlement();
-    EnableSave(true);
+    ui->dSpinFinalTotal->setValue(0.0);
+    node_->final_total = 0.0;
+    ui->pBtnSaveOrder->setEnabled(enable_save_);
 }
 
 void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
@@ -228,8 +286,9 @@ void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
         return;
 
     node_->unit = UNIT_PENDING;
-    ZeroSettlement();
-    EnableSave(true);
+    ui->dSpinFinalTotal->setValue(0.0);
+    node_->final_total = 0.0;
+    ui->pBtnSaveOrder->setEnabled(enable_save_);
 }
 
 void InsertNodeOrder::on_pBtnInsertParty_clicked()
@@ -254,36 +313,59 @@ void InsertNodeOrder::on_pBtnInsertParty_clicked()
 void InsertNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
 {
     node_->date_time = date_time.toString(DATE_TIME_FST);
-    EnableSave(true);
+    ui->pBtnSaveOrder->setEnabled(enable_save_);
 }
 
 void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 {
     node_->locked = checked;
-    SetWidgetsEnabledPost(!checked);
     ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
 
+    LockWidgets(checked, node_->branch);
+    order_model_->UpdateNodeLocked(node_);
+
     if (checked) {
-        accept();
+        if (ui->pBtnSaveOrder->isEnabled())
+            accept();
+
+        ui->pBtnPrint->setFocus();
+        ui->pBtnPrint->setDefault(true);
     }
 }
 
-void InsertNodeOrder::on_lineDescription_textChanged(const QString& arg1)
+void InsertNodeOrder::on_dSpinInitialTotal_editingFinished()
 {
-    node_->description = arg1;
-    EnableSave(true);
+    auto value { ui->dSpinInitialTotal->value() };
+
+    node_->final_total = value - node_->discount;
+    ui->dSpinFinalTotal->setValue(node_->final_total);
+    node_->initial_total = value;
 }
 
-void InsertNodeOrder::on_dSpinDiscount_valueChanged(double arg1)
+void InsertNodeOrder::on_dSpinDiscount_editingFinished()
 {
-    node_->initial_total = node_->initial_total + node_->discount - arg1;
-    ui->dSpinInitialTotal->setValue(node_->initial_total);
-    node_->discount = arg1;
-    EnableSave(true);
+    auto value { ui->dSpinDiscount->value() };
+
+    if (node_->node_rule == UNIT_CASH) {
+        node_->final_total = node_->initial_total - value;
+        ui->dSpinFinalTotal->setValue(node_->final_total);
+    }
+
+    node_->discount = value;
 }
 
 void InsertNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1)
 {
-    node_->branch = { arg1 == Qt::Checked };
-    SetWidgetsDisabledBranch(node_->branch);
+    bool enable { arg1 == Qt::Checked };
+    LockWidgets(false, enable);
 }
+
+void InsertNodeOrder::on_lineDescription_editingFinished() { node_->description = ui->lineDescription->text(); }
+void InsertNodeOrder::on_spinFirst_editingFinished() { node_->first = ui->spinFirst->value(); }
+void InsertNodeOrder::on_dSpinSecond_editingFinished() { node_->second = ui->dSpinSecond->value(); }
+
+void InsertNodeOrder::on_lineDescription_textChanged(const QString& /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
+void InsertNodeOrder::on_spinFirst_valueChanged(int /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
+void InsertNodeOrder::on_dSpinSecond_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
+void InsertNodeOrder::on_dSpinInitialTotal_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
+void InsertNodeOrder::on_dSpinDiscount_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }

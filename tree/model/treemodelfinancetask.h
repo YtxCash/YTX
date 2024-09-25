@@ -1,9 +1,9 @@
 #ifndef TREEMODELFINANCETASK_H
 #define TREEMODELFINANCETASK_H
 
-#include "abstracttreemodel.h"
+#include "treemodel.h"
 
-class TreeModelFinanceTask : public AbstractTreeModel {
+class TreeModelFinanceTask : public TreeModel {
     Q_OBJECT
 
 public:

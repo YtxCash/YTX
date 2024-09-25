@@ -5,7 +5,7 @@
 #include "ui_editnodestakeholder.h"
 
 EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch,
-    int ratio_decimal, AbstractTreeModel* model, QWidget* parent)
+    int ratio_decimal, TreeModel* model, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
     , node_ { node }
@@ -22,7 +22,7 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CSt
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 
-void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, AbstractTreeModel* model, int ratio_decimal)
+void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* model, int ratio_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
@@ -47,7 +47,7 @@ void EditNodeStakeholder::IniComboWithStringHash(QComboBox* combo, CStringHash& 
     combo->model()->sort(0);
 }
 
-void EditNodeStakeholder::IniComboEmployee(AbstractTreeModel* model)
+void EditNodeStakeholder::IniComboEmployee(TreeModel* model)
 {
     ui->comboEmployee->clear();
 

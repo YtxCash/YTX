@@ -4,8 +4,8 @@
 
 #include "ui_treewidgetorder.h"
 
-TreeWidgetOrder::TreeWidgetOrder(AbstractTreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
-    : AbstractTreeWidget(parent)
+TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
+    : TreeWidget(parent)
     , ui(new Ui::TreeWidgetOrder)
     , model_ { model }
     , info_ { info }

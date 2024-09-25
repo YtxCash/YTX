@@ -4,8 +4,8 @@
 
 #include "ui_treewidgetstakeholder.h"
 
-TreeWidgetStakeholder::TreeWidgetStakeholder(AbstractTreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
-    : AbstractTreeWidget(parent)
+TreeWidgetStakeholder::TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
+    : TreeWidget(parent)
     , ui(new Ui::TreeWidgetStakeholder)
     , model_ { model }
     , info_ { info }

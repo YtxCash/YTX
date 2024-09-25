@@ -14,7 +14,6 @@
 #include "database/mainwindowsqlite.h"
 #include "table/model/tablemodel.h"
 #include "ui_mainwindow.h"
-#include "widget/tablewidget.h"
 
 using PDialog = QPointer<QDialog>;
 
@@ -103,11 +102,11 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTable(SectionData* data, AbstractTreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, int node_id);
-    void CreateDelegate(QTableView* view, const AbstractTreeModel* tree_model, CSectionRule* section_rule, int node_id);
+    void CreateTable(SectionData* data, TreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, int node_id);
+    void CreateDelegate(QTableView* view, const TreeModel* tree_model, CSectionRule* section_rule, int node_id);
     void DelegateStakeholder(QTableView* view, CSectionRule* section_rule);
     void SetView(QTableView* view);
-    void SetConnect(const QTableView* view, const TableModel* table, const AbstractTreeModel* tree, const SectionData* data);
+    void SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const SectionData* data);
 
     void CreateSection(Tree& tree, CString& name, SectionData* data, TableHash* table_hash, CSectionRule* section_rule);
     void SwitchSection(const Tab& last_tab);
@@ -122,7 +121,7 @@ private:
     void DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* section_rule);
 
     void SetView(QTreeView* view);
-    void SetConnect(const QTreeView* view, const AbstractTreeWidget* widget, const AbstractTreeModel* model, const Sqlite* table_sql);
+    void SetConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql);
 
     void PrepInsertNode(QTreeView* view);
     void InsertNode(const QModelIndex& parent, int row);
@@ -133,9 +132,9 @@ private:
     bool LockFile(CString& absolute_path, CString& complete_base_name);
 
     void DeleteTrans(QWidget* widget);
-    void RemoveNode(QTreeView* view, AbstractTreeModel* model);
-    void RemoveView(AbstractTreeModel* model, const QModelIndex& index, int node_id);
-    void RemoveBranch(AbstractTreeModel* model, const QModelIndex& index, int node_id);
+    void RemoveNode(QTreeView* view, TreeModel* model);
+    void RemoveView(TreeModel* model, const QModelIndex& index, int node_id);
+    void RemoveBranch(TreeModel* model, const QModelIndex& index, int node_id);
 
     void UpdateInterface(const Interface& interface);
     void UpdateTranslate();
@@ -150,7 +149,7 @@ private:
     void Recent();
 
     void SaveTableWidget(const TableHash& table_hash, CString& section_name, CString& property);
-    void RestoreTableWidget(SectionData* data, AbstractTreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, CString& property);
+    void RestoreTableWidget(SectionData* data, TreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, CString& property);
 
     template <InheritQAbstractItemView T> bool HasSelection(const T* view) { return view && view->selectionModel() && view->selectionModel()->hasSelection(); }
 

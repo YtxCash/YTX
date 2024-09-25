@@ -110,13 +110,13 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        UpdateDateTime(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), DATE_TIME, &TransShadow::date_time);
         break;
     case TableEnum::kCode:
-        UpdateCode(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnum::kDescription:
-        UpdateDescription(trans_shadow, value.toString());
+        UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnum::kRatio:
         UpdateRatio(trans_shadow, value.toDouble());

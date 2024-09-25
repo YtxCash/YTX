@@ -4,7 +4,7 @@
 
 #include "widget/combobox.h"
 
-OrderStakeholder::OrderStakeholder(const AbstractTreeModel& modstakeholder_tree_model, int unit, QObject* parent)
+OrderStakeholder::OrderStakeholder(const TreeModel& modstakeholder_tree_model, int unit, QObject* parent)
     : StyledItemDelegate { parent }
     , stakeholder_tree_model_ { modstakeholder_tree_model }
     , unit_ { unit }

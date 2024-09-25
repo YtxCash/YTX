@@ -14,11 +14,14 @@ void SpinBox::wheelEvent(QWheelEvent* event) { event->ignore(); }
 void SpinBox::keyPressEvent(QKeyEvent* event)
 {
     switch (event->key()) {
+    case Qt::Key_Delete:
+    case Qt::Key_Backspace:
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        if (text().isEmpty())
+        if (cleanText().isEmpty()) {
             setValue(0);
-        Q_FALLTHROUGH();
+            return;
+        }
     default:
         QSpinBox::keyPressEvent(event);
     }

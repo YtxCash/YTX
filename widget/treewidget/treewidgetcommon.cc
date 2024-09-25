@@ -1,13 +1,13 @@
-#include "treewidget.h"
+#include "treewidgetcommon.h"
 
 #include <QApplication>
 
 #include "component/constvalue.h"
-#include "ui_treewidget.h"
+#include "ui_treewidgetcommon.h"
 
-TreeWidget::TreeWidget(AbstractTreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
-    : AbstractTreeWidget(parent)
-    , ui(new Ui::TreeWidget)
+TreeWidgetCommon::TreeWidgetCommon(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
+    : TreeWidget(parent)
+    , ui(new Ui::TreeWidgetCommon)
     , model_ { model }
     , info_ { info }
     , section_rule_ { section_rule }
@@ -19,11 +19,11 @@ TreeWidget::TreeWidget(AbstractTreeModel* model, CInfo& info, CSectionRule& sect
     SetStatus();
 }
 
-TreeWidget::~TreeWidget() { delete ui; }
+TreeWidgetCommon::~TreeWidgetCommon() { delete ui; }
 
-void TreeWidget::SetCurrentIndex(const QModelIndex& index) { ui->treeView->setCurrentIndex(index); }
+void TreeWidgetCommon::SetCurrentIndex(const QModelIndex& index) { ui->treeView->setCurrentIndex(index); }
 
-void TreeWidget::SetStatus()
+void TreeWidgetCommon::SetStatus()
 {
     ui->dspin_box_static_->setDecimals(section_rule_.value_decimal);
     ui->lable_static_->setText(section_rule_.static_label);
@@ -51,17 +51,17 @@ void TreeWidget::SetStatus()
     }
 }
 
-QTreeView* TreeWidget::View() { return ui->treeView; }
+QTreeView* TreeWidgetCommon::View() { return ui->treeView; }
 
-QHeaderView* TreeWidget::Header() { return ui->treeView->header(); }
+QHeaderView* TreeWidgetCommon::Header() { return ui->treeView->header(); }
 
-void TreeWidget::RUpdateDSpinBox()
+void TreeWidgetCommon::RUpdateDSpinBox()
 {
     StaticStatus(section_rule_.static_node);
     DynamicStatus(section_rule_.dynamic_node_lhs, section_rule_.dynamic_node_rhs);
 }
 
-void TreeWidget::DynamicStatus(int lhs_node_id, int rhs_node_id)
+void TreeWidgetCommon::DynamicStatus(int lhs_node_id, int rhs_node_id)
 {
     auto lhs_total { equal_unit ? model_->InitialTotal(lhs_node_id) : model_->FinalTotal(lhs_node_id) };
     auto rhs_total { equal_unit ? model_->InitialTotal(rhs_node_id) : model_->FinalTotal(rhs_node_id) };
@@ -72,9 +72,9 @@ void TreeWidget::DynamicStatus(int lhs_node_id, int rhs_node_id)
     ui->dspin_box_dynamic_->setValue(total);
 }
 
-void TreeWidget::StaticStatus(int node_id) { ui->dspin_box_static_->setValue(model_->InitialTotal(node_id)); }
+void TreeWidgetCommon::StaticStatus(int node_id) { ui->dspin_box_static_->setValue(model_->InitialTotal(node_id)); }
 
-double TreeWidget::Operate(double lhs, double rhs, const QString& operation)
+double TreeWidgetCommon::Operate(double lhs, double rhs, const QString& operation)
 {
     switch (operation.at(0).toLatin1()) {
     case '+':

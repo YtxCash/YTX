@@ -7,12 +7,12 @@
 #include "component/settings.h"
 #include "component/using.h"
 #include "database/searchsqlite.h"
-#include "tree/model/abstracttreemodel.h"
+#include "tree/model/treemodel.h"
 
 class SearchTreeModel final : public QAbstractItemModel {
     Q_OBJECT
 public:
-    SearchTreeModel(CInfo& info, const AbstractTreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent = nullptr);
+    SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent = nullptr);
     ~SearchTreeModel() = default;
 
 public:
@@ -35,7 +35,7 @@ private:
 
     CInfo& info_;
     CSectionRule& section_rule_;
-    const AbstractTreeModel& tree_model_;
+    const TreeModel& tree_model_;
 
     QList<const Node*> node_list_ {};
 };
