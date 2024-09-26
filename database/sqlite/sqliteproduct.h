@@ -8,13 +8,13 @@ public:
     SqliteProduct(CInfo& info, QObject* parent = nullptr);
 
     // tree
-    bool BuildTree(NodeHash& node_hash) override;
+    QString BuildTreeQueryString() const override;
     bool InsertNode(int parent_id, Node* node) override;
-    bool NodeExternalReferences(int node_id) const override;
+    bool ExternalReference(int node_id) const override;
 
 private:
     // tree
-    void BuildNodeHash(QSqlQuery& query, NodeHash& node_hash) override;
+    void ReadNode(Node* node, const QSqlQuery& query) override;
 };
 
 #endif // SQLITEPRODUCT_H

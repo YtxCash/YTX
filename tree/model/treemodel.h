@@ -142,6 +142,7 @@ protected:
     virtual bool UpdateNodeRule(Node* node, bool value);
     virtual bool UpdateUnit(Node* node, int value);
     virtual bool UpdateName(Node* node, CString& value);
+    virtual bool IsReferenced(int node_id, CString& message);
 
     // member functions
 
@@ -161,6 +162,8 @@ protected:
 
     void InitializeRoot(int base_unit);
     void ShowTemporaryTooltip(CString& message, int duration = 3000);
+    bool HasChildren(Node* node, CString& message);
+    bool IsOpened(int node_id, CString& message);
 
 protected:
     template <typename T> std::optional<T> GetValue(int node_id, T Node::* member) const

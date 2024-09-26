@@ -9,11 +9,16 @@ TableCombo::TableCombo(const TreeModel& model, int exclude, QObject* parent)
 {
 }
 
-QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     auto editor { new ComboBox(parent) };
     model_.ComboPathLeaf(editor, exclude_);
     editor->model()->sort(0);
+
+    int height = option.rect.height();
+    int width = option.rect.width();
+    editor->setFixedHeight(std::max(height, editor->height()));
+    editor->setMinimumWidth(std::max(width, editor->width()));
     return editor;
 }
 

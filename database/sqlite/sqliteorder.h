@@ -10,22 +10,18 @@ public:
     SqliteOrder(CInfo& info, QObject* parent = nullptr);
 
     // tree
-    bool BuildTree(NodeHash& node_hash) override;
+    QString BuildTreeQueryString() const override;
+
     bool InsertNode(int parent_id, Node* node) override;
     void NodeLeafTotal(Node* node) override;
 
     // table
-    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id) override;
+    QString BuildTransShadowListQueryString() const override;
     bool InsertTransShadow(TransShadow* trans_shadow) override;
-
-    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list) override;
 
 private:
     // tree
-    void BuildNodeHash(QSqlQuery& query, NodeHash& node_hash) override;
-
-    // table
-    void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
+    void ReadNode(Node* node, const QSqlQuery& query) override;
 };
 
 #endif // SQLITEORDER_H

@@ -13,4 +13,5 @@ ComboBox::ComboBox(QWidget* parent)
     completer->setFilterMode(Qt::MatchContains);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     this->setCompleter(completer);
+    this->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 }

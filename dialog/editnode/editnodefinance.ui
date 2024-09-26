@@ -168,6 +168,9 @@
      <property name="insertPolicy">
       <enum>QComboBox::InsertPolicy::NoInsert</enum>
      </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
+     </property>
     </widget>
    </item>
    <item row="9" column="0">

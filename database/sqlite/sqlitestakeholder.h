@@ -17,24 +17,23 @@ public:
     SqliteStakeholder(CInfo& info, QObject* parent = nullptr);
 
     // tree
-    bool BuildTree(NodeHash& node_hash) override;
+    QString BuildTreeQueryString() const override;
     bool InsertNode(int parent_id, Node* node) override;
-    bool NodeInternalReferences(int node_id) const override;
-    bool NodeExternalReferences(int node_id) const override;
-    bool RemoveNode(int node_id, bool branch = false) override;
+    bool ExternalReference(int node_id) const override;
+    QString RemoveNodeQueryStringSecond() const override;
+    QString InternalReferenceQueryString() const override;
 
     // table
-    void BuildTransShadowList(TransShadowList& trans_shadow_list, int lhs_node_id) override;
+    QString BuildTransShadowListQueryString() const override;
     bool InsertTransShadow(TransShadow* trans_shadow) override;
-
-    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list) override;
+    QString BuildTransShadowListRangQueryString(QStringList& list) const override;
 
 private:
     // tree
-    void BuildNodeHash(QSqlQuery& query, NodeHash& node_hash) override;
+    void ReadNode(Node* node, const QSqlQuery& query) override;
 
     // table
-    void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
+    void ReadTrans(Trans* trans, const QSqlQuery& query) override;
 
     QList<int> TransID(int node_id, bool lhs = true);
 };

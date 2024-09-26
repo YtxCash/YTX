@@ -317,11 +317,10 @@ QString MainwindowSqlite::TransactionStakeholder(CString& table_name)
         date_time      DATE,
         code           TEXT,
         lhs_node       INTEGER,
-        unit_price     NUMERIC,
+        lhs_ratio      NUMERIC,
         description    TEXT,
         document       TEXT,
         state          BOOLEAN    DEFAULT 0,
-        commission     NUMERIC,
         rhs_node       INTEGER,
         removed        BOOLEAN    DEFAULT 0
     );

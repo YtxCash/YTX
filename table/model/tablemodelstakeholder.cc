@@ -3,10 +3,8 @@
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 
-TableModelStakeholder::TableModelStakeholder(
-    SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, int mark, QObject* parent)
+TableModelStakeholder::TableModelStakeholder(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent)
     : TableModel { sql, node_rule, node_id, info, section_rule, parent }
-    , mark_ { mark }
 {
 }
 
@@ -71,25 +69,26 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto trans_shadow { trans_shadow_list_.at(index.row()) };
-    const TableEnum kColumn { index.column() };
+    const TableEnumStakeholder kColumn { index.column() };
 
     switch (kColumn) {
-    case TableEnum::kID:
+    case TableEnumStakeholder::kID:
         return *trans_shadow->id;
-    case TableEnum::kDateTime:
+    case TableEnumStakeholder::kDateTime:
         return *trans_shadow->date_time;
-    case TableEnum::kCode:
+    case TableEnumStakeholder::kCode:
         return *trans_shadow->code;
-    case TableEnum::kRatio:
-        return mark_ == 0 ? QVariant() : *trans_shadow->ratio;
-    case TableEnum::kDescription:
+    case TableEnumStakeholder::kLhsRatio:
+        return *trans_shadow->ratio;
+    case TableEnumStakeholder::kDescription:
         return *trans_shadow->description;
-    case TableEnum::kDebit:
-        return mark_ == 0 ? *trans_shadow->related_debit : QVariant();
-    case TableEnum::kRelatedNode:
-        return *trans_shadow->related_node == 0 ? QVariant() : *trans_shadow->related_node;
-    case TableEnum::kDocument:
+    case TableEnumStakeholder::kDocument:
         return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
+    case TableEnumStakeholder::kState:
+        return *trans_shadow->state;
+    case TableEnumStakeholder::kRhsNode:
+        return *trans_shadow->related_node == 0 ? QVariant() : *trans_shadow->related_node;
+
     default:
         return QVariant();
     }
@@ -100,7 +99,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     if (!index.isValid() || role != Qt::EditRole)
         return false;
 
-    const TableEnum kColumn { index.column() };
+    const TableEnumStakeholder kColumn { index.column() };
     const int kRow { index.row() };
 
     auto trans_shadow { trans_shadow_list_.at(kRow) };
@@ -109,23 +108,23 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     bool rel_changed { false };
 
     switch (kColumn) {
-    case TableEnum::kDateTime:
+    case TableEnumStakeholder::kDateTime:
         UpdateField(trans_shadow, value.toString(), DATE_TIME, &TransShadow::date_time);
         break;
-    case TableEnum::kCode:
+    case TableEnumStakeholder::kCode:
         UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
         break;
-    case TableEnum::kDescription:
-        UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
-        break;
-    case TableEnum::kRatio:
+    case TableEnumStakeholder::kLhsRatio:
         UpdateRatio(trans_shadow, value.toDouble());
         break;
-    case TableEnum::kDebit:
-        UpdateCommission(trans_shadow, value.toDouble());
+    case TableEnumStakeholder::kDescription:
+        UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
-    case TableEnum::kRelatedNode:
-        rel_changed = UpdateRelatedNode(trans_shadow, value.toInt());
+    case TableEnumStakeholder::kState:
+        UpdateField(trans_shadow, value.toBool(), STATE, &TransShadow::state);
+        break;
+    case TableEnumStakeholder::kRhsNode:
+        rel_changed = UpdateField(trans_shadow, value.toInt(), RHS_NODE, &TransShadow::related_node);
         break;
     default:
         return false;
@@ -140,9 +139,6 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         return true;
     }
 
-    if (rel_changed)
-        sql_->UpdateTrans(*trans_shadow->id);
-
     emit SResizeColumnToContents(index.column());
     return true;
 }
@@ -151,7 +147,7 @@ bool TableModelStakeholder::UpdateRatio(TransShadow* trans_shadow, double value)
 {
     const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
 
-    if (std::abs(*trans_shadow->ratio - value) < tolerance || mark_ == 0)
+    if (std::abs(*trans_shadow->ratio - value) < tolerance)
         return false;
 
     *trans_shadow->ratio = value;
@@ -166,7 +162,7 @@ bool TableModelStakeholder::UpdateCommission(TransShadow* trans_shadow, double v
 {
     const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
 
-    if (std::abs(*trans_shadow->related_debit - value) < tolerance || mark_ != 0)
+    if (std::abs(*trans_shadow->related_debit - value) < tolerance)
         return false;
 
     *trans_shadow->related_debit = value;
@@ -184,21 +180,23 @@ void TableModelStakeholder::sort(int column, Qt::SortOrder order)
         return;
 
     auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {
-        const TableEnum kColumn { column };
+        const TableEnumStakeholder kColumn { column };
 
         switch (kColumn) {
-        case TableEnum::kDateTime:
+        case TableEnumStakeholder::kDateTime:
             return (order == Qt::AscendingOrder) ? (*lhs->date_time < *rhs->date_time) : (*lhs->date_time > *rhs->date_time);
-        case TableEnum::kCode:
+        case TableEnumStakeholder::kCode:
             return (order == Qt::AscendingOrder) ? (*lhs->code < *rhs->code) : (*lhs->code > *rhs->code);
-        case TableEnum::kRatio:
+        case TableEnumStakeholder::kLhsRatio:
             return (order == Qt::AscendingOrder) ? (*lhs->ratio < *rhs->ratio) : (*lhs->ratio > *rhs->ratio);
-        case TableEnum::kDescription:
+        case TableEnumStakeholder::kDescription:
             return (order == Qt::AscendingOrder) ? (*lhs->description < *rhs->description) : (*lhs->description > *rhs->description);
-        case TableEnum::kRelatedNode:
-            return (order == Qt::AscendingOrder) ? (*lhs->related_node < *rhs->related_node) : (*lhs->related_node > *rhs->related_node);
-        case TableEnum::kDocument:
+        case TableEnumStakeholder::kDocument:
             return (order == Qt::AscendingOrder) ? (lhs->document->size() < rhs->document->size()) : (lhs->document->size() > rhs->document->size());
+        case TableEnumStakeholder::kState:
+            return (order == Qt::AscendingOrder) ? (lhs->state < rhs->state) : (lhs->state > rhs->state);
+        case TableEnumStakeholder::kRhsNode:
+            return (order == Qt::AscendingOrder) ? (*lhs->related_node < *rhs->related_node) : (*lhs->related_node > *rhs->related_node);
         default:
             return false;
         }

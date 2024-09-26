@@ -51,6 +51,7 @@
 #include "global/signalstation.h"
 #include "global/sqlconnection.h"
 #include "table/model/tablemodelfinance.h"
+#include "table/model/tablemodelorder.h"
 #include "table/model/tablemodelproduct.h"
 #include "table/model/tablemodelstakeholder.h"
 #include "table/model/tablemodeltask.h"
@@ -60,6 +61,7 @@
 #include "tree/model/treemodelstakeholder.h"
 #include "ui_mainwindow.h"
 #include "widget/tablewidget/tablewidgetcommon.h"
+#include "widget/tablewidget/tablewidgetorder.h"
 #include "widget/treewidget/treewidgetcommon.h"
 #include "widget/treewidget/treewidgetorder.h"
 #include "widget/treewidget/treewidgetstakeholder.h"
@@ -239,9 +241,6 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
     if (index.column() != 0)
         return;
 
-    if (section_data_->info.section == Section::kSales || section_data_->info.section == Section::kPurchase)
-        return;
-
     bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
     if (branch)
         return;
@@ -291,11 +290,17 @@ void MainWindow::CreateTable(SectionData* data, TreeModel* tree_model, CSectionR
     auto section { data->info.section };
     auto node_rule { tree_model->NodeRule(node_id) };
 
+    auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
+    tree_model->CopyNode(tmp_node, node_id);
+
     TableWidget* widget {};
 
     switch (section) {
     case Section::kSales:
+        widget = new TableWidgetOrder(tmp_node, tree_model, stakeholder_tree_.model, *product_tree_.model, section_rule->value_decimal, UNIT_CUSTOMER, this);
+        break;
     case Section::kPurchase:
+        widget = new TableWidgetOrder(tmp_node, tree_model, stakeholder_tree_.model, *product_tree_.model, section_rule->value_decimal, UNIT_VENDOR, this);
         break;
     default:
         widget = new TableWidgetCommon(this);
@@ -315,7 +320,13 @@ void MainWindow::CreateTable(SectionData* data, TreeModel* tree_model, CSectionR
         model = new TableModelTask(data->sql, node_rule, node_id, data->info, task_rule_, this);
         break;
     case Section::kStakeholder:
-        model = new TableModelStakeholder(data->sql, node_rule, node_id, data->info, stakeholder_rule_, tree_model->Unit(node_id), this);
+        model = new TableModelStakeholder(data->sql, node_rule, node_id, data->info, stakeholder_rule_, this);
+        break;
+    case Section::kSales:
+        model = new TableModelOrder(data->sql, node_rule, node_id, data->info, *section_rule, this);
+        break;
+    case Section::kPurchase:
+        model = new TableModelOrder(data->sql, node_rule, node_id, data->info, *section_rule, this);
         break;
     default:
         break;
@@ -329,21 +340,23 @@ void MainWindow::CreateTable(SectionData* data, TreeModel* tree_model, CSectionR
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
     tab_bar->setTabToolTip(tab_index, tree_model->GetPath(node_id));
 
-    auto view { widget->View() };
-    SetView(view);
-    SetConnect(view, model, tree_model, data);
+    if (section != Section::kSales && section != Section::kPurchase) {
+        auto view { widget->View() };
+        SetView(view);
+        SetConnect(view, model, tree_model, data);
 
-    switch (section) {
-    case Section::kFinance:
-    case Section::kProduct:
-    case Section::kTask:
-        CreateDelegate(view, tree_model, section_rule, node_id);
-        break;
-    case Section::kStakeholder:
-        DelegateStakeholder(view, section_rule);
-        break;
-    default:
-        break;
+        switch (section) {
+        case Section::kFinance:
+        case Section::kProduct:
+        case Section::kTask:
+            CreateDelegate(view, tree_model, section_rule, node_id);
+            break;
+        case Section::kStakeholder:
+            DelegateStakeholder(view, section_rule);
+            break;
+        default:
+            break;
+        }
     }
 
     table_hash->insert(node_id, widget);
@@ -402,21 +415,24 @@ void MainWindow::CreateDelegate(QTableView* view, const TreeModel* tree_model, C
 void MainWindow::DelegateStakeholder(QTableView* view, CSectionRule* section_rule)
 {
     auto node { new TableCombo(*product_tree_.model, 0, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRelatedNode), node);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kRhsNode), node);
 
     auto unit_price { new TableDoubleSpin(section_rule->ratio_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRatio), unit_price);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kLhsRatio), unit_price);
 
     auto date_time { new DateTime(interface_.date_format, section_rule->hide_time, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
 
     auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kCode), line);
 
     auto document { new TableDbClick(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+
+    auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 }
 
 void MainWindow::CreateSection(Tree& tree, CString& name, SectionData* data, TableHash* table_hash, CSectionRule* section_rule)
@@ -635,8 +651,8 @@ void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
     }
 
     auto& sql { section_data_->sql };
-    bool interal_references { sql->NodeInternalReferences(node_id) };
-    bool exteral_references { sql->NodeExternalReferences(node_id) };
+    bool interal_references { sql->InternalReference(node_id) };
+    bool exteral_references { sql->ExternalReference(node_id) };
 
     if (!interal_references && !exteral_references) {
         RemoveView(model, index, node_id);
@@ -1093,8 +1109,7 @@ void MainWindow::SetHeader()
 
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), "" };
-    stakeholder_data_.info.part_table_header
-        = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Commission"), "", "" };
+    stakeholder_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), tr("D"), tr("S"), tr("Inside") };
     stakeholder_data_.info.table_header = {
         tr("ID"),
         tr("DateTime"),
@@ -1268,7 +1283,7 @@ void MainWindow::REditNode()
     auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
     model->CopyNode(tmp_node, node_id);
 
-    bool enable_branch { !section_data_->sql->NodeInternalReferences(node_id) && !section_data_->sql->NodeExternalReferences(node_id)
+    bool enable_branch { !section_data_->sql->InternalReference(node_id) && !section_data_->sql->ExternalReference(node_id)
         && !section_table_->contains(node_id) && model->ChildrenEmpty(node_id) };
 
     const auto& info { section_data_->info };

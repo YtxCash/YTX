@@ -82,7 +82,7 @@ private slots:
     void on_rBtnPurchase_toggled(bool checked);
 
 private:
-    inline bool IsTreeWidget(const QWidget* widget) { return widget->inherits("AbstractTreeWidget"); }
+    inline bool IsTreeWidget(const QWidget* widget) { return widget->inherits("TreeWidget"); }
     inline bool IsTableWidget(const QWidget* widget) { return widget->inherits("TableWidget"); }
     inline TableModel* GetTableModel(QTableView* view) { return qobject_cast<TableModel*>(view->model()); }
     inline QTableView* GetQTableView(QWidget* widget) { return dynamic_cast<TableWidget*>(widget)->View(); }

@@ -41,6 +41,44 @@ bool TreeModelProduct::UpdateUnitPrice(Node* node, double value, CString& field)
 
 bool TreeModelProduct::UpdateCommission(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::second); }
 
+bool TreeModelProduct::IsReferenced(int node_id, CString& message)
+{
+    if (sql_->InternalReference(node_id)) {
+        ShowTemporaryTooltip(tr("%1\nIt is internal referenced.").arg(message), 3000);
+        return true;
+    }
+
+    if (sql_->ExternalReference(node_id)) {
+        ShowTemporaryTooltip(tr("%1\nIt is external referenced.").arg(message), 3000);
+        return true;
+    }
+
+    return false;
+}
+
+bool TreeModelProduct::UpdateUnit(Node* node, int value)
+{
+    if (node->unit == value)
+        return false;
+
+    const int node_id { node->id };
+    const QString path { GetPath(node_id) };
+    QString message {};
+
+    message = tr("Cannot change unit for %1.").arg(path);
+    if (HasChildren(node, message))
+        return false;
+
+    message = tr("Cannot change unit for %1.").arg(path);
+    if (IsReferenced(node_id, message))
+        return false;
+
+    node->unit = value;
+    sql_->UpdateField(info_.node, value, UNIT, node_id);
+
+    return true;
+}
+
 void TreeModelProduct::sort(int column, Qt::SortOrder order)
 {
     if (column <= -1 || column >= info_.tree_header.size())

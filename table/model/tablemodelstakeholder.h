@@ -7,7 +7,7 @@ class TableModelStakeholder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelStakeholder(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, int mark, QObject* parent = nullptr);
+    TableModelStakeholder(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent = nullptr);
     ~TableModelStakeholder() override = default;
 
 public:
@@ -26,9 +26,6 @@ protected:
 private:
     bool UpdateRatio(TransShadow* trans_shadow, double value) override;
     bool UpdateCommission(TransShadow* trans_shadow, double value);
-
-private:
-    int mark_ {};
 };
 
 #endif // TABLEMODELSTAKEHOLDER_H

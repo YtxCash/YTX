@@ -50,22 +50,29 @@ public slots:
 
 public:
     // tree
-    virtual bool BuildTree(NodeHash& node_hash);
+    bool BuildTree(NodeHash& node_hash);
+    virtual QString BuildTreeQueryString() const;
+
     virtual bool InsertNode(int parent_id, Node* node);
     virtual void NodeLeafTotal(Node* node);
-    virtual bool RemoveNode(int node_id, bool branch = false);
-    virtual bool NodeInternalReferences(int node_id) const;
-    virtual bool NodeExternalReferences(int node_id) const
-    {
-        Q_UNUSED(node_id)
-        return false;
-    };
+
+    bool RemoveNode(int node_id, bool branch = false);
+    virtual QString RemoveNodeQueryStringSecond() const;
+
+    bool InternalReference(int node_id) const;
+    virtual QString InternalReferenceQueryString() const;
+
+    virtual bool ExternalReference(int /*node_id*/) const { return false; }
 
     bool DragNode(int destination_node_id, int node_id);
 
     // table
-    virtual void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id);
-    virtual void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
+    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id);
+    virtual QString BuildTransShadowListQueryString() const;
+
+    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
+    virtual QString BuildTransShadowListRangQueryString(QStringList& list) const;
+
     virtual bool InsertTransShadow(TransShadow* trans_shadow);
 
     bool RemoveTrans(int trans_id);
@@ -76,21 +83,23 @@ public:
     QHash<int, Trans*>* TransHash() { return &trans_hash_; } // 需要改变设计
 
     // common
-    bool UpdateField(CString& table, CVariant& new_value, CString& field, int id);
+    bool UpdateField(CString& table, CVariant& value, CString& field, int id);
 
 protected:
     // tree
-    virtual void BuildNodeHash(QSqlQuery& query, NodeHash& node_hash);
+    virtual void ReadNode(Node* node, const QSqlQuery& query);
 
+    void BuildNodeHash(NodeHash& node_hash, QSqlQuery& query);
     bool DBTransaction(std::function<bool()> function);
-    void ReadRelationship(QSqlQuery& query, const NodeHash& node_hash);
-    void WriteRelationship(QSqlQuery& query, int node_id, int parent_id);
+    void ReadRelationship(const NodeHash& node_hash, QSqlQuery& query);
+    void WriteRelationship(int node_id, int parent_id, QSqlQuery& query);
 
     // table
-    virtual void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
-    virtual QMultiHash<int, int> RelatedNodeTrans(int node_id) const;
+    virtual void ReadTrans(Trans* trans, const QSqlQuery& query);
 
-    void Convert(Trans* trans, TransShadow* trans_shadow, bool left);
+    void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
+    void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
+    QMultiHash<int, int> RelatedNodeTrans(int node_id) const;
 
 protected:
     QHash<int, Trans*> trans_hash_ {};

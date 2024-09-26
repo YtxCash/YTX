@@ -23,7 +23,9 @@ public:
 
 protected:
     bool UpdateNodeRule(Node* node, bool value) override; // Cash = 0, Monthly = 1
+    bool IsReferenced(int node_id, CString& message) override;
     void ConstructTree() override;
+    bool UpdateUnit(Node* node, int value) override;
 
 private:
     bool UpdatePaymentPeriod(Node* node, int value, CString& field = PAYMENT_PERIOD);

@@ -614,17 +614,21 @@ bool TreeModel::UpdateBranch(Node* node, bool value)
     if (node->branch == value)
         return false;
 
-    int node_id { node->id };
+    const int node_id { node->id };
+    const QString path { GetPath(node_id) };
+    QString message {};
 
-    if (!node->children.isEmpty() || table_hash_.contains(node_id)) {
-        ShowTemporaryTooltip(tr("Cannot change %1's branch. It might be opened or have children nodes.").arg(node->name), 3000);
+    message = tr("Cannot change unit for %1.").arg(path);
+    if (HasChildren(node, message))
         return false;
-    }
 
-    if (sql_->NodeInternalReferences(node_id) || sql_->NodeExternalReferences(node_id)) {
-        ShowTemporaryTooltip(tr("Cannot change %1's branch due to internal or external references").arg(node->name), 3000);
+    message = tr("Cannot change branch for %1.").arg(path);
+    if (IsOpened(node_id, message))
         return false;
-    }
+
+    message = tr("Cannot change branch for %1.").arg(path);
+    if (IsReferenced(node_id, message))
+        return false;
 
     node->branch = value;
     sql_->UpdateField(info_.node, value, BRANCH, node_id);
@@ -707,10 +711,9 @@ bool TreeModel::UpdateUnit(Node* node, int value)
         return false;
 
     int node_id { node->id };
-    if (sql_->NodeInternalReferences(node_id) || sql_->NodeExternalReferences(node_id)) {
-        ShowTemporaryTooltip(tr("Cannot change %1's unit due to internal or external references").arg(node->name), 3000);
+    auto message { tr("Cannot change unit for %1.").arg(GetPath(node_id)) };
+    if (IsReferenced(node_id, message))
         return false;
-    }
 
     node->unit = value;
     sql_->UpdateField(info_.node, value, UNIT, node_id);
@@ -793,10 +796,14 @@ void TreeModel::ShowTemporaryTooltip(CString& message, int duration)
 {
     auto label { new TemporaryLabel(message) };
     label->setWindowFlags(Qt::ToolTip);
-    label->setAlignment(Qt::AlignCenter);
-    label->setFixedSize(300, 100);
+    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     label->setWordWrap(true);
     label->setAttribute(Qt::WA_DeleteOnClose);
+    label->adjustSize();
+
+    const int extra_space = 12 * 2;
+    label->resize(label->width() + extra_space, label->height() + extra_space);
+    label->setContentsMargins(12, 0, 0, 0);
 
     QWidget* mainWindow { QApplication::activeWindow() };
     if (mainWindow) {
@@ -813,4 +820,34 @@ void TreeModel::ShowTemporaryTooltip(CString& message, int duration)
     timer->start(duration);
 
     connect(label, &QLabel::destroyed, [timer]() { timer->stop(); });
+}
+
+bool TreeModel::HasChildren(Node* node, CString& message)
+{
+    if (!node->children.isEmpty()) {
+        ShowTemporaryTooltip(tr("%1\nIt has children nodes.").arg(message), 3000);
+        return true;
+    }
+
+    return false;
+}
+
+bool TreeModel::IsOpened(int node_id, CString& message)
+{
+    if (table_hash_.contains(node_id)) {
+        ShowTemporaryTooltip(tr("%1\nIt is opened.").arg(message), 3000);
+        return true;
+    }
+
+    return false;
+}
+
+bool TreeModel::IsReferenced(int node_id, CString& message)
+{
+    if (sql_->InternalReference(node_id)) {
+        ShowTemporaryTooltip(tr("%1\nIt is internal referenced.").arg(message), 3000);
+        return true;
+    }
+
+    return false;
 }

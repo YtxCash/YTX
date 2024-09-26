@@ -3,36 +3,19 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
-#include "global/resourcepool.h"
-
 SqliteProduct::SqliteProduct(CInfo& info, QObject* parent)
     : Sqlite(info, parent)
 {
 }
 
-bool SqliteProduct::BuildTree(NodeHash& node_hash)
+QString SqliteProduct::BuildTreeQueryString() const
 {
-    QSqlQuery query(*db_);
-    query.setForwardOnly(true);
-
-    auto part = QString(R"(
-    SELECT name, id, code, description, note, node_rule, branch, unit, commission, unit_price, initial_total, final_total
-    FROM %1
-    WHERE removed = 0
-)")
-                    .arg(info_.node);
-
-    query.prepare(part);
-    if (!query.exec()) {
-        qWarning() << "Error in product create tree 1 setp " << query.lastError().text();
-        return false;
-    }
-
-    BuildNodeHash(query, node_hash);
-    query.clear();
-    ReadRelationship(query, node_hash);
-
-    return true;
+    return QString(R"(
+            SELECT name, id, code, description, note, node_rule, branch, unit, commission, unit_price, initial_total, final_total
+            FROM %1
+            WHERE removed = 0
+            )")
+        .arg(info_.node);
 }
 
 bool SqliteProduct::InsertNode(int parent_id, Node* node)
@@ -72,7 +55,7 @@ bool SqliteProduct::InsertNode(int parent_id, Node* node)
             query.clear();
 
             // 插入节点路径记录
-            WriteRelationship(query, node->id, parent_id);
+            WriteRelationship(node->id, parent_id, query);
             return true;
         })) {
         qWarning() << "Failed to insert record";
@@ -82,7 +65,7 @@ bool SqliteProduct::InsertNode(int parent_id, Node* node)
     return true;
 }
 
-bool SqliteProduct::NodeExternalReferences(int node_id) const
+bool SqliteProduct::ExternalReference(int node_id) const
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -90,11 +73,11 @@ bool SqliteProduct::NodeExternalReferences(int node_id) const
     auto string = R"(
     SELECT COUNT(*)
     FROM (
-        SELECT 1 FROM stakeholder_transaction WHERE inside = :node_id AND removed = 0
+        SELECT 1 FROM stakeholder_transaction WHERE rhs_node = :node_id AND removed = 0
         UNION ALL
-        SELECT 1 FROM sales_transaction WHERE rhs_node = :node_id AND removed = 0
+        SELECT 1 FROM sales_transaction WHERE lhs_node = :node_id AND removed = 0
         UNION ALL
-        SELECT 1 FROM purchase_transaction WHERE rhs_node = :node_id AND removed = 0
+        SELECT 1 FROM purchase_transaction WHERE lhs_node = :node_id AND removed = 0
     ) AS combined;
 )";
 
@@ -110,28 +93,18 @@ bool SqliteProduct::NodeExternalReferences(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-void SqliteProduct::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
+void SqliteProduct::ReadNode(Node* node, const QSqlQuery& query)
 {
-    int node_id {};
-    Node* node {};
-
-    while (query.next()) {
-        node = ResourcePool<Node>::Instance().Allocate();
-        node_id = query.value("id").toInt();
-
-        node->id = node_id;
-        node->name = query.value("name").toString();
-        node->code = query.value("code").toString();
-        node->description = query.value("description").toString();
-        node->note = query.value("note").toString();
-        node->node_rule = query.value("node_rule").toBool();
-        node->branch = query.value("branch").toBool();
-        node->unit = query.value("unit").toInt();
-        node->second = query.value("commission").toDouble();
-        node->discount = query.value("unit_price").toDouble();
-        node->initial_total = query.value("initial_total").toDouble();
-        node->final_total = query.value("final_total").toDouble();
-
-        node_hash.insert(node_id, node);
-    }
+    node->id = query.value("id").toInt();
+    node->name = query.value("name").toString();
+    node->code = query.value("code").toString();
+    node->description = query.value("description").toString();
+    node->note = query.value("note").toString();
+    node->node_rule = query.value("node_rule").toBool();
+    node->branch = query.value("branch").toBool();
+    node->unit = query.value("unit").toInt();
+    node->second = query.value("commission").toDouble();
+    node->discount = query.value("unit_price").toDouble();
+    node->initial_total = query.value("initial_total").toDouble();
+    node->final_total = query.value("final_total").toDouble();
 }

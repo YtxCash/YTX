@@ -115,23 +115,28 @@ bool Sqlite::BuildTree(NodeHash& node_hash)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString(R"(
-    SELECT name, id, code, description, note, node_rule, branch, unit, initial_total, final_total
-    FROM %1
-    WHERE removed = 0
-)")
-                    .arg(info_.node);
+    const QString string { BuildTreeQueryString() };
+    query.prepare(string);
 
-    query.prepare(part);
     if (!query.exec()) {
-        qWarning() << "Error in finance create tree 1 setp " << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "\n" << "Error in build tree." << query.lastError().text();
         return false;
     }
 
-    BuildNodeHash(query, node_hash);
+    BuildNodeHash(node_hash, query);
     query.clear();
-    ReadRelationship(query, node_hash);
+    ReadRelationship(node_hash, query);
     return true;
+}
+
+QString Sqlite::BuildTreeQueryString() const
+{
+    return QString(R"(
+            SELECT name, id, code, description, note, node_rule, branch, unit, initial_total, final_total
+            FROM %1
+            WHERE removed = 0
+            )")
+        .arg(info_.node);
 }
 
 bool Sqlite::InsertNode(int parent_id, Node* node)
@@ -169,7 +174,7 @@ bool Sqlite::InsertNode(int parent_id, Node* node)
             query.clear();
 
             // 插入节点路径记录
-            WriteRelationship(query, node->id, parent_id);
+            WriteRelationship(node->id, parent_id, query);
             return true;
         })) {
         qWarning() << "Failed to insert finance record";
@@ -240,12 +245,7 @@ bool Sqlite::RemoveNode(int node_id, bool branch)
 )")
                         .arg(info_.node);
 
-    auto part_2nd = QString(R"(
-    UPDATE %1
-    SET removed = 1
-    WHERE lhs_node = :node_id OR rhs_node = :node_id
-)")
-                        .arg(info_.transaction);
+    auto part_2nd { RemoveNodeQueryStringSecond() };
 
     if (branch) {
         part_2nd = QString(R"(
@@ -289,7 +289,8 @@ bool Sqlite::RemoveNode(int node_id, bool branch)
             query.prepare(part_2nd);
             query.bindValue(":node_id", node_id);
             if (!query.exec()) {
-                qWarning() << "Failed to remove node_path record 2nd step: " << query.lastError().text();
+                qWarning() << "Section: " << std::to_underlying(info_.section) << "\n"
+                           << "Failed to remove node_transaction record 2nd step: " << query.lastError().text();
                 return false;
             }
 
@@ -309,6 +310,16 @@ bool Sqlite::RemoveNode(int node_id, bool branch)
     }
 
     return true;
+}
+
+QString Sqlite::RemoveNodeQueryStringSecond() const
+{
+    return QString(R"(
+            UPDATE %1
+            SET removed = 1
+            WHERE lhs_node = :node_id OR rhs_node = :node_id
+            )")
+        .arg(info_.transaction);
 }
 
 bool Sqlite::DragNode(int destination_node_id, int node_id)
@@ -375,22 +386,18 @@ bool Sqlite::DragNode(int destination_node_id, int node_id)
     return true;
 }
 
-bool Sqlite::NodeInternalReferences(int node_id) const
+bool Sqlite::InternalReference(int node_id) const
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto string = QString(R"(
-    SELECT COUNT(*) FROM %1
-    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
-)")
-                      .arg(info_.transaction);
+    const auto string { InternalReferenceQueryString() };
 
     query.prepare(string);
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Failed to count times " << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "\n" << "Failed to count times. " << query.lastError().text();
         return false;
     }
 
@@ -398,30 +405,44 @@ bool Sqlite::NodeInternalReferences(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
+QString Sqlite::InternalReferenceQueryString() const
+{
+    return QString(R"(
+            SELECT COUNT(*) FROM %1
+            WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+            )")
+        .arg(info_.transaction);
+}
+
 void Sqlite::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    auto part = QString(R"(
-    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
-    FROM %1
-    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
-)")
-                    .arg(info_.transaction);
+    auto part { BuildTransShadowListQueryString() };
 
     query.prepare(part);
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Error in Construct Table" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "\n" << "Error in Construct Table" << query.lastError().text();
         return;
     }
 
     QueryTransShadowList(trans_shadow_list, node_id, query);
 }
 
-void Sqlite::Convert(Trans* trans, TransShadow* trans_shadow, bool left)
+QString Sqlite::BuildTransShadowListQueryString() const
+{
+    return QString(R"(
+            SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+            FROM %1
+            WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+            )")
+        .arg(info_.transaction);
+}
+
+void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left)
 {
     trans_shadow->id = &trans->id;
     trans_shadow->state = &trans->state;
@@ -430,29 +451,34 @@ void Sqlite::Convert(Trans* trans, TransShadow* trans_shadow, bool left)
     trans_shadow->document = &trans->document;
     trans_shadow->description = &trans->description;
 
-    if (left) {
-        trans_shadow->node = &trans->lhs_node;
-        trans_shadow->ratio = &trans->lhs_ratio;
-        trans_shadow->debit = &trans->lhs_debit;
-        trans_shadow->credit = &trans->lhs_credit;
+    trans_shadow->node = &(left ? trans->lhs_node : trans->rhs_node);
+    trans_shadow->ratio = &(left ? trans->lhs_ratio : trans->rhs_ratio);
+    trans_shadow->debit = &(left ? trans->lhs_debit : trans->rhs_debit);
+    trans_shadow->credit = &(left ? trans->lhs_credit : trans->rhs_credit);
 
-        trans_shadow->related_node = &trans->rhs_node;
-        trans_shadow->related_ratio = &trans->rhs_ratio;
-        trans_shadow->related_debit = &trans->rhs_debit;
-        trans_shadow->related_credit = &trans->rhs_credit;
+    trans_shadow->related_node = &(left ? trans->rhs_node : trans->lhs_node);
+    trans_shadow->related_ratio = &(left ? trans->rhs_ratio : trans->lhs_ratio);
+    trans_shadow->related_debit = &(left ? trans->rhs_debit : trans->lhs_debit);
+    trans_shadow->related_credit = &(left ? trans->rhs_credit : trans->lhs_credit);
+}
 
-        return;
-    }
+void Sqlite::ReadTrans(Trans* trans, const QSqlQuery& query)
+{
+    trans->lhs_node = query.value("lhs_node").toInt();
+    trans->lhs_ratio = query.value("lhs_ratio").toDouble();
+    trans->lhs_debit = query.value("lhs_debit").toDouble();
+    trans->lhs_credit = query.value("lhs_credit").toDouble();
 
-    trans_shadow->node = &trans->rhs_node;
-    trans_shadow->ratio = &trans->rhs_ratio;
-    trans_shadow->debit = &trans->rhs_debit;
-    trans_shadow->credit = &trans->rhs_credit;
+    trans->rhs_node = query.value("rhs_node").toInt();
+    trans->rhs_ratio = query.value("rhs_ratio").toDouble();
+    trans->rhs_debit = query.value("rhs_debit").toDouble();
+    trans->rhs_credit = query.value("rhs_credit").toDouble();
 
-    trans_shadow->related_node = &trans->lhs_node;
-    trans_shadow->related_ratio = &trans->lhs_ratio;
-    trans_shadow->related_debit = &trans->lhs_debit;
-    trans_shadow->related_credit = &trans->lhs_credit;
+    trans->code = query.value("code").toString();
+    trans->description = query.value("description").toString();
+    trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
+    trans->date_time = query.value("date_time").toString();
+    trans->state = query.value("state").toBool();
 }
 
 bool Sqlite::InsertTransShadow(TransShadow* trans_shadow)
@@ -544,7 +570,7 @@ bool Sqlite::UpdateTrans(int trans_id)
     return true;
 }
 
-bool Sqlite::UpdateField(CString& table, CVariant& new_value, CString& field, int id)
+bool Sqlite::UpdateField(CString& table, CVariant& value, CString& field, int id)
 {
     QSqlQuery query(*db_);
 
@@ -557,7 +583,7 @@ bool Sqlite::UpdateField(CString& table, CVariant& new_value, CString& field, in
 
     query.prepare(part);
     query.bindValue(":id", id);
-    query.bindValue(":value", new_value);
+    query.bindValue(":value", value);
 
     if (!query.exec()) {
         qWarning() << "Failed to update record: " << query.lastError().text();
@@ -603,22 +629,27 @@ void Sqlite::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_i
     for (const auto& id : trans_id_list)
         list.append(QString::number(id));
 
-    auto part = QString(R"(
-    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
-    FROM %1
-    WHERE id IN (%2) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
-)")
-                    .arg(info_.transaction, list.join(", "));
+    auto part { BuildTransShadowListRangQueryString(list) };
 
     query.prepare(part);
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Error in ConstructTable 1st" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "\n" << "Error in ConstructTable 1st" << query.lastError().text();
         return;
     }
 
     QueryTransShadowList(trans_shadow_list, node_id, query);
+}
+
+QString Sqlite::BuildTransShadowListRangQueryString(QStringList& list) const
+{
+    return QString(R"(
+            SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
+            FROM %1
+            WHERE id IN (%2) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+            )")
+        .arg(info_.transaction, list.join(", "));
 }
 
 TransShadow* Sqlite::AllocateTransShadow()
@@ -626,32 +657,33 @@ TransShadow* Sqlite::AllocateTransShadow()
     last_trans_ = ResourcePool<Trans>::Instance().Allocate();
     auto trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
 
-    Convert(last_trans_, trans_shadow, true);
+    ConvertTrans(last_trans_, trans_shadow, true);
     return trans_shadow;
 }
 
-void Sqlite::BuildNodeHash(QSqlQuery& query, NodeHash& node_hash)
+void Sqlite::BuildNodeHash(NodeHash& node_hash, QSqlQuery& query)
 {
-    int node_id {};
     Node* node {};
 
     while (query.next()) {
         node = ResourcePool<Node>::Instance().Allocate();
-        node_id = query.value("id").toInt();
-
-        node->id = node_id;
-        node->name = query.value("name").toString();
-        node->code = query.value("code").toString();
-        node->description = query.value("description").toString();
-        node->note = query.value("note").toString();
-        node->node_rule = query.value("node_rule").toBool();
-        node->branch = query.value("branch").toBool();
-        node->unit = query.value("unit").toInt();
-        node->initial_total = query.value("initial_total").toDouble();
-        node->final_total = query.value("final_total").toDouble();
-
-        node_hash.insert(node_id, node);
+        ReadNode(node, query);
+        node_hash.insert(node->id, node);
     }
+}
+
+void Sqlite::ReadNode(Node* node, const QSqlQuery& query)
+{
+    node->id = query.value("id").toInt();
+    node->name = query.value("name").toString();
+    node->code = query.value("code").toString();
+    node->description = query.value("description").toString();
+    node->note = query.value("note").toString();
+    node->node_rule = query.value("node_rule").toBool();
+    node->branch = query.value("branch").toBool();
+    node->unit = query.value("unit").toInt();
+    node->initial_total = query.value("initial_total").toDouble();
+    node->final_total = query.value("final_total").toDouble();
 }
 
 bool Sqlite::DBTransaction(std::function<bool()> function)
@@ -665,7 +697,7 @@ bool Sqlite::DBTransaction(std::function<bool()> function)
     }
 }
 
-void Sqlite::ReadRelationship(QSqlQuery& query, const NodeHash& node_hash)
+void Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query)
 {
     auto part = QString(R"(
     SELECT ancestor, descendant
@@ -695,7 +727,7 @@ void Sqlite::ReadRelationship(QSqlQuery& query, const NodeHash& node_hash)
     }
 }
 
-void Sqlite::WriteRelationship(QSqlQuery& query, int node_id, int parent_id)
+void Sqlite::WriteRelationship(int node_id, int parent_id, QSqlQuery& query)
 {
     auto part = QString(R"(
     INSERT INTO %1 (ancestor, descendant, distance)
@@ -762,32 +794,15 @@ void Sqlite::QueryTransShadowList(TransShadowList& trans_shadow_list, int node_i
 
         if (trans_hash_.contains(id)) {
             trans = trans_hash_.value(id);
-            Convert(trans, trans_shadow, node_id == trans->lhs_node);
-            trans_shadow_list.emplaceBack(trans_shadow);
-            continue;
+        } else {
+            trans = ResourcePool<Trans>::Instance().Allocate();
+            trans->id = id;
+
+            ReadTrans(trans, query);
+            trans_hash_.insert(id, trans);
         }
 
-        trans = ResourcePool<Trans>::Instance().Allocate();
-        trans->id = id;
-
-        trans->lhs_node = query.value("lhs_node").toInt();
-        trans->lhs_ratio = query.value("lhs_ratio").toDouble();
-        trans->lhs_debit = query.value("lhs_debit").toDouble();
-        trans->lhs_credit = query.value("lhs_credit").toDouble();
-
-        trans->rhs_node = query.value("rhs_node").toInt();
-        trans->rhs_ratio = query.value("rhs_ratio").toDouble();
-        trans->rhs_debit = query.value("rhs_debit").toDouble();
-        trans->rhs_credit = query.value("rhs_credit").toDouble();
-
-        trans->code = query.value("code").toString();
-        trans->description = query.value("description").toString();
-        trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
-        trans->date_time = query.value("date_time").toString();
-        trans->state = query.value("state").toBool();
-
-        trans_hash_.insert(id, trans);
-        Convert(trans, trans_shadow, node_id == trans->lhs_node);
+        ConvertTrans(trans, trans_shadow, node_id == trans->lhs_node);
         trans_shadow_list.emplaceBack(trans_shadow);
     }
 }

@@ -18,6 +18,10 @@ public:
 
     void UpdateNode(const Node* tmp_node) override;
 
+protected:
+    bool IsReferenced(int node_id, CString& message) override;
+    bool UpdateUnit(Node* node, int value) override;
+
 private:
     bool UpdateUnitPrice(Node* node, double value, CString& field = UNIT_PRICE);
     bool UpdateCommission(Node* node, double value, CString& field = COMMISSION);

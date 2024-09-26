@@ -19,6 +19,7 @@ constexpr int UNIT_PENDING = 2;
 constexpr int UNIT_EMPLOYEE = 0;
 constexpr int UNIT_CUSTOMER = 1;
 constexpr int UNIT_VENDOR = 2;
+constexpr int UNIT_PRODUCT = 3;
 
 // Constants for datetime
 constexpr char DATE_FORMAT[] = "date_format";
@@ -64,6 +65,7 @@ constexpr char EMPLOYEE[] = "employee";
 constexpr char FINAL_TOTAL[] = "final_total";
 constexpr char FIRST[] = "first";
 constexpr char INITIAL_TOTAL[] = "initial_total";
+constexpr char RHS_NODE[] = "rhs_node";
 constexpr char NAME[] = "name";
 constexpr char NODE_ID[] = "node/id";
 constexpr char NODE_RULE[] = "node_rule";
