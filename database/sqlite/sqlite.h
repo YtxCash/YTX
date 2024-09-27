@@ -1,8 +1,6 @@
 #ifndef SQLITE_H
 #define SQLITE_H
 
-// All virtual functions' default implementations are for finance/task section.
-
 #include <QObject>
 #include <QSqlDatabase>
 
@@ -33,53 +31,35 @@ signals:
     // send to mainwindow
     void SFreeView(int node_id);
     // send to sql itsself
-    void SReplaceReferences(Section origin, int old_node_id, int new_node_id);
+    void SUpdateProductReference(int old_node_id, int new_node_id);
 
 public slots:
     // receive from remove node dialog
-    virtual bool RRemoveMulti(int node_id);
-    virtual bool RReplaceMulti(int old_node_id, int new_node_id);
+    bool RRemoveNode(int node_id);
+    bool RReplaceNode(int old_node_id, int new_node_id);
     // receive from sql
-    virtual bool RReplaceReferences(Section origin, int old_node_id, int new_node_id)
-    {
-        Q_UNUSED(old_node_id)
-        Q_UNUSED(new_node_id)
-        Q_UNUSED(origin)
-        return false;
-    }
+    bool RUpdateProductReference(int old_node_id, int new_node_id);
 
 public:
     // tree
     bool BuildTree(NodeHash& node_hash);
-    virtual QString BuildTreeQueryString() const;
-
-    virtual bool InsertNode(int parent_id, Node* node);
-    virtual void NodeLeafTotal(Node* node);
-
+    bool InsertNode(int parent_id, Node* node);
     bool RemoveNode(int node_id, bool branch = false);
-    virtual QString RemoveNodeQueryStringSecond() const;
-
-    bool InternalReference(int node_id) const;
-    virtual QString InternalReferenceQueryString() const;
-
-    virtual bool ExternalReference(int /*node_id*/) const { return false; }
-
     bool DragNode(int destination_node_id, int node_id);
+    bool InternalReference(int node_id) const;
+    bool ExternalReference(int node_id) const;
+    void LeafTotal(Node* node);
 
     // table
     void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id);
-    virtual QString BuildTransShadowListQueryString() const;
-
     void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
-    virtual QString BuildTransShadowListRangQueryString(QStringList& list) const;
-
-    virtual bool InsertTransShadow(TransShadow* trans_shadow);
+    bool InsertTransShadow(TransShadow* trans_shadow);
+    TransShadow* AllocateTransShadow();
 
     bool RemoveTrans(int trans_id);
     bool UpdateTrans(int trans_id);
     bool UpdateCheckState(CString& column, CVariant& value, Check state);
 
-    TransShadow* AllocateTransShadow();
     QHash<int, Trans*>* TransHash() { return &trans_hash_; } // 需要改变设计
 
     // common
@@ -88,6 +68,20 @@ public:
 protected:
     // tree
     virtual void ReadNode(Node* node, const QSqlQuery& query);
+    virtual void WriteNode(Node* node, QSqlQuery& query);
+    virtual void CalculateLeafTotal(Node* node, QSqlQuery& query);
+
+    // QS means QueryString
+    virtual QString BuildTreeQS() const = 0;
+    virtual QString InsertNodeQS() const = 0;
+    virtual QString RemoveNodeSecondQS() const = 0;
+    virtual QString InternalReferenceQS() const = 0;
+    virtual QString ExternalReferenceQS() const = 0;
+    virtual QString LeafTotalQS() const = 0;
+
+    QString RemoveNodeFirstQS() const;
+    QString RemoveNodeBranchQS() const;
+    QString RemoveNodeThirdQS() const;
 
     void BuildNodeHash(NodeHash& node_hash, QSqlQuery& query);
     bool DBTransaction(std::function<bool()> function);
@@ -96,10 +90,20 @@ protected:
 
     // table
     virtual void ReadTrans(Trans* trans, const QSqlQuery& query);
+    virtual void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query);
+    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/) { }
 
+    virtual QString RRemoveNodeQS() const = 0;
+    virtual QString RReplaceNodeQS() const = 0;
+    virtual QString RUpdateProductReferenceQS() const = 0;
+    virtual QString RelatedNodeTransQS() const = 0;
+    virtual QString BuildTransShadowListQS() const = 0;
+    virtual QString InsertTransShadowQS() const = 0;
+    virtual QString BuildTransShadowListRangQS(QStringList& list) const = 0;
+
+    QMultiHash<int, int> RelatedNodeTrans(int node_id) const;
     void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
-    QMultiHash<int, int> RelatedNodeTrans(int node_id) const;
 
 protected:
     QHash<int, Trans*> trans_hash_ {};

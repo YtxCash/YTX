@@ -13,10 +13,12 @@
 
 #include "component/constvalue.h"
 #include "component/enumclass.h"
-#include "database/sqlite/sqlitefinancetask.h"
-#include "database/sqlite/sqliteorder.h"
+#include "database/sqlite/sqlitefinance.h"
 #include "database/sqlite/sqliteproduct.h"
+#include "database/sqlite/sqlitepurchase.h"
+#include "database/sqlite/sqlitesales.h"
 #include "database/sqlite/sqlitestakeholder.h"
+#include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
 #include "delegate/datetime.h"
 #include "delegate/line.h"
@@ -661,14 +663,14 @@ void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
 
     if (interal_references && !exteral_references) {
         auto dialog { new class RemoveNode(*model, node_id, this) };
-        connect(dialog, &RemoveNode::SRemoveMulti, section_data_->sql.data(), &Sqlite::RRemoveMulti);
-        connect(dialog, &RemoveNode::SReplaceMulti, section_data_->sql.data(), &Sqlite::RReplaceMulti);
+        connect(dialog, &RemoveNode::SRemoveNode, section_data_->sql.data(), &Sqlite::RRemoveNode);
+        connect(dialog, &RemoveNode::SReplaceNode, section_data_->sql.data(), &Sqlite::RReplaceNode);
         dialog->exec();
         return;
     }
 
     auto dialog { new class RemoveNode(*model, node_id, this) };
-    connect(dialog, &RemoveNode::SReplaceMulti, section_data_->sql.data(), &Sqlite::RReplaceMulti);
+    connect(dialog, &RemoveNode::SReplaceNode, section_data_->sql.data(), &Sqlite::RReplaceNode);
     dialog->DisableRemove();
     dialog->exec();
 }
@@ -901,7 +903,7 @@ void MainWindow::SetFinanceData()
 
     sql_.QuerySectionRule(finance_rule_, section);
 
-    sql = QSharedPointer<SqliteFinanceTask>::create(info);
+    sql = QSharedPointer<SqliteFinance>::create(info);
     finance_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelFinanceTask(sql, info, finance_rule_.base_unit, finance_table_, interface_.separator, this);
@@ -964,7 +966,7 @@ void MainWindow::SetStakeholderData()
     stakeholder_tree_.model = new TreeModelStakeholder(sql, info, stakeholder_rule_.base_unit, stakeholder_table_, interface_.separator, this);
     stakeholder_tree_.widget = new TreeWidgetStakeholder(model, info, stakeholder_rule_, this);
 
-    connect(product_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+    connect(product_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
 }
 
 void MainWindow::SetTaskData()
@@ -987,7 +989,7 @@ void MainWindow::SetTaskData()
 
     sql_.QuerySectionRule(task_rule_, section);
 
-    sql = QSharedPointer<SqliteFinanceTask>::create(info);
+    sql = QSharedPointer<SqliteTask>::create(info);
     task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelFinanceTask(sql, info, task_rule_.base_unit, task_table_, interface_.separator, this);
@@ -1017,14 +1019,14 @@ void MainWindow::SetSalesData()
 
     sql_.QuerySectionRule(sales_rule_, section);
 
-    sql = QSharedPointer<SqliteOrder>::create(info);
+    sql = QSharedPointer<SqliteSales>::create(info);
     task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelOrder(sql, info, sales_rule_.base_unit, sales_table_, interface_.separator, this);
     sales_tree_.widget = new TreeWidgetOrder(model, info, sales_rule_, this);
 
-    connect(product_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
-    connect(stakeholder_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+    connect(product_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
+    connect(stakeholder_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
 }
 
 void MainWindow::SetPurchaseData()
@@ -1051,14 +1053,14 @@ void MainWindow::SetPurchaseData()
 
     sql_.QuerySectionRule(purchase_rule_, section);
 
-    sql = QSharedPointer<SqliteOrder>::create(info);
+    sql = QSharedPointer<SqlitePurchase>::create(info);
     task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelOrder(sql, info, purchase_rule_.base_unit, purchase_table_, interface_.separator, this);
     purchase_tree_.widget = new TreeWidgetOrder(model, info, purchase_rule_, this);
 
-    connect(product_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
-    connect(stakeholder_data_.sql.data(), &Sqlite::SReplaceReferences, sql.data(), &Sqlite::RReplaceReferences);
+    connect(product_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
+    connect(stakeholder_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
 }
 
 void MainWindow::SetDateFormat() { date_format_list_.emplaceBack(DATE_TIME_FST); }

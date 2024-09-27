@@ -1,23 +1,19 @@
-#ifndef SQLITEPRODUCT_H
-#define SQLITEPRODUCT_H
+#ifndef SQLITEFINANCE_H
+#define SQLITEFINANCE_H
 
 #include "sqlite.h"
 
-class SqliteProduct final : public Sqlite {
+class SqliteFinance final : public Sqlite {
 public:
-    SqliteProduct(CInfo& info, QObject* parent = nullptr);
+    SqliteFinance(CInfo& info, QObject* parent = nullptr);
 
 protected:
-    // tree
     QString BuildTreeQS() const override;
     QString InsertNodeQS() const override;
     QString RemoveNodeSecondQS() const override;
     QString InternalReferenceQS() const override;
-    QString ExternalReferenceQS() const override;
+    QString ExternalReferenceQS() const override { return QString(); }
     QString LeafTotalQS() const override;
-
-    void WriteNode(Node* node, QSqlQuery& query) override;
-    void ReadNode(Node* node, const QSqlQuery& query) override;
 
     QString RRemoveNodeQS() const override;
     QString BuildTransShadowListQS() const override;
@@ -28,4 +24,4 @@ protected:
     QString RUpdateProductReferenceQS() const override { return QString(); }
 };
 
-#endif // SQLITEPRODUCT_H
+#endif // SQLITEFINANCE_H

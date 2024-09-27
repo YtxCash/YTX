@@ -39,8 +39,8 @@ signals:
     void SUpdateOrderDescription(const QString& value);
 
 public slots:
-    // receive from table sql
-    void RRemoveMulti(const QMultiHash<int, int>& node_trans);
+    // receive from sql
+    virtual void RRemoveMulti(const QMultiHash<int, int>& node_trans);
 
     // receive from tree model
     void RNodeRule(int node_id, bool node_rule);

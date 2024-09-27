@@ -1,13 +1,13 @@
-#ifndef SQLITESTAKEHOLDER_H
-#define SQLITESTAKEHOLDER_H
+#ifndef SQLITESALES_H
+#define SQLITESALES_H
 
 #include "sqlite.h"
 
-class SqliteStakeholder final : public Sqlite {
+class SqliteSales final : public Sqlite {
     Q_OBJECT
 
 public:
-    SqliteStakeholder(CInfo& info, QObject* parent = nullptr);
+    SqliteSales(CInfo& info, QObject* parent = nullptr);
 
 protected:
     // tree
@@ -18,21 +18,19 @@ protected:
     QString InsertNodeQS() const override;
     QString RemoveNodeSecondQS() const override;
     QString InternalReferenceQS() const override;
-    QString ExternalReferenceQS() const override;
+    QString ExternalReferenceQS() const override { return QString(); }
     QString LeafTotalQS() const override { return QString(); }
 
     // table
-    void ReadTrans(Trans* trans, const QSqlQuery& query) override;
     void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query) override;
-    void UpdateProductReference(int old_node_id, int new_node_id) override;
 
     QString RRemoveNodeQS() const override;
-    QString BuildTransShadowListRangQS(QStringList& list) const override;
     QString BuildTransShadowListQS() const override;
     QString InsertTransShadowQS() const override;
-    QString RelatedNodeTransQS() const override;
-    QString RReplaceNodeQS() const override;
-    QString RUpdateProductReferenceQS() const override;
+    QString BuildTransShadowListRangQS(QStringList& list) const override;
+    QString RelatedNodeTransQS() const override { return QString(); }
+    QString RReplaceNodeQS() const override { return QString(); }
+    QString RUpdateProductReferenceQS() const override { return QString(); }
 };
 
-#endif // SQLITESTAKEHOLDER_H
+#endif // SQLITESALES_H

@@ -37,7 +37,7 @@ bool TreeModel::RUpdateMultiTotal(const QList<int>& node_list)
         old_final_total = node->final_total;
         old_initial_total = node->initial_total;
 
-        sql_->NodeLeafTotal(node);
+        sql_->LeafTotal(node);
         UpdateLeafTotal(node, INITIAL_TOTAL, FINAL_TOTAL);
 
         final_diff = node->final_total - old_final_total;

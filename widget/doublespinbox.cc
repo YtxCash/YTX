@@ -14,16 +14,12 @@ void DoubleSpinBox::wheelEvent(QWheelEvent* event) { event->ignore(); }
 
 void DoubleSpinBox::keyPressEvent(QKeyEvent* event)
 {
-    switch (event->key()) {
-    case Qt::Key_Delete:
-    case Qt::Key_Backspace:
-    case Qt::Key_Enter:
-    case Qt::Key_Return:
-        if (cleanText().isEmpty()) {
-            setValue(0.0);
-            return;
-        }
-    default:
-        QDoubleSpinBox::keyPressEvent(event);
-    }
+    EmptyText();
+    QDoubleSpinBox::keyPressEvent(event);
+}
+
+void DoubleSpinBox::focusOutEvent(QFocusEvent* event)
+{
+    EmptyText();
+    QDoubleSpinBox::focusOutEvent(event);
 }

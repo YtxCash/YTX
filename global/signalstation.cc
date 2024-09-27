@@ -25,9 +25,8 @@ void SignalStation::RAppendOne(Section section, const TransShadow* trans_shadow)
     if (!model)
         return;
 
-    connect(this, &SignalStation::SAppendOne, model, &TableModel::RAppendOne);
+    connect(this, &SignalStation::SAppendOne, model, &TableModel::RAppendOne, Qt::SingleShotConnection);
     emit SAppendOne(trans_shadow);
-    disconnect(this, &SignalStation::SAppendOne, model, &TableModel::RAppendOne);
 }
 
 void SignalStation::RRetrieveOne(Section section, TransShadow* trans_shadow)
@@ -39,18 +38,16 @@ void SignalStation::RRetrieveOne(Section section, TransShadow* trans_shadow)
     if (!related_model)
         return;
 
-    connect(this, &SignalStation::SAppendOne, related_model, &TableModel::RAppendOne);
+    connect(this, &SignalStation::SAppendOne, related_model, &TableModel::RAppendOne, Qt::SingleShotConnection);
     emit SAppendOne(trans_shadow);
-    disconnect(this, &SignalStation::SAppendOne, related_model, &TableModel::RAppendOne);
 
     int node { *trans_shadow->node };
     auto model { section_model_hash.value(node, nullptr) };
     if (!model)
         return;
 
-    connect(this, &SignalStation::SRetrieveOne, model, &TableModel::RRetrieveOne);
+    connect(this, &SignalStation::SRetrieveOne, model, &TableModel::RRetrieveOne, Qt::SingleShotConnection);
     emit SRetrieveOne(trans_shadow);
-    disconnect(this, &SignalStation::SRetrieveOne, model, &TableModel::RRetrieveOne);
 }
 
 void SignalStation::RRemoveOne(Section section, int node_id, int trans_id)
@@ -61,9 +58,8 @@ void SignalStation::RRemoveOne(Section section, int node_id, int trans_id)
     if (!model)
         return;
 
-    connect(this, &SignalStation::SRemoveOne, model, &TableModel::RRemoveOne);
+    connect(this, &SignalStation::SRemoveOne, model, &TableModel::RRemoveOne, Qt::SingleShotConnection);
     emit SRemoveOne(node_id, trans_id);
-    disconnect(this, &SignalStation::SRemoveOne, model, &TableModel::RRemoveOne);
 }
 
 void SignalStation::RUpdateBalance(Section section, int node_id, int trans_id)
@@ -74,9 +70,8 @@ void SignalStation::RUpdateBalance(Section section, int node_id, int trans_id)
     if (!model)
         return;
 
-    connect(this, &SignalStation::SUpdateBalance, model, &TableModel::RUpdateBalance);
+    connect(this, &SignalStation::SUpdateBalance, model, &TableModel::RUpdateBalance, Qt::SingleShotConnection);
     emit SUpdateBalance(node_id, trans_id);
-    disconnect(this, &SignalStation::SUpdateBalance, model, &TableModel::RUpdateBalance);
 }
 
 void SignalStation::RMoveMulti(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list)
@@ -85,15 +80,13 @@ void SignalStation::RMoveMulti(Section section, int old_node_id, int new_node_id
 
     auto old_model { section_model_hash.value(old_node_id, nullptr) };
     if (old_model) {
-        connect(this, &SignalStation::SMoveMulti, old_model, &TableModel::RMoveMulti);
+        connect(this, &SignalStation::SMoveMulti, old_model, &TableModel::RMoveMulti, Qt::SingleShotConnection);
         emit SMoveMulti(old_node_id, new_node_id, trans_id_list);
-        disconnect(this, &SignalStation::SMoveMulti, old_model, &TableModel::RMoveMulti);
     }
 
     auto new_model { section_model_hash.value(new_node_id, nullptr) };
     if (new_model) {
-        connect(this, &SignalStation::SMoveMulti, new_model, &TableModel::RMoveMulti);
+        connect(this, &SignalStation::SMoveMulti, new_model, &TableModel::RMoveMulti, Qt::SingleShotConnection);
         emit SMoveMulti(old_node_id, new_node_id, trans_id_list);
-        disconnect(this, &SignalStation::SMoveMulti, new_model, &TableModel::RMoveMulti);
     }
 }

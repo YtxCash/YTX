@@ -20,8 +20,8 @@ public:
 
 signals:
     // send to tree model
-    void SRemoveMulti(int node_id);
-    void SReplaceMulti(int old_node_id, int new_node_id);
+    void SRemoveNode(int node_id);
+    void SReplaceNode(int old_node_id, int new_node_id);
 
 private slots:
     void RCustomAccept();

@@ -10,6 +10,10 @@ public:
     TableModelStakeholder(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent = nullptr);
     ~TableModelStakeholder() override = default;
 
+public slots:
+    // receive from sql
+    void RRemoveMulti(const QMultiHash<int, int>& /*node_trans*/) override { return; }
+
 public:
     // implemented functions
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

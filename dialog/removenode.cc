@@ -52,11 +52,11 @@ void RemoveNode::RCustomAccept()
 
     if (msg.exec() == QMessageBox::Ok) {
         if (ui->rBtnRemoveRecords->isChecked())
-            emit SRemoveMulti(node_id_);
+            emit SRemoveNode(node_id_);
 
         if (ui->rBtnReplaceRecords->isChecked()) {
             int new_node_id { ui->comboBox->currentData().toInt() };
-            emit SReplaceMulti(node_id_, new_node_id);
+            emit SReplaceNode(node_id_, new_node_id);
         }
 
         accept();
