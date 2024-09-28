@@ -21,12 +21,12 @@ protected:
 
 signals:
     // send to all table model
-    void SRemoveMulti(const QMultiHash<int, int>& node_trans);
+    void SRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
     // send to signal station
-    void SMoveMulti(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
+    void SMoveMultiTrans(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
     void SRemoveMultiReferences(Section target, int node_id, const QList<int>& trans_id_list);
     // send to tree model
-    void SUpdateMultiTotal(const QList<int>& node_id_list);
+    void SUpdateMultiNodeTotal(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
     // send to mainwindow
     void SFreeView(int node_id);
@@ -82,6 +82,8 @@ protected:
     QString RemoveNodeFirstQS() const;
     QString RemoveNodeBranchQS() const;
     QString RemoveNodeThirdQS() const;
+    QString DragNodeFirstQS() const;
+    QString DragNodeSecondQS() const;
 
     void BuildNodeHash(NodeHash& node_hash, QSqlQuery& query);
     bool DBTransaction(std::function<bool()> function);
@@ -92,6 +94,8 @@ protected:
     virtual void ReadTrans(Trans* trans, const QSqlQuery& query);
     virtual void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query);
     virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/) { }
+    virtual void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
+    virtual void ReplaceNode(int old_node_id, int new_node_id);
 
     virtual QString RRemoveNodeQS() const = 0;
     virtual QString RReplaceNodeQS() const = 0;
@@ -99,10 +103,9 @@ protected:
     virtual QString RelatedNodeTransQS() const = 0;
     virtual QString BuildTransShadowListQS() const = 0;
     virtual QString InsertTransShadowQS() const = 0;
-    virtual QString BuildTransShadowListRangQS(QStringList& list) const = 0;
+    virtual QString BuildTransShadowListRangQS(CString& in_list) const = 0;
 
     QMultiHash<int, int> RelatedNodeTrans(int node_id) const;
-    void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
 
 protected:

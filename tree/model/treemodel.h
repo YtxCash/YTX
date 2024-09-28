@@ -45,7 +45,7 @@ signals:
 
 public slots:
     // receive from table sql
-    virtual bool RUpdateMultiTotal(const QList<int>& node_list);
+    virtual bool RUpdateMultiNodeTotal(const QList<int>& node_list);
     virtual bool RRemoveNode(int node_id);
 
     // receive from related table model

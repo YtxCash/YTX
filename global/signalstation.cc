@@ -74,7 +74,7 @@ void SignalStation::RUpdateBalance(Section section, int node_id, int trans_id)
     emit SUpdateBalance(node_id, trans_id);
 }
 
-void SignalStation::RMoveMulti(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list)
+void SignalStation::RMoveMultiTrans(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list)
 {
     auto section_model_hash { model_hash_.value(section) };
 

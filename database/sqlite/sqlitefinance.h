@@ -18,7 +18,7 @@ protected:
     QString RRemoveNodeQS() const override;
     QString BuildTransShadowListQS() const override;
     QString InsertTransShadowQS() const override;
-    QString BuildTransShadowListRangQS(QStringList& list) const override;
+    QString BuildTransShadowListRangQS(CString& in_list) const override;
     QString RelatedNodeTransQS() const override;
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override { return QString(); }

@@ -25,14 +25,16 @@ protected:
     void ReadTrans(Trans* trans, const QSqlQuery& query) override;
     void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query) override;
     void UpdateProductReference(int old_node_id, int new_node_id) override;
+    void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
 
     QString RRemoveNodeQS() const override;
-    QString BuildTransShadowListRangQS(QStringList& list) const override;
+    QString BuildTransShadowListRangQS(CString& in_list) const override;
     QString BuildTransShadowListQS() const override;
     QString InsertTransShadowQS() const override;
     QString RelatedNodeTransQS() const override;
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override;
+    void ReplaceNode(int old_node_id, int new_node_id) override;
 };
 
 #endif // SQLITESTAKEHOLDER_H

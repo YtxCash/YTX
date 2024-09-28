@@ -12,7 +12,7 @@ public:
 
 public slots:
     // receive from sql
-    bool RUpdateMultiTotal(const QList<int>& /*node_list*/) override { return true; };
+    bool RUpdateMultiNodeTotal(const QList<int>& /*node_list*/) override { return true; };
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

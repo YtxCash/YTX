@@ -44,14 +44,11 @@ QString SqliteProduct::InternalReferenceQS() const
 QString SqliteProduct::ExternalReferenceQS() const
 {
     return QStringLiteral(R"(
-    SELECT COUNT(*)
-    FROM (
-        SELECT 1 FROM stakeholder_transaction WHERE rhs_node = :node_id AND removed = 0
-        UNION ALL
-        SELECT 1 FROM sales_transaction WHERE lhs_node = :node_id AND removed = 0
-        UNION ALL
-        SELECT 1 FROM purchase_transaction WHERE lhs_node = :node_id AND removed = 0
-    ) AS combined;
+    SELECT
+    (SELECT COUNT(*) FROM stakeholder_transaction WHERE rhs_node = :node_id AND removed = 0) +
+    (SELECT COUNT(*) FROM sales_transaction WHERE lhs_node = :node_id AND removed = 0) +
+    (SELECT COUNT(*) FROM purchase_transaction WHERE lhs_node = :node_id AND removed = 0)
+    AS total_count;
     )");
 }
 
@@ -123,14 +120,14 @@ QString SqliteProduct::InsertTransShadowQS() const
     )");
 }
 
-QString SqliteProduct::BuildTransShadowListRangQS(QStringList& list) const
+QString SqliteProduct::BuildTransShadowListRangQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
     FROM product_transaction
-    WHERE id IN (%1) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+    WHERE id IN (%1) AND removed = 0
     )")
-        .arg(list.join(", "));
+        .arg(in_list);
 }
 
 QString SqliteProduct::RelatedNodeTransQS() const
@@ -156,5 +153,6 @@ QString SqliteProduct::RReplaceNodeQS() const
         WHEN rhs_node = :old_node_id AND lhs_node != :new_node_id THEN :new_node_id
         ELSE rhs_node
     END
+    WHERE lhs_node = :old_node_id OR rhs_node = :old_node_id;
     )");
 }

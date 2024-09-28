@@ -12,7 +12,7 @@ public:
 
 public slots:
     // receive from sql
-    void RRemoveMulti(const QMultiHash<int, int>& /*node_trans*/) override { return; }
+    void RRemoveMultiTrans(const QMultiHash<int, int>& /*node_trans*/) override { return; }
 
 public:
     // implemented functions

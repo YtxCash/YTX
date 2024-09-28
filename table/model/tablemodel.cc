@@ -16,7 +16,7 @@ TableModel::TableModel(SPSqlite sql, bool node_rule, const int node_id, CInfo& i
 
 TableModel::~TableModel() { ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_); }
 
-void TableModel::RRemoveMulti(const QMultiHash<int, int>& node_trans)
+void TableModel::RRemoveMultiTrans(const QMultiHash<int, int>& node_trans)
 {
     if (!node_trans.contains(node_id_))
         return;
@@ -459,7 +459,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
     if (rel_changed) {
         sql_->UpdateTrans(*trans_shadow->id);
-        emit SMoveMulti(info_.section, old_related_node, *trans_shadow->related_node, QList<int> { *trans_shadow->id });
+        emit SMoveMultiTrans(info_.section, old_related_node, *trans_shadow->related_node, QList<int> { *trans_shadow->id });
 
         auto ratio { *trans_shadow->related_ratio };
         auto debit { *trans_shadow->related_debit };

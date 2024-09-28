@@ -30,7 +30,7 @@ signals:
     void SAppendOne(Section section, const TransShadow* trans_shadow);
     void SRemoveOne(Section section, int node_id, int trans_id);
     void SUpdateBalance(Section section, int node_id, int trans_id);
-    void SMoveMulti(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
+    void SMoveMultiTrans(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
     // send to its table view
     void SResizeColumnToContents(int column);
@@ -40,7 +40,7 @@ signals:
 
 public slots:
     // receive from sql
-    virtual void RRemoveMulti(const QMultiHash<int, int>& node_trans);
+    virtual void RRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
 
     // receive from tree model
     void RNodeRule(int node_id, bool node_rule);

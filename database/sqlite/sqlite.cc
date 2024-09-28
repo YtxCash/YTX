@@ -36,8 +36,11 @@ bool Sqlite::RRemoveNode(int node_id)
 
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
-    emit SRemoveMulti(node_trans);
-    emit SUpdateMultiTotal(node_trans.uniqueKeys());
+
+    if (info_.section != Section::kStakeholder) {
+        emit SRemoveMultiTrans(node_trans);
+        emit SUpdateMultiNodeTotal(node_trans.uniqueKeys());
+    }
 
     // begin deal with trans hash
     for (int trans_id : trans_id_list)
@@ -55,20 +58,12 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
     node_trans.remove(new_node_id);
 
     // begin deal with trans hash
-    const auto& const_trans_hash { std::as_const(trans_hash_) };
-
-    for (auto& trans : const_trans_hash) {
-        if (trans->lhs_node == old_node_id && trans->rhs_node != new_node_id)
-            trans->lhs_node = new_node_id;
-
-        if (trans->rhs_node == old_node_id && trans->lhs_node != new_node_id)
-            trans->rhs_node = new_node_id;
-    }
+    ReplaceNode(old_node_id, new_node_id);
     // end deal with trans hash
 
     // begin deal with database
     QSqlQuery query(*db_);
-    const auto& string { RRemoveNodeQS() };
+    const auto& string { RReplaceNodeQS() };
 
     query.prepare(string);
     query.bindValue(":new_node_id", new_node_id);
@@ -79,7 +74,7 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
     }
     // end deal with database
 
-    emit SMoveMulti(info_.section, old_node_id, new_node_id, node_trans.values());
+    emit SMoveMultiTrans(info_.section, old_node_id, new_node_id, node_trans.values());
 
     if (free) {
         emit SFreeView(old_node_id);
@@ -87,7 +82,7 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
     }
 
     if (info_.section != Section::kStakeholder)
-        emit SUpdateMultiTotal(QList { old_node_id, new_node_id });
+        emit SUpdateMultiNodeTotal(QList { old_node_id, new_node_id });
 
     if (info_.section == Section::kProduct)
         emit SUpdateProductReference(old_node_id, new_node_id);
@@ -235,23 +230,13 @@ bool Sqlite::RemoveNode(int node_id, bool branch)
 {
     QSqlQuery query(*db_);
 
-    const QString string_frist { RemoveNodeFirstQS() };
-    QString string_second { RemoveNodeSecondQS() };
+    const QString& string_frist { RemoveNodeFirstQS() };
 
+    QString string_second { RemoveNodeSecondQS() };
     if (branch)
         string_second = RemoveNodeBranchQS();
 
-    //     auto part_22nd = QString("UPDATE %1 "
-    //                                   "SET distance = distance - 1 "
-    //                                   "WHERE (descendant IN (SELECT descendant
-    //                                   FROM %1 " "WHERE ancestor = :node_id AND
-    //                                   ancestor != descendant) AND ancestor IN
-    //                                   (SELECT ancestor FROM %1 " "WHERE
-    //                                   descendant = :node_id AND ancestor !=
-    //                                   descendant)) ")
-    //                               .arg(info_.path);
-
-    const QString string_third { RemoveNodeThirdQS() };
+    const QString& string_third { RemoveNodeThirdQS() };
 
     if (!DBTransaction([&]() {
             query.prepare(string_frist);
@@ -306,13 +291,12 @@ QString Sqlite::RemoveNodeBranchQS() const
                 SELECT DISTINCT fp1.ancestor, fp2.descendant
                 FROM %1 AS fp1
                 INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor
-                WHERE fp2.ancestor = :node_id AND fp2.descendant != :node_id
-                AND fp1.ancestor != :node_id
+                WHERE fp2.ancestor = :node_id AND fp2.descendant != :node_id AND fp1.ancestor != :node_id
             )
             UPDATE %1
             SET distance = distance - 1
-            WHERE ancestor IN (SELECT ancestor FROM related_nodes)
-            AND descendant IN (SELECT descendant FROM related_nodes)
+            WHERE (ancestor, descendant) IN (
+            SELECT ancestor, descendant FROM related_nodes)
             )")
         .arg(info_.path);
 }
@@ -322,43 +306,44 @@ QString Sqlite::RemoveNodeThirdQS() const
     return QString("DELETE FROM %1 WHERE (descendant = :node_id OR ancestor = :node_id) AND distance !=0").arg(info_.path);
 }
 
+QString Sqlite::DragNodeFirstQS() const
+{
+    return QString(R"(
+            WITH related_nodes AS (
+                SELECT DISTINCT fp1.ancestor, fp2.descendant
+                FROM %1 AS fp1
+                INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor
+                WHERE fp2.ancestor = :node_id AND fp1.ancestor != :node_id
+            )
+            DELETE FROM %1
+            WHERE (ancestor, descendant) IN (
+            SELECT ancestor, descendant FROM related_nodes)
+            )")
+        .arg(info_.path);
+}
+
+QString Sqlite::DragNodeSecondQS() const
+{
+    return QString(R"(
+            INSERT INTO %1 (ancestor, descendant, distance)
+            SELECT fp1.ancestor, fp2.descendant, fp1.distance + fp2.distance + 1
+            FROM %1 AS fp1
+            INNER JOIN %1 AS fp2
+            WHERE fp1.descendant = :destination_node_id AND fp2.ancestor = :node_id
+            )")
+        .arg(info_.path);
+}
+
 bool Sqlite::DragNode(int destination_node_id, int node_id)
 {
     QSqlQuery query(*db_);
 
-    //    auto part_1st = QString("DELETE FROM %1 WHERE (descendant IN
-    //    (SELECT descendant FROM "
-    //                                  "%1 WHERE ancestor = :node_id) AND
-    //                                  ancestor IN (SELECT ancestor FROM "
-    //                                  "%1 WHERE descendant = :node_id AND
-    //                                  ancestor != descendant)) ")
-    //    .arg(path_);
-
-    auto part_1st = QString(R"(
-    WITH related_nodes AS (
-        SELECT DISTINCT fp1.ancestor, fp2.descendant
-        FROM %1 AS fp1
-        INNER JOIN %1 AS fp2 ON fp1.descendant = fp2.ancestor
-        WHERE fp2.ancestor = :node_id AND fp1.ancestor != :node_id
-    )
-    DELETE FROM %1
-    WHERE ancestor IN (SELECT ancestor FROM related_nodes)
-    AND descendant IN (SELECT descendant FROM related_nodes)
-)")
-                        .arg(info_.path);
-
-    auto part_2nd = QString(R"(
-    INSERT INTO %1 (ancestor, descendant, distance)
-    SELECT fp1.ancestor, fp2.descendant, fp1.distance + fp2.distance + 1
-    FROM %1 AS fp1
-    INNER JOIN %1 AS fp2
-    WHERE fp1.descendant = :destination_node_id AND fp2.ancestor = :node_id
-)")
-                        .arg(info_.path);
+    const auto& string_first { DragNodeFirstQS() };
+    const auto& string_second { DragNodeSecondQS() };
 
     if (!DBTransaction([&]() {
             // 第一个查询
-            query.prepare(part_1st);
+            query.prepare(string_first);
             query.bindValue(":node_id", node_id);
 
             if (!query.exec()) {
@@ -369,7 +354,7 @@ bool Sqlite::DragNode(int destination_node_id, int node_id)
             query.clear();
 
             // 第二个查询
-            query.prepare(part_2nd);
+            query.prepare(string_second);
             query.bindValue(":node_id", node_id);
             query.bindValue(":destination_node_id", destination_node_id);
 
@@ -624,25 +609,36 @@ bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state)
 
 void Sqlite::BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
 {
+    if (trans_id_list.empty() || node_id <= 0)
+        return;
+
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    QStringList list {};
+    const qsizetype batch_size { 50 };
+    const auto total_batches { (trans_id_list.size() + batch_size - 1) / batch_size };
 
-    for (const auto& id : trans_id_list)
-        list.append(QString::number(id));
+    for (int batch_index = 0; batch_index != total_batches; ++batch_index) {
+        int start = batch_index * batch_size;
+        int end = std::min(start + batch_size, trans_id_list.size());
 
-    auto part { BuildTransShadowListRangQS(list) };
+        QList<int> current_batch { trans_id_list.mid(start, end - start) };
 
-    query.prepare(part);
-    query.bindValue(":node_id", node_id);
+        QStringList placeholder { current_batch.size(), "?" };
+        QString string { BuildTransShadowListRangQS(placeholder.join(",")) };
 
-    if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Error in ConstructTable 1st" << query.lastError().text();
-        return;
+        query.prepare(string);
+
+        for (int i = 0; i != current_batch.size(); ++i)
+            query.bindValue(i, current_batch.at(i));
+
+        if (!query.exec()) {
+            qWarning() << "Section: " << std::to_underlying(info_.section) << "Error in batch " << batch_index << ": " << query.lastError().text();
+            continue;
+        }
+
+        QueryTransShadowList(trans_shadow_list, node_id, query);
     }
-
-    QueryTransShadowList(trans_shadow_list, node_id, query);
 }
 
 TransShadow* Sqlite::AllocateTransShadow()
@@ -791,5 +787,18 @@ void Sqlite::QueryTransShadowList(TransShadowList& trans_shadow_list, int node_i
 
         ConvertTrans(trans, trans_shadow, node_id == trans->lhs_node);
         trans_shadow_list.emplaceBack(trans_shadow);
+    }
+}
+
+void Sqlite::ReplaceNode(int old_node_id, int new_node_id)
+{
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
+
+    for (auto& trans : const_trans_hash) {
+        if (trans->lhs_node == old_node_id && trans->rhs_node != new_node_id)
+            trans->lhs_node = new_node_id;
+
+        if (trans->rhs_node == old_node_id && trans->lhs_node != new_node_id)
+            trans->rhs_node = new_node_id;
     }
 }

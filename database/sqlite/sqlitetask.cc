@@ -78,14 +78,14 @@ QString SqliteTask::InsertTransShadowQS() const
     )");
 }
 
-QString SqliteTask::BuildTransShadowListRangQS(QStringList& list) const
+QString SqliteTask::BuildTransShadowListRangQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
     FROM task_transaction
-    WHERE id IN (%1) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+    WHERE id IN (%1) AND removed = 0
     )")
-        .arg(list.join(", "));
+        .arg(in_list);
 }
 
 QString SqliteTask::RelatedNodeTransQS() const
@@ -111,5 +111,6 @@ QString SqliteTask::RReplaceNodeQS() const
         WHEN rhs_node = :old_node_id AND lhs_node != :new_node_id THEN :new_node_id
         ELSE rhs_node
     END
+    WHERE lhs_node = :old_node_id OR rhs_node = :old_node_id;
     )");
 }

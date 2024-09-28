@@ -372,16 +372,16 @@ void MainWindow::SetConnect(const QTableView* view, const TableModel* table, con
     connect(table, &TableModel::SRemoveOne, &SignalStation::Instance(), &SignalStation::RRemoveOne);
     connect(table, &TableModel::SAppendOne, &SignalStation::Instance(), &SignalStation::RAppendOne);
     connect(table, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
-    connect(table, &TableModel::SMoveMulti, &SignalStation::Instance(), &SignalStation::RMoveMulti);
+    connect(table, &TableModel::SMoveMultiTrans, &SignalStation::Instance(), &SignalStation::RMoveMultiTrans);
 
     connect(table, &TableModel::SUpdateOneTotal, tree, &TreeModel::RUpdateOneTotal);
     connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
 
     connect(tree, &TreeModel::SNodeRule, table, &TableModel::RNodeRule);
 
-    connect(data->sql.data(), &Sqlite::SRemoveMulti, table, &TableModel::RRemoveMulti);
+    connect(data->sql.data(), &Sqlite::SRemoveMultiTrans, table, &TableModel::RRemoveMultiTrans);
 
-    connect(data->sql.data(), &Sqlite::SMoveMulti, &SignalStation::Instance(), &SignalStation::RMoveMulti);
+    connect(data->sql.data(), &Sqlite::SMoveMultiTrans, &SignalStation::Instance(), &SignalStation::RMoveMultiTrans);
 }
 
 void MainWindow::CreateDelegate(QTableView* view, const TreeModel* tree_model, CSectionRule* section_rule, int node_id)
@@ -576,7 +576,7 @@ void MainWindow::SetConnect(const QTreeView* view, const TreeWidget* widget, con
     connect(model, &TreeModel::SResizeColumnToContents, view, &QTreeView::resizeColumnToContents);
 
     connect(table_sql, &Sqlite::SRemoveNode, model, &TreeModel::RRemoveNode);
-    connect(table_sql, &Sqlite::SUpdateMultiTotal, model, &TreeModel::RUpdateMultiTotal);
+    connect(table_sql, &Sqlite::SUpdateMultiNodeTotal, model, &TreeModel::RUpdateMultiNodeTotal);
 
     connect(table_sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }

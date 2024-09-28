@@ -99,14 +99,14 @@ void SqliteSales::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
 }
 
-QString SqliteSales::BuildTransShadowListRangQS(QStringList& list) const
+QString SqliteSales::BuildTransShadowListRangQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
     FROM sales_transaction
-    WHERE id IN (%1) AND (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+    WHERE id IN (%1) AND removed = 0
     )")
-        .arg(list.join(", "));
+        .arg(in_list);
 }
 
 void SqliteSales::ReadNode(Node* node, const QSqlQuery& query)

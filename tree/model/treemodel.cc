@@ -20,7 +20,7 @@ TreeModel::TreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table
 
 TreeModel::~TreeModel() { qDeleteAll(node_hash_); }
 
-bool TreeModel::RUpdateMultiTotal(const QList<int>& node_list)
+bool TreeModel::RUpdateMultiNodeTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};

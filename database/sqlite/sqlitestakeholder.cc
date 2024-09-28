@@ -3,6 +3,7 @@
 #include <QSqlQuery>
 
 #include "component/constvalue.h"
+#include "global/resourcepool.h"
 
 SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
     : Sqlite(info, parent)
@@ -61,16 +62,12 @@ QString SqliteStakeholder::InternalReferenceQS() const
 QString SqliteStakeholder::ExternalReferenceQS() const
 {
     return QStringLiteral(R"(
-    SELECT COUNT(*)
-    FROM (
-        SELECT 1 FROM sales WHERE (party = :node_id OR employee = :node_id) AND removed = 0
-        UNION ALL
-        SELECT 1 FROM purchase WHERE (party = :node_id OR employee = :node_id) AND removed = 0
-        UNION ALL
-        SELECT 1 FROM sales_transaction WHERE rhs_node = :node_id AND removed = 0
-        UNION ALL
-        SELECT 1 FROM purchase_transaction WHERE rhs_node = :node_id AND removed = 0
-    ) AS combined;
+    SELECT
+    (SELECT COUNT(*) FROM sales WHERE (party = :node_id OR employee = :node_id) AND removed = 0) +
+    (SELECT COUNT(*) FROM purchase WHERE (party = :node_id OR employee = :node_id) AND removed = 0) +
+    (SELECT COUNT(*) FROM sales_transaction WHERE rhs_node = :node_id AND removed = 0) +
+    (SELECT COUNT(*) FROM purchase_transaction WHERE rhs_node = :node_id AND removed = 0)
+    AS total_count;
     )");
 }
 
@@ -119,6 +116,16 @@ QString SqliteStakeholder::RUpdateProductReferenceQS() const
     )");
 }
 
+void SqliteStakeholder::ReplaceNode(int old_node_id, int new_node_id)
+{
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
+
+    for (auto& trans : const_trans_hash) {
+        if (trans->lhs_node == old_node_id)
+            trans->lhs_node = new_node_id;
+    }
+}
+
 void SqliteStakeholder::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query)
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
@@ -140,6 +147,28 @@ void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
             trans->rhs_node = new_node_id;
 }
 
+void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list, int /*node_id*/, QSqlQuery& query)
+{
+    TransShadow* trans_shadow {};
+    Trans* trans {};
+    int id {};
+
+    while (query.next()) {
+        id = query.value("id").toInt();
+
+        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans_shadow = ResourcePool<TransShadow>::Instance().Allocate();
+
+        trans->id = id;
+
+        ReadTrans(trans, query);
+        trans_hash_.insert(id, trans);
+
+        ConvertTrans(trans, trans_shadow, true);
+        trans_shadow_list.emplaceBack(trans_shadow);
+    }
+}
+
 QString SqliteStakeholder::RRemoveNodeQS() const
 {
     return QStringLiteral(R"(
@@ -149,14 +178,14 @@ QString SqliteStakeholder::RRemoveNodeQS() const
     )");
 }
 
-QString SqliteStakeholder::BuildTransShadowListRangQS(QStringList& list) const
+QString SqliteStakeholder::BuildTransShadowListRangQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, date_time, code, lhs_node, lhs_ratio, description, document, state, rhs_node
     FROM stakeholder_transaction
-    WHERE id IN (%1) AND lhs_node = :node_id AND removed = 0
+    WHERE id IN (%1) AND removed = 0
     )")
-        .arg(list.join(", "));
+        .arg(in_list);
 }
 
 void SqliteStakeholder::ReadNode(Node* node, const QSqlQuery& query)

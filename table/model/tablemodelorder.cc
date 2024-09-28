@@ -123,7 +123,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 
     if (tra_changed) {
         sql_->UpdateTrans(*trans_shadow->id);
-        emit SMoveMulti(info_.section, old_related_node, *trans_shadow->related_node, QList<int> { *trans_shadow->id });
+        emit SMoveMultiTrans(info_.section, old_related_node, *trans_shadow->related_node, QList<int> { *trans_shadow->id });
 
         auto ratio { *trans_shadow->related_ratio };
         auto debit { *trans_shadow->related_debit };

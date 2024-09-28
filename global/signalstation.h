@@ -25,7 +25,7 @@ public slots:
     void RRetrieveOne(Section section, TransShadow* trans_shadow);
     void RRemoveOne(Section section, int node_id, int trans_id);
     void RUpdateBalance(Section section, int node_id, int trans_id);
-    void RMoveMulti(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
+    void RMoveMultiTrans(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
 private:
     SignalStation() = default;
