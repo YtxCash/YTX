@@ -283,25 +283,12 @@
        </spacer>
       </item>
       <item row="3" column="1">
-       <widget class="SpinBox" name="spinBoxDeadline">
+       <widget class="SpinBox" name="spinDeadline">
         <property name="frame">
          <bool>false</bool>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="SpinBox" name="spinBoxPaymentPeriod">
-        <property name="frame">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-        </property>
-        <property name="stepType">
-         <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
         </property>
        </widget>
       </item>
@@ -327,7 +314,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="DoubleSpinBox" name="dSpinBoxTaxRate">
+       <widget class="DoubleSpinBox" name="dSpinTaxRate">
         <property name="frame">
          <bool>false</bool>
         </property>
@@ -339,6 +326,19 @@
         </property>
         <property name="stepType">
          <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="dSpinPaymentPeriod">
+        <property name="frame">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+        </property>
+        <property name="decimals">
+         <number>0</number>
         </property>
        </widget>
       </item>

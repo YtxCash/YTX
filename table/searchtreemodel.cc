@@ -2,11 +2,11 @@
 
 #include "component/enumclass.h"
 
-SearchTreeModel::SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent)
+SearchTreeModel::SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSettings& settings, QSharedPointer<SearchSqlite> sql, QObject* parent)
     : QAbstractItemModel { parent }
     , sql_ { sql }
     , info_ { info }
-    , section_rule_ { section_rule }
+    , settings_ { settings }
     , tree_model_ { tree_model }
 {
 }
@@ -58,14 +58,14 @@ QVariant SearchTreeModel::data(const QModelIndex& index, int role) const
         return node->description;
     case TreeEnum::kNote:
         return node->note;
-    case TreeEnum::kNodeRule:
-        return node->node_rule;
+    case TreeEnum::kRule:
+        return node->rule;
     case TreeEnum::kBranch:
         return node->branch;
     case TreeEnum::kUnit:
         return node->unit;
     case TreeEnum::kInitialTotal:
-        return node->unit == section_rule_.base_unit ? node->final_total : node->initial_total;
+        return node->unit == settings_.base_unit ? node->final_total : node->initial_total;
     default:
         return QVariant();
     }
@@ -98,8 +98,8 @@ void SearchTreeModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->description < rhs->description) : (lhs->description > rhs->description);
         case TreeEnum::kNote:
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
-        case TreeEnum::kNodeRule:
-            return (order == Qt::AscendingOrder) ? (lhs->node_rule < rhs->node_rule) : (lhs->node_rule > rhs->node_rule);
+        case TreeEnum::kRule:
+            return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
         case TreeEnum::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnum::kUnit:

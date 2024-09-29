@@ -12,7 +12,7 @@ public:
 
 public slots:
     // receive from sql
-    bool RUpdateMultiNodeTotal(const QList<int>& /*node_list*/) override { return true; };
+    bool RUpdateMultiLeafTotal(const QList<int>& /*node_list*/) override { return true; };
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -26,13 +26,13 @@ public:
     void UpdateBaseUnit(int base_unit) override { root_->unit = base_unit; }
 
 protected:
-    bool UpdateNodeRule(Node* node, bool value) override; // Cash = 0, Monthly = 1
+    bool UpdateRule(Node* node, bool value) override; // Cash = 0, Monthly = 1
     bool IsReferenced(int node_id, CString& message) override;
     void ConstructTree() override;
     bool UpdateUnit(Node* node, int value) override;
 
 private:
-    bool UpdatePaymentPeriod(Node* node, int value, CString& field = PAYMENT_PERIOD);
+    bool UpdatePaymentPeriod(Node* node, double value, CString& field = PAYMENT_PERIOD);
     bool UpdateTaxRate(Node* node, double value, CString& field = TAX_RATE);
     bool UpdateDeadline(Node* node, int value, CString& field = DEADLINE);
     bool UpdateEmployee(Node* node, int value, CString& field = EMPLOYEE);

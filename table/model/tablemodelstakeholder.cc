@@ -3,8 +3,8 @@
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 
-TableModelStakeholder::TableModelStakeholder(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent)
-    : TableModel { sql, node_rule, node_id, info, section_rule, parent }
+TableModelStakeholder::TableModelStakeholder(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent)
+    : TableModel { sql, rule, node_id, info, parent }
 {
 }
 
@@ -27,30 +27,31 @@ bool TableModelStakeholder::RemoveTrans(int row, const QModelIndex& parent)
     return true;
 }
 
-bool TableModelStakeholder::RemoveMulti(const QList<int>& trans_id_list)
+bool TableModelStakeholder::RemoveMulti(const QSet<int>& trans_id_set)
 {
-    int min_row {};
+    if (trans_id_set.isEmpty())
+        return false;
+
+    int min_row { -1 };
     int trans_id {};
 
-    for (int i = 0; i != trans_shadow_list_.size(); ++i) {
+    for (int i = trans_shadow_list_.size() - 1; i >= 0; --i) {
         trans_id = *trans_shadow_list_.at(i)->id;
 
-        if (trans_id_list.contains(trans_id)) {
+        if (trans_id_set.contains(trans_id)) {
+            if (min_row == -1 || i < min_row)
+                min_row = i;
+
             beginRemoveRows(QModelIndex(), i, i);
             ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
             endRemoveRows();
-
-            if (min_row == 0)
-                min_row = i;
-
-            --i;
         }
     }
 
     return true;
 }
 
-bool TableModelStakeholder::InsertMulti(int node_id, const QList<int>& trans_id_list)
+bool TableModelStakeholder::AppendMulti(int node_id, const QList<int>& trans_id_list)
 {
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
@@ -130,14 +131,8 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         return false;
     }
 
-    if (old_related_node == 0) {
-        if (rel_changed) {
-            sql_->InsertTransShadow(trans_shadow);
-        }
-
-        emit SResizeColumnToContents(index.column());
-        return true;
-    }
+    if (old_related_node == 0 && rel_changed)
+        sql_->InsertTransShadow(trans_shadow);
 
     emit SResizeColumnToContents(index.column());
     return true;
@@ -145,24 +140,20 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
 bool TableModelStakeholder::UpdateRatio(TransShadow* trans_shadow, double value)
 {
-    const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
-
-    if (std::abs(*trans_shadow->ratio - value) < tolerance)
+    if (std::abs(*trans_shadow->ratio - value) < TOLERANCE)
         return false;
 
     *trans_shadow->ratio = value;
 
     if (*trans_shadow->related_node != 0)
-        sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
+        sql_->UpdateField(info_.transaction, value, LHS_RATIO, *trans_shadow->id);
 
     return true;
 }
 
 bool TableModelStakeholder::UpdateCommission(TransShadow* trans_shadow, double value)
 {
-    const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
-
-    if (std::abs(*trans_shadow->related_debit - value) < tolerance)
+    if (std::abs(*trans_shadow->related_debit - value) < TOLERANCE)
         return false;
 
     *trans_shadow->related_debit = value;

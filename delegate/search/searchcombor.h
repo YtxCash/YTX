@@ -8,7 +8,7 @@
 
 class SearchComboR final : public StyledItemDelegate {
 public:
-    SearchComboR(const TreeModel& model, QObject* parent = nullptr);
+    SearchComboR(const TreeModel* model, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -16,7 +16,7 @@ private:
     QString GetPath(const QModelIndex& index) const;
 
 private:
-    const TreeModel& model_;
+    const TreeModel* model_ {};
 };
 
 #endif // SEARCHCOMBOR_H

@@ -22,29 +22,30 @@ protected:
 signals:
     // send to all table model
     void SRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
-    // send to signal station
-    void SMoveMultiTrans(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
-    void SRemoveMultiReferences(Section target, int node_id, const QList<int>& trans_id_list);
+    void SMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
+
     // send to tree model
-    void SUpdateMultiNodeTotal(const QList<int>& node_id_list);
+    void SUpdateMultiLeafTotal(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
     // send to mainwindow
     void SFreeView(int node_id);
     // send to sql itsself
     void SUpdateProductReference(int old_node_id, int new_node_id);
+    void SUpdateStakeholderReference(int old_node_id, int new_node_id);
 
 public slots:
     // receive from remove node dialog
-    bool RRemoveNode(int node_id);
-    bool RReplaceNode(int old_node_id, int new_node_id);
+    virtual bool RRemoveNode(int node_id);
+    virtual bool RReplaceNode(int old_node_id, int new_node_id);
     // receive from sql
     bool RUpdateProductReference(int old_node_id, int new_node_id);
+    bool RUpdateStakeholderReference(int old_node_id, int new_node_id);
 
 public:
     // tree
     bool BuildTree(NodeHash& node_hash);
     bool InsertNode(int parent_id, Node* node);
-    bool RemoveNode(int node_id, bool branch = false);
+    bool RemoveNode(int node_id, bool branch);
     bool DragNode(int destination_node_id, int node_id);
     bool InternalReference(int node_id) const;
     bool ExternalReference(int node_id) const;
@@ -69,7 +70,8 @@ protected:
     // tree
     virtual void ReadNode(Node* node, const QSqlQuery& query);
     virtual void WriteNode(Node* node, QSqlQuery& query);
-    virtual void CalculateLeafTotal(Node* node, QSqlQuery& query);
+
+    void CalculateLeafTotal(Node* node, QSqlQuery& query);
 
     // QS means QueryString
     virtual QString BuildTreeQS() const = 0;
@@ -93,20 +95,27 @@ protected:
     // table
     virtual void ReadTrans(Trans* trans, const QSqlQuery& query);
     virtual void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query);
-    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/) { }
+    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/)
+    {
+        // finance, product, task
+    }
+    virtual void UpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/)
+    {
+        // finance, product, task, stakeholder
+    }
     virtual void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
-    virtual void ReplaceNode(int old_node_id, int new_node_id);
 
-    virtual QString RRemoveNodeQS() const = 0;
     virtual QString RReplaceNodeQS() const = 0;
     virtual QString RUpdateProductReferenceQS() const = 0;
-    virtual QString RelatedNodeTransQS() const = 0;
+    virtual QString RUpdateStakeholderReferenceQS() const = 0;
     virtual QString BuildTransShadowListQS() const = 0;
     virtual QString InsertTransShadowQS() const = 0;
     virtual QString BuildTransShadowListRangQS(CString& in_list) const = 0;
 
-    QMultiHash<int, int> RelatedNodeTrans(int node_id) const;
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
+
+    QMultiHash<int, int> DialogReplaceNode(int old_node_id, int new_node_id);
+    QMultiHash<int, int> DialogRemoveNode(int node_id);
 
 protected:
     QHash<int, Trans*> trans_hash_ {};

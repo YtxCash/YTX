@@ -15,13 +15,12 @@ protected:
     QString ExternalReferenceQS() const override { return QString(); }
     QString LeafTotalQS() const override;
 
-    QString RRemoveNodeQS() const override;
     QString BuildTransShadowListQS() const override;
     QString InsertTransShadowQS() const override;
     QString BuildTransShadowListRangQS(CString& in_list) const override;
-    QString RelatedNodeTransQS() const override;
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override { return QString(); }
+    QString RUpdateStakeholderReferenceQS() const override { return {}; }
 };
 
 #endif // SQLITETASK_H

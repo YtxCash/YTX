@@ -12,8 +12,8 @@ public:
     MainwindowSqlite() = default;
     explicit MainwindowSqlite(Section section);
 
-    void QuerySectionRule(SectionRule& section_rule, Section section);
-    void UpdateSectionRule(CSectionRule& section_rule, Section section);
+    void QuerySettings(Settings& settings, Section section);
+    void UpdateSettings(CSettings& settings, Section section);
     void NewFile(CString& file_path);
 
 private:

@@ -7,7 +7,6 @@
 
 #include "component/enumclass.h"
 #include "component/info.h"
-#include "component/settings.h"
 #include "component/using.h"
 #include "database/sqlite/sqlite.h"
 #include "table/trans.h"
@@ -19,18 +18,17 @@ public:
     virtual ~TableModel();
 
 protected:
-    TableModel(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent = nullptr);
+    TableModel(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
 
 signals:
     // send to tree model
-    void SUpdateOneTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
+    void SUpdateLeafTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
     void SSearch();
 
     // send to signal station
-    void SAppendOne(Section section, const TransShadow* trans_shadow);
-    void SRemoveOne(Section section, int node_id, int trans_id);
+    void SAppendOneTrans(Section section, const TransShadow* trans_shadow);
+    void SRemoveOneTrans(Section section, int node_id, int trans_id);
     void SUpdateBalance(Section section, int node_id, int trans_id);
-    void SMoveMultiTrans(Section section, int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
     // send to its table view
     void SResizeColumnToContents(int column);
@@ -40,17 +38,16 @@ signals:
 
 public slots:
     // receive from sql
-    virtual void RRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
+    void RRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
+    void RMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
     // receive from tree model
-    void RNodeRule(int node_id, bool node_rule);
+    void RRule(int node_id, bool rule);
 
     // receive from signal station
-    void RAppendOne(const TransShadow* trans_shadow);
-    void RRetrieveOne(TransShadow* trans_shadow);
-    void RRemoveOne(int node_id, int trans_id);
+    void RAppendOneTrans(const TransShadow* trans_shadow);
+    void RRemoveOneTrans(int node_id, int trans_id);
     void RUpdateBalance(int node_id, int trans_id);
-    void RMoveMulti(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
 public:
     // virtual functions
@@ -70,13 +67,11 @@ public:
 
     void sort(int column, Qt::SortOrder order) override;
 
-    // member functions
-    bool InsertTrans(const QModelIndex& parent = QModelIndex());
-
     int GetRow(int node_id) const;
     QModelIndex GetIndex(int trans_id) const;
     QStringList* GetDocumentPointer(const QModelIndex& index) const;
 
+    bool InsertTrans(const QModelIndex& parent = QModelIndex());
     void UpdateAllState(Check state);
 
 protected:
@@ -85,12 +80,12 @@ protected:
     virtual bool UpdateCredit(TransShadow* trans_shadow, double value);
     virtual bool UpdateRatio(TransShadow* trans_shadow, double value);
 
-    virtual bool RemoveMulti(const QList<int>& trans_id_list); // just remove trnas_shadow, keep related trans
-    virtual bool InsertMulti(int node_id, const QList<int>& trans_id_list);
+    virtual bool RemoveMulti(const QSet<int>& trans_id_list); // just remove trnas_shadow, keep related trans
+    virtual bool AppendMulti(int node_id, const QList<int>& trans_id_list);
 
     // member functions
-    double Balance(bool node_rule, double debit, double credit) { return (node_rule ? 1 : -1) * (credit - debit); }
-    void AccumulateSubtotal(int start, bool node_rule);
+    double Balance(bool rule, double debit, double credit) { return (rule ? 1 : -1) * (credit - debit); }
+    void AccumulateSubtotal(int start, bool rule);
 
     bool UpdateRelatedNode(TransShadow* trans_shadow, int value);
 
@@ -123,11 +118,10 @@ protected:
 
 protected:
     SPSqlite sql_ {};
-    bool node_rule_ {};
+    bool rule_ {};
 
     CInfo& info_;
-    CSectionRule& section_rule_;
-    const int node_id_ {};
+    int node_id_ {};
 
     QList<TransShadow*> trans_shadow_list_ {};
 };

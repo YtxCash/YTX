@@ -8,8 +8,8 @@
 #include "global/resourcepool.h"
 #include "ui_insertnodeorder.h"
 
-InsertNodeOrder::InsertNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel& product_model,
-    int value_decimal, int unit_party, QWidget* parent)
+InsertNodeOrder::InsertNodeOrder(
+    Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel* product_model, int value_decimal, int unit_party, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::InsertNodeOrder)
     , node_ { node }
@@ -43,8 +43,8 @@ void InsertNodeOrder::RUpdateStakeholder()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_model_->ComboPathUnit(ui->comboEmployee, UNIT_EMPLOYEE);
-    stakeholder_model_->ComboPathUnit(ui->comboParty, unit_party_);
+    stakeholder_model_->ComboPathLeafUnit(ui->comboEmployee, UNIT_EMPLOYEE);
+    stakeholder_model_->ComboPathLeafUnit(ui->comboParty, unit_party_);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -65,7 +65,7 @@ void InsertNodeOrder::RUpdateOrder(const QVariant& value, TreeEnumOrder column)
     case TreeEnumOrder::kDescription:
         ui->lineDescription->setText(value.toString());
         break;
-    case TreeEnumOrder::kNodeRule:
+    case TreeEnumOrder::kRule:
         ui->chkBoxRefund->setChecked(value.toBool());
         break;
     case TreeEnumOrder::kUnit: {
@@ -108,7 +108,7 @@ void InsertNodeOrder::IniDialog()
     ui->dSpinInitialTotal->setRange(DMIN, DMAX);
     ui->dSpinSecond->setRange(DMIN, DMAX);
     ui->dSpinSecond->setDecimals(value_decimal_);
-    ui->spinFirst->setRange(IMIN, IMAX);
+    ui->dSpinFirst->setRange(IMIN, IMAX);
 }
 
 void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
@@ -116,7 +116,7 @@ void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
     if (!combo)
         return;
 
-    stakeholder_model_->ComboPathUnit(combo, unit);
+    stakeholder_model_->ComboPathLeafUnit(combo, unit);
     combo->model()->sort(0);
     combo->setCurrentIndex(-1);
 }
@@ -245,11 +245,11 @@ void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     auto employee_index { ui->comboEmployee->findData(stakeholder_model_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakeholder_model_->NodeRule(party_id) == 0);
-    ui->rBtnMonthly->setChecked(stakeholder_model_->NodeRule(party_id) == 1);
+    ui->rBtnCash->setChecked(stakeholder_model_->Rule(party_id) == 0);
+    ui->rBtnMonthly->setChecked(stakeholder_model_->Rule(party_id) == 1);
 }
 
-void InsertNodeOrder::on_chkBoxRefund_toggled(bool checked) { node_->node_rule = checked; }
+void InsertNodeOrder::on_chkBoxRefund_toggled(bool checked) { node_->rule = checked; }
 
 void InsertNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
 {
@@ -298,7 +298,7 @@ void InsertNodeOrder::on_pBtnInsertParty_clicked()
         return;
 
     auto node { ResourcePool<Node>::Instance().Allocate() };
-    node->node_rule = stakeholder_model_->NodeRule(-1);
+    node->rule = stakeholder_model_->Rule(-1);
     stakeholder_model_->SetParent(node, -1);
     node->name = name;
 
@@ -346,7 +346,7 @@ void InsertNodeOrder::on_dSpinDiscount_editingFinished()
 {
     auto value { ui->dSpinDiscount->value() };
 
-    if (node_->node_rule == UNIT_CASH) {
+    if (node_->rule == UNIT_CASH) {
         node_->final_total = node_->initial_total - value;
         ui->dSpinFinalTotal->setValue(node_->final_total);
     }
@@ -361,11 +361,11 @@ void InsertNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& ar
 }
 
 void InsertNodeOrder::on_lineDescription_editingFinished() { node_->description = ui->lineDescription->text(); }
-void InsertNodeOrder::on_spinFirst_editingFinished() { node_->first = ui->spinFirst->value(); }
+void InsertNodeOrder::on_dSpinFirst_editingFinished() { node_->first = ui->dSpinFirst->value(); }
 void InsertNodeOrder::on_dSpinSecond_editingFinished() { node_->second = ui->dSpinSecond->value(); }
 
 void InsertNodeOrder::on_lineDescription_textChanged(const QString& /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
-void InsertNodeOrder::on_spinFirst_valueChanged(int /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
+void InsertNodeOrder::on_dSpinFirst_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
 void InsertNodeOrder::on_dSpinSecond_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
 void InsertNodeOrder::on_dSpinInitialTotal_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }
 void InsertNodeOrder::on_dSpinDiscount_valueChanged(double /*arg1*/) { ui->pBtnSaveOrder->setEnabled(enable_save_); }

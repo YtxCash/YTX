@@ -7,7 +7,7 @@ TreeSpinR::TreeSpinR(QObject* parent)
 
 void TreeSpinR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    auto value { index.data().toInt() };
+    const int value { index.data().toInt() };
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
@@ -16,6 +16,6 @@ void TreeSpinR::paint(QPainter* painter, const QStyleOptionViewItem& option, con
 
 QSize TreeSpinR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    auto value { index.data().toInt() };
+    const int value { index.data().toInt() };
     return CalculateTextSize(locale_.toString(value), option);
 }

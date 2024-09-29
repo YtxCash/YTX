@@ -20,6 +20,9 @@ struct Trans {
     double rhs_ratio { 1.0 };
     int rhs_node {};
 
+    // order
+    int node_id {};
+
     void Reset()
     {
         id = 0;
@@ -36,6 +39,7 @@ struct Trans {
         rhs_credit = 0.0;
         state = false;
         document.clear();
+        node_id = 0;
     }
 };
 
@@ -54,6 +58,7 @@ struct TransShadow {
     double* related_debit {};
     double* related_ratio {};
     int* related_node {};
+    int* node_id {};
 
     double subtotal {};
 
@@ -73,6 +78,7 @@ struct TransShadow {
         related_credit = nullptr;
         state = nullptr;
         document = nullptr;
+        node_id = nullptr;
 
         subtotal = 0.0;
     }

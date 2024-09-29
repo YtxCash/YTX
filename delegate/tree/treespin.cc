@@ -33,7 +33,7 @@ void TreeSpin::setModelData(QWidget* editor, QAbstractItemModel* model, const QM
 
 void TreeSpin::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    auto value { index.data().toInt() };
+    const int value { index.data().toInt() };
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
@@ -42,6 +42,6 @@ void TreeSpin::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
 
 QSize TreeSpin::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    auto value { index.data().toInt() };
+    const int value { index.data().toInt() };
     return CalculateTextSize(locale_.toString(value), option);
 }

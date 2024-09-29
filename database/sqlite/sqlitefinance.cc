@@ -8,7 +8,7 @@ SqliteFinance::SqliteFinance(CInfo& info, QObject* parent)
 QString SqliteFinance::BuildTreeQS() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, node_rule, branch, unit, initial_total, final_total
+    SELECT name, id, code, description, note, rule, branch, unit, initial_total, final_total
     FROM finance
     WHERE removed = 0
     )");
@@ -17,8 +17,8 @@ QString SqliteFinance::BuildTreeQS() const
 QString SqliteFinance::InsertNodeQS() const
 {
     return QStringLiteral(R"(
-    INSERT INTO finance (name, code, description, note, node_rule, branch, unit)
-    VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit)
+    INSERT INTO finance (name, code, description, note, rule, branch, unit)
+    VALUES (:name, :code, :description, :note, :rule, :branch, :unit)
     )");
 }
 
@@ -27,7 +27,7 @@ QString SqliteFinance::RemoveNodeSecondQS() const
     return QStringLiteral(R"(
     UPDATE finance_transaction
     SET removed = 1
-    WHERE lhs_node = :node_id OR rhs_node = :node_id
+    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
 }
 
@@ -42,20 +42,29 @@ QString SqliteFinance::InternalReferenceQS() const
 QString SqliteFinance::LeafTotalQS() const
 {
     return QStringLiteral(R"(
-    SELECT lhs_debit AS debit, lhs_credit AS credit, lhs_ratio AS ratio FROM finance_transaction
-    WHERE lhs_node = :node_id AND removed = 0
-    UNION ALL
-    SELECT rhs_debit, rhs_credit, rhs_ratio FROM finance_transaction
-    WHERE rhs_node = :node_id AND removed = 0
-    )");
-}
+    WITH node_balance AS (
+        SELECT
+            lhs_debit AS initial_debit,
+            lhs_credit AS initial_credit,
+            lhs_ratio * lhs_debit AS final_debit,
+            lhs_ratio * lhs_credit AS final_credit
+        FROM finance_transaction
+        WHERE lhs_node = :node_id AND removed = 0
 
-QString SqliteFinance::RRemoveNodeQS() const
-{
-    return QStringLiteral(R"(
-    UPDATE finance_transaction
-    SET removed = 1
-    WHERE lhs_node = :node_id OR rhs_node = :node_id
+        UNION ALL
+
+        SELECT
+            rhs_debit,
+            rhs_credit,
+            rhs_ratio * rhs_debit,
+            rhs_ratio * rhs_credit
+        FROM finance_transaction
+        WHERE rhs_node = :node_id AND removed = 0
+    )
+    SELECT
+        SUM(initial_credit) - SUM(initial_debit) AS initial_balance,
+        SUM(final_credit) - SUM(final_debit) AS final_balance
+    FROM node_balance;
     )");
 }
 
@@ -86,17 +95,6 @@ QString SqliteFinance::BuildTransShadowListRangQS(CString& in_list) const
     WHERE id IN (%1) AND removed = 0
     )")
         .arg(in_list);
-}
-
-QString SqliteFinance::RelatedNodeTransQS() const
-{
-    return QStringLiteral(R"(
-    SELECT lhs_node, id FROM finance_transaction
-    WHERE rhs_node = :node_id AND removed = 0
-    UNION ALL
-    SELECT rhs_node, id FROM finance_transaction
-    WHERE lhs_node = :node_id AND removed = 0
-    )");
 }
 
 QString SqliteFinance::RReplaceNodeQS() const

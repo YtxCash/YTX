@@ -3,7 +3,7 @@ project(YTX VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS LinguistTools Widgets Sql Gui)
+find_package(Qt6 REQUIRED COMPONENTS LinguistTools Widgets Sql Gui Concurrent)
 qt_standard_project_setup(REQUIRES 6.5)
 
 add_definitions(-DQT_DISABLE_DEPRECATED_UP_TO=0x060500)
@@ -51,4 +51,4 @@ endif()
 qt6_add_translations(${PROJECT_NAME}
   TS_FILES resource/I18N/ytx_zh_CN.ts)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Sql Qt6::Gui)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Sql Qt6::Gui Qt6::Concurrent)

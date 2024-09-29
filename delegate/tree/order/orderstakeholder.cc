@@ -4,7 +4,7 @@
 
 #include "widget/combobox.h"
 
-OrderStakeholder::OrderStakeholder(const TreeModel& modstakeholder_tree_model, int unit, QObject* parent)
+OrderStakeholder::OrderStakeholder(const TreeModel* modstakeholder_tree_model, int unit, QObject* parent)
     : StyledItemDelegate { parent }
     , stakeholder_tree_model_ { modstakeholder_tree_model }
     , unit_ { unit }
@@ -15,12 +15,12 @@ QWidget* OrderStakeholder::createEditor(QWidget* parent, const QStyleOptionViewI
 {
     Q_UNUSED(option);
 
-    bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool() };
     if (branch)
         return nullptr;
 
     auto editor { new ComboBox(parent) };
-    stakeholder_tree_model_.ComboPathUnit(editor, unit_);
+    stakeholder_tree_model_->ComboPathLeafUnit(editor, unit_);
     editor->model()->sort(0);
 
     return editor;
@@ -49,4 +49,4 @@ void OrderStakeholder::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
 QSize OrderStakeholder::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(GetPath(index), option); }
 
-QString OrderStakeholder::GetPath(const QModelIndex& index) const { return stakeholder_tree_model_.GetPath(index.data().toInt()); }
+QString OrderStakeholder::GetPath(const QModelIndex& index) const { return stakeholder_tree_model_->GetPath(index.data().toInt()); }

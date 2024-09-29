@@ -29,7 +29,7 @@ QString TreeDoubleSpinDynamicUnitR::Format(const QModelIndex& index) const
 
     int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
     auto it { unit_symbol_hash_.constFind(unit) };
-    auto symbol { (it != unit_symbol_hash_.constEnd()) ? *it : empty_string };
+    auto symbol { (it != unit_symbol_hash_.constEnd()) ? it.value() : empty_string };
 
     return symbol + locale_.toString(value, 'f', decimal_);
 }

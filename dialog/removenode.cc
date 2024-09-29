@@ -6,7 +6,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_removenode.h"
 
-RemoveNode::RemoveNode(const TreeModel& model, int node_id, QWidget* parent)
+RemoveNode::RemoveNode(const TreeModel* model, int node_id, int unit, bool disable, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::RemoveNode)
     , node_id_ { node_id }
@@ -17,6 +17,9 @@ RemoveNode::RemoveNode(const TreeModel& model, int node_id, QWidget* parent)
 
     IniDialog();
     IniConnect();
+
+    if (disable)
+        DisableRemove();
 }
 
 RemoveNode::~RemoveNode() { delete ui; }
@@ -24,7 +27,7 @@ RemoveNode::~RemoveNode() { delete ui; }
 void RemoveNode::DisableRemove()
 {
     ui->rBtnRemoveRecords->setDisabled(true);
-    ui->label->setText("This node is going to be removed, but it has external references. Replace them?");
+    ui->label->setText(tr("The node has external references, so it can’t be removed directly. Should it be replaced instead?"));
 }
 
 void RemoveNode::RCustomAccept()
@@ -33,18 +36,19 @@ void RemoveNode::RCustomAccept()
     msg.setIcon(QMessageBox::Question);
     msg.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 
-    auto path { model_.GetPath(node_id_) };
+    auto path { model_->GetPath(node_id_) };
     QString text {};
     QString informative_text {};
 
     if (ui->rBtnRemoveRecords->isChecked()) {
-        text = tr("Remove Records");
-        informative_text = tr("Are you sure you want to remove %1 and its related records?").arg(path);
+        text = tr("Remove Node");
+        informative_text = tr("Remove %1 and all its internal references. Are you sure").arg(path);
     }
 
     if (ui->rBtnReplaceRecords->isChecked()) {
-        text = tr("Replace Records");
-        informative_text = tr("Are you sure you want to replace %1 with %2 in all related records?").arg(path, ui->comboBox->currentText());
+        text = tr("Replace Node");
+        informative_text = tr("Replace %1 with %2 for all internal and external references. This action is risky and cannot be undone. Are you sure?")
+                               .arg(path, ui->comboBox->currentText());
     }
 
     msg.setText(text);
@@ -68,9 +72,9 @@ void RemoveNode::IniDialog()
     ui->label->setWordWrap(true);
     ui->rBtnReplaceRecords->setChecked(true);
     ui->pBtnCancel->setDefault(true);
-    this->setWindowTitle(tr("Remove %1").arg(model_.GetPath(node_id_)));
+    this->setWindowTitle(tr("Remove %1").arg(model_->GetPath(node_id_)));
 
-    model_.ComboPathLeaf(ui->comboBox, node_id_);
+    model_->ComboPathLeafExclude(ui->comboBox, node_id_);
 
     ui->comboBox->model()->sort(0);
 }

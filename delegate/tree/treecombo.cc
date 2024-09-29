@@ -16,10 +16,13 @@ QWidget* TreeCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& op
 
     auto editor { new ComboBox(parent) };
 
+    editor->blockSignals(true);
+
     for (auto it = hash_.cbegin(); it != hash_.cend(); ++it)
         editor->addItem(it.value(), it.key());
 
     editor->model()->sort(0);
+    editor->blockSignals(false);
 
     int height = option.rect.height();
     int width = option.rect.width();
@@ -59,5 +62,5 @@ QString TreeCombo::HashValue(int key) const
     static const QString empty_string {};
     auto it { hash_.constFind(key) };
 
-    return (it != hash_.constEnd()) ? *it : empty_string;
+    return (it != hash_.constEnd()) ? it.value() : empty_string;
 }

@@ -13,13 +13,13 @@
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
-Search::Search(CInfo& info, CInterface& interface, const TreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSectionRule& section_rule,
-    CStringHash& node_rule, QWidget* parent)
+Search::Search(CInfo& info, CInterface& interface, const TreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSettings& settings, CStringHash& rule_hash,
+    QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Search)
     , sql_ { sql }
-    , node_rule_ { node_rule }
-    , section_rule_ { section_rule }
+    , rule_hash_ { rule_hash }
+    , settings_ { settings }
     , tree_model_ { tree_model }
     , info_ { info }
     , interface_ { interface }
@@ -29,7 +29,7 @@ Search::Search(CInfo& info, CInterface& interface, const TreeModel& tree_model, 
 
     IniDialog();
 
-    search_tree_model_ = new SearchTreeModel(info_, tree_model_, section_rule_, sql, this);
+    search_tree_model_ = new SearchTreeModel(info_, tree_model_, settings_, sql, this);
     search_table_model_ = new SearchTableModel(&info, sql, this);
 
     IniTree(ui->treeView, search_tree_model_);
@@ -70,16 +70,16 @@ void Search::IniTree(QTableView* view, SearchTreeModel* model)
     auto unit { new TreeCombo(info_.unit_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
 
-    auto node_rule { new TreeCombo(node_rule_, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNodeRule), node_rule);
+    auto rule { new TreeCombo(rule_hash_, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
-    auto total { new TreeDoubleSpinDynamicUnitR(section_rule_.value_decimal, info_.unit_symbol_hash, view) };
+    auto total { new TreeDoubleSpinDynamicUnitR(settings_.value_decimal, info_.unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), total);
 
     auto branch { new CheckBox(QEvent::MouseButtonDblClick, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
 
-    auto name { new SearchComboR(tree_model_, view) };
+    auto name { new SearchComboR(&tree_model_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kName), name);
 
     view->setColumnHidden(std::to_underlying(TreeEnum::kID), true);
@@ -90,17 +90,17 @@ void Search::IniTable(QTableView* view, SearchTableModel* model)
 {
     view->setModel(model);
 
-    auto value { new TableDoubleSpinR(section_rule_.value_decimal, view) };
+    auto value { new TableDoubleSpinR(settings_.value_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsCredit), value);
 
-    auto ratio { new TableDoubleSpinR(section_rule_.ratio_decimal, view) };
+    auto ratio { new TableDoubleSpinR(settings_.ratio_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsRatio), ratio);
 
-    auto node_name { new TableCombo(tree_model_, 0, view) };
+    auto node_name { new TableCombo(&tree_model_, 0, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), node_name);
 
@@ -144,7 +144,7 @@ void Search::HideColumn(QTableView* view, Section section)
         break;
     case Section::kStakeholder:
         view->setColumnHidden(std::to_underlying(TreeEnum::kInitialTotal), true);
-        view->setColumnHidden(std::to_underlying(TreeEnum::kNodeRule), true);
+        view->setColumnHidden(std::to_underlying(TreeEnum::kRule), true);
         view->setColumnHidden(std::to_underlying(TreeEnum::kFourth), true);
         view->setColumnHidden(std::to_underlying(TreeEnum::kFinalTotal), true);
         view->setColumnHidden(std::to_underlying(TreeEnum::kSecond), true);

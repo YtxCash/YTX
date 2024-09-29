@@ -4,12 +4,12 @@
 
 #include "ui_treewidgetstakeholder.h"
 
-TreeWidgetStakeholder::TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
+TreeWidgetStakeholder::TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent)
     : TreeWidget(parent)
     , ui(new Ui::TreeWidgetStakeholder)
     , model_ { model }
     , info_ { info }
-    , section_rule_ { section_rule }
+    , settings_ { settings }
 {
     ui->setupUi(this);
     ui->treeViewStakeholder->setModel(model);

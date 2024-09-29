@@ -39,7 +39,7 @@ void TreeDoubleSpinPercent::setModelData(QWidget* editor, QAbstractItemModel* mo
 
 void TreeDoubleSpinPercent::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    auto value { index.data().toDouble() * HUNDRED };
+    const double value { index.data().toDouble() * HUNDRED };
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
@@ -48,6 +48,6 @@ void TreeDoubleSpinPercent::paint(QPainter* painter, const QStyleOptionViewItem&
 
 QSize TreeDoubleSpinPercent::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    auto value { index.data().toDouble() * HUNDRED };
+    const double value { index.data().toDouble() * HUNDRED };
     return CalculateTextSize(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, option);
 }

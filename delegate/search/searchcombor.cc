@@ -2,7 +2,7 @@
 
 #include "component/enumclass.h"
 
-SearchComboR::SearchComboR(const TreeModel& model, QObject* parent)
+SearchComboR::SearchComboR(const TreeModel* model, QObject* parent)
     : StyledItemDelegate { parent }
     , model_ { model }
 {
@@ -25,5 +25,5 @@ QSize SearchComboR::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 
 QString SearchComboR::GetPath(const QModelIndex& index) const
 {
-    return model_.GetPath(index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt());
+    return model_->GetPath(index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt());
 }

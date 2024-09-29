@@ -13,7 +13,7 @@ public:
         auto list { parent->findChildren<QWidget*>() };
         list.emplaceBack(parent);
 
-        for (const auto widget : list)
+        for (auto* widget : list)
             if (widget && !widget->signalsBlocked()) {
                 widget->blockSignals(true);
                 list_.emplace_back(widget);
@@ -22,7 +22,7 @@ public:
 
     ~SignalBlocker()
     {
-        for (const auto widget : list_)
+        for (auto* widget : list_)
             widget->blockSignals(false);
     }
 

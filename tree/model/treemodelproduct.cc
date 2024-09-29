@@ -21,7 +21,7 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     if (*node == *tmp_node)
         return;
 
-    UpdateNodeRule(node, tmp_node->node_rule);
+    UpdateRule(node, tmp_node->rule);
     UpdateUnit(node, tmp_node->unit);
     UpdateBranch(node, tmp_node->branch);
 
@@ -33,7 +33,7 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
     UpdateField(node, tmp_node->code, CODE, &Node::code);
     UpdateField(node, tmp_node->note, NOTE, &Node::note);
-    UpdateField(node, tmp_node->second, UNIT_PRICE, &Node::discount);
+    UpdateField(node, tmp_node->second, LHS_RATIO, &Node::discount);
     UpdateField(node, tmp_node->second, COMMISSION, &Node::second);
 }
 
@@ -95,8 +95,8 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->description < rhs->description) : (lhs->description > rhs->description);
         case TreeEnumProduct::kNote:
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
-        case TreeEnumProduct::kNodeRule:
-            return (order == Qt::AscendingOrder) ? (lhs->node_rule < rhs->node_rule) : (lhs->node_rule > rhs->node_rule);
+        case TreeEnumProduct::kRule:
+            return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
         case TreeEnumProduct::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumProduct::kUnit:
@@ -141,8 +141,8 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
         return node->description;
     case TreeEnumProduct::kNote:
         return node->note;
-    case TreeEnumProduct::kNodeRule:
-        return node->node_rule;
+    case TreeEnumProduct::kRule:
+        return node->rule;
     case TreeEnumProduct::kBranch:
         return node->branch;
     case TreeEnumProduct::kUnit:
@@ -181,8 +181,8 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
     case TreeEnumProduct::kNote:
         UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
-    case TreeEnumProduct::kNodeRule:
-        UpdateNodeRule(node, value.toBool());
+    case TreeEnumProduct::kRule:
+        UpdateRule(node, value.toBool());
         break;
     case TreeEnumProduct::kBranch:
         UpdateBranch(node, value.toBool());

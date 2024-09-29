@@ -4,12 +4,12 @@
 
 #include "ui_treewidgetorder.h"
 
-TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
+TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent)
     : TreeWidget(parent)
     , ui(new Ui::TreeWidgetOrder)
     , model_ { model }
     , info_ { info }
-    , section_rule_ { section_rule }
+    , settings_ { settings }
 {
     ui->setupUi(this);
     ui->treeViewOrder->setModel(model);

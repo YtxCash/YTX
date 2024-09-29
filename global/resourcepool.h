@@ -44,7 +44,7 @@ private:
 
 template <Resettable T> ResourcePool<T>& ResourcePool<T>::Instance()
 {
-    static ResourcePool<T> instance;
+    static ResourcePool<T> instance {};
     return instance;
 }
 

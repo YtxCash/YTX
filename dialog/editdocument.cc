@@ -38,7 +38,7 @@ void EditDocument::on_pBtnAdd_clicked()
 
     int row {};
 
-    for (const QString& document : local_documents) {
+    for (CString& document : local_documents) {
         if (!document_->contains(document)) {
             row = list_model_->rowCount();
             list_model_->insertRow(row);

@@ -20,7 +20,7 @@ QString TreeDoubleSpinUnitR::Format(const QModelIndex& index) const
     static const QString empty_string {};
 
     auto it { unit_symbol_hash_.constFind(unit_) };
-    auto symbol { (it != unit_symbol_hash_.constEnd()) ? *it : empty_string };
+    auto symbol { (it != unit_symbol_hash_.constEnd()) ? it.value() : empty_string };
 
     return symbol + locale_.toString(index.data().toDouble(), 'f', decimal_);
 }

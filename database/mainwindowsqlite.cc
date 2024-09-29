@@ -11,43 +11,43 @@ MainwindowSqlite::MainwindowSqlite(Section section)
 {
 }
 
-void MainwindowSqlite::QuerySectionRule(SectionRule& section_rule, Section section)
+void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
     auto part = R"(
     SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, base_unit, document_dir, value_decimal, ratio_decimal
-    FROM section_rule
+    FROM settings
     WHERE id = :section
 )";
 
     query.prepare(part);
     query.bindValue(":section", std::to_underlying(section) + 1);
     if (!query.exec()) {
-        qWarning() << "Failed to query section rule: " << query.lastError().text();
+        qWarning() << "Failed to query section settings: " << query.lastError().text();
         return;
     }
 
     while (query.next()) {
-        section_rule.static_label = query.value("static_label").toString();
-        section_rule.static_node = query.value("static_node").toInt();
-        section_rule.dynamic_label = query.value("dynamic_label").toString();
-        section_rule.dynamic_node_lhs = query.value("dynamic_node_lhs").toInt();
-        section_rule.operation = query.value("operation").toString();
-        section_rule.dynamic_node_rhs = query.value("dynamic_node_rhs").toInt();
-        section_rule.hide_time = query.value("hide_time").toBool();
-        section_rule.base_unit = query.value("base_unit").toInt();
-        section_rule.document_dir = query.value("document_dir").toString();
-        section_rule.value_decimal = query.value("value_decimal").toInt();
-        section_rule.ratio_decimal = query.value("ratio_decimal").toInt();
+        settings.static_label = query.value("static_label").toString();
+        settings.static_node = query.value("static_node").toInt();
+        settings.dynamic_label = query.value("dynamic_label").toString();
+        settings.dynamic_node_lhs = query.value("dynamic_node_lhs").toInt();
+        settings.operation = query.value("operation").toString();
+        settings.dynamic_node_rhs = query.value("dynamic_node_rhs").toInt();
+        settings.hide_time = query.value("hide_time").toBool();
+        settings.base_unit = query.value("base_unit").toInt();
+        settings.document_dir = query.value("document_dir").toString();
+        settings.value_decimal = query.value("value_decimal").toInt();
+        settings.ratio_decimal = query.value("ratio_decimal").toInt();
     }
 }
 
-void MainwindowSqlite::UpdateSectionRule(CSectionRule& section_rule, Section section)
+void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
 {
     auto part = R"(
-    UPDATE section_rule
+    UPDATE settings
     SET static_label = :static_label, static_node = :static_node, dynamic_label = :dynamic_label, dynamic_node_lhs = :dynamic_node_lhs,
         operation = :operation, dynamic_node_rhs = :dynamic_node_rhs, hide_time = :hide_time, base_unit = :base_unit, document_dir = :document_dir,
         value_decimal = :value_decimal, ratio_decimal = :ratio_decimal
@@ -58,20 +58,20 @@ void MainwindowSqlite::UpdateSectionRule(CSectionRule& section_rule, Section sec
 
     query.prepare(part);
     query.bindValue(":section", std::to_underlying(section) + 1);
-    query.bindValue(":static_label", section_rule.static_label);
-    query.bindValue(":static_node", section_rule.static_node);
-    query.bindValue(":dynamic_label", section_rule.dynamic_label);
-    query.bindValue(":dynamic_node_lhs", section_rule.dynamic_node_lhs);
-    query.bindValue(":operation", section_rule.operation);
-    query.bindValue(":dynamic_node_rhs", section_rule.dynamic_node_rhs);
-    query.bindValue(":hide_time", section_rule.hide_time);
-    query.bindValue(":base_unit", section_rule.base_unit);
-    query.bindValue(":document_dir", section_rule.document_dir);
-    query.bindValue(":value_decimal", section_rule.value_decimal);
-    query.bindValue(":ratio_decimal", section_rule.ratio_decimal);
+    query.bindValue(":static_label", settings.static_label);
+    query.bindValue(":static_node", settings.static_node);
+    query.bindValue(":dynamic_label", settings.dynamic_label);
+    query.bindValue(":dynamic_node_lhs", settings.dynamic_node_lhs);
+    query.bindValue(":operation", settings.operation);
+    query.bindValue(":dynamic_node_rhs", settings.dynamic_node_rhs);
+    query.bindValue(":hide_time", settings.hide_time);
+    query.bindValue(":base_unit", settings.base_unit);
+    query.bindValue(":document_dir", settings.document_dir);
+    query.bindValue(":value_decimal", settings.value_decimal);
+    query.bindValue(":ratio_decimal", settings.ratio_decimal);
 
     if (!query.exec()) {
-        qWarning() << "Failed to update section rule: " << query.lastError().text();
+        qWarning() << "Failed to update section settings: " << query.lastError().text();
         return;
     }
 }
@@ -107,8 +107,8 @@ void MainwindowSqlite::NewFile(CString& file_path)
     QString sales_path = Path(SALES_PATH);
     QString sales_transaction = TransactionOrder(SALES_TRANSACTION);
 
-    QString section_rule = R"(
-    CREATE TABLE IF NOT EXISTS section_rule (
+    QString settings = R"(
+    CREATE TABLE IF NOT EXISTS settings (
         id                  INTEGER PRIMARY KEY AUTOINCREMENT,
         static_label        TEXT,
         static_node         INTEGER,
@@ -124,7 +124,7 @@ void MainwindowSqlite::NewFile(CString& file_path)
     );
 )";
 
-    QString section_rule_row = "INSERT INTO section_rule (static_node) VALUES (0);";
+    QString settings_row = "INSERT INTO settings (static_node) VALUES (0);";
 
     QSqlQuery query {};
     if (db.transaction()) {
@@ -132,11 +132,11 @@ void MainwindowSqlite::NewFile(CString& file_path)
         if (query.exec(finance) && query.exec(finance_path) && query.exec(finance_transaction) && query.exec(product) && query.exec(product_path)
             && query.exec(product_transaction) && query.exec(stakeholder) && query.exec(stakeholder_path) && query.exec(stakeholder_transaction)
             && query.exec(task) && query.exec(task_path) && query.exec(task_transaction) && query.exec(purchase) && query.exec(purchase_path)
-            && query.exec(purchase_transaction) && query.exec(sales) && query.exec(sales_path) && query.exec(sales_transaction) && query.exec(section_rule)) {
+            && query.exec(purchase_transaction) && query.exec(sales) && query.exec(sales_path) && query.exec(sales_transaction) && query.exec(settings)) {
             // Commit the transaction if all queries are successful
             if (db.commit()) {
                 for (int i = 0; i != 6; ++i) {
-                    query.exec(section_rule_row);
+                    query.exec(settings_row);
                 }
             } else {
                 // Handle commit failure
@@ -167,7 +167,7 @@ QString MainwindowSqlite::NodeFinanceTask(CString& table_name)
         code             TEXT,
         description      TEXT,
         note             TEXT,
-        node_rule        BOOLEAN    DEFAULT 0,
+        rule             BOOLEAN    DEFAULT 0,
         branch           BOOLEAN    DEFAULT 0,
         unit             INTEGER,
         initial_total    NUMERIC,
@@ -187,7 +187,7 @@ QString MainwindowSqlite::NodeStakeholder(CString& table_name)
         code              TEXT,
         description       TEXT,
         note              TEXT,
-        node_rule         BOOLEAN    DEFAULT 0,
+        rule              BOOLEAN    DEFAULT 0,
         branch            BOOLEAN    DEFAULT 0,
         unit              INTEGER,
         deadline          INTEGER,
@@ -209,7 +209,7 @@ QString MainwindowSqlite::NodeProduct(CString& table_name)
         code             TEXT,
         description      TEXT,
         note             TEXT,
-        node_rule        BOOLEAN    DEFAULT 0,
+        rule             BOOLEAN    DEFAULT 0,
         branch           BOOLEAN    DEFAULT 0,
         unit             INTEGER,
         commission       NUMERIC,
@@ -231,13 +231,13 @@ QString MainwindowSqlite::NodeOrder(CString& table_name)
         code              TEXT,
         description       TEXT,
         note              TEXT,
-        node_rule         BOOLEAN    DEFAULT 0,
+        rule              BOOLEAN    DEFAULT 0,
         branch            BOOLEAN    DEFAULT 0,
         unit              INTEGER,
         party             INTEGER,
         employee          INTEGER,
         date_time         DATE,
-        first             INTEGER,
+        first             NUMERIC,
         second            NUMERIC,
         discount          NUMERIC,
         locked            BOOLEAN    DEFAULT 0,
@@ -289,21 +289,18 @@ QString MainwindowSqlite::TransactionOrder(CString& table_name)
 {
     return QString(R"(
     CREATE TABLE IF NOT EXISTS %1 (
-        id             INTEGER PRIMARY KEY AUTOINCREMENT,
-        date_time      DATE,
-        code           TEXT,
-        lhs_node       INTEGER,
-        lhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (lhs_ratio   > 0),
-        lhs_debit      NUMERIC                   CHECK (lhs_debit  >= 0),
-        lhs_credit     NUMERIC                   CHECK (lhs_credit >= 0),
-        description    TEXT,
-        document       TEXT,
-        state          BOOLEAN    DEFAULT 0,
-        rhs_credit     NUMERIC                   CHECK (rhs_credit >= 0),
-        rhs_debit      NUMERIC                   CHECK (rhs_debit  >= 0),
-        rhs_ratio      NUMERIC    DEFAULT 1.0    CHECK (rhs_ratio   > 0),
-        rhs_node       INTEGER,
-        removed        BOOLEAN    DEFAULT 0
+        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+        code                TEXT,
+        lhs_node            INTEGER,
+        lhs_ratio           NUMERIC    DEFAULT 1.0,
+        second              NUMERIC,
+        node_id             INTEGER,
+        first               NUMERIC,
+        initial_subtotal    NUMERIC,
+        discount            NUMERIC,
+        rhs_ratio           NUMERIC    DEFAULT 0.0,
+        rhs_node            INTEGER,
+        removed             BOOLEAN    DEFAULT 0
     );
 )")
         .arg(table_name);

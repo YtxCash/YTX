@@ -27,7 +27,7 @@ protected:
 
 signals:
     // send to related table model
-    void SNodeRule(int node_id, bool node_rule);
+    void SRule(int node_id, bool rule);
 
     // send to its view
     void SResizeColumnToContents(int column);
@@ -44,12 +44,13 @@ signals:
     void SUpdateOrder(const QVariant& value, TreeEnumOrder column);
 
 public slots:
-    // receive from table sql
-    virtual bool RUpdateMultiNodeTotal(const QList<int>& node_list);
+    // receive from sqlite
+    virtual bool RUpdateMultiLeafTotal(const QList<int>& node_list);
     virtual bool RRemoveNode(int node_id);
+    virtual bool RUpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/) { return false; }
 
     // receive from related table model
-    virtual void RUpdateOneTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
+    virtual void RUpdateLeafTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
 
     // receive from table model, member function
     void RSearch() { emit SSearch(); }
@@ -103,30 +104,25 @@ public:
     // member functions
     void NodeList(QList<const Node*>& node_list, const QList<int>& id_list) const;
 
-    int Employee(int node_id) const { return GetValueOrDefault(node_id, &Node::employee, 0); }
-    int Unit(int node_id) const { return GetValueOrDefault(node_id, &Node::unit, 0); }
-    QString Name(int node_id) const
-    {
-        static const QString empty_string {};
-        return GetValueOrDefault(node_id, &Node::name, empty_string);
-    }
-    bool Branch(int node_id) const { return GetValueOrDefault(node_id, &Node::branch, false); }
-    bool NodeRule(int node_id) const { return GetValueOrDefault(node_id, &Node::node_rule, false); }
-    double InitialTotal(int node_id) const { return GetValueOrDefault(node_id, &Node::initial_total, 0.0); }
-    double FinalTotal(int node_id) const { return GetValueOrDefault(node_id, &Node::final_total, 0.0); }
+    int Employee(int node_id) const { return GetValue(node_id, &Node::employee); }
+    int Unit(int node_id) const { return GetValue(node_id, &Node::unit); }
+    const QString& Name(int node_id) const { return GetValue(node_id, &Node::name); }
+    const QString& Description(int node_id) const { return GetValue(node_id, &Node::description); }
+    bool Branch(int node_id) const { return GetValue(node_id, &Node::branch); }
+    bool Rule(int node_id) const { return GetValue(node_id, &Node::rule); }
+    double InitialTotal(int node_id) const { return GetValue(node_id, &Node::initial_total); }
+    double FinalTotal(int node_id) const { return GetValue(node_id, &Node::final_total); }
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }
 
-    QString GetPath(int node_id) const
-    {
-        static const QString empty_string {};
-        return leaf_path_.value(node_id, branch_path_.value(node_id, empty_string));
-    }
+    QString GetPath(int node_id) const;
     QModelIndex GetIndex(int node_id) const;
+    void SetNodeShadow(NodeShadow* node_shadow, int node_id) const;
 
-    void ComboPathUnit(QComboBox* combo, int unit) const;
-    void ComboPathLeaf(QComboBox* combo, int exclude) const;
+    void ComboPathLeafUnit(QComboBox* combo, int unit) const;
+    void ComboPathLeafExcludeUnit(QComboBox* combo, int exclude_unit) const;
+    void ComboPathLeafExclude(QComboBox* combo, int exclude) const;
     void ComboPathLeafBranch(QComboBox* combo) const;
 
     QStringList ChildrenName(int node_id, int exclude_child) const;
@@ -139,7 +135,7 @@ public:
 protected:
     // virtual functions
     virtual void ConstructTree();
-    virtual bool UpdateNodeRule(Node* node, bool value);
+    virtual bool UpdateRule(Node* node, bool value);
     virtual bool UpdateUnit(Node* node, int value);
     virtual bool UpdateName(Node* node, CString& value);
     virtual bool IsReferenced(int node_id, CString& message);
@@ -149,7 +145,7 @@ protected:
     bool IsDescendant(Node* lhs, Node* rhs) const;
     void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare);
 
-    Node* GetNodeByID(int node_id) const { return node_hash_.value(node_id, nullptr); }
+    Node* GetNodeByID(int node_id) const;
     Node* GetNodeByIndex(const QModelIndex& index) const;
     QString ConstructPath(const Node* node) const;
 
@@ -166,24 +162,25 @@ protected:
     bool IsOpened(int node_id, CString& message);
 
 protected:
-    template <typename T> std::optional<T> GetValue(int node_id, T Node::* member) const
+    template <typename T> const T& GetValue(int node_id, T Node::* member) const
     {
         if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
-            return (*it)->*member;
+            return it.value()->*member;
 
-        return std::nullopt;
-    }
-
-    template <typename T> T GetValueOrDefault(int node_id, T Node::* member, const T& default_value = T {}) const
-    {
-        return GetValue(node_id, member).value_or(default_value);
+        // If the node_id does not exist, return a static empty object to ensure a safe default value
+        // Examples:
+        // double InitialTotal(int node_id) const { return GetValue(node_id, &Node::initial_total); }
+        // double FinalTotal(int node_id) const { return GetValue(node_id, &Node::final_total); }
+        // Note: In the SetStatus() function of TreeWidget,
+        // a node_id of 0 may be passed, so empty{} is needed to prevent illegal access
+        static const T empty {};
+        return empty;
     }
 
     template <typename T> bool UpdateField(Node* node, const T& value, CString& field, T Node::* member)
     {
         if constexpr (std::is_floating_point_v<T>) {
-            static const T tolerance = static_cast<T>(std::pow(10, -9));
-            if (std::abs(node->*member - value) < tolerance)
+            if (std::abs(node->*member - value) < TOLERANCE)
                 return false;
         } else {
             if (node->*member == value)

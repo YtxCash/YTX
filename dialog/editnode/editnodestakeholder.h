@@ -17,7 +17,7 @@ class EditNodeStakeholder final : public QDialog {
 
 public:
     EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int ratio_decimal,
-        TreeModel* model, QWidget* parent = nullptr);
+        TreeModel* stakeholder_tree, QWidget* parent = nullptr);
     ~EditNodeStakeholder();
 
 private slots:
@@ -26,9 +26,9 @@ private slots:
     void on_lineEditName_editingFinished();
     void on_lineEditCode_editingFinished();
     void on_lineEditDescription_editingFinished();
-    void on_spinBoxDeadline_editingFinished();
-    void on_spinBoxPaymentPeriod_editingFinished();
-    void on_dSpinBoxTaxRate_editingFinished();
+    void on_spinDeadline_editingFinished();
+    void on_dSpinPaymentPeriod_editingFinished();
+    void on_dSpinTaxRate_editingFinished();
 
     void on_chkBoxBranch_toggled(bool checked);
     void on_rBtnMonthly_toggled(bool checked);
@@ -39,9 +39,9 @@ private slots:
     void on_plainTextEdit_textChanged();
 
 private:
-    void IniDialog(CStringHash& unit_hash, TreeModel* model, int ratio_decimal);
+    void IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int ratio_decimal);
     void IniComboWithStringHash(QComboBox* combo, CStringHash& hash);
-    void IniComboEmployee(TreeModel* model);
+    void IniComboEmployee(TreeModel* stakeholder_tree);
     void IniConnect();
     void Data(Node* node, bool enable_branch);
 

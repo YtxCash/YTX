@@ -19,6 +19,6 @@ bool CheckBox::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyl
     if (mouse_event->button() != Qt::LeftButton || !option.rect.contains(mouse_event->pos()))
         return false;
 
-    bool checked = index.data().toBool();
+    const bool checked { index.data().toBool() };
     return model->setData(index, !checked, Qt::EditRole);
 }

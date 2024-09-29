@@ -15,7 +15,7 @@ QWidget* OrderDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem
 {
     Q_UNUSED(option);
 
-    bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool() };
     if (branch)
         return nullptr;
 

@@ -1,18 +1,18 @@
-#include "tablecombo.h"
+#include "stakeholderrhsnode.h"
 
 #include "widget/combobox.h"
 
-TableCombo::TableCombo(const TreeModel* model, int exclude, QObject* parent)
+StakeholderRhsNode::StakeholderRhsNode(const TreeModel* model, int exclude_unit, QObject* parent)
     : StyledItemDelegate { parent }
-    , exclude_ { exclude }
+    , exclude_unit_ { exclude_unit }
     , model_ { model }
 {
 }
 
-QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+QWidget* StakeholderRhsNode::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     auto editor { new ComboBox(parent) };
-    model_->ComboPathLeafExclude(editor, exclude_);
+    model_->ComboPathLeafExcludeUnit(editor, exclude_unit_);
     editor->model()->sort(0);
 
     int height = option.rect.height();
@@ -22,7 +22,7 @@ QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& o
     return editor;
 }
 
-void TableCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
+void StakeholderRhsNode::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto cast_editor { qobject_cast<ComboBox*>(editor) };
 
@@ -34,14 +34,14 @@ void TableCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
     cast_editor->setCurrentIndex(item_index);
 }
 
-void TableCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void StakeholderRhsNode::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     int key { qobject_cast<ComboBox*>(editor)->currentData().toInt() };
     last_insert_ = key;
     model->setData(index, key);
 }
 
-void TableCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void StakeholderRhsNode::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString path { model_->GetPath(index.data().toInt()) };
     if (path.isEmpty())
@@ -55,7 +55,7 @@ void TableCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, co
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize TableCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize StakeholderRhsNode::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString text = model_->GetPath(index.data().toInt());
     return CalculateTextSize(text, option);

@@ -23,7 +23,7 @@ protected:
     bool UpdateUnit(Node* node, int value) override;
 
 private:
-    bool UpdateUnitPrice(Node* node, double value, CString& field = UNIT_PRICE);
+    bool UpdateUnitPrice(Node* node, double value, CString& field = LHS_RATIO);
     bool UpdateCommission(Node* node, double value, CString& field = COMMISSION);
 };
 

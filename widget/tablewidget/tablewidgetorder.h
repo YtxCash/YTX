@@ -15,7 +15,7 @@ class TableWidgetOrder final : public TableWidget {
     Q_OBJECT
 
 public:
-    TableWidgetOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel& product_model, int value_decimal, int unit_party,
+    TableWidgetOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel* product_model, int value_decimal, int unit_party,
         QWidget* parent = nullptr);
     ~TableWidgetOrder();
 
@@ -74,7 +74,7 @@ private:
     int value_decimal_ {};
     TreeModel* stakeholder_model_ {};
     TreeModel* order_model_ {};
-    const TreeModel& product_model_;
+    const TreeModel* product_model_ {};
 };
 
 #endif // TABLEWIDGETORDER_H

@@ -142,7 +142,7 @@ void SearchTableModel::Query(const QString& text)
         trans_list = sql_->QueryTransList(text);
 
     beginResetModel();
-    for (const auto& trans : trans_list)
+    for (auto* trans : trans_list)
         trans_list_.emplace_back(trans);
 
     endResetModel();

@@ -14,8 +14,23 @@ TreeModelOrder::TreeModelOrder(SPSqlite sql, CInfo& info, int base_unit, CTableH
     TreeModelOrder::ConstructTree();
 }
 
+bool TreeModelOrder::RUpdateStakeholderReference(int old_node_id, int new_node_id)
+{
+    const auto& const_node_hash { std::as_const(node_hash_) };
+
+    for (auto* node : const_node_hash) {
+        if (node->party == old_node_id)
+            node->party = new_node_id;
+
+        if (node->employee == old_node_id)
+            node->employee = new_node_id;
+    }
+
+    return true;
+}
+
 void TreeModelOrder::RecalculateAncestor(
-    Node* node, int first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff)
+    Node* node, double first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff)
 {
     if (!node || node == root_ || !node->parent || node->parent == root_)
         return;
@@ -52,7 +67,7 @@ void TreeModelOrder::RecalculateAncestor(Node* node, int old_unit, double old_fi
     const int column_start { std::to_underlying(TreeEnumOrder::kFirst) };
     const int column_end { std::to_underlying(TreeEnumOrder::kFinalTotal) };
 
-    const int first { node->first };
+    const double first { node->first };
     const double second { node->second };
     const double discount { node->discount };
     const double initial_total { node->initial_total };
@@ -99,7 +114,7 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
     if (node->branch)
         UpdateName(node, tmp_node->name);
 
-    std::array<std::variant<int, double>, 5> diff = {
+    std::array<double, 5> diff = {
         tmp_node->first - node->first, // int
         tmp_node->second - node->second, // double
         tmp_node->discount - node->discount, // double
@@ -113,7 +128,7 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->party, PARTY, &Node::party);
     UpdateField(node, tmp_node->employee, EMPLOYEE, &Node::employee);
 
-    UpdateNodeRule(node, tmp_node->node_rule);
+    UpdateRule(node, tmp_node->rule);
     UpdateUnit(node, tmp_node->unit);
 
     update_ancestor = UpdateField(node, tmp_node->first, FIRST, &Node::first) || update_ancestor;
@@ -127,8 +142,7 @@ void TreeModelOrder::UpdateNode(const Node* tmp_node)
         { Qt::DisplayRole });
 
     if (update_ancestor)
-        RecalculateAncestor(
-            node, std::get<int>(diff[0]), std::get<double>(diff[1]), std::get<double>(diff[2]), std::get<double>(diff[3]), std::get<double>(diff[4]));
+        RecalculateAncestor(node, diff.at(0), diff.at(1), diff.at(2), diff.at(3), diff.at(4));
 }
 
 void TreeModelOrder::UpdateNodeLocked(const Node* tmp_node)
@@ -148,27 +162,27 @@ void TreeModelOrder::ConstructTree()
 
     const auto& const_node_hash { std::as_const(node_hash_) };
 
-    for (const auto& node : const_node_hash) {
+    for (auto* node : const_node_hash) {
         if (!node->parent) {
             node->parent = root_;
             root_->children.emplace_back(node);
         }
     }
 
-    for (auto& node : const_node_hash)
+    for (auto* node : const_node_hash)
         if (!node->branch)
             RecalculateAncestor(node, node->first, node->second, node->discount, node->initial_total, node->final_total);
 
     node_hash_.insert(-1, root_);
 }
 
-bool TreeModelOrder::UpdateNodeRule(Node* node, bool value)
+bool TreeModelOrder::UpdateRule(Node* node, bool value)
 {
-    if (node->node_rule == value || node->branch)
+    if (node->rule == value || node->branch)
         return false;
 
-    node->node_rule = value;
-    sql_->UpdateField(info_.node, value, NODE_RULE, node->id);
+    node->rule = value;
+    sql_->UpdateField(info_.node, value, RULE, node->id);
 
     const int coefficient = -2;
     RecalculateAncestor(node, node->first * coefficient, node->second * coefficient, node->discount * coefficient, node->initial_total * coefficient,
@@ -250,8 +264,8 @@ void TreeModelOrder::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->description < rhs->description) : (lhs->description > rhs->description);
         case TreeEnumOrder::kNote:
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
-        case TreeEnumOrder::kNodeRule:
-            return (order == Qt::AscendingOrder) ? (lhs->node_rule < rhs->node_rule) : (lhs->node_rule > rhs->node_rule);
+        case TreeEnumOrder::kRule:
+            return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
         case TreeEnumOrder::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumOrder::kUnit:
@@ -317,7 +331,7 @@ bool TreeModelOrder::RemoveNode(int row, const QModelIndex& parent)
 
     beginRemoveRows(parent, row, row);
     if (branch) {
-        for (auto& child : node->children) {
+        for (auto* child : node->children) {
             child->parent = parent_node;
             parent_node->children.emplace_back(child);
         }
@@ -365,8 +379,8 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
         return node->description;
     case TreeEnumOrder::kNote:
         return node->note;
-    case TreeEnumOrder::kNodeRule:
-        return branch ? -1 : node->node_rule;
+    case TreeEnumOrder::kRule:
+        return branch ? -1 : node->rule;
     case TreeEnumOrder::kBranch:
         return node->branch;
     case TreeEnumOrder::kUnit:
@@ -420,9 +434,9 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
     case TreeEnumOrder::kNote:
         UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
-    case TreeEnumOrder::kNodeRule:
+    case TreeEnumOrder::kRule:
         if (editable)
-            UpdateNodeRule(node, value.toBool());
+            UpdateRule(node, value.toBool());
         break;
     case TreeEnumOrder::kUnit:
         if (editable)

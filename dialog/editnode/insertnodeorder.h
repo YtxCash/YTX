@@ -14,8 +14,8 @@ class InsertNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    InsertNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel& product_model, int value_decimal,
-        int unit_party, QWidget* parent = nullptr);
+    InsertNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel* product_model, int value_decimal, int unit_party,
+        QWidget* parent = nullptr);
     ~InsertNodeOrder();
 
 public slots:
@@ -43,13 +43,13 @@ private slots:
     void on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1);
 
     void on_lineDescription_editingFinished();
-    void on_spinFirst_editingFinished();
+    void on_dSpinFirst_editingFinished();
     void on_dSpinSecond_editingFinished();
     void on_dSpinDiscount_editingFinished();
     void on_dSpinInitialTotal_editingFinished();
 
     void on_lineDescription_textChanged(const QString& arg1);
-    void on_spinFirst_valueChanged(int arg1);
+    void on_dSpinFirst_valueChanged(double arg1);
     void on_dSpinSecond_valueChanged(double arg1);
     void on_dSpinDiscount_valueChanged(double arg1);
     void on_dSpinInitialTotal_valueChanged(double arg1);
@@ -69,7 +69,7 @@ private:
     int value_decimal_ {};
     TreeModel* stakeholder_model_ {};
     TreeModel* order_model_ {};
-    const TreeModel& product_model_;
+    const TreeModel* product_model_ {};
 
     bool is_saved_ { false };
     bool enable_save_ { false };

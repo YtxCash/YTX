@@ -8,12 +8,11 @@
 #include "dialog/signalblocker.h"
 #include "ui_preferences.h"
 
-Preferences::Preferences(
-    CInfo& info, const TreeModel& model, CStringList& date_format_list, Interface interface, SectionRule section_rule, QWidget* parent)
+Preferences::Preferences(CInfo& info, const TreeModel* model, CStringList& date_format_list, Interface interface, Settings settings, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Preferences)
     , interface_ { interface }
-    , section_rule_ { section_rule }
+    , settings_ { settings }
     , model_ { model }
 
 {
@@ -50,11 +49,11 @@ void Preferences::IniDialog(CStringHash& unit_hash, CStringList& date_format_lis
     IniCombo(ui->comboDynamicRhs, model_);
 }
 
-void Preferences::IniCombo(QComboBox* combo, const TreeModel& model)
+void Preferences::IniCombo(QComboBox* combo, const TreeModel* model)
 {
     combo->blockSignals(true);
 
-    model.ComboPathLeafBranch(combo);
+    model->ComboPathLeafBranch(combo);
 
     combo->model()->sort(0);
     combo->blockSignals(false);
@@ -90,26 +89,26 @@ void Preferences::Data()
     DataCombo(ui->comboSeparator, interface_.separator);
     DataCombo(ui->comboDateTime, interface_.date_format);
 
-    DataCombo(ui->comboBaseUnit, section_rule_.base_unit);
-    ui->pBtnDocumentDir->setText(section_rule_.document_dir);
-    ui->spinValueDecimal->setValue(section_rule_.value_decimal);
-    ui->spinRatioDecimal->setValue(section_rule_.ratio_decimal);
+    DataCombo(ui->comboBaseUnit, settings_.base_unit);
+    ui->pBtnDocumentDir->setText(settings_.document_dir);
+    ui->spinValueDecimal->setValue(settings_.value_decimal);
+    ui->spinRatioDecimal->setValue(settings_.ratio_decimal);
 
-    ui->lineStatic->setText(section_rule_.static_label);
-    DataCombo(ui->comboStatic, section_rule_.static_node);
-    ui->lineDynamic->setText(section_rule_.dynamic_label);
-    DataCombo(ui->comboDynamicLhs, section_rule_.dynamic_node_lhs);
-    DataCombo(ui->comboOperation, section_rule_.operation);
-    DataCombo(ui->comboDynamicRhs, section_rule_.dynamic_node_rhs);
+    ui->lineStatic->setText(settings_.static_label);
+    DataCombo(ui->comboStatic, settings_.static_node);
+    ui->lineDynamic->setText(settings_.dynamic_label);
+    DataCombo(ui->comboDynamicLhs, settings_.dynamic_node_lhs);
+    DataCombo(ui->comboOperation, settings_.operation);
+    DataCombo(ui->comboDynamicRhs, settings_.dynamic_node_rhs);
 
     ui->comboDynamicLhs->insertItem(0, QString(), 0);
     ui->comboDynamicRhs->insertItem(0, QString(), 0);
     ui->comboStatic->insertItem(0, QString(), 0);
 
-    ui->checkHideTime->setChecked(section_rule_.hide_time);
+    ui->checkHideTime->setChecked(settings_.hide_time);
 
-    ResizeLine(ui->lineStatic, section_rule_.static_label);
-    ResizeLine(ui->lineDynamic, section_rule_.dynamic_label);
+    ResizeLine(ui->lineStatic, settings_.static_label);
+    ResizeLine(ui->lineDynamic, settings_.dynamic_label);
 }
 
 void Preferences::DataCombo(QComboBox* combo, int value)
@@ -139,7 +138,7 @@ void Preferences::IniStringList()
     operation_list_.emplaceBack(MINUS);
 }
 
-void Preferences::on_pBtnApply_clicked() { emit SUpdateSettings(section_rule_, interface_); }
+void Preferences::on_pBtnApply_clicked() { emit SUpdateSettings(settings_, interface_); }
 
 void Preferences::on_pBtnDocumentDir_clicked()
 {
@@ -148,14 +147,14 @@ void Preferences::on_pBtnDocumentDir_clicked()
 
     if (!default_dir.isEmpty()) {
         auto relative_path { QDir::home().relativeFilePath(default_dir) };
-        section_rule_.document_dir = relative_path;
+        settings_.document_dir = relative_path;
         ui->pBtnDocumentDir->setText(relative_path);
     }
 }
 
 void Preferences::on_pBtnResetDocumentDir_clicked()
 {
-    section_rule_.document_dir = QString();
+    settings_.document_dir = QString();
     ui->pBtnDocumentDir->setText(QString());
 }
 
@@ -182,47 +181,47 @@ void Preferences::RenameLable(Section section)
     }
 }
 
-void Preferences::on_checkHideTime_toggled(bool checked) { section_rule_.hide_time = checked; }
+void Preferences::on_checkHideTime_toggled(bool checked) { settings_.hide_time = checked; }
 
 void Preferences::on_comboBaseUnit_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    section_rule_.base_unit = ui->comboBaseUnit->currentData().toInt();
+    settings_.base_unit = ui->comboBaseUnit->currentData().toInt();
 }
 
 void Preferences::on_comboStatic_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    section_rule_.static_node = ui->comboStatic->currentData().toInt();
+    settings_.static_node = ui->comboStatic->currentData().toInt();
 }
 
 void Preferences::on_comboDynamicLhs_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    section_rule_.dynamic_node_lhs = ui->comboDynamicLhs->currentData().toInt();
+    settings_.dynamic_node_lhs = ui->comboDynamicLhs->currentData().toInt();
 }
 
 void Preferences::on_comboDynamicRhs_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    section_rule_.dynamic_node_rhs = ui->comboDynamicRhs->currentData().toInt();
+    settings_.dynamic_node_rhs = ui->comboDynamicRhs->currentData().toInt();
 }
 
-void Preferences::on_spinValueDecimal_editingFinished() { section_rule_.value_decimal = ui->spinValueDecimal->value(); }
+void Preferences::on_spinValueDecimal_editingFinished() { settings_.value_decimal = ui->spinValueDecimal->value(); }
 
 void Preferences::on_lineStatic_editingFinished()
 {
-    section_rule_.static_label = ui->lineStatic->text();
-    ResizeLine(ui->lineStatic, section_rule_.static_label);
+    settings_.static_label = ui->lineStatic->text();
+    ResizeLine(ui->lineStatic, settings_.static_label);
 }
 
 void Preferences::on_lineDynamic_editingFinished()
 {
-    section_rule_.dynamic_label = ui->lineDynamic->text();
-    ResizeLine(ui->lineDynamic, section_rule_.dynamic_label);
+    settings_.dynamic_label = ui->lineDynamic->text();
+    ResizeLine(ui->lineDynamic, settings_.dynamic_label);
 }
 
-void Preferences::on_spinRatioDecimal_editingFinished() { section_rule_.ratio_decimal = ui->spinRatioDecimal->value(); }
+void Preferences::on_spinRatioDecimal_editingFinished() { settings_.ratio_decimal = ui->spinRatioDecimal->value(); }
 
 void Preferences::on_comboTheme_currentIndexChanged(int index)
 {
@@ -251,5 +250,5 @@ void Preferences::on_comboSeparator_currentIndexChanged(int index)
 void Preferences::on_comboOperation_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    section_rule_.operation = ui->comboOperation->currentText();
+    settings_.operation = ui->comboOperation->currentText();
 }

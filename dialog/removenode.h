@@ -13,10 +13,8 @@ class RemoveNode final : public QDialog {
     Q_OBJECT
 
 public:
-    RemoveNode(const TreeModel& model, int node_id, QWidget* parent = nullptr);
+    RemoveNode(const TreeModel* model, int node_id, int unit, bool disable, QWidget* parent = nullptr);
     ~RemoveNode();
-
-    void DisableRemove();
 
 signals:
     // send to tree model
@@ -31,11 +29,13 @@ private:
     void IniDialog();
     void IniConnect();
 
+    void DisableRemove();
+
 private:
     int node_id_ {};
     int section_ {};
 
-    const TreeModel& model_;
+    const TreeModel* model_ {};
 };
 
 #endif // REMOVENODE_H

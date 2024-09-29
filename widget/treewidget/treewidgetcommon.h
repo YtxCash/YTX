@@ -1,10 +1,10 @@
 #ifndef TREEWIDGETCOMMON_H
 #define TREEWIDGETCOMMON_H
 
-#include "treewidget.h"
 #include "component/info.h"
 #include "component/settings.h"
 #include "tree/model/treemodel.h"
+#include "treewidget.h"
 
 namespace Ui {
 class TreeWidgetCommon;
@@ -17,7 +17,7 @@ public slots:
     void RUpdateDSpinBox() override;
 
 public:
-    TreeWidgetCommon(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent = nullptr);
+    TreeWidgetCommon(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent = nullptr);
     ~TreeWidgetCommon() override;
 
     QTreeView* View() override;
@@ -35,7 +35,7 @@ private:
 
     TreeModel* model_ {};
     CInfo& info_ {};
-    CSectionRule& section_rule_ {};
+    CSettings& settings_ {};
 
     bool equal_unit { false };
 };

@@ -353,7 +353,11 @@
          </widget>
         </item>
         <item>
-         <widget class="SpinBox" name="spinFirst"/>
+         <widget class="DoubleSpinBox" name="dSpinFirst">
+          <property name="decimals">
+           <number>0</number>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_2">
@@ -485,11 +489,6 @@
    <class>DateTimeEdit</class>
    <extends>QDateTimeEdit</extends>
    <header location="global">widget/datetimeedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>SpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">widget/spinbox.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

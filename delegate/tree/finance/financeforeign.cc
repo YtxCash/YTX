@@ -28,7 +28,7 @@ QString FinanceForeign::Format(const QModelIndex& index) const
     double value { index.data().toDouble() };
 
     auto it { unit_symbol_hash_.constFind(unit) };
-    auto symbol { (it != unit_symbol_hash_.constEnd()) ? *it : empty_string };
+    auto symbol { (it != unit_symbol_hash_.constEnd()) ? it.value() : empty_string };
 
     return symbol + locale_.toString(value, 'f', decimal_);
 }

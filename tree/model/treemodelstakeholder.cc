@@ -36,18 +36,18 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->first, PAYMENT_PERIOD, &Node::first);
     UpdateField(node, tmp_node->second, TAX_RATE, &Node::second);
     UpdateField(node, tmp_node->party, DEADLINE, &Node::party);
-    UpdateField(node, tmp_node->node_rule, NODE_RULE, &Node::node_rule);
+    UpdateField(node, tmp_node->rule, RULE, &Node::rule);
     UpdateField(node, tmp_node->employee, EMPLOYEE, &Node::employee);
     UpdateField(node, tmp_node->unit, UNIT, &Node::unit);
 }
 
 bool TreeModelStakeholder::UpdateTaxRate(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::second); }
 
-bool TreeModelStakeholder::UpdatePaymentPeriod(Node* node, int value, CString& field) { return UpdateField(node, value, field, &Node::first); }
+bool TreeModelStakeholder::UpdatePaymentPeriod(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::first); }
 
 bool TreeModelStakeholder::UpdateDeadline(Node* node, int value, CString& field) { return UpdateField(node, value, field, &Node::party); }
 
-bool TreeModelStakeholder::UpdateNodeRule(Node* node, bool value) { return UpdateField(node, value, NODE_RULE, &Node::node_rule); }
+bool TreeModelStakeholder::UpdateRule(Node* node, bool value) { return UpdateField(node, value, RULE, &Node::rule); }
 
 bool TreeModelStakeholder::IsReferenced(int node_id, CString& message)
 {
@@ -69,7 +69,7 @@ void TreeModelStakeholder::ConstructTree()
     sql_->BuildTree(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };
 
-    for (const auto& node : const_node_hash) {
+    for (auto* node : const_node_hash) {
         if (!node->parent) {
             node->parent = root_;
             root_->children.emplace_back(node);
@@ -77,7 +77,7 @@ void TreeModelStakeholder::ConstructTree()
     }
 
     QString path {};
-    for (auto& node : const_node_hash) {
+    for (const auto* node : const_node_hash) {
         path = ConstructPath(node);
 
         if (node->branch) {
@@ -132,8 +132,8 @@ void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->description < rhs->description) : (lhs->description > rhs->description);
         case TreeEnumStakeholder::kNote:
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
-        case TreeEnumStakeholder::kNodeRule:
-            return (order == Qt::AscendingOrder) ? (lhs->node_rule < rhs->node_rule) : (lhs->node_rule > rhs->node_rule);
+        case TreeEnumStakeholder::kRule:
+            return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
         case TreeEnumStakeholder::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumStakeholder::kUnit:
@@ -169,7 +169,7 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
 
     beginRemoveRows(parent, row, row);
     if (branch) {
-        for (auto& child : node->children) {
+        for (auto* child : node->children) {
             child->parent = parent_node;
             parent_node->children.emplace_back(child);
         }
@@ -220,8 +220,8 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return node->description;
     case TreeEnumStakeholder::kNote:
         return node->note;
-    case TreeEnumStakeholder::kNodeRule:
-        return node->node_rule;
+    case TreeEnumStakeholder::kRule:
+        return node->rule;
     case TreeEnumStakeholder::kBranch:
         return node->branch;
     case TreeEnumStakeholder::kUnit:
@@ -260,8 +260,8 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
     case TreeEnumStakeholder::kNote:
         UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
-    case TreeEnumStakeholder::kNodeRule:
-        UpdateNodeRule(node, value.toBool());
+    case TreeEnumStakeholder::kRule:
+        UpdateRule(node, value.toBool());
         break;
     case TreeEnumStakeholder::kBranch:
         UpdateBranch(node, value.toBool());
@@ -276,7 +276,7 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         UpdateEmployee(node, value.toInt());
         break;
     case TreeEnumStakeholder::kPaymentPeriod:
-        UpdatePaymentPeriod(node, value.toInt());
+        UpdatePaymentPeriod(node, value.toDouble());
         break;
     case TreeEnumStakeholder::kTaxRate:
         UpdateTaxRate(node, value.toDouble());

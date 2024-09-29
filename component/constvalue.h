@@ -20,6 +20,7 @@ constexpr int UNIT_EMPLOYEE = 0;
 constexpr int UNIT_CUSTOMER = 1;
 constexpr int UNIT_VENDOR = 2;
 constexpr int UNIT_PRODUCT = 3;
+constexpr int UNIT_POSITION = 3;
 
 // Constants for datetime
 constexpr char DATE_FORMAT[] = "date_format";
@@ -68,7 +69,7 @@ constexpr char INITIAL_TOTAL[] = "initial_total";
 constexpr char RHS_NODE[] = "rhs_node";
 constexpr char NAME[] = "name";
 constexpr char NODE_ID[] = "node/id";
-constexpr char NODE_RULE[] = "node_rule";
+constexpr char RULE[] = "rule";
 constexpr char NOTE[] = "note";
 constexpr char PAYMENT_PERIOD[] = "payment_period";
 constexpr char LOCKED[] = "locked";
@@ -76,7 +77,7 @@ constexpr char SECOND[] = "second";
 constexpr char STATE[] = "state";
 constexpr char TAX_RATE[] = "tax_rate";
 constexpr char UNIT[] = "unit";
-constexpr char UNIT_PRICE[] = "unit_price";
+constexpr char LHS_RATIO[] = "lhs_ratio";
 
 // Constants for app's state
 constexpr char HEADER_STATE[] = "header_state";

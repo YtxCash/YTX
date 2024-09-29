@@ -1,14 +1,16 @@
 #include "tablemodel.h"
 
+#include <QSet>
+#include <QtConcurrent>
+
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 
-TableModel::TableModel(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent)
+TableModel::TableModel(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : QAbstractItemModel(parent)
     , sql_ { sql }
-    , node_rule_ { node_rule }
+    , rule_ { rule }
     , info_ { info }
-    , section_rule_ { section_rule }
     , node_id_ { node_id }
 {
     sql_->BuildTransShadowList(trans_shadow_list_, node_id);
@@ -21,22 +23,31 @@ void TableModel::RRemoveMultiTrans(const QMultiHash<int, int>& node_trans)
     if (!node_trans.contains(node_id_))
         return;
 
-    auto trans_shadow_list { node_trans.values(node_id_) };
-    RemoveMulti(trans_shadow_list);
+    auto trans_id_list { node_trans.values(node_id_) };
+    RemoveMulti(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
 }
 
-void TableModel::RNodeRule(int node_id, bool node_rule)
+void TableModel::RMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
 {
-    if (node_id_ != node_id || node_rule_ == node_rule)
+    if (node_id_ == old_node_id)
+        RemoveMulti(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
+
+    if (node_id_ == new_node_id)
+        AppendMulti(node_id_, trans_id_list);
+}
+
+void TableModel::RRule(int node_id, bool rule)
+{
+    if (node_id_ != node_id || rule_ == rule)
         return;
 
-    for (auto& trans_shadow : trans_shadow_list_)
+    for (auto* trans_shadow : trans_shadow_list_)
         trans_shadow->subtotal = -trans_shadow->subtotal;
 
-    node_rule_ = node_rule;
+    rule_ = rule;
 }
 
-void TableModel::RAppendOne(const TransShadow* trans_shadow)
+void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
 {
     if (node_id_ != *trans_shadow->related_node)
         return;
@@ -66,22 +77,10 @@ void TableModel::RAppendOne(const TransShadow* trans_shadow)
     endInsertRows();
 
     double previous_balance { row >= 1 ? trans_shadow_list_.at(row - 1)->subtotal : 0.0 };
-    new_trans_shadow->subtotal = Balance(node_rule_, *new_trans_shadow->debit, *new_trans_shadow->credit) + previous_balance;
+    new_trans_shadow->subtotal = Balance(rule_, *new_trans_shadow->debit, *new_trans_shadow->credit) + previous_balance;
 }
 
-void TableModel::RRetrieveOne(TransShadow* trans_shadow)
-{
-    auto row { trans_shadow_list_.size() };
-
-    beginInsertRows(QModelIndex(), row, row);
-    trans_shadow_list_.emplaceBack(trans_shadow);
-    endInsertRows();
-
-    double previous_balance { row >= 1 ? trans_shadow_list_.at(row - 1)->subtotal : 0.0 };
-    trans_shadow->subtotal = Balance(node_rule_, *trans_shadow->debit, *trans_shadow->credit) + previous_balance;
-}
-
-void TableModel::RRemoveOne(int node_id, int trans_id)
+void TableModel::RRemoveOneTrans(int node_id, int trans_id)
 {
     if (node_id_ != node_id)
         return;
@@ -95,7 +94,7 @@ void TableModel::RRemoveOne(int node_id, int trans_id)
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(row));
     endRemoveRows();
 
-    AccumulateSubtotal(row, node_rule_);
+    QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule_);
 }
 
 void TableModel::RUpdateBalance(int node_id, int trans_id)
@@ -105,16 +104,7 @@ void TableModel::RUpdateBalance(int node_id, int trans_id)
 
     auto index { GetIndex(trans_id) };
     if (index.isValid())
-        AccumulateSubtotal(index.row(), node_rule_);
-}
-
-void TableModel::RMoveMulti(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
-{
-    if (node_id_ == old_node_id)
-        RemoveMulti(trans_id_list);
-
-    if (node_id_ == new_node_id)
-        InsertMulti(new_node_id, trans_id_list);
+        QtConcurrent::run(&TableModel::AccumulateSubtotal, this, index.row(), rule_);
 }
 
 bool TableModel::RemoveTrans(int row, const QModelIndex& parent)
@@ -133,16 +123,17 @@ bool TableModel::RemoveTrans(int row, const QModelIndex& parent)
         auto ratio { *trans_shadow->ratio };
         auto debit { *trans_shadow->debit };
         auto credit { *trans_shadow->credit };
-        emit SUpdateOneTotal(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafTotal(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
 
         ratio = *trans_shadow->related_ratio;
         debit = *trans_shadow->related_debit;
         credit = *trans_shadow->related_credit;
-        emit SUpdateOneTotal(*trans_shadow->related_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafTotal(*trans_shadow->related_node, -debit, -credit, -ratio * debit, -ratio * credit);
 
         int trans_id { *trans_shadow->id };
-        emit SRemoveOne(info_.section, related_node_id, trans_id);
-        AccumulateSubtotal(row, node_rule_);
+        emit SRemoveOneTrans(info_.section, related_node_id, trans_id);
+        QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule_);
+
         sql_->RemoveTrans(trans_id);
     }
 
@@ -168,7 +159,7 @@ bool TableModel::InsertTrans(const QModelIndex& parent)
 
 void TableModel::UpdateAllState(Check state)
 {
-    for (auto& trans_shadow : trans_shadow_list_) {
+    for (auto* trans_shadow : trans_shadow_list_) {
         switch (state) {
         case Check::kAll:
             *trans_shadow->state = true;
@@ -205,9 +196,7 @@ void TableModel::UpdateAllState(Check state)
 bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 {
     double debit { *trans_shadow->debit };
-    const double tolerance { std::pow(10, -section_rule_.value_decimal - 2) };
-
-    if (std::abs(debit - value) < tolerance)
+    if (std::abs(debit - value) < TOLERANCE)
         return false;
 
     double credit { *trans_shadow->credit };
@@ -229,11 +218,11 @@ bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 
     auto initial_debit_diff { *trans_shadow->debit - debit };
     auto initial_credit_diff { *trans_shadow->credit - credit };
-    emit SUpdateOneTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
+    emit SUpdateLeafTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
 
     auto related_initial_debit_diff { *trans_shadow->related_debit - related_debit };
     auto related_initial_credit_diff { *trans_shadow->related_credit - related_credit };
-    emit SUpdateOneTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
+    emit SUpdateLeafTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
         related_initial_credit_diff * related_ratio);
 
     return true;
@@ -242,9 +231,7 @@ bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 {
     double credit { *trans_shadow->credit };
-    const double tolerance { std::pow(10, -section_rule_.value_decimal - 2) };
-
-    if (std::abs(credit - value) < tolerance)
+    if (std::abs(credit - value) < TOLERANCE)
         return false;
 
     double debit { *trans_shadow->debit };
@@ -266,11 +253,11 @@ bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 
     auto initial_debit_diff { *trans_shadow->debit - debit };
     auto initial_credit_diff { *trans_shadow->credit - credit };
-    emit SUpdateOneTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
+    emit SUpdateLeafTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
 
     auto related_initial_debit_diff { *trans_shadow->related_debit - related_debit };
     auto related_initial_credit_diff { *trans_shadow->related_credit - related_credit };
-    emit SUpdateOneTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
+    emit SUpdateLeafTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
         related_initial_credit_diff * related_ratio);
 
     return true;
@@ -278,10 +265,9 @@ bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 
 bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
 {
-    const double tolerance { std::pow(10, -section_rule_.ratio_decimal - 2) };
     double ratio { *trans_shadow->ratio };
 
-    if (std::abs(ratio - value) < tolerance || value <= 0)
+    if (std::abs(ratio - value) < TOLERANCE || value <= 0)
         return false;
 
     auto result { value - ratio };
@@ -299,11 +285,11 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
     if (*trans_shadow->related_node == 0)
         return false;
 
-    emit SUpdateOneTotal(*trans_shadow->node, 0, 0, *trans_shadow->debit * result, *trans_shadow->credit * result);
+    emit SUpdateLeafTotal(*trans_shadow->node, 0, 0, *trans_shadow->debit * result, *trans_shadow->credit * result);
 
     auto related_initial_debit_diff { *trans_shadow->related_debit - related_debit };
     auto related_initial_credit_diff { *trans_shadow->related_credit - related_credit };
-    emit SUpdateOneTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
+    emit SUpdateLeafTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
         related_initial_credit_diff * related_ratio);
 
     return true;
@@ -427,19 +413,20 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     if (old_related_node == 0) {
         if (rel_changed) {
             sql_->InsertTransShadow(trans_shadow);
-            AccumulateSubtotal(kRow, node_rule_);
+            QtConcurrent::run(&TableModel::AccumulateSubtotal, this, kRow, rule_);
+
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
-            emit SAppendOne(info_.section, trans_shadow);
+            emit SAppendOneTrans(info_.section, trans_shadow);
 
             auto ratio { *trans_shadow->ratio };
             auto debit { *trans_shadow->debit };
             auto credit { *trans_shadow->credit };
-            emit SUpdateOneTotal(node_id_, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafTotal(node_id_, debit, credit, ratio * debit, ratio * credit);
 
             ratio = *trans_shadow->related_ratio;
             debit = *trans_shadow->related_debit;
             credit = *trans_shadow->related_credit;
-            emit SUpdateOneTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
         }
 
         emit SResizeColumnToContents(index.column());
@@ -453,19 +440,20 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     }
 
     if (deb_changed || cre_changed) {
-        AccumulateSubtotal(kRow, node_rule_);
+        QtConcurrent::run(&TableModel::AccumulateSubtotal, this, kRow, rule_);
         emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
     }
 
     if (rel_changed) {
         sql_->UpdateTrans(*trans_shadow->id);
-        emit SMoveMultiTrans(info_.section, old_related_node, *trans_shadow->related_node, QList<int> { *trans_shadow->id });
+        emit SRemoveOneTrans(info_.section, old_related_node, *trans_shadow->id);
+        emit SAppendOneTrans(info_.section, trans_shadow);
 
         auto ratio { *trans_shadow->related_ratio };
         auto debit { *trans_shadow->related_debit };
         auto credit { *trans_shadow->related_credit };
-        emit SUpdateOneTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
-        emit SUpdateOneTotal(old_related_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
+        emit SUpdateLeafTotal(old_related_node, -debit, -credit, -ratio * debit, -ratio * credit);
     }
 
     emit SResizeColumnToContents(index.column());
@@ -508,7 +496,7 @@ void TableModel::sort(int column, Qt::SortOrder order)
     std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 
-    AccumulateSubtotal(0, node_rule_);
+    QtConcurrent::run(&TableModel::AccumulateSubtotal, this, 0, rule_);
 }
 
 Qt::ItemFlags TableModel::flags(const QModelIndex& index) const
@@ -538,7 +526,7 @@ int TableModel::GetRow(int node_id) const
 {
     int row { 0 };
 
-    for (const auto& trans_shadow : trans_shadow_list_) {
+    for (const auto* trans_shadow : trans_shadow_list_) {
         if (*trans_shadow->related_node == node_id) {
             return row;
         }
@@ -551,7 +539,7 @@ QModelIndex TableModel::GetIndex(int trans_id) const
 {
     int row { 0 };
 
-    for (const auto& trans_shadow : trans_shadow_list_) {
+    for (const auto* trans_shadow : trans_shadow_list_) {
         if (*trans_shadow->id == trans_id) {
             return index(row, 0);
         }
@@ -577,7 +565,7 @@ QStringList* TableModel::GetDocumentPointer(const QModelIndex& index) const
     return trans_shadow->document;
 }
 
-void TableModel::AccumulateSubtotal(int start, bool node_rule)
+void TableModel::AccumulateSubtotal(int start, bool rule)
 {
     if (start <= -1 || start >= trans_shadow_list_.size() || trans_shadow_list_.isEmpty())
         return;
@@ -585,7 +573,7 @@ void TableModel::AccumulateSubtotal(int start, bool node_rule)
     double previous_subtotal { start >= 1 ? trans_shadow_list_.at(start - 1)->subtotal : 0.0 };
 
     std::accumulate(trans_shadow_list_.begin() + start, trans_shadow_list_.end(), previous_subtotal, [&](double current_subtotal, TransShadow* trans_shadow) {
-        trans_shadow->subtotal = Balance(node_rule, *trans_shadow->debit, *trans_shadow->credit) + current_subtotal;
+        trans_shadow->subtotal = Balance(rule, *trans_shadow->debit, *trans_shadow->credit) + current_subtotal;
         return trans_shadow->subtotal;
     });
 }
@@ -599,31 +587,34 @@ bool TableModel::UpdateRelatedNode(TransShadow* trans_shadow, int value)
     return true;
 }
 
-bool TableModel::RemoveMulti(const QList<int>& trans_id_list)
+bool TableModel::RemoveMulti(const QSet<int>& trans_id_set)
 {
-    int min_row {};
+    if (trans_id_set.isEmpty())
+        return false;
+
+    int min_row { -1 };
     int trans_id {};
 
-    for (int i = 0; i != trans_shadow_list_.size(); ++i) {
+    for (int i = trans_shadow_list_.size() - 1; i >= 0; --i) {
         trans_id = *trans_shadow_list_.at(i)->id;
 
-        if (trans_id_list.contains(trans_id)) {
+        if (trans_id_set.contains(trans_id)) {
+            if (min_row == -1 || i < min_row)
+                min_row = i;
+
             beginRemoveRows(QModelIndex(), i, i);
             ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
             endRemoveRows();
-
-            if (min_row == 0)
-                min_row = i;
-
-            --i;
         }
     }
 
-    AccumulateSubtotal(min_row, node_rule_);
+    if (min_row != -1)
+        QtConcurrent::run(&TableModel::AccumulateSubtotal, this, min_row, rule_);
+
     return true;
 }
 
-bool TableModel::InsertMulti(int node_id, const QList<int>& trans_id_list)
+bool TableModel::AppendMulti(int node_id, const QList<int>& trans_id_list)
 {
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
@@ -633,6 +624,7 @@ bool TableModel::InsertMulti(int node_id, const QList<int>& trans_id_list)
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();
 
-    AccumulateSubtotal(row, node_rule_);
+    QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule_);
+
     return true;
 }

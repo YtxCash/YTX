@@ -12,7 +12,7 @@
 class SearchTreeModel final : public QAbstractItemModel {
     Q_OBJECT
 public:
-    SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSectionRule& section_rule, QSharedPointer<SearchSqlite> sql, QObject* parent = nullptr);
+    SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSettings& settings, QSharedPointer<SearchSqlite> sql, QObject* parent = nullptr);
     ~SearchTreeModel() = default;
 
 public:
@@ -34,7 +34,7 @@ private:
     QSharedPointer<SearchSqlite> sql_ {};
 
     CInfo& info_;
-    CSectionRule& section_rule_;
+    CSettings& settings_;
     const TreeModel& tree_model_;
 
     QList<const Node*> node_list_ {};

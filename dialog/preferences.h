@@ -18,12 +18,11 @@ class Preferences final : public QDialog {
     Q_OBJECT
 
 public:
-    Preferences(
-        CInfo& info, const TreeModel& model, CStringList& date_format_list, Interface interface, SectionRule section_rule, QWidget* parent = nullptr);
+    Preferences(CInfo& info, const TreeModel* model, CStringList& date_format_list, Interface interface, Settings settings, QWidget* parent = nullptr);
     ~Preferences();
 
 signals:
-    void SUpdateSettings(CSectionRule& section_rule, CInterface& interface);
+    void SUpdateSettings(CSettings& settings, CInterface& interface);
 
 private slots:
     void on_pBtnApply_clicked();
@@ -50,7 +49,7 @@ private slots:
 
 private:
     void IniDialog(CStringHash& unit_hash, CStringList& date_format_list);
-    void IniCombo(QComboBox* combo, const TreeModel& model);
+    void IniCombo(QComboBox* combo, const TreeModel* model);
     void IniCombo(QComboBox* combo, CStringList& list);
     void IniCombo(QComboBox* combo, CStringHash& hash);
 
@@ -72,8 +71,8 @@ private:
     QStringList operation_list_ {};
 
     Interface interface_ {};
-    SectionRule section_rule_ {};
-    const TreeModel& model_;
+    Settings settings_ {};
+    const TreeModel* model_ {};
 };
 
 #endif // PREFERENCES_H

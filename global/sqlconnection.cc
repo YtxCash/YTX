@@ -6,7 +6,7 @@
 
 SqlConnection& SqlConnection::Instance()
 {
-    static SqlConnection instance;
+    static SqlConnection instance {};
     return instance;
 }
 

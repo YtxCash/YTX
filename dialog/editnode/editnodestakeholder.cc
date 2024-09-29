@@ -5,7 +5,7 @@
 #include "ui_editnodestakeholder.h"
 
 EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch,
-    int ratio_decimal, TreeModel* model, QWidget* parent)
+    int ratio_decimal, TreeModel* stakeholder_tree, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
     , node_ { node }
@@ -15,14 +15,14 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CSt
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_hash, model, ratio_decimal);
+    IniDialog(unit_hash, stakeholder_tree, ratio_decimal);
     IniConnect();
     Data(node, enable_branch);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 
-void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* model, int ratio_decimal)
+void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int ratio_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
@@ -30,11 +30,11 @@ void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* model, in
     this->setWindowTitle(parent_path_ + node_->name);
 
     IniComboWithStringHash(ui->comboUnit, unit_hash);
-    IniComboEmployee(model);
+    IniComboEmployee(stakeholder_tree);
 
-    ui->spinBoxPaymentPeriod->setRange(IZERO, IMAX);
-    ui->dSpinBoxTaxRate->setRange(0.0, DMAX);
-    ui->dSpinBoxTaxRate->setDecimals(ratio_decimal);
+    ui->dSpinPaymentPeriod->setRange(IZERO, IMAX);
+    ui->dSpinTaxRate->setRange(0.0, DMAX);
+    ui->dSpinTaxRate->setDecimals(ratio_decimal);
 }
 
 void EditNodeStakeholder::IniComboWithStringHash(QComboBox* combo, CStringHash& hash)
@@ -47,11 +47,11 @@ void EditNodeStakeholder::IniComboWithStringHash(QComboBox* combo, CStringHash& 
     combo->model()->sort(0);
 }
 
-void EditNodeStakeholder::IniComboEmployee(TreeModel* model)
+void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
 {
     ui->comboEmployee->clear();
 
-    model->ComboPathUnit(ui->comboEmployee, 0);
+    stakeholder_tree->ComboPathLeafUnit(ui->comboEmployee, UNIT_EMPLOYEE);
 
     ui->comboEmployee->insertItem(0, QString(), 0);
     ui->comboEmployee->setCurrentIndex(0);
@@ -65,8 +65,8 @@ void EditNodeStakeholder::Data(Node* node, bool enable_branch)
     int unit_index { ui->comboUnit->findData(node_->unit) };
     ui->comboUnit->setCurrentIndex(unit_index);
 
-    ui->rBtnMonthly->setChecked(node->node_rule);
-    ui->rBtnCash->setChecked(!node->node_rule);
+    ui->rBtnMonthly->setChecked(node->rule);
+    ui->rBtnCash->setChecked(!node->rule);
 
     if (node->name.isEmpty()) {
         ui->pBtnOk->setEnabled(false);
@@ -80,9 +80,9 @@ void EditNodeStakeholder::Data(Node* node, bool enable_branch)
     ui->lineEditCode->setText(node->code);
     ui->lineEditDescription->setText(node->description);
     ui->plainTextEdit->setPlainText(node->note);
-    ui->spinBoxPaymentPeriod->setValue(node->first);
-    ui->dSpinBoxTaxRate->setValue(node->second * HUNDRED);
-    ui->spinBoxDeadline->setValue(node->party);
+    ui->dSpinPaymentPeriod->setValue(node->first);
+    ui->dSpinTaxRate->setValue(node->second * HUNDRED);
+    ui->spinDeadline->setValue(node->party);
 
     ui->chkBoxBranch->setChecked(node->branch);
     ui->chkBoxBranch->setEnabled(enable_branch);
@@ -111,11 +111,11 @@ void EditNodeStakeholder::on_comboUnit_currentIndexChanged(int index)
     node_->unit = ui->comboUnit->currentData().toInt();
 }
 
-void EditNodeStakeholder::on_spinBoxPaymentPeriod_editingFinished() { node_->first = ui->spinBoxPaymentPeriod->value(); }
+void EditNodeStakeholder::on_dSpinPaymentPeriod_editingFinished() { node_->first = ui->dSpinPaymentPeriod->value(); }
 
-void EditNodeStakeholder::on_spinBoxDeadline_editingFinished() { node_->party = ui->spinBoxDeadline->value(); }
+void EditNodeStakeholder::on_spinDeadline_editingFinished() { node_->party = ui->spinDeadline->value(); }
 
-void EditNodeStakeholder::on_dSpinBoxTaxRate_editingFinished() { node_->second = ui->dSpinBoxTaxRate->value() / HUNDRED; }
+void EditNodeStakeholder::on_dSpinTaxRate_editingFinished() { node_->second = ui->dSpinTaxRate->value() / HUNDRED; }
 
 void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
 {
@@ -123,4 +123,4 @@ void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
     node_->employee = ui->comboEmployee->currentData().toInt();
 }
 
-void EditNodeStakeholder::on_rBtnMonthly_toggled(bool checked) { node_->node_rule = checked; }
+void EditNodeStakeholder::on_rBtnMonthly_toggled(bool checked) { node_->rule = checked; }

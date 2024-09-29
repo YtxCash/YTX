@@ -1,5 +1,6 @@
 #include "sqlitestakeholder.h"
 
+#include <QSqlError>
 #include <QSqlQuery>
 
 #include "component/constvalue.h"
@@ -10,10 +11,46 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 {
 }
 
+bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
+{
+    // begin deal with trans hash
+    auto trans_id_list { ReplaceNode(old_node_id, new_node_id) };
+    // end deal with trans hash
+
+    // begin deal with database
+    QSqlQuery query(*db_);
+    CString& string { RReplaceNodeQS() };
+
+    query.prepare(string);
+    query.bindValue(":new_node_id", new_node_id);
+    query.bindValue(":old_node_id", old_node_id);
+    if (!query.exec()) {
+        qWarning() << "Error in replace node setp" << query.lastError().text();
+        return false;
+    }
+    // end deal with database
+
+    emit SMoveMultiTrans(0, new_node_id, trans_id_list);
+    emit SUpdateStakeholderReference(old_node_id, new_node_id);
+
+    // SFreeView will mark all referenced transactions for removal. This must occur after SMoveMultiTrans()
+    emit SFreeView(old_node_id);
+    emit SRemoveNode(old_node_id);
+
+    return true;
+}
+
+bool SqliteStakeholder::RRemoveNode(int node_id)
+{
+    emit SFreeView(node_id);
+    emit SRemoveNode(node_id);
+    return true;
+}
+
 QString SqliteStakeholder::BuildTreeQS() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, node_rule, branch, unit, employee, deadline, payment_period, tax_rate
+    SELECT name, id, code, description, note, rule, branch, unit, employee, deadline, payment_period, tax_rate
     FROM stakeholder
     WHERE removed = 0
     )");
@@ -22,8 +59,8 @@ QString SqliteStakeholder::BuildTreeQS() const
 QString SqliteStakeholder::InsertNodeQS() const
 {
     return QStringLiteral(R"(
-    INSERT INTO stakeholder (name, code, description, note, node_rule, branch, unit, employee, deadline, payment_period, tax_rate)
-    VALUES (:name, :code, :description, :note, :node_rule, :branch, :unit, :employee, :deadline, :payment_period, :tax_rate)
+    INSERT INTO stakeholder (name, code, description, note, rule, branch, unit, employee, deadline, payment_period, tax_rate)
+    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :employee, :deadline, :payment_period, :tax_rate)
     )");
 }
 
@@ -33,7 +70,7 @@ void SqliteStakeholder::WriteNode(Node* node, QSqlQuery& query)
     query.bindValue(":code", node->code);
     query.bindValue(":description", node->description);
     query.bindValue(":note", node->note);
-    query.bindValue(":node_rule", node->node_rule);
+    query.bindValue(":rule", node->rule);
     query.bindValue(":branch", node->branch);
     query.bindValue(":unit", node->unit);
     query.bindValue(":employee", node->employee);
@@ -76,7 +113,7 @@ QString SqliteStakeholder::BuildTransShadowListQS() const
     return QStringLiteral(R"(
     SELECT id, date_time, code, lhs_node, lhs_ratio, description, document, state, rhs_node
     FROM stakeholder_transaction
-    WHERE lhs_node = :lhs_node_id AND removed = 0
+    WHERE lhs_node = :node_id AND removed = 0
     )");
 }
 
@@ -87,14 +124,6 @@ QString SqliteStakeholder::InsertTransShadowQS() const
     (date_time, code, lhs_node, lhs_ratio, description, document, state, rhs_node)
     VALUES
     (:date_time, :code, :lhs_node, :lhs_ratio, :description, :document, :state, :rhs_node)
-    )");
-}
-
-QString SqliteStakeholder::RelatedNodeTransQS() const
-{
-    return QStringLiteral(R"(
-    SELECT lhs_node, id FROM %1
-    WHERE lhs_node = :node_id AND removed = 0
     )");
 }
 
@@ -116,14 +145,19 @@ QString SqliteStakeholder::RUpdateProductReferenceQS() const
     )");
 }
 
-void SqliteStakeholder::ReplaceNode(int old_node_id, int new_node_id)
+QList<int> SqliteStakeholder::ReplaceNode(int old_node_id, int new_node_id)
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
+    QList<int> list {};
 
-    for (auto& trans : const_trans_hash) {
-        if (trans->lhs_node == old_node_id)
+    for (auto* trans : const_trans_hash) {
+        if (trans->lhs_node == old_node_id) {
+            list.emplaceBack(trans->id);
             trans->lhs_node = new_node_id;
+        }
     }
+
+    return list;
 }
 
 void SqliteStakeholder::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query)
@@ -142,7 +176,7 @@ void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
-    for (auto& trans : const_trans_hash)
+    for (auto* trans : const_trans_hash)
         if (trans->rhs_node == old_node_id)
             trans->rhs_node = new_node_id;
 }
@@ -169,15 +203,6 @@ void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list,
     }
 }
 
-QString SqliteStakeholder::RRemoveNodeQS() const
-{
-    return QStringLiteral(R"(
-    UPDATE stakeholder_transaction
-    SET removed = 1
-    WHERE lhs_node = :node_id
-    )");
-}
-
 QString SqliteStakeholder::BuildTransShadowListRangQS(CString& in_list) const
 {
     return QString(R"(
@@ -195,7 +220,7 @@ void SqliteStakeholder::ReadNode(Node* node, const QSqlQuery& query)
     node->code = query.value("code").toString();
     node->description = query.value("description").toString();
     node->note = query.value("note").toString();
-    node->node_rule = query.value("node_rule").toBool();
+    node->rule = query.value("rule").toBool();
     node->branch = query.value("branch").toBool();
     node->unit = query.value("unit").toInt();
     node->employee = query.value("employee").toInt();

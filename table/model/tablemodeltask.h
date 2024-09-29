@@ -7,7 +7,7 @@ class TableModelTask final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelTask(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent = nullptr);
+    TableModelTask(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
     ~TableModelTask() override = default;
 
 private:

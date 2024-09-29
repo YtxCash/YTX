@@ -10,6 +10,9 @@ public:
     TreeModelOrder(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelOrder() override = default;
 
+public slots:
+    bool RUpdateStakeholderReference(int old_node_id, int new_node_id) override;
+
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
@@ -24,12 +27,12 @@ public:
 
 protected:
     void ConstructTree() override;
-    bool UpdateNodeRule(Node* node, bool value) override; // charge = 0, refund = 1
+    bool UpdateRule(Node* node, bool value) override; // charge = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
     bool UpdateName(Node* node, CString& value) override;
 
 private:
-    void RecalculateAncestor(Node* node, int first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff);
+    void RecalculateAncestor(Node* node, double first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff);
     void RecalculateAncestor(Node* node, int old_unit, double old_final_total);
 };
 

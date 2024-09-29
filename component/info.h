@@ -3,6 +3,7 @@
 
 #include <QHash>
 #include <QStringList>
+#include <tuple>
 
 #include "enumclass.h"
 
@@ -20,6 +21,17 @@ struct Info {
     QHash<int, QString> unit_hash {};
     QHash<int, QString> unit_symbol_hash {};
     QHash<int, QString> rule_hash { { 0, "DICD" }, { 1, "DDCI" } };
+};
+
+struct Tab {
+    Section section {};
+    int node_id {};
+
+    // Equality operator overload to compare two Tab structs
+    bool operator==(const Tab& other) const noexcept { return std::tie(section, node_id) == std::tie(other.section, other.node_id); }
+
+    // Inequality operator overload to compare two Tab structs
+    bool operator!=(const Tab& other) const noexcept { return !(*this == other); }
 };
 
 using CInfo = const Info;

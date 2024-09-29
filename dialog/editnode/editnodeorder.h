@@ -14,8 +14,8 @@ class EditNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel& product_model, int value_decimal,
-        int unit_party, QWidget* parent = nullptr);
+    EditNodeOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel* product_model, int value_decimal, int unit_party,
+        QWidget* parent = nullptr);
     ~EditNodeOrder();
 
 public slots:
@@ -41,13 +41,13 @@ private slots:
     void on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time);
 
     void on_lineDescription_editingFinished();
-    void on_spinFirst_editingFinished();
+    void on_dSpinFirst_editingFinished();
     void on_dSpinSecond_editingFinished();
     void on_dSpinDiscount_editingFinished();
     void on_dSpinInitialTotal_editingFinished();
 
     void on_lineDescription_textChanged(const QString& arg1);
-    void on_spinFirst_valueChanged(int arg1);
+    void on_dSpinFirst_valueChanged(double arg1);
     void on_dSpinSecond_valueChanged(double arg1);
     void on_dSpinDiscount_valueChanged(double arg1);
     void on_dSpinInitialTotal_valueChanged(double arg1);
@@ -68,7 +68,7 @@ private:
     int value_decimal_ {};
     TreeModel* stakeholder_model_ {};
     TreeModel* order_model_ {};
-    const TreeModel& product_model_;
+    const TreeModel* product_model_ {};
 };
 
 #endif // EDITNODEORDER_H

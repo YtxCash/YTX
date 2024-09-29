@@ -20,8 +20,8 @@ struct Interface {
     bool operator!=(const Interface& other) const noexcept { return !(*this == other); }
 };
 
-// Struct representing section rules
-struct SectionRule {
+// Struct representing section settings
+struct Settings {
     QString static_label {};
     int static_node {};
     QString dynamic_label {};
@@ -34,8 +34,8 @@ struct SectionRule {
     int value_decimal {};
     int ratio_decimal {};
 
-    // Equality operator overload to compare two SectionRule structs
-    bool operator==(const SectionRule& other) const noexcept
+    // Equality operator overload to compare two Settings structs
+    bool operator==(const Settings& other) const noexcept
     {
         return std::tie(static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, base_unit, document_dir,
                    value_decimal, ratio_decimal)
@@ -43,11 +43,11 @@ struct SectionRule {
                 other.hide_time, other.base_unit, other.document_dir, other.value_decimal, other.ratio_decimal);
     }
 
-    // Inequality operator overload to compare two SectionRule structs
-    bool operator!=(const SectionRule& other) const noexcept { return !(*this == other); }
+    // Inequality operator overload to compare two Settings structs
+    bool operator!=(const Settings& other) const noexcept { return !(*this == other); }
 };
 
 using CInterface = const Interface;
-using CSectionRule = const SectionRule;
+using CSettings = const Settings;
 
 #endif // SETTINGS_H

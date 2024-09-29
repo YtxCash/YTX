@@ -5,12 +5,12 @@
 #include "component/constvalue.h"
 #include "ui_treewidgetcommon.h"
 
-TreeWidgetCommon::TreeWidgetCommon(TreeModel* model, CInfo& info, CSectionRule& section_rule, QWidget* parent)
+TreeWidgetCommon::TreeWidgetCommon(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent)
     : TreeWidget(parent)
     , ui(new Ui::TreeWidgetCommon)
     , model_ { model }
     , info_ { info }
-    , section_rule_ { section_rule }
+    , settings_ { settings }
 {
     ui->setupUi(this);
     ui->treeView->setModel(model);
@@ -25,28 +25,28 @@ void TreeWidgetCommon::SetCurrentIndex(const QModelIndex& index) { ui->treeView-
 
 void TreeWidgetCommon::SetStatus()
 {
-    ui->dspin_box_static_->setDecimals(section_rule_.value_decimal);
-    ui->lable_static_->setText(section_rule_.static_label);
+    ui->dspin_box_static_->setDecimals(settings_.value_decimal);
+    ui->lable_static_->setText(settings_.static_label);
 
-    auto static_node_id { section_rule_.static_node };
+    auto static_node_id { settings_.static_node };
 
     if (model_->Contains(static_node_id)) {
         ui->dspin_box_static_->setPrefix(info_.unit_symbol_hash.value(model_->Unit(static_node_id), QString()));
         StaticStatus(static_node_id);
     }
 
-    ui->dspin_box_dynamic_->setDecimals(section_rule_.value_decimal);
-    ui->label_dynamic_->setText(section_rule_.dynamic_label);
+    ui->dspin_box_dynamic_->setDecimals(settings_.value_decimal);
+    ui->label_dynamic_->setText(settings_.dynamic_label);
 
-    auto dynamic_node_id_lhs { section_rule_.dynamic_node_lhs };
-    auto dynamic_node_id_rhs { section_rule_.dynamic_node_rhs };
+    auto dynamic_node_id_lhs { settings_.dynamic_node_lhs };
+    auto dynamic_node_id_rhs { settings_.dynamic_node_rhs };
 
     if (model_->Contains(dynamic_node_id_lhs) && model_->Contains(dynamic_node_id_rhs)) {
         auto lhs_unit { model_->Unit(dynamic_node_id_lhs) };
         auto rhs_unit { model_->Unit(dynamic_node_id_rhs) };
         equal_unit = lhs_unit == rhs_unit;
 
-        ui->dspin_box_dynamic_->setPrefix(info_.unit_symbol_hash.value((equal_unit ? lhs_unit : section_rule_.base_unit), QString()));
+        ui->dspin_box_dynamic_->setPrefix(info_.unit_symbol_hash.value((equal_unit ? lhs_unit : settings_.base_unit), QString()));
         DynamicStatus(dynamic_node_id_lhs, dynamic_node_id_rhs);
     }
 }
@@ -57,8 +57,8 @@ QHeaderView* TreeWidgetCommon::Header() { return ui->treeView->header(); }
 
 void TreeWidgetCommon::RUpdateDSpinBox()
 {
-    StaticStatus(section_rule_.static_node);
-    DynamicStatus(section_rule_.dynamic_node_lhs, section_rule_.dynamic_node_rhs);
+    StaticStatus(settings_.static_node);
+    DynamicStatus(settings_.dynamic_node_lhs, settings_.dynamic_node_rhs);
 }
 
 void TreeWidgetCommon::DynamicStatus(int lhs_node_id, int rhs_node_id)
@@ -66,7 +66,7 @@ void TreeWidgetCommon::DynamicStatus(int lhs_node_id, int rhs_node_id)
     auto lhs_total { equal_unit ? model_->InitialTotal(lhs_node_id) : model_->FinalTotal(lhs_node_id) };
     auto rhs_total { equal_unit ? model_->InitialTotal(rhs_node_id) : model_->FinalTotal(rhs_node_id) };
 
-    auto operation { section_rule_.operation.isEmpty() ? PLUS : section_rule_.operation };
+    auto operation { settings_.operation.isEmpty() ? PLUS : settings_.operation };
     double total { Operate(lhs_total, rhs_total, operation) };
 
     ui->dspin_box_dynamic_->setValue(total);

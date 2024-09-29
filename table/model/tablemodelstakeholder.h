@@ -7,12 +7,8 @@ class TableModelStakeholder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelStakeholder(SPSqlite sql, bool node_rule, const int node_id, CInfo& info, CSectionRule& section_rule, QObject* parent = nullptr);
+    TableModelStakeholder(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
     ~TableModelStakeholder() override = default;
-
-public slots:
-    // receive from sql
-    void RRemoveMultiTrans(const QMultiHash<int, int>& /*node_trans*/) override { return; }
 
 public:
     // implemented functions
@@ -24,8 +20,8 @@ public:
     bool RemoveTrans(int row, const QModelIndex& parent = QModelIndex()) override;
 
 protected:
-    bool RemoveMulti(const QList<int>& trans_id_list) override; // just remove trnas_shadow, keep related trans
-    bool InsertMulti(int node_id, const QList<int>& trans_id_list) override;
+    bool RemoveMulti(const QSet<int>& trans_id_list) override; // just remove trnas_shadow, keep related trans
+    bool AppendMulti(int node_id, const QList<int>& trans_id_list) override;
 
 private:
     bool UpdateRatio(TransShadow* trans_shadow, double value) override;

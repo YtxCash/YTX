@@ -20,7 +20,7 @@ TreeModel::TreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table
 
 TreeModel::~TreeModel() { qDeleteAll(node_hash_); }
 
-bool TreeModel::RUpdateMultiNodeTotal(const QList<int>& node_list)
+bool TreeModel::RUpdateMultiLeafTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};
@@ -28,7 +28,7 @@ bool TreeModel::RUpdateMultiNodeTotal(const QList<int>& node_list)
     double initial_diff {};
     Node* node {};
 
-    for (const auto& node_id : node_list) {
+    for (int node_id : node_list) {
         node = GetNodeByID(node_id);
 
         if (!node || node->branch)
@@ -60,13 +60,13 @@ bool TreeModel::RRemoveNode(int node_id)
     return true;
 }
 
-void TreeModel::RUpdateOneTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff)
+void TreeModel::RUpdateLeafTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff)
 {
     auto node { GetNodeByID(node_id) };
-    auto node_rule { node->node_rule };
+    auto rule { node->rule };
 
-    auto initial_diff { (node_rule ? 1 : -1) * (initial_credit_diff - initial_debit_diff) };
-    auto final_diff { (node_rule ? 1 : -1) * (final_credit_diff - final_debit_diff) };
+    auto initial_diff { (rule ? 1 : -1) * (initial_credit_diff - initial_debit_diff) };
+    auto final_diff { (rule ? 1 : -1) * (final_credit_diff - final_debit_diff) };
 
     node->initial_total += initial_diff;
     node->final_total += final_diff;
@@ -89,7 +89,7 @@ bool TreeModel::RemoveNode(int row, const QModelIndex& parent)
 
     beginRemoveRows(parent, row, row);
     if (branch) {
-        for (auto& child : node->children) {
+        for (auto* child : node->children) {
             child->parent = parent_node;
             parent_node->children.emplace_back(child);
         }
@@ -146,12 +146,16 @@ void TreeModel::UpdateNode(const Node* tmp_node)
     if (!tmp_node)
         return;
 
-    auto node { node_hash_.value(tmp_node->id) };
+    auto it { node_hash_.constFind(tmp_node->id) };
+    if (it == node_hash_.constEnd())
+        return;
+
+    auto node { it.value() };
     if (*node == *tmp_node)
         return;
 
     UpdateBranch(node, tmp_node->branch);
-    UpdateNodeRule(node, tmp_node->node_rule);
+    UpdateRule(node, tmp_node->rule);
     UpdateUnit(node, tmp_node->unit);
 
     if (node->name != tmp_node->name) {
@@ -173,7 +177,7 @@ void TreeModel::UpdateBaseUnit(int base_unit)
 
     const auto& const_node_hash { std::as_const(node_hash_) };
 
-    for (auto node : const_node_hash)
+    for (auto* node : const_node_hash)
         if (node->branch && node->unit != base_unit)
             UpdateBranchUnit(node);
 }
@@ -230,8 +234,8 @@ QVariant TreeModel::data(const QModelIndex& index, int role) const
         return node->description;
     case TreeEnumFinanceTask::kNote:
         return node->note;
-    case TreeEnumFinanceTask::kNodeRule:
-        return node->node_rule;
+    case TreeEnumFinanceTask::kRule:
+        return node->rule;
     case TreeEnumFinanceTask::kBranch:
         return node->branch;
     case TreeEnumFinanceTask::kUnit:
@@ -266,8 +270,8 @@ bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int rol
     case TreeEnumFinanceTask::kNote:
         UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
-    case TreeEnumFinanceTask::kNodeRule:
-        UpdateNodeRule(node, value.toBool());
+    case TreeEnumFinanceTask::kRule:
+        UpdateRule(node, value.toBool());
         break;
     case TreeEnumFinanceTask::kBranch:
         UpdateBranch(node, value.toBool());
@@ -299,8 +303,8 @@ void TreeModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->description < rhs->description) : (lhs->description > rhs->description);
         case TreeEnumFinanceTask::kNote:
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
-        case TreeEnumFinanceTask::kNodeRule:
-            return (order == Qt::AscendingOrder) ? (lhs->node_rule < rhs->node_rule) : (lhs->node_rule > rhs->node_rule);
+        case TreeEnumFinanceTask::kRule:
+            return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
         case TreeEnumFinanceTask::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumFinanceTask::kUnit:
@@ -386,32 +390,54 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     return true;
 }
 
-void TreeModel::ComboPathUnit(QComboBox* combo, int unit) const
+void TreeModel::ComboPathLeafUnit(QComboBox* combo, int unit) const
 {
     if (!combo)
         return;
 
     combo->clear();
+    combo->blockSignals(true);
 
-    int id {};
-    const auto& const_node_hash { std::as_const(node_hash_) };
+    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
+        auto it { node_hash_.constFind(id) };
+        if (it != node_hash_.constEnd() && it.value()->unit == unit)
+            combo->addItem(path, id);
+    }
 
-    for (const auto* node : const_node_hash)
-        if (node && node->unit == unit && !node->branch) {
-            id = node->id;
-            combo->addItem(leaf_path_.value(id), id);
-        }
+    combo->blockSignals(false);
 }
 
-void TreeModel::ComboPathLeaf(QComboBox* combo, int exclude) const
+void TreeModel::ComboPathLeafExcludeUnit(QComboBox* combo, int exclude_unit) const
 {
     if (!combo)
         return;
+
+    combo->clear();
+    combo->blockSignals(true);
+
+    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
+        auto it { node_hash_.constFind(id) };
+        if (it != node_hash_.constEnd() && it.value()->unit != exclude_unit)
+            combo->addItem(path, id);
+    }
+
+    combo->blockSignals(false);
+}
+
+void TreeModel::ComboPathLeafExclude(QComboBox* combo, int exclude) const
+{
+    if (!combo)
+        return;
+
+    combo->clear();
+    combo->blockSignals(true);
 
     for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
         if (id != exclude)
             combo->addItem(path, id);
     }
+
+    combo->blockSignals(false);
 }
 
 void TreeModel::ComboPathLeafBranch(QComboBox* combo) const
@@ -419,20 +445,26 @@ void TreeModel::ComboPathLeafBranch(QComboBox* combo) const
     if (!combo)
         return;
 
+    combo->clear();
+    combo->blockSignals(true);
+
     for (const auto& [id, path] : leaf_path_.asKeyValueRange())
         combo->addItem(path, id);
 
     for (const auto& [id, path] : branch_path_.asKeyValueRange())
         combo->addItem(path, id);
+
+    combo->blockSignals(false);
 }
 
 QStringList TreeModel::ChildrenName(int node_id, int exclude_child) const
 {
-    const Node* node { node_hash_.value(node_id, nullptr) };
-    if (!node)
+    auto it { node_hash_.constFind(node_id) };
+    if (it == node_hash_.constEnd())
         return {};
 
-    QStringList list {};
+    auto node { it.value() };
+    QStringList list { node->children.size() };
 
     for (const auto* child : node->children) {
         if (child->id != exclude_child)
@@ -485,11 +517,21 @@ QModelIndex TreeModel::GetIndex(int node_id) const
     return createIndex(row, 0, node);
 }
 
+void TreeModel::SetNodeShadow(NodeShadow* node_shadow, int node_id) const
+{
+    if (!node_shadow)
+        return;
+
+    auto it { node_hash_.constFind(node_id) };
+    if (it != node_hash_.constEnd() && it.value())
+        node_shadow->Set(it.value());
+}
+
 void TreeModel::NodeList(QList<const Node*>& node_list, const QList<int>& id_list) const
 {
     node_list.reserve(id_list.size());
 
-    for (auto node_id : id_list) {
+    for (int node_id : id_list) {
         auto it { node_hash_.constFind(node_id) };
         if (it != node_hash_.constEnd() && it.value()) {
             node_list.emplaceBack(it.value());
@@ -501,6 +543,17 @@ bool TreeModel::ChildrenEmpty(int node_id) const
 {
     auto it { node_hash_.constFind(node_id) };
     return (it == node_hash_.constEnd()) ? true : it.value()->children.isEmpty();
+}
+
+QString TreeModel::GetPath(int node_id) const
+{
+    if (auto it = leaf_path_.constFind(node_id); it != leaf_path_.constEnd())
+        return it.value();
+
+    if (auto it = branch_path_.constFind(node_id); it != branch_path_.constEnd())
+        return it.value();
+
+    return {};
 }
 
 bool TreeModel::IsDescendant(Node* lhs, Node* rhs) const
@@ -543,7 +596,7 @@ void TreeModel::UpdatePath(const Node* node)
         path = ConstructPath(current);
 
         if (current->branch) {
-            for (const auto& child : current->children)
+            for (const auto* child : current->children)
                 queue.enqueue(child);
 
             branch_path_.insert(current->id, path);
@@ -571,10 +624,18 @@ void TreeModel::SortIterative(Node* node, std::function<bool(const Node*, const 
             continue;
 
         std::sort(current->children.begin(), current->children.end(), Compare);
-        for (const auto& child : current->children) {
+        for (auto* child : current->children) {
             queue.enqueue(child);
         }
     }
+}
+
+Node* TreeModel::GetNodeByID(int node_id) const
+{
+    if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
+        return it.value();
+
+    return nullptr;
 }
 
 void TreeModel::RecalculateAncestor(Node* node, double initial_diff, double final_diff)
@@ -584,10 +645,10 @@ void TreeModel::RecalculateAncestor(Node* node, double initial_diff, double fina
 
     bool equal {};
     const int unit { node->unit };
-    const bool node_rule { node->node_rule };
+    const bool rule { node->rule };
 
     for (node = node->parent; node && node != root_; node = node->parent) {
-        equal = node->node_rule == node_rule;
+        equal = node->rule == rule;
         node->final_total += (equal ? 1 : -1) * final_diff;
 
         if (node->unit == unit)
@@ -656,7 +717,7 @@ void TreeModel::ConstructTree()
     sql_->BuildTree(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };
 
-    for (const auto& node : const_node_hash) {
+    for (auto* node : const_node_hash) {
         if (!node->parent) {
             node->parent = root_;
             root_->children.emplace_back(node);
@@ -664,7 +725,7 @@ void TreeModel::ConstructTree()
     }
 
     QString path {};
-    for (auto& node : const_node_hash) {
+    for (auto* node : const_node_hash) {
         path = ConstructPath(node);
 
         if (node->branch) {
@@ -679,18 +740,18 @@ void TreeModel::ConstructTree()
     node_hash_.insert(-1, root_);
 }
 
-bool TreeModel::UpdateNodeRule(Node* node, bool value)
+bool TreeModel::UpdateRule(Node* node, bool value)
 {
-    if (node->node_rule == value)
+    if (node->rule == value)
         return false;
 
-    node->node_rule = value;
-    sql_->UpdateField(info_.node, value, NODE_RULE, node->id);
+    node->rule = value;
+    sql_->UpdateField(info_.node, value, RULE, node->id);
 
     node->final_total = -node->final_total;
     node->initial_total = -node->initial_total;
     if (!node->branch) {
-        emit SNodeRule(node->id, value);
+        emit SRule(node->id, value);
         UpdateLeafTotal(node, INITIAL_TOTAL, FINAL_TOTAL);
     }
 
@@ -752,16 +813,16 @@ void TreeModel::UpdateBranchUnit(Node* node) const
 
     double initial_total { 0.0 };
     const int unit { node->unit };
-    const bool node_rule { node->node_rule };
+    const bool rule { node->rule };
 
     while (!queue.isEmpty()) {
         current = queue.dequeue();
 
         if (current->branch) {
-            for (const auto& child : current->children)
+            for (const auto* child : current->children)
                 queue.enqueue(child);
         } else if (current->unit == unit) {
-            initial_total += (current->node_rule == node_rule ? 1 : -1) * current->initial_total;
+            initial_total += (current->rule == rule ? 1 : -1) * current->initial_total;
         }
     }
 
@@ -819,7 +880,7 @@ void TreeModel::ShowTemporaryTooltip(CString& message, int duration)
     connect(timer, &QTimer::timeout, label, &QLabel::close);
     timer->start(duration);
 
-    connect(label, &QLabel::destroyed, [timer]() { timer->stop(); });
+    connect(label, &QLabel::destroyed, this, [timer]() { timer->stop(); });
 }
 
 bool TreeModel::HasChildren(Node* node, CString& message)

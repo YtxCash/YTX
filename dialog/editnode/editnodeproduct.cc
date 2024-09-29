@@ -47,8 +47,8 @@ void EditNodeProduct::Data(Node* node, bool enable_branch)
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);
 
-    ui->rBtnDDCI->setChecked(node->node_rule);
-    ui->rBtnDICD->setChecked(!node->node_rule);
+    ui->rBtnDDCI->setChecked(node->rule);
+    ui->rBtnDICD->setChecked(!node->rule);
 
     if (node->name.isEmpty())
         return ui->pBtnOk->setEnabled(false);
@@ -85,11 +85,11 @@ void EditNodeProduct::on_comboUnit_currentIndexChanged(int index)
 
 void EditNodeProduct::on_rBtnDDCI_toggled(bool checked)
 {
-    if (node_->final_total != 0 && node_->node_rule != checked) {
+    if (node_->final_total != 0 && node_->rule != checked) {
         node_->final_total = -node_->final_total;
         node_->initial_total = -node_->initial_total;
     }
-    node_->node_rule = checked;
+    node_->rule = checked;
 }
 
 void EditNodeProduct::on_chkBoxBranch_toggled(bool checked) { node_->branch = checked; }

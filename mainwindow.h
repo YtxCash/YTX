@@ -8,12 +8,26 @@
 #include <QTableView>
 #include <QTranslator>
 
-#include "component/data.h"
 #include "component/settings.h"
 #include "component/using.h"
 #include "database/mainwindowsqlite.h"
+#include "database/searchsqlite.h"
 #include "table/model/tablemodel.h"
+#include "tree/model/treemodel.h"
 #include "ui_mainwindow.h"
+#include "widget/treewidget/treewidget.h"
+
+struct Tree {
+    TreeWidget* widget {};
+    TreeModel* model {};
+};
+
+struct Data {
+    Tab tab {};
+    Info info {};
+    QSharedPointer<Sqlite> sql {};
+    QSharedPointer<SearchSqlite> search_sql {};
+};
 
 using PDialog = QPointer<QDialog>;
 
@@ -46,7 +60,7 @@ protected:
 private slots:
     void RInsertTriggered();
     void RRemoveTriggered();
-    void RPrepAppendTriggered();
+    void RAppendTriggered();
     void RJumpTriggered();
     void RAboutTriggered();
     void RPreferencesTriggered();
@@ -61,7 +75,7 @@ private slots:
     void REditNode();
     void REditDocument();
 
-    void RUpdateSettings(CSectionRule& section_rule, const Interface& interface);
+    void RUpdateSettings(CSettings& settings, const Interface& interface);
     void RUpdateName(const Node* node);
 
     void RTabCloseRequested(int index);
@@ -102,29 +116,35 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTable(SectionData* data, TreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, int node_id);
-    void CreateDelegate(QTableView* view, const TreeModel* tree_model, CSectionRule* section_rule, int node_id);
-    void DelegateStakeholder(QTableView* view, CSectionRule* section_rule);
+    void CreateTable(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, int node_id);
+    void CreateDelegate(QTableView* view, const TreeModel* tree_model, CSettings* settings, int node_id);
+    void DelegateStakeholder(QTableView* view, CSettings* settings);
     void SetView(QTableView* view);
-    void SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const SectionData* data);
+    void SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
 
-    void CreateSection(Tree& tree, CString& name, SectionData* data, TableHash* table_hash, CSectionRule* section_rule);
+    void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings* settings);
     void SwitchSection(const Tab& last_tab);
     void SwitchDialog(QList<PDialog>* dialog_list, bool enable);
     void UpdateLastTab();
 
-    void CreateDelegate(QTreeView* view, CInfo* info, CSectionRule* section_rule);
+    void CreateDelegate(QTreeView* view, CInfo* info, CSettings* settings);
     void DelegateCommon(QTreeView* view, CInfo* info);
-    void DelegateFinance(QTreeView* view, CInfo* info, CSectionRule* section_rule);
-    void DelegateProduct(QTreeView* view, CInfo* info, CSectionRule* section_rule);
-    void DelegateStakeholder(QTreeView* view, CSectionRule* section_rule);
-    void DelegateOrder(QTreeView* view, CInfo* info, CSectionRule* section_rule);
+    void DelegateFinance(QTreeView* view, CInfo* info, CSettings* settings);
+    void DelegateProduct(QTreeView* view, CInfo* info, CSettings* settings);
+    void DelegateStakeholder(QTreeView* view, CSettings* settings);
+    void DelegateOrder(QTreeView* view, CInfo* info, CSettings* settings);
 
     void SetView(QTreeView* view);
     void SetConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql);
 
-    void PrepInsertNode(QTreeView* view);
-    void InsertNode(const QModelIndex& parent, int row);
+    void InsertNode(QTreeView* view);
+    void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
+    void InsertNodeFPST(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
+    void InsertNodePS(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
+
+    void EditNodePS(Section section, TreeModel* model, Node* tmp_node); // Purchase Sales
+    void EditNodeFPST(
+        Section section, TreeModel* model, Node* tmp_node, const QModelIndex& index, int node_id, CStringHash& unit_hash); // Finance Product Stakeholder Task
 
     void AppendTrans(QWidget* widget);
 
@@ -149,7 +169,7 @@ private:
     void Recent();
 
     void SaveTableWidget(const TableHash& table_hash, CString& section_name, CString& property);
-    void RestoreTableWidget(SectionData* data, TreeModel* tree_model, CSectionRule* section_rule, TableHash* table_hash, CString& property);
+    void RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, CString& property);
 
     template <InheritQAbstractItemView T> bool HasSelection(const T* view) { return view && view->selectionModel() && view->selectionModel()->hasSelection(); }
 
@@ -212,46 +232,46 @@ private:
 
     QStringList date_format_list_ {};
 
-    Tree* section_tree_ {};
-    TableHash* section_table_ {};
-    QList<PDialog>* section_dialog_ {};
-    SectionRule* section_rule_ {};
-    SectionData* section_data_ {};
+    Tree* tree_ {};
+    TableHash* table_hash_ {};
+    QList<PDialog>* dialog_list_ {};
+    Settings* settings_ {};
+    Data* data_ {};
 
     Tree finance_tree_ {};
-    TableHash finance_table_ {};
-    QList<PDialog> finance_dialog_ {};
-    SectionRule finance_rule_ {};
-    SectionData finance_data_ {};
+    TableHash finance_table_hash_ {};
+    QList<PDialog> finance_dialog_list_ {};
+    Settings finance_settings_ {};
+    Data finance_data_ {};
 
     Tree sales_tree_ {};
-    TableHash sales_table_ {};
-    QList<PDialog> sales_dialog_ {};
-    SectionRule sales_rule_ {};
-    SectionData sales_data_ {};
+    TableHash sales_table_hash_ {};
+    QList<PDialog> sales_dialog_list_ {};
+    Settings sales_settings_ {};
+    Data sales_data_ {};
 
     Tree product_tree_ {};
-    TableHash product_table_ {};
-    QList<PDialog> product_dialog_ {};
-    SectionRule product_rule_ {};
-    SectionData product_data_ {};
+    TableHash product_table_hash_ {};
+    QList<PDialog> product_dialog_list_ {};
+    Settings product_settings_ {};
+    Data product_data_ {};
 
     Tree stakeholder_tree_ {};
-    TableHash stakeholder_table_ {};
-    QList<PDialog> stakeholder_dialog_ {};
-    SectionRule stakeholder_rule_ {};
-    SectionData stakeholder_data_ {};
+    TableHash stakeholder_table_hash_ {};
+    QList<PDialog> stakeholder_dialog_list_ {};
+    Settings stakeholder_settings_ {};
+    Data stakeholder_data_ {};
 
     Tree task_tree_ {};
-    TableHash task_table_ {};
-    QList<PDialog> task_dialog_ {};
-    SectionRule task_rule_ {};
-    SectionData task_data_ {};
+    TableHash task_table_hash_ {};
+    QList<PDialog> task_dialog_list_ {};
+    Settings task_settings_ {};
+    Data task_data_ {};
 
     Tree purchase_tree_ {};
-    TableHash purchase_table_ {};
-    QList<PDialog> purchase_dialog_ {};
-    SectionRule purchase_rule_ {};
-    SectionData purchase_data_ {};
+    TableHash purchase_table_hash_ {};
+    QList<PDialog> purchase_dialog_list_ {};
+    Settings purchase_settings_ {};
+    Data purchase_data_ {};
 };
 #endif // MAINWINDOW_H

@@ -6,6 +6,8 @@
 #include <cmath>
 #include <tuple>
 
+constexpr double TOLERANCE = 1e-9;
+
 struct Node {
     Node() = default;
     ~Node() = default;
@@ -20,17 +22,16 @@ struct Node {
     Node(Node&&) noexcept = delete;
     Node& operator=(Node&&) noexcept = delete;
 
-public:
     QString name {};
     int id {};
     QString code {};
     QString description {};
     QString note {};
-    bool node_rule { false };
+    bool rule { false };
     bool branch { false };
     int unit {};
 
-    int first {};
+    double first {};
     double second {};
     double discount {};
     bool locked {};
@@ -46,9 +47,6 @@ public:
 
     Node* parent {};
     QList<Node*> children {};
-
-private:
-    static constexpr double tolerance = 1e-9;
 };
 
 inline Node::Node(const Node& other)
@@ -57,7 +55,7 @@ inline Node::Node(const Node& other)
     , code(other.code)
     , description(other.description)
     , note(other.note)
-    , node_rule(other.node_rule)
+    , rule(other.rule)
     , branch(other.branch)
     , unit(other.unit)
     , first(other.first)
@@ -82,7 +80,7 @@ inline Node& Node::operator=(const Node& other)
     code = other.code;
     description = other.description;
     note = other.note;
-    node_rule = other.node_rule;
+    rule = other.rule;
     branch = other.branch;
     unit = other.unit;
     first = other.first;
@@ -100,10 +98,10 @@ inline Node& Node::operator=(const Node& other)
 
 inline bool Node::operator==(const Node& other) const noexcept
 {
-    return std::tie(name, id, code, party, employee, locked, first, date_time, description, note, node_rule, branch, unit, parent, children)
+    return std::tie(name, id, code, party, employee, locked, first, date_time, description, note, rule, branch, unit, parent, children)
         == std::tie(other.name, other.id, other.code, other.party, other.employee, other.locked, other.first, other.date_time, other.description, other.note,
-            other.node_rule, other.branch, other.unit, other.parent, other.children)
-        && std::abs(second - other.second) < tolerance && std::abs(discount - other.discount) < tolerance;
+            other.rule, other.branch, other.unit, other.parent, other.children)
+        && std::abs(second - other.second) < TOLERANCE && std::abs(discount - other.discount) < TOLERANCE;
 }
 
 inline void Node::Reset()
@@ -116,17 +114,93 @@ inline void Node::Reset()
     second = 0.0;
     discount = 0.0;
     locked = false;
-    first = 0;
+    first = 0.0;
     date_time.clear();
     description.clear();
     note.clear();
-    node_rule = false;
+    rule = false;
     branch = false;
     unit = 0;
     final_total = 0.0;
     initial_total = 0.0;
     parent = nullptr;
     children.clear();
+}
+
+struct NodeShadow {
+    void Reset();
+    void Set(Node* node);
+
+    QString* name {};
+    int* id {};
+    QString* code {};
+    QString* description {};
+    QString* note {};
+    bool* rule {};
+    bool* branch {};
+    int* unit {};
+
+    double* first {};
+    double* second {};
+    double* discount {};
+    bool* locked {};
+
+    QString* date_time {};
+    int* employee {};
+    int* party {};
+
+    double* final_total {};
+    double* initial_total {};
+};
+
+inline void NodeShadow::Reset()
+{
+    name = nullptr;
+    id = nullptr;
+    code = nullptr;
+    description = nullptr;
+    note = nullptr;
+    rule = nullptr;
+    branch = nullptr;
+    unit = nullptr;
+
+    first = nullptr;
+    second = nullptr;
+    discount = nullptr;
+    locked = nullptr;
+
+    date_time = nullptr;
+    employee = nullptr;
+    party = nullptr;
+
+    final_total = nullptr;
+    initial_total = nullptr;
+}
+
+inline void NodeShadow::Set(Node* node)
+{
+    if (node) {
+        name = &node->name;
+        id = &node->id;
+        code = &node->code;
+        description = &node->description;
+        note = &node->note;
+        rule = &node->rule;
+        branch = &node->branch;
+        unit = &node->unit;
+
+        first = &node->first;
+        second = &node->second;
+        discount = &node->discount;
+        locked = &node->locked;
+
+        date_time = &node->date_time;
+        employee = &node->employee;
+        party = &node->party;
+
+        final_total = &node->final_total;
+        initial_total = &node->initial_total;
+    }
 }
 
 using NodeHash = QHash<int, Node*>;
