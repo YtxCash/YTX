@@ -14,7 +14,7 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
 {
     // begin deal with trans hash
-    auto trans_id_list { ReplaceNode(old_node_id, new_node_id) };
+    auto trans_id_list { DialogReplaceNode(old_node_id, new_node_id) };
     // end deal with trans hash
 
     // begin deal with database
@@ -145,7 +145,7 @@ QString SqliteStakeholder::RUpdateProductReferenceQS() const
     )");
 }
 
-QList<int> SqliteStakeholder::ReplaceNode(int old_node_id, int new_node_id)
+QList<int> SqliteStakeholder::DialogReplaceNode(int old_node_id, int new_node_id)
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
     QList<int> list {};

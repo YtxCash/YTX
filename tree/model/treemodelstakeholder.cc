@@ -52,12 +52,12 @@ bool TreeModelStakeholder::UpdateRule(Node* node, bool value) { return UpdateFie
 bool TreeModelStakeholder::IsReferenced(int node_id, CString& message)
 {
     if (sql_->InternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1\nIt is internal referenced.").arg(message), 3000);
+        ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);
         return true;
     }
 
     if (sql_->ExternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1\nIt is external referenced.").arg(message), 3000);
+        ShowTemporaryTooltip(tr("%1 it is external referenced.").arg(message), 3000);
         return true;
     }
 
@@ -100,11 +100,11 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
     const QString path { GetPath(node_id) };
     QString message {};
 
-    message = tr("Cannot change unit for %1.").arg(path);
+    message = tr("Cannot change %1 unit,").arg(path);
     if (HasChildren(node, message))
         return false;
 
-    message = tr("Cannot change unit for %1.").arg(path);
+    message = tr("Cannot change %1 unit,").arg(path);
     if (IsReferenced(node_id, message))
         return false;
 

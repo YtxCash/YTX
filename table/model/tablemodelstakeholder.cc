@@ -8,7 +8,7 @@ TableModelStakeholder::TableModelStakeholder(SPSqlite sql, bool rule, int node_i
 {
 }
 
-bool TableModelStakeholder::RemoveTrans(int row, const QModelIndex& parent)
+bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex& parent)
 {
     if (row <= -1)
         return false;

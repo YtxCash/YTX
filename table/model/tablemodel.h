@@ -50,9 +50,6 @@ public slots:
     void RUpdateBalance(int node_id, int trans_id);
 
 public:
-    // virtual functions
-    virtual bool RemoveTrans(int row, const QModelIndex& parent = QModelIndex());
-
     // implemented functions
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -67,11 +64,13 @@ public:
 
     void sort(int column, Qt::SortOrder order) override;
 
+    bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
+    bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
+
     int GetRow(int node_id) const;
     QModelIndex GetIndex(int trans_id) const;
     QStringList* GetDocumentPointer(const QModelIndex& index) const;
 
-    bool InsertTrans(const QModelIndex& parent = QModelIndex());
     void UpdateAllState(Check state);
 
 protected:

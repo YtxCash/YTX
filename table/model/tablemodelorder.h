@@ -8,7 +8,7 @@ class TableModelOrder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, TreeModel* stakeholder, QObject* parent = nullptr);
+    TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, QObject* parent = nullptr);
     ~TableModelOrder() override = default;
 
 public:
@@ -17,6 +17,9 @@ public:
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
+
+    bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
+    bool removeRows(int row, int, const QModelIndex& parent = QModelIndex()) override;
 
 private:
     bool UpdateInsideProduct(TransShadow* trans_shadow, int value);
@@ -29,7 +32,6 @@ private:
 
 private:
     TreeModel* product_ {};
-    TreeModel* stakeholder_ {};
 };
 
 #endif // TABLEMODELORDER_H

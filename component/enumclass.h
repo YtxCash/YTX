@@ -27,7 +27,7 @@ enum class TableEnumSearch {
 
 enum class TableEnumStakeholder { kID, kDateTime, kCode, kLhsRatio, kDescription, kDocument, kState, kRhsNode };
 
-enum class TableEnumOrder { kID, kCode, kLhsNode, kLhsRatio, kFirst, kSecond, kDescription, kNodeID, kInitialSubtotal, kDiscount, kRhsRatio, kRhsNode };
+enum class TableEnumOrder { kID, kLhsNode, kLhsRatio, kCode, kDescription, kFirst, kSecond, kRhsNode, kRhsRatio, kDiscount, kInitialSubtotal, kNodeID };
 
 // Enum class defining node columns
 enum class TreeEnum {

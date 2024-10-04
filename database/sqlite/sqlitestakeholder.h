@@ -39,7 +39,7 @@ protected:
     QString RUpdateStakeholderReferenceQS() const override { return {}; }
 
 private:
-    QList<int> ReplaceNode(int old_node_id, int new_node_id);
+    QList<int> DialogReplaceNode(int old_node_id, int new_node_id);
 };
 
 #endif // SQLITESTAKEHOLDER_H

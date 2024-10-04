@@ -58,9 +58,10 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 private slots:
-    void RInsertTriggered();
+    void RInsertNodeTriggered();
     void RRemoveTriggered();
-    void RAppendTriggered();
+    void RAppendNodeTriggered();
+    void RAppendTransTriggered();
     void RJumpTriggered();
     void RAboutTriggered();
     void RPreferencesTriggered();
@@ -119,6 +120,7 @@ private:
     void CreateTable(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, int node_id);
     void CreateDelegate(QTableView* view, const TreeModel* tree_model, CSettings* settings, int node_id);
     void DelegateStakeholder(QTableView* view, CSettings* settings);
+    void DelegateOrder(QTableView* view, CSettings* settings);
     void SetView(QTableView* view);
     void SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
 
@@ -137,21 +139,18 @@ private:
     void SetView(QTreeView* view);
     void SetConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql);
 
-    void InsertNode(QTreeView* view);
-    void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
+    void InsertNode(const QModelIndex& parent, int parent_id, int row);
     void InsertNodeFPST(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
     void InsertNodePS(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
 
-    void EditNodePS(Section section, TreeModel* model, Node* tmp_node); // Purchase Sales
+    void EditNodePS(Section section, NodeShadow* node_shadow); // Purchase Sales
     void EditNodeFPST(
         Section section, TreeModel* model, Node* tmp_node, const QModelIndex& index, int node_id, CStringHash& unit_hash); // Finance Product Stakeholder Task
-
-    void AppendTrans(QWidget* widget);
 
     void SwitchTab(int node_id, int trans_id = 0);
     bool LockFile(CString& absolute_path, CString& complete_base_name);
 
-    void DeleteTrans(QWidget* widget);
+    void RemoveTrans(QWidget* widget);
     void RemoveNode(QTreeView* view, TreeModel* model);
     void RemoveView(TreeModel* model, const QModelIndex& index, int node_id);
     void RemoveBranch(TreeModel* model, const QModelIndex& index, int node_id);

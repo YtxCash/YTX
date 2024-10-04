@@ -326,10 +326,10 @@ void MainWindow::CreateTable(Data* data, TreeModel* tree_model, CSettings* setti
         model = new TableModelStakeholder(data->sql, rule, node_id, data->info, this);
         break;
     case Section::kSales:
-        model = new TableModelOrder(data->sql, rule, node_id, data->info, product_tree_.model, stakeholder_tree_.model, this);
+        model = new TableModelOrder(data->sql, rule, node_id, data->info, product_tree_.model, this);
         break;
     case Section::kPurchase:
-        model = new TableModelOrder(data->sql, rule, node_id, data->info, product_tree_.model, stakeholder_tree_.model, this);
+        model = new TableModelOrder(data->sql, rule, node_id, data->info, product_tree_.model, this);
         break;
     default:
         break;
@@ -435,6 +435,8 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings* settings)
     auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 }
+
+void MainWindow::DelegateOrder(QTableView* view, CSettings* settings) { }
 
 void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings* settings)
 {
@@ -580,19 +582,7 @@ void MainWindow::SetConnect(const QTreeView* view, const TreeWidget* widget, con
     connect(table_sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }
 
-void MainWindow::InsertNode(QTreeView* view)
-{
-    auto current_index { view->currentIndex() };
-    current_index = current_index.isValid() ? current_index : QModelIndex();
-
-    auto parent_index { current_index.parent() };
-    parent_index = parent_index.isValid() ? parent_index : QModelIndex();
-
-    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
-    InsertNodeFunction(parent_index, parent_id, current_index.row() + 1);
-}
-
-void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, int row)
+void MainWindow::InsertNode(const QModelIndex& parent, int parent_id, int row)
 {
     auto model { tree_->model };
 
@@ -610,30 +600,20 @@ void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, in
         InsertNodeFPST(section, model, node, parent, parent_id, row);
 }
 
-void MainWindow::AppendTrans(QWidget* widget)
-{
-    auto view { GetQTableView(widget) };
-    auto model { GetTableModel(view) };
-    int row { model->GetRow(0) };
-    QModelIndex index {};
-
-    index = (row == -1) ? (model->InsertTrans() ? model->index(model->rowCount() - 1, std::to_underlying(TableEnum::kDateTime)) : index)
-                        : model->index(row, std::to_underlying(TableEnum::kRelatedNode));
-
-    view->setCurrentIndex(index);
-}
-
-void MainWindow::RInsertTriggered()
+void MainWindow::RInsertNodeTriggered()
 {
     auto current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget)
+    if (!current_widget || !IsTreeWidget(current_widget))
         return;
 
-    if (IsTreeWidget(current_widget))
-        InsertNode(tree_->widget->View());
+    auto current_index { tree_->widget->View()->currentIndex() };
+    current_index = current_index.isValid() ? current_index : QModelIndex();
 
-    if (IsTableWidget(current_widget))
-        AppendTrans(current_widget);
+    auto parent_index { current_index.parent() };
+    parent_index = parent_index.isValid() ? parent_index : QModelIndex();
+
+    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
+    InsertNode(parent_index, parent_id, current_index.row() + 1);
 }
 
 void MainWindow::RRemoveTriggered()
@@ -646,7 +626,7 @@ void MainWindow::RRemoveTriggered()
         RemoveNode(tree_->widget->View(), tree_->model);
 
     if (IsTableWidget(current_widget))
-        DeleteTrans(current_widget);
+        RemoveTrans(current_widget);
 }
 
 void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
@@ -687,31 +667,47 @@ void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
     dialog->exec();
 }
 
-void MainWindow::DeleteTrans(QWidget* widget)
+void MainWindow::RemoveTrans(QWidget* widget)
 {
-    auto view { GetQTableView(widget) };
-    if (!HasSelection(view))
+    // 1. 获取视图和检查选择
+    auto* view { GetQTableView(widget) };
+    if (!view || !HasSelection(view)) {
         return;
-
-    auto model { GetTableModel(view) };
-    auto index { view->currentIndex() };
-
-    if (model && index.isValid()) {
-        int row { index.row() };
-        model->RemoveTrans(row);
-
-        auto row_count { model->rowCount() };
-        if (row_count == 0)
-            return;
-
-        if (row <= row_count - 1)
-            index = model->index(row, 0);
-        else if (row_count >= 1)
-            index = model->index(row - 1, 0);
-
-        if (index.isValid())
-            view->setCurrentIndex(index);
     }
+
+    // 2. 获取模型和当前索引
+    auto* model { GetTableModel(view) };
+    QModelIndex current_index { view->currentIndex() };
+    if (!model || !current_index.isValid()) {
+        return;
+    }
+
+    // 3. 删除行
+    const int current_row { current_index.row() };
+    if (!model->removeRows(current_row, 1)) {
+        qDebug() << "Failed to remove row:" << current_row;
+        return;
+    }
+
+    // 4. 更新选择
+    const int new_row_count { model->rowCount() };
+    if (new_row_count == 0) {
+        return;
+    }
+
+    // 5. 计算新的选择位置
+    QModelIndex new_index;
+    if (current_row <= new_row_count - 1) {
+        // 如果删除的不是最后一行，选择同一位置的下一条记录
+        new_index = model->index(current_row, 0);
+    } else {
+        // 如果删除的是最后一行，选择上一条记录
+        new_index = model->index(new_row_count - 1, 0);
+    }
+
+    // 6. 更新视图的当前索引
+    if (new_index.isValid())
+        view->setCurrentIndex(new_index);
 }
 
 void MainWindow::RemoveView(TreeModel* model, const QModelIndex& index, int node_id)
@@ -868,9 +864,10 @@ void MainWindow::SetView(QTableView* view)
 
 void MainWindow::SetConnect()
 {
-    connect(ui->actionInsert, &QAction::triggered, this, &MainWindow::RInsertTriggered);
+    connect(ui->actionInsertNode, &QAction::triggered, this, &MainWindow::RInsertNodeTriggered);
     connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::RRemoveTriggered);
-    connect(ui->actionAppend, &QAction::triggered, this, &MainWindow::RAppendTriggered);
+    connect(ui->actionAppendNode, &QAction::triggered, this, &MainWindow::RAppendNodeTriggered);
+    connect(ui->actionAppendTrans, &QAction::triggered, this, &MainWindow::RAppendTransTriggered);
     connect(ui->actionJump, &QAction::triggered, this, &MainWindow::RJumpTriggered);
     connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::RSearchTriggered);
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::RPreferencesTriggered);
@@ -1164,21 +1161,23 @@ void MainWindow::SetHeader()
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
+    sales_data_.info.part_table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("First"), tr("Second"),
+        tr("OutsideProduct"), tr("DiscountPrice"), tr("Discount"), tr("InitialSubtotal"), tr("node_id") };
 
     purchase_data_.info.tree_header = sales_data_.info.tree_header;
+    purchase_data_.info.part_table_header = sales_data_.info.part_table_header;
 }
 
 void MainWindow::SetAction()
 {
-    ui->actionInsert->setIcon(QIcon(":/solarized_dark/solarized_dark/insert.png"));
+    ui->actionInsertNode->setIcon(QIcon(":/solarized_dark/solarized_dark/insert.png"));
     ui->actionNode->setIcon(QIcon(":/solarized_dark/solarized_dark/edit.png"));
     ui->actionDocument->setIcon(QIcon(":/solarized_dark/solarized_dark/edit2.png"));
-    ui->actionTransport->setIcon(QIcon(":/solarized_dark/solarized_dark/edit2.png"));
     ui->actionRemove->setIcon(QIcon(":/solarized_dark/solarized_dark/remove2.png"));
     ui->actionAbout->setIcon(QIcon(":/solarized_dark/solarized_dark/about.png"));
-    ui->actionAppend->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
+    ui->actionAppendNode->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
+    ui->actionAppendTrans->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
     ui->actionJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
-    ui->actionLocate->setIcon(QIcon(":/solarized_dark/solarized_dark/locate.png"));
     ui->actionPreferences->setIcon(QIcon(":/solarized_dark/solarized_dark/settings.png"));
     ui->actionSearch->setIcon(QIcon(":/solarized_dark/solarized_dark/search.png"));
     ui->actionNew->setIcon(QIcon(":/solarized_dark/solarized_dark/new.png"));
@@ -1209,7 +1208,7 @@ void MainWindow::SetView(QTreeView* view)
     header->setDefaultAlignment(Qt::AlignCenter);
 }
 
-void MainWindow::RAppendTriggered()
+void MainWindow::RAppendNodeTriggered()
 {
     auto current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !IsTreeWidget(current_widget))
@@ -1228,7 +1227,36 @@ void MainWindow::RAppendTriggered()
         return;
 
     const int parent_id { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
-    InsertNodeFunction(parent_index, parent_id, 0);
+    InsertNode(parent_index, parent_id, 0);
+}
+
+void MainWindow::RAppendTransTriggered()
+{
+    auto current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !IsTableWidget(current_widget))
+        return;
+
+    auto view { GetQTableView(current_widget) };
+    auto model { GetTableModel(view) };
+    if (!model)
+        return;
+
+    constexpr int ID_ZERO = 0;
+    const int empty_row = model->GetRow(ID_ZERO);
+
+    QModelIndex target_index {};
+
+    if (empty_row == -1) {
+        const int new_row = model->rowCount();
+        if (!model->insertRows(new_row, 1))
+            return;
+
+        target_index = model->index(new_row, std::to_underlying(TableEnum::kDateTime));
+    } else {
+        target_index = model->index(empty_row, std::to_underlying(TableEnum::kRelatedNode));
+    }
+
+    view->setCurrentIndex(target_index);
 }
 
 void MainWindow::RJumpTriggered()
@@ -1262,9 +1290,9 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
     Q_UNUSED(pos);
 
     auto menu = new QMenu(this);
-    menu->addAction(ui->actionInsert);
+    menu->addAction(ui->actionInsertNode);
     menu->addAction(ui->actionNode);
-    menu->addAction(ui->actionAppend);
+    menu->addAction(ui->actionAppendNode);
     menu->addAction(ui->actionRemove);
 
     menu->exec(QCursor::pos());
@@ -1290,42 +1318,57 @@ void MainWindow::REditNode()
     CStringHash& unit_hash { info.unit_hash };
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
-    auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
-    model->CopyNode(tmp_node, node_id);
 
-    if (section == Section::kSales || section == Section::kPurchase)
-        EditNodePS(section, model, tmp_node);
+    if (section == Section::kSales || section == Section::kPurchase) {
+        auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
+        model->SetNodeShadow(node_shadow, node_id);
+        EditNodePS(section, node_shadow);
+    }
 
-    if (section != Section::kSales && section != Section::kPurchase)
+    if (section != Section::kSales && section != Section::kPurchase) {
+        auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
+        model->CopyNode(tmp_node, node_id);
         EditNodeFPST(section, model, tmp_node, index, node_id, unit_hash);
+    }
 }
 
-void MainWindow::EditNodePS(Section section, TreeModel* model, Node* tmp_node)
+void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
 {
     QDialog* dialog {};
+    auto sql { data_->sql };
+
+    auto table_model { new TableModelOrder(sql, *node_shadow->rule, *node_shadow->id, data_->info, product_tree_.model, this) };
 
     switch (section) {
     case Section::kSales:
-        dialog = new EditNodeOrder(tmp_node, model, stakeholder_tree_.model, product_tree_.model, sales_settings_.value_decimal, UNIT_CUSTOMER, this);
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, sales_settings_.value_decimal, UNIT_CUSTOMER, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new EditNodeOrder(tmp_node, model, stakeholder_tree_.model, product_tree_.model, sales_settings_.value_decimal, UNIT_VENDOR, this);
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, sales_settings_.value_decimal, UNIT_VENDOR, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
-        return ResourcePool<Node>::Instance().Recycle(tmp_node);
+        return ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
     }
 
     connect(dialog, &QDialog::rejected, this, [=, this]() {
         dialog_list_->removeOne(dialog);
-        ResourcePool<Node>::Instance().Recycle(tmp_node);
+        ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
     });
 
-    auto dialog_cast { dynamic_cast<EditNodeOrder*>(dialog) };
-    connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &EditNodeOrder::RUpdateStakeholder);
-    connect(model, &TreeModel::SUpdateOrder, dialog_cast, &EditNodeOrder::RUpdateOrder);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
+    auto dialog_cast { dynamic_cast<EditNodeOrder*>(dialog) };
+    auto model_cast { dynamic_cast<TreeModelOrder*>(tree_->model) };
+
+    connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &EditNodeOrder::RUpdateStakeholder);
+    connect(model_cast, &TreeModelOrder::SUpdateLocked, dialog_cast, &EditNodeOrder::RUpdateLocked);
+    connect(dialog_cast, &EditNodeOrder::SUpdateLocked, model_cast, &TreeModelOrder::RUpdateLocked);
+
+    if (!(*node_shadow->branch)) {
+        SetView(dialog_cast->View());
+    }
     dialog_list_->append(dialog);
     dialog->show();
 }
@@ -1410,14 +1453,17 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* model, Node* node, c
 void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int row)
 {
     QDialog* dialog {};
+    auto sql { data_->sql };
+
+    auto table_model { new TableModelOrder(sql, node->rule, 0, data_->info, product_tree_.model, this) };
 
     switch (section) {
     case Section::kSales:
-        dialog = new InsertNodeOrder(node, model, stakeholder_tree_.model, product_tree_.model, purchase_settings_.value_decimal, UNIT_CUSTOMER, this);
+        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, purchase_settings_.value_decimal, UNIT_CUSTOMER, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new InsertNodeOrder(node, model, stakeholder_tree_.model, product_tree_.model, purchase_settings_.value_decimal, UNIT_VENDOR, this);
+        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, purchase_settings_.value_decimal, UNIT_VENDOR, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -1432,11 +1478,19 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     });
     connect(dialog, &QDialog::rejected, this, [=, this]() { dialog_list_->removeOne(dialog); });
 
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
     auto dialog_cast { dynamic_cast<InsertNodeOrder*>(dialog) };
+    auto model_cast { dynamic_cast<TreeModelOrder*>(model) };
+
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &InsertNodeOrder::RUpdateStakeholder);
-    connect(model, &TreeModel::SUpdateOrder, dialog_cast, &InsertNodeOrder::RUpdateOrder);
+    connect(model_cast, &TreeModelOrder::SUpdateLocked, dialog_cast, &InsertNodeOrder::RUpdateLocked);
+    connect(dialog_cast, &InsertNodeOrder::SUpdateLocked, model_cast, &TreeModelOrder::RUpdateLocked);
 
     dialog_list_->append(dialog);
+
+    SetView(dialog_cast->View());
+
     dialog->show();
 }
 

@@ -17,7 +17,7 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    bool RemoveTrans(int row, const QModelIndex& parent = QModelIndex()) override;
+    bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
 protected:
     bool RemoveMulti(const QSet<int>& trans_id_list) override; // just remove trnas_shadow, keep related trans

@@ -7,7 +7,7 @@ class SpinBox final : public QSpinBox {
     Q_OBJECT
 
 public:
-    SpinBox(QWidget* parent = nullptr);
+    explicit SpinBox(QWidget* parent = nullptr);
 
 protected:
     void wheelEvent(QWheelEvent* event) override;

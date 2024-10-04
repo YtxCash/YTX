@@ -1,9 +1,10 @@
 #include "tablemodelorder.h"
 
-TableModelOrder::TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, TreeModel* stakeholder, QObject* parent)
+#include "global/resourcepool.h"
+
+TableModelOrder::TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
     , product_ { product }
-    , stakeholder_ { stakeholder }
 {
 }
 
@@ -147,6 +148,38 @@ Qt::ItemFlags TableModelOrder::flags(const QModelIndex& index) const
     }
 
     return flags;
+}
+
+bool TableModelOrder::insertRows(int row, int /*count*/, const QModelIndex& parent)
+{
+    auto trans_shadow { sql_->AllocateTransShadow() };
+
+    *trans_shadow->node_id = node_id_;
+
+    beginInsertRows(parent, row, row);
+    trans_shadow_list_.emplaceBack(trans_shadow);
+    endInsertRows();
+
+    return true;
+}
+
+bool TableModelOrder::removeRows(int row, int /*count*/, const QModelIndex& parent)
+{
+    if (row <= -1)
+        return false;
+
+    auto trans_shadow { trans_shadow_list_.at(row) };
+    int node_id { *trans_shadow->node_id };
+
+    beginRemoveRows(parent, row, row);
+    trans_shadow_list_.removeAt(row);
+    endRemoveRows();
+
+    if (node_id != 0)
+        sql_->RemoveTrans(*trans_shadow->id);
+
+    ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
+    return true;
 }
 
 bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)

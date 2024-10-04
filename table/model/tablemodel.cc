@@ -13,7 +13,8 @@ TableModel::TableModel(SPSqlite sql, bool rule, int node_id, CInfo& info, QObjec
     , info_ { info }
     , node_id_ { node_id }
 {
-    sql_->BuildTransShadowList(trans_shadow_list_, node_id);
+    if (node_id >= 1)
+        sql_->BuildTransShadowList(trans_shadow_list_, node_id);
 }
 
 TableModel::~TableModel() { ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_); }
@@ -107,7 +108,7 @@ void TableModel::RUpdateBalance(int node_id, int trans_id)
         QtConcurrent::run(&TableModel::AccumulateSubtotal, this, index.row(), rule_);
 }
 
-bool TableModel::RemoveTrans(int row, const QModelIndex& parent)
+bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
 {
     if (row <= -1)
         return false;
@@ -138,22 +139,6 @@ bool TableModel::RemoveTrans(int row, const QModelIndex& parent)
     }
 
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
-    return true;
-}
-
-bool TableModel::InsertTrans(const QModelIndex& parent)
-{
-    // just register trans_shadow in this function
-    // while set related node in setData function, register trans to sql_'s trans_hash_
-    auto row { trans_shadow_list_.size() };
-    auto trans_shadow { sql_->AllocateTransShadow() };
-
-    *trans_shadow->node = node_id_;
-
-    beginInsertRows(parent, row, row);
-    trans_shadow_list_.emplaceBack(trans_shadow);
-    endInsertRows();
-
     return true;
 }
 
@@ -563,6 +548,21 @@ QStringList* TableModel::GetDocumentPointer(const QModelIndex& index) const
     }
 
     return trans_shadow->document;
+}
+
+bool TableModel::insertRows(int row, int /*count*/, const QModelIndex& parent)
+{
+    // just register trans_shadow in this function
+    // while set related node in setData function, register trans to sql_'s trans_hash_
+    auto trans_shadow { sql_->AllocateTransShadow() };
+
+    *trans_shadow->node = node_id_;
+
+    beginInsertRows(parent, row, row);
+    trans_shadow_list_.emplaceBack(trans_shadow);
+    endInsertRows();
+
+    return true;
 }
 
 void TableModel::AccumulateSubtotal(int start, bool rule)

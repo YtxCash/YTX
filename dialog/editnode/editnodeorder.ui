@@ -416,7 +416,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QTableView" name="tableViewOrder"/>
+    <widget class="TableView" name="tableViewOrder"/>
    </item>
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -441,16 +441,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pBtnSaveOrder">
-       <property name="text">
-        <string>&amp;Save</string>
-       </property>
-       <property name="default">
-        <bool>false</bool>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pBtnLockOrder">
@@ -489,6 +479,11 @@
    <class>DateTimeEdit</class>
    <extends>QDateTimeEdit</extends>
    <header location="global">widget/datetimeedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableView</class>
+   <extends>QTableView</extends>
+   <header location="global">widget/tablewidget/tableview.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

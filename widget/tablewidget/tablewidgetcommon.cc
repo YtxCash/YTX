@@ -17,4 +17,4 @@ void TableWidgetCommon::SetModel(TableModel* model)
     model_ = model;
 }
 
-QTableView* TableWidgetCommon::View() { return ui->tableView; }
+TableView* TableWidgetCommon::View() { return ui->tableView; }

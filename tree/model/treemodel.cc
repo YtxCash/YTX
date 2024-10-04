@@ -679,15 +679,15 @@ bool TreeModel::UpdateBranch(Node* node, bool value)
     const QString path { GetPath(node_id) };
     QString message {};
 
-    message = tr("Cannot change unit for %1.").arg(path);
+    message = tr("Cannot change %1 branch,").arg(path);
     if (HasChildren(node, message))
         return false;
 
-    message = tr("Cannot change branch for %1.").arg(path);
+    message = tr("Cannot change %1 branch,").arg(path);
     if (IsOpened(node_id, message))
         return false;
 
-    message = tr("Cannot change branch for %1.").arg(path);
+    message = tr("Cannot change %1 branch,").arg(path);
     if (IsReferenced(node_id, message))
         return false;
 
@@ -772,7 +772,7 @@ bool TreeModel::UpdateUnit(Node* node, int value)
         return false;
 
     int node_id { node->id };
-    auto message { tr("Cannot change unit for %1.").arg(GetPath(node_id)) };
+    auto message { tr("Cannot change %1 unit,").arg(GetPath(node_id)) };
     if (IsReferenced(node_id, message))
         return false;
 
@@ -886,7 +886,7 @@ void TreeModel::ShowTemporaryTooltip(CString& message, int duration)
 bool TreeModel::HasChildren(Node* node, CString& message)
 {
     if (!node->children.isEmpty()) {
-        ShowTemporaryTooltip(tr("%1\nIt has children nodes.").arg(message), 3000);
+        ShowTemporaryTooltip(tr("%1 it has children nodes.").arg(message), 3000);
         return true;
     }
 
@@ -896,7 +896,7 @@ bool TreeModel::HasChildren(Node* node, CString& message)
 bool TreeModel::IsOpened(int node_id, CString& message)
 {
     if (table_hash_.contains(node_id)) {
-        ShowTemporaryTooltip(tr("%1\nIt is opened.").arg(message), 3000);
+        ShowTemporaryTooltip(tr("%1 it is opened.").arg(message), 3000);
         return true;
     }
 
@@ -906,7 +906,7 @@ bool TreeModel::IsOpened(int node_id, CString& message)
 bool TreeModel::IsReferenced(int node_id, CString& message)
 {
     if (sql_->InternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1\nIt is internal referenced.").arg(message), 3000);
+        ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);
         return true;
     }
 

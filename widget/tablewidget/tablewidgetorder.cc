@@ -27,7 +27,7 @@ void TableWidgetOrder::SetModel(TableModel* model)
     order_table_model_ = model;
 }
 
-QTableView* TableWidgetOrder::View() { return ui->tableViewOrder; }
+TableView* TableWidgetOrder::View() { return ui->tableViewOrder; }
 
 void TableWidgetOrder::RAccept()
 {
@@ -321,7 +321,6 @@ void TableWidgetOrder::on_pBtnLockOrder_toggled(bool checked)
     ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
 
     LockWidgets(checked, node_->branch);
-    order_model_->UpdateNodeLocked(node_);
 
     if (checked) {
         ui->pBtnPrint->setFocus();

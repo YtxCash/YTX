@@ -45,7 +45,7 @@
        </sizepolicy>
       </property>
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
@@ -194,17 +194,16 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionInsert"/>
-    <addaction name="actionAppend"/>
+    <addaction name="actionInsertNode"/>
+    <addaction name="actionAppendNode"/>
+    <addaction name="actionAppendTrans"/>
     <addaction name="separator"/>
     <addaction name="actionNode"/>
-    <addaction name="actionTransport"/>
     <addaction name="actionDocument"/>
     <addaction name="separator"/>
     <addaction name="actionRemove"/>
     <addaction name="separator"/>
     <addaction name="actionJump"/>
-    <addaction name="actionLocate"/>
     <addaction name="actionSearch"/>
     <addaction name="separator"/>
    </widget>
@@ -222,8 +221,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionInsert"/>
-   <addaction name="actionAppend"/>
+   <addaction name="actionInsertNode"/>
+   <addaction name="actionAppendNode"/>
+   <addaction name="actionAppendTrans"/>
    <addaction name="separator"/>
    <addaction name="actionRemove"/>
    <addaction name="separator"/>
@@ -232,9 +232,9 @@
    <addaction name="actionCheckNone"/>
    <addaction name="separator"/>
   </widget>
-  <action name="actionInsert">
+  <action name="actionInsertNode">
    <property name="text">
-    <string>Insert</string>
+    <string>InsertNode</string>
    </property>
    <property name="toolTip">
     <string>Insert</string>
@@ -248,12 +248,12 @@
     <string>Remove</string>
    </property>
   </action>
-  <action name="actionAppend">
+  <action name="actionAppendNode">
    <property name="text">
-    <string>Append</string>
+    <string>AppendNode</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+P</string>
+    <string>Alt+P</string>
    </property>
   </action>
   <action name="actionJump">
@@ -294,7 +294,7 @@
     <string>Ctrl+,</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::PreferencesRole</enum>
+    <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionAbout">
@@ -305,7 +305,7 @@
     <string>About YTX</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::AboutRole</enum>
+    <enum>QAction::MenuRole::AboutRole</enum>
    </property>
   </action>
   <action name="actionNew">
@@ -316,7 +316,7 @@
     <string>Ctrl+Alt+N</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionOpen">
@@ -327,7 +327,7 @@
     <string>Ctrl+O</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionClearMenu">
@@ -345,7 +345,7 @@
     <string>CheckAll</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionCheckNone">
@@ -353,7 +353,7 @@
     <string>CheckNone</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionCheckReverse">
@@ -361,18 +361,7 @@
     <string>CheckReverse</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
-   </property>
-  </action>
-  <action name="actionLocate">
-   <property name="text">
-    <string>Locate</string>
-   </property>
-   <property name="toolTip">
-    <string>Locate</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+J</string>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionDocument">
@@ -383,24 +372,21 @@
     <string>Edit Document</string>
    </property>
    <property name="shortcut">
-    <string>Alt+D</string>
+    <string>Ctrl+D</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
-  <action name="actionTransport">
+  <action name="actionAppendTrans">
    <property name="text">
-    <string>Transport</string>
+    <string>AppendTrans</string>
    </property>
    <property name="toolTip">
-    <string>Edit Transport</string>
+    <string>AppendTrans</string>
    </property>
    <property name="shortcut">
-    <string>Alt+T</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

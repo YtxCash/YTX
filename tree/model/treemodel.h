@@ -41,7 +41,6 @@ signals:
 
     // send to EditNodeOrder and TableWidgetOrder
     void SUpdateOrderPartyEmployee();
-    void SUpdateOrder(const QVariant& value, TreeEnumOrder column);
 
 public slots:
     // receive from sqlite
@@ -60,7 +59,6 @@ public:
     virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex());
     virtual bool InsertNode(int row, const QModelIndex& parent, Node* node);
     virtual void UpdateNode(const Node* tmp_node);
-    virtual void UpdateNodeLocked(const Node* /*tmp_node*/) { };
     virtual void UpdateBaseUnit(int base_unit);
 
     // implemented functions

@@ -18,7 +18,7 @@ public:
     void SetModel(TableModel* model) override;
 
     TableModel* Model() override { return model_; }
-    QTableView* View() override;
+    TableView* View() override;
 
 private:
     Ui::TableWidgetCommon* ui;
