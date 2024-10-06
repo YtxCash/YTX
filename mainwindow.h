@@ -58,10 +58,9 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 private slots:
-    void RInsertNodeTriggered();
+    void RInsertTriggered();
     void RRemoveTriggered();
     void RAppendNodeTriggered();
-    void RAppendTransTriggered();
     void RJumpTriggered();
     void RAboutTriggered();
     void RPreferencesTriggered();
@@ -97,10 +96,24 @@ private slots:
     void on_rBtnPurchase_toggled(bool checked);
 
 private:
-    inline bool IsTreeWidget(const QWidget* widget) { return widget->inherits("TreeWidget"); }
-    inline bool IsTableWidget(const QWidget* widget) { return widget->inherits("TableWidget"); }
-    inline TableModel* GetTableModel(QTableView* view) { return qobject_cast<TableModel*>(view->model()); }
-    inline QTableView* GetQTableView(QWidget* widget) { return dynamic_cast<TableWidget*>(widget)->View(); }
+    inline bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
+    inline bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
+    inline TableModel* GetTableModel(QTableView* view)
+    {
+        if (!view)
+            return nullptr;
+
+        assert(dynamic_cast<TableModel*>(view->model()) && "Model is not TableModel");
+        return static_cast<TableModel*>(view->model());
+    }
+    inline QTableView* GetQTableView(QWidget* widget)
+    {
+        if (!widget)
+            return nullptr;
+
+        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
+        return static_cast<TableWidget*>(widget)->View();
+    }
 
 private:
     void SetTabWidget();
@@ -139,9 +152,12 @@ private:
     void SetView(QTreeView* view);
     void SetConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql);
 
-    void InsertNode(const QModelIndex& parent, int parent_id, int row);
+    void InsertNode(TreeWidget* tree_widget);
+    void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
     void InsertNodeFPST(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
     void InsertNodePS(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
+
+    void AppendTrans(TableWidget* table_widget);
 
     void EditNodePS(Section section, NodeShadow* node_shadow); // Purchase Sales
     void EditNodeFPST(

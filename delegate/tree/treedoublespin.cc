@@ -24,11 +24,15 @@ QWidget* TreeDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewIte
     return editor;
 }
 
-void TreeDoubleSpin::setEditorData(QWidget* editor, const QModelIndex& index) const { qobject_cast<DoubleSpinBox*>(editor)->setValue(index.data().toDouble()); }
+void TreeDoubleSpin::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
+    cast_editor->setValue(index.data().toDouble());
+}
 
 void TreeDoubleSpin::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    auto cast_editor { qobject_cast<DoubleSpinBox*>(editor) };
+    auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
     model->setData(index, cast_editor->value());
 }
 

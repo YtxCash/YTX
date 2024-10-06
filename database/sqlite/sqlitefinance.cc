@@ -112,3 +112,13 @@ QString SqliteFinance::RReplaceNodeQS() const
     WHERE lhs_node = :old_node_id OR rhs_node = :old_node_id;
     )");
 }
+
+QString SqliteFinance::UpdateTransQS() const
+{
+    return QStringLiteral(R"(
+    UPDATE finance_transaction SET
+    lhs_node = :lhs_node, lhs_ratio = :lhs_ratio, lhs_debit = :lhs_debit, lhs_credit = :lhs_credit,
+    rhs_node = :rhs_node, rhs_ratio = :rhs_ratio, rhs_debit = :rhs_debit, rhs_credit = :rhs_credit
+    WHERE id = :trans_id
+    )");
+}

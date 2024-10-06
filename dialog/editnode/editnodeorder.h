@@ -5,7 +5,6 @@
 #include <QDialog>
 
 #include "tree/model/treemodel.h"
-#include "widget/tablewidget/tableview.h"
 
 namespace Ui {
 class EditNodeOrder;
@@ -28,7 +27,7 @@ public slots:
     void RUpdateLocked(int node_id, bool checked);
 
 public:
-    TableView* View();
+    QTableView* View();
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);

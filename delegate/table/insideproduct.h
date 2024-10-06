@@ -1,12 +1,12 @@
-#ifndef STAKEHOLDERRHSNODE_H
-#define STAKEHOLDERRHSNODE_H
+#ifndef INSIDEPRODUCT_H
+#define INSIDEPRODUCT_H
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-class StakeholderRhsNode final : public StyledItemDelegate {
+class InsideProduct final : public StyledItemDelegate {
 public:
-    StakeholderRhsNode(const TreeModel* model, int exclude_unit, QObject* parent = nullptr);
+    InsideProduct(const TreeModel* model, int exclude_unit, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -15,8 +15,7 @@ public:
 
 private:
     int exclude_unit_ {};
-    mutable int last_insert_ {};
     const TreeModel* model_ {};
 };
 
-#endif // STAKEHOLDERRHSNODE_H
+#endif // INSIDEPRODUCT_H

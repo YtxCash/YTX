@@ -453,21 +453,23 @@ void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left)
     trans_shadow->document = &trans->document;
     trans_shadow->description = &trans->description;
     trans_shadow->node_id = &trans->node_id;
+    trans_shadow->discount_price = &trans->discount_price;
+    trans_shadow->unit_price = &trans->unit_price;
 
-    trans_shadow->node = &(left ? trans->lhs_node : trans->rhs_node);
-    trans_shadow->ratio = &(left ? trans->lhs_ratio : trans->rhs_ratio);
-    trans_shadow->debit = &(left ? trans->lhs_debit : trans->rhs_debit);
-    trans_shadow->credit = &(left ? trans->lhs_credit : trans->rhs_credit);
+    trans_shadow->lhs_node = &(left ? trans->lhs_node : trans->rhs_node);
+    trans_shadow->lhs_ratio = &(left ? trans->lhs_ratio : trans->rhs_ratio);
+    trans_shadow->lhs_debit = &(left ? trans->lhs_debit : trans->rhs_debit);
+    trans_shadow->lhs_credit = &(left ? trans->lhs_credit : trans->rhs_credit);
 
-    trans_shadow->related_node = &(left ? trans->rhs_node : trans->lhs_node);
-    trans_shadow->related_ratio = &(left ? trans->rhs_ratio : trans->lhs_ratio);
-    trans_shadow->related_debit = &(left ? trans->rhs_debit : trans->lhs_debit);
-    trans_shadow->related_credit = &(left ? trans->rhs_credit : trans->lhs_credit);
+    trans_shadow->rhs_node = &(left ? trans->rhs_node : trans->lhs_node);
+    trans_shadow->rhs_ratio = &(left ? trans->rhs_ratio : trans->lhs_ratio);
+    trans_shadow->rhs_debit = &(left ? trans->rhs_debit : trans->lhs_debit);
+    trans_shadow->rhs_credit = &(left ? trans->rhs_credit : trans->lhs_credit);
 }
 
 void Sqlite::ReadTrans(Trans* trans, const QSqlQuery& query)
 {
-    // finance, product, task
+    // finance
     trans->lhs_node = query.value("lhs_node").toInt();
     trans->lhs_ratio = query.value("lhs_ratio").toDouble();
     trans->lhs_debit = query.value("lhs_debit").toDouble();
@@ -483,6 +485,20 @@ void Sqlite::ReadTrans(Trans* trans, const QSqlQuery& query)
     trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
     trans->state = query.value("state").toBool();
+}
+
+void Sqlite::UpdateTransBind(Trans* trans, QSqlQuery& query)
+{
+    // finance
+    query.bindValue(":lhs_node", trans->lhs_node);
+    query.bindValue(":lhs_ratio", trans->lhs_ratio);
+    query.bindValue(":lhs_debit", trans->lhs_debit);
+    query.bindValue(":lhs_credit", trans->lhs_credit);
+    query.bindValue(":rhs_node", trans->rhs_node);
+    query.bindValue(":rhs_ratio", trans->rhs_ratio);
+    query.bindValue(":rhs_debit", trans->rhs_debit);
+    query.bindValue(":rhs_credit", trans->rhs_credit);
+    query.bindValue(":trans_id", trans->id);
 }
 
 bool Sqlite::InsertTransShadow(TransShadow* trans_shadow)
@@ -503,18 +519,20 @@ bool Sqlite::InsertTransShadow(TransShadow* trans_shadow)
     return true;
 }
 
+bool Sqlite::InsertTransShadowList(const QList<TransShadow*>& list) { }
+
 void Sqlite::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query)
 {
-    // finance, product, task
+    // finance
     query.bindValue(":date_time", *trans_shadow->date_time);
-    query.bindValue(":lhs_node", *trans_shadow->node);
-    query.bindValue(":lhs_ratio", *trans_shadow->ratio);
-    query.bindValue(":lhs_debit", *trans_shadow->debit);
-    query.bindValue(":lhs_credit", *trans_shadow->credit);
-    query.bindValue(":rhs_node", *trans_shadow->related_node);
-    query.bindValue(":rhs_ratio", *trans_shadow->related_ratio);
-    query.bindValue(":rhs_debit", *trans_shadow->related_debit);
-    query.bindValue(":rhs_credit", *trans_shadow->related_credit);
+    query.bindValue(":lhs_node", *trans_shadow->lhs_node);
+    query.bindValue(":lhs_ratio", *trans_shadow->lhs_ratio);
+    query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
+    query.bindValue(":lhs_credit", *trans_shadow->lhs_credit);
+    query.bindValue(":rhs_node", *trans_shadow->rhs_node);
+    query.bindValue(":rhs_ratio", *trans_shadow->rhs_ratio);
+    query.bindValue(":rhs_debit", *trans_shadow->rhs_debit);
+    query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
     query.bindValue(":state", *trans_shadow->state);
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":code", *trans_shadow->code);
@@ -544,27 +562,15 @@ bool Sqlite::RemoveTrans(int trans_id)
 
 bool Sqlite::UpdateTrans(int trans_id)
 {
+    CString& string { UpdateTransQS() };
+    if (string.isEmpty())
+        return false;
+
     QSqlQuery query(*db_);
     auto trans { trans_hash_.value(trans_id) };
 
-    auto part = QString(R"(
-    UPDATE %1 SET
-    lhs_node = :lhs_node, lhs_ratio = :lhs_ratio, lhs_debit = :lhs_debit, lhs_credit = :lhs_credit,
-    rhs_node = :rhs_node, rhs_ratio = :rhs_ratio, rhs_debit = :rhs_debit, rhs_credit = :rhs_credit
-    WHERE id = :trans_id
-)")
-                    .arg(info_.transaction);
-
-    query.prepare(part);
-    query.bindValue(":lhs_node", trans->lhs_node);
-    query.bindValue(":lhs_ratio", trans->lhs_ratio);
-    query.bindValue(":lhs_debit", trans->lhs_debit);
-    query.bindValue(":lhs_credit", trans->lhs_credit);
-    query.bindValue(":rhs_node", trans->rhs_node);
-    query.bindValue(":rhs_ratio", trans->rhs_ratio);
-    query.bindValue(":rhs_debit", trans->rhs_debit);
-    query.bindValue(":rhs_credit", trans->rhs_credit);
-    query.bindValue(":trans_id", trans_id);
+    query.prepare(string);
+    UpdateTransBind(trans, query);
 
     if (!query.exec()) {
         qWarning() << "Failed to update record in transaction table 1st " << query.lastError().text();

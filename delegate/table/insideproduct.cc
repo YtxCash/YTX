@@ -1,18 +1,18 @@
-#include "stakeholderrhsnode.h"
+#include "insideproduct.h"
 
 #include "widget/combobox.h"
 
-StakeholderRhsNode::StakeholderRhsNode(const TreeModel* model, int exclude_unit, QObject* parent)
+InsideProduct::InsideProduct(const TreeModel* model, int exclude_unit, QObject* parent)
     : StyledItemDelegate { parent }
     , exclude_unit_ { exclude_unit }
     , model_ { model }
 {
 }
 
-QWidget* StakeholderRhsNode::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+QWidget* InsideProduct::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     auto editor { new ComboBox(parent) };
-    model_->ComboPathLeafExcludeUnit(editor, exclude_unit_);
+    model_->LeafPathExcludeUnit(editor, exclude_unit_);
     editor->model()->sort(0);
 
     int height = option.rect.height();
@@ -22,26 +22,25 @@ QWidget* StakeholderRhsNode::createEditor(QWidget* parent, const QStyleOptionVie
     return editor;
 }
 
-void StakeholderRhsNode::setEditorData(QWidget* editor, const QModelIndex& index) const
+void InsideProduct::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto cast_editor { qobject_cast<ComboBox*>(editor) };
+    auto cast_editor { static_cast<ComboBox*>(editor) };
 
     int key { index.data().toInt() };
-    if (key == 0)
-        key = last_insert_;
 
     int item_index { cast_editor->findData(key) };
     cast_editor->setCurrentIndex(item_index);
 }
 
-void StakeholderRhsNode::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void InsideProduct::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    int key { qobject_cast<ComboBox*>(editor)->currentData().toInt() };
-    last_insert_ = key;
+    auto cast_editor { static_cast<ComboBox*>(editor) };
+
+    int key { cast_editor->currentData().toInt() };
     model->setData(index, key);
 }
 
-void StakeholderRhsNode::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void InsideProduct::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString path { model_->GetPath(index.data().toInt()) };
     if (path.isEmpty())
@@ -55,7 +54,7 @@ void StakeholderRhsNode::paint(QPainter* painter, const QStyleOptionViewItem& op
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize StakeholderRhsNode::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize InsideProduct::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString text = model_->GetPath(index.data().toInt());
     return CalculateTextSize(text, option);

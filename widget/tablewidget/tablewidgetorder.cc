@@ -27,7 +27,7 @@ void TableWidgetOrder::SetModel(TableModel* model)
     order_table_model_ = model;
 }
 
-TableView* TableWidgetOrder::View() { return ui->tableViewOrder; }
+QTableView* TableWidgetOrder::View() { return ui->tableViewOrder; }
 
 void TableWidgetOrder::RAccept()
 {
@@ -68,8 +68,8 @@ void TableWidgetOrder::RUpdateStakeholder()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_model_->ComboPathLeafUnit(ui->comboEmployee, UNIT_EMPLOYEE);
-    stakeholder_model_->ComboPathLeafUnit(ui->comboParty, unit_party_);
+    stakeholder_model_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE);
+    stakeholder_model_->LeafPathSpecificUnit(ui->comboParty, unit_party_);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -161,7 +161,7 @@ void TableWidgetOrder::IniCombo(QComboBox* combo, int unit)
     if (!combo)
         return;
 
-    stakeholder_model_->ComboPathLeafUnit(combo, unit);
+    stakeholder_model_->LeafPathSpecificUnit(combo, unit);
     combo->model()->sort(0);
     combo->setCurrentIndex(-1);
 }

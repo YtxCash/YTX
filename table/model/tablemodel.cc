@@ -50,7 +50,7 @@ void TableModel::RRule(int node_id, bool rule)
 
 void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
 {
-    if (node_id_ != *trans_shadow->related_node)
+    if (node_id_ != *trans_shadow->rhs_node)
         return;
 
     auto new_trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
@@ -61,15 +61,15 @@ void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
     new_trans_shadow->document = trans_shadow->document;
     new_trans_shadow->state = trans_shadow->state;
 
-    new_trans_shadow->related_ratio = trans_shadow->ratio;
-    new_trans_shadow->related_debit = trans_shadow->debit;
-    new_trans_shadow->related_credit = trans_shadow->credit;
-    new_trans_shadow->related_node = trans_shadow->node;
+    new_trans_shadow->rhs_ratio = trans_shadow->lhs_ratio;
+    new_trans_shadow->rhs_debit = trans_shadow->lhs_debit;
+    new_trans_shadow->rhs_credit = trans_shadow->lhs_credit;
+    new_trans_shadow->rhs_node = trans_shadow->lhs_node;
 
-    new_trans_shadow->node = trans_shadow->related_node;
-    new_trans_shadow->ratio = trans_shadow->related_ratio;
-    new_trans_shadow->debit = trans_shadow->related_debit;
-    new_trans_shadow->credit = trans_shadow->related_credit;
+    new_trans_shadow->lhs_node = trans_shadow->rhs_node;
+    new_trans_shadow->lhs_ratio = trans_shadow->rhs_ratio;
+    new_trans_shadow->lhs_debit = trans_shadow->rhs_debit;
+    new_trans_shadow->lhs_credit = trans_shadow->rhs_credit;
 
     auto row { trans_shadow_list_.size() };
 
@@ -78,7 +78,7 @@ void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
     endInsertRows();
 
     double previous_balance { row >= 1 ? trans_shadow_list_.at(row - 1)->subtotal : 0.0 };
-    new_trans_shadow->subtotal = Balance(rule_, *new_trans_shadow->debit, *new_trans_shadow->credit) + previous_balance;
+    new_trans_shadow->subtotal = Balance(rule_, *new_trans_shadow->lhs_debit, *new_trans_shadow->lhs_credit) + previous_balance;
 }
 
 void TableModel::RRemoveOneTrans(int node_id, int trans_id)
@@ -114,25 +114,25 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
         return false;
 
     auto trans_shadow { trans_shadow_list_.at(row) };
-    int related_node_id { *trans_shadow->related_node };
+    int rhs_node_id { *trans_shadow->rhs_node };
 
     beginRemoveRows(parent, row, row);
     trans_shadow_list_.removeAt(row);
     endRemoveRows();
 
-    if (related_node_id != 0) {
-        auto ratio { *trans_shadow->ratio };
-        auto debit { *trans_shadow->debit };
-        auto credit { *trans_shadow->credit };
+    if (rhs_node_id != 0) {
+        auto ratio { *trans_shadow->lhs_ratio };
+        auto debit { *trans_shadow->lhs_debit };
+        auto credit { *trans_shadow->lhs_credit };
         emit SUpdateLeafTotal(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
 
-        ratio = *trans_shadow->related_ratio;
-        debit = *trans_shadow->related_debit;
-        credit = *trans_shadow->related_credit;
-        emit SUpdateLeafTotal(*trans_shadow->related_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        ratio = *trans_shadow->rhs_ratio;
+        debit = *trans_shadow->rhs_debit;
+        credit = *trans_shadow->rhs_credit;
+        emit SUpdateLeafTotal(*trans_shadow->rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
 
         int trans_id { *trans_shadow->id };
-        emit SRemoveOneTrans(info_.section, related_node_id, trans_id);
+        emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
         QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule_);
 
         sql_->RemoveTrans(trans_id);
@@ -180,102 +180,99 @@ void TableModel::UpdateAllState(Check state)
 
 bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 {
-    double debit { *trans_shadow->debit };
-    if (std::abs(debit - value) < TOLERANCE)
+    double lhs_debit { *trans_shadow->lhs_debit };
+    if (std::abs(lhs_debit - value) < TOLERANCE)
         return false;
 
-    double credit { *trans_shadow->credit };
-    double ratio { *trans_shadow->ratio };
+    double lhs_credit { *trans_shadow->lhs_credit };
+    double lhs_ratio { *trans_shadow->lhs_ratio };
 
-    double abs { qAbs(value - credit) };
-    *trans_shadow->debit = (value > credit) ? abs : 0;
-    *trans_shadow->credit = (value <= credit) ? abs : 0;
+    double abs { qAbs(value - lhs_credit) };
+    *trans_shadow->lhs_debit = (value > lhs_credit) ? abs : 0;
+    *trans_shadow->lhs_credit = (value <= lhs_credit) ? abs : 0;
 
-    double related_debit { *trans_shadow->related_debit };
-    double related_credit { *trans_shadow->related_credit };
-    double related_ratio { *trans_shadow->related_ratio };
+    double rhs_debit { *trans_shadow->rhs_debit };
+    double rhs_credit { *trans_shadow->rhs_credit };
+    double rhs_ratio { *trans_shadow->rhs_ratio };
 
-    *trans_shadow->related_debit = (*trans_shadow->credit) * ratio / related_ratio;
-    *trans_shadow->related_credit = (*trans_shadow->debit) * ratio / related_ratio;
+    *trans_shadow->rhs_debit = (*trans_shadow->lhs_credit) * lhs_ratio / rhs_ratio;
+    *trans_shadow->rhs_credit = (*trans_shadow->lhs_debit) * lhs_ratio / rhs_ratio;
 
-    if (*trans_shadow->related_node == 0)
+    if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto initial_debit_diff { *trans_shadow->debit - debit };
-    auto initial_credit_diff { *trans_shadow->credit - credit };
-    emit SUpdateLeafTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
+    auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
+    emit SUpdateLeafTotal(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
-    auto related_initial_debit_diff { *trans_shadow->related_debit - related_debit };
-    auto related_initial_credit_diff { *trans_shadow->related_credit - related_credit };
-    emit SUpdateLeafTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
-        related_initial_credit_diff * related_ratio);
+    auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
+    auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
+    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
 
 bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 {
-    double credit { *trans_shadow->credit };
-    if (std::abs(credit - value) < TOLERANCE)
+    double lhs_credit { *trans_shadow->lhs_credit };
+    if (std::abs(lhs_credit - value) < TOLERANCE)
         return false;
 
-    double debit { *trans_shadow->debit };
-    double ratio { *trans_shadow->ratio };
+    double lhs_debit { *trans_shadow->lhs_debit };
+    double lhs_ratio { *trans_shadow->lhs_ratio };
 
-    double abs { qAbs(value - debit) };
-    *trans_shadow->debit = (value > debit) ? 0 : abs;
-    *trans_shadow->credit = (value <= debit) ? 0 : abs;
+    double abs { qAbs(value - lhs_debit) };
+    *trans_shadow->lhs_debit = (value > lhs_debit) ? 0 : abs;
+    *trans_shadow->lhs_credit = (value <= lhs_debit) ? 0 : abs;
 
-    double related_debit { *trans_shadow->related_debit };
-    double related_credit { *trans_shadow->related_credit };
-    double related_ratio { *trans_shadow->related_ratio };
+    double rhs_debit { *trans_shadow->rhs_debit };
+    double rhs_credit { *trans_shadow->rhs_credit };
+    double rhs_ratio { *trans_shadow->rhs_ratio };
 
-    *trans_shadow->related_debit = (*trans_shadow->credit) * ratio / related_ratio;
-    *trans_shadow->related_credit = (*trans_shadow->debit) * ratio / related_ratio;
+    *trans_shadow->rhs_debit = (*trans_shadow->lhs_credit) * lhs_ratio / rhs_ratio;
+    *trans_shadow->rhs_credit = (*trans_shadow->lhs_debit) * lhs_ratio / rhs_ratio;
 
-    if (*trans_shadow->related_node == 0)
+    if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto initial_debit_diff { *trans_shadow->debit - debit };
-    auto initial_credit_diff { *trans_shadow->credit - credit };
-    emit SUpdateLeafTotal(*trans_shadow->node, initial_debit_diff, initial_credit_diff, initial_debit_diff * ratio, initial_credit_diff * ratio);
+    auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
+    emit SUpdateLeafTotal(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
-    auto related_initial_debit_diff { *trans_shadow->related_debit - related_debit };
-    auto related_initial_credit_diff { *trans_shadow->related_credit - related_credit };
-    emit SUpdateLeafTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
-        related_initial_credit_diff * related_ratio);
+    auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
+    auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
+    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
 
 bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
 {
-    double ratio { *trans_shadow->ratio };
+    double lhs_ratio { *trans_shadow->lhs_ratio };
 
-    if (std::abs(ratio - value) < TOLERANCE || value <= 0)
+    if (std::abs(lhs_ratio - value) < TOLERANCE || value <= 0)
         return false;
 
-    auto result { value - ratio };
-    auto proportion { value / *trans_shadow->ratio };
+    auto result { value - lhs_ratio };
+    auto proportion { value / *trans_shadow->lhs_ratio };
 
-    *trans_shadow->ratio = value;
+    *trans_shadow->lhs_ratio = value;
 
-    double related_debit { *trans_shadow->related_debit };
-    double related_credit { *trans_shadow->related_credit };
-    double related_ratio { *trans_shadow->related_ratio };
+    double rhs_debit { *trans_shadow->rhs_debit };
+    double rhs_credit { *trans_shadow->rhs_credit };
+    double rhs_ratio { *trans_shadow->rhs_ratio };
 
-    *trans_shadow->related_debit *= proportion;
-    *trans_shadow->related_credit *= proportion;
+    *trans_shadow->rhs_debit *= proportion;
+    *trans_shadow->rhs_credit *= proportion;
 
-    if (*trans_shadow->related_node == 0)
+    if (*trans_shadow->rhs_node == 0)
         return false;
 
-    emit SUpdateLeafTotal(*trans_shadow->node, 0, 0, *trans_shadow->debit * result, *trans_shadow->credit * result);
+    emit SUpdateLeafTotal(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
 
-    auto related_initial_debit_diff { *trans_shadow->related_debit - related_debit };
-    auto related_initial_credit_diff { *trans_shadow->related_credit - related_credit };
-    emit SUpdateLeafTotal(*trans_shadow->related_node, related_initial_debit_diff, related_initial_credit_diff, related_initial_debit_diff * related_ratio,
-        related_initial_credit_diff * related_ratio);
+    auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
+    auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
+    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
@@ -329,20 +326,20 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
         return *trans_shadow->date_time;
     case TableEnum::kCode:
         return *trans_shadow->code;
-    case TableEnum::kRatio:
-        return *trans_shadow->ratio;
+    case TableEnum::kLhsRatio:
+        return *trans_shadow->lhs_ratio;
     case TableEnum::kDescription:
         return *trans_shadow->description;
-    case TableEnum::kRelatedNode:
-        return *trans_shadow->related_node == 0 ? QVariant() : *trans_shadow->related_node;
+    case TableEnum::kRhsNode:
+        return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
     case TableEnum::kState:
         return *trans_shadow->state;
     case TableEnum::kDocument:
         return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
     case TableEnum::kDebit:
-        return *trans_shadow->debit == 0 ? QVariant() : *trans_shadow->debit;
+        return *trans_shadow->lhs_debit == 0 ? QVariant() : *trans_shadow->lhs_debit;
     case TableEnum::kCredit:
-        return *trans_shadow->credit == 0 ? QVariant() : *trans_shadow->credit;
+        return *trans_shadow->lhs_credit == 0 ? QVariant() : *trans_shadow->lhs_credit;
     case TableEnum::kSubtotal:
         return trans_shadow->subtotal;
     default:
@@ -359,7 +356,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     const int kRow { index.row() };
 
     auto trans_shadow { trans_shadow_list_.at(kRow) };
-    int old_related_node { *trans_shadow->related_node };
+    int old_rhs_node { *trans_shadow->rhs_node };
 
     bool rel_changed { false };
     bool deb_changed { false };
@@ -379,10 +376,10 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     case TableEnum::kDescription:
         UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
-    case TableEnum::kRatio:
+    case TableEnum::kLhsRatio:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
         break;
-    case TableEnum::kRelatedNode:
+    case TableEnum::kRhsNode:
         rel_changed = UpdateRelatedNode(trans_shadow, value.toInt());
         break;
     case TableEnum::kDebit:
@@ -395,7 +392,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
         return false;
     }
 
-    if (old_related_node == 0) {
+    if (old_rhs_node == 0) {
         if (rel_changed) {
             sql_->InsertTransShadow(trans_shadow);
             QtConcurrent::run(&TableModel::AccumulateSubtotal, this, kRow, rule_);
@@ -403,15 +400,15 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
 
-            auto ratio { *trans_shadow->ratio };
-            auto debit { *trans_shadow->debit };
-            auto credit { *trans_shadow->credit };
+            auto ratio { *trans_shadow->lhs_ratio };
+            auto debit { *trans_shadow->lhs_debit };
+            auto credit { *trans_shadow->lhs_credit };
             emit SUpdateLeafTotal(node_id_, debit, credit, ratio * debit, ratio * credit);
 
-            ratio = *trans_shadow->related_ratio;
-            debit = *trans_shadow->related_debit;
-            credit = *trans_shadow->related_credit;
-            emit SUpdateLeafTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
+            ratio = *trans_shadow->rhs_ratio;
+            debit = *trans_shadow->rhs_debit;
+            credit = *trans_shadow->rhs_credit;
+            emit SUpdateLeafTotal(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
         }
 
         emit SResizeColumnToContents(index.column());
@@ -421,7 +418,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     if (deb_changed || cre_changed || rat_changed) {
         sql_->UpdateTrans(*trans_shadow->id);
         emit SSearch();
-        emit SUpdateBalance(info_.section, old_related_node, *trans_shadow->id);
+        emit SUpdateBalance(info_.section, old_rhs_node, *trans_shadow->id);
     }
 
     if (deb_changed || cre_changed) {
@@ -431,14 +428,14 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
     if (rel_changed) {
         sql_->UpdateTrans(*trans_shadow->id);
-        emit SRemoveOneTrans(info_.section, old_related_node, *trans_shadow->id);
+        emit SRemoveOneTrans(info_.section, old_rhs_node, *trans_shadow->id);
         emit SAppendOneTrans(info_.section, trans_shadow);
 
-        auto ratio { *trans_shadow->related_ratio };
-        auto debit { *trans_shadow->related_debit };
-        auto credit { *trans_shadow->related_credit };
-        emit SUpdateLeafTotal(*trans_shadow->related_node, debit, credit, ratio * debit, ratio * credit);
-        emit SUpdateLeafTotal(old_related_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        auto ratio { *trans_shadow->rhs_ratio };
+        auto debit { *trans_shadow->rhs_debit };
+        auto credit { *trans_shadow->rhs_credit };
+        emit SUpdateLeafTotal(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+        emit SUpdateLeafTotal(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
     }
 
     emit SResizeColumnToContents(index.column());
@@ -458,20 +455,20 @@ void TableModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (*lhs->date_time < *rhs->date_time) : (*lhs->date_time > *rhs->date_time);
         case TableEnum::kCode:
             return (order == Qt::AscendingOrder) ? (*lhs->code < *rhs->code) : (*lhs->code > *rhs->code);
-        case TableEnum::kRatio:
-            return (order == Qt::AscendingOrder) ? (*lhs->ratio < *rhs->ratio) : (*lhs->ratio > *rhs->ratio);
+        case TableEnum::kLhsRatio:
+            return (order == Qt::AscendingOrder) ? (*lhs->lhs_ratio < *rhs->lhs_ratio) : (*lhs->lhs_ratio > *rhs->lhs_ratio);
         case TableEnum::kDescription:
             return (order == Qt::AscendingOrder) ? (*lhs->description < *rhs->description) : (*lhs->description > *rhs->description);
-        case TableEnum::kRelatedNode:
-            return (order == Qt::AscendingOrder) ? (*lhs->related_node < *rhs->related_node) : (*lhs->related_node > *rhs->related_node);
+        case TableEnum::kRhsNode:
+            return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
         case TableEnum::kState:
             return (order == Qt::AscendingOrder) ? (*lhs->state < *rhs->state) : (*lhs->state > *rhs->state);
         case TableEnum::kDocument:
             return (order == Qt::AscendingOrder) ? (lhs->document->size() < rhs->document->size()) : (lhs->document->size() > rhs->document->size());
         case TableEnum::kDebit:
-            return (order == Qt::AscendingOrder) ? (*lhs->debit < *rhs->debit) : (*lhs->debit > *rhs->debit);
+            return (order == Qt::AscendingOrder) ? (*lhs->lhs_debit < *rhs->lhs_debit) : (*lhs->lhs_debit > *rhs->lhs_debit);
         case TableEnum::kCredit:
-            return (order == Qt::AscendingOrder) ? (*lhs->credit < *rhs->credit) : (*lhs->credit > *rhs->credit);
+            return (order == Qt::AscendingOrder) ? (*lhs->lhs_credit < *rhs->lhs_credit) : (*lhs->lhs_credit > *rhs->lhs_credit);
         default:
             return false;
         }
@@ -507,12 +504,25 @@ Qt::ItemFlags TableModel::flags(const QModelIndex& index) const
     return flags;
 }
 
-int TableModel::GetRow(int node_id) const
+int TableModel::GetRhsNodeRow(int rhs_node_id) const
 {
     int row { 0 };
 
     for (const auto* trans_shadow : trans_shadow_list_) {
-        if (*trans_shadow->related_node == node_id) {
+        if (*trans_shadow->rhs_node == rhs_node_id) {
+            return row;
+        }
+        ++row;
+    }
+    return -1;
+}
+
+int TableModel::GetLhsNodeRow(int lhs_node_id) const
+{
+    int row { 0 };
+
+    for (const auto* trans_shadow : trans_shadow_list_) {
+        if (*trans_shadow->lhs_node == lhs_node_id) {
             return row;
         }
         ++row;
@@ -553,10 +563,10 @@ QStringList* TableModel::GetDocumentPointer(const QModelIndex& index) const
 bool TableModel::insertRows(int row, int /*count*/, const QModelIndex& parent)
 {
     // just register trans_shadow in this function
-    // while set related node in setData function, register trans to sql_'s trans_hash_
+    // while set rhs node in setData function, register trans to sql_'s trans_hash_
     auto trans_shadow { sql_->AllocateTransShadow() };
 
-    *trans_shadow->node = node_id_;
+    *trans_shadow->lhs_node = node_id_;
 
     beginInsertRows(parent, row, row);
     trans_shadow_list_.emplaceBack(trans_shadow);
@@ -573,17 +583,17 @@ void TableModel::AccumulateSubtotal(int start, bool rule)
     double previous_subtotal { start >= 1 ? trans_shadow_list_.at(start - 1)->subtotal : 0.0 };
 
     std::accumulate(trans_shadow_list_.begin() + start, trans_shadow_list_.end(), previous_subtotal, [&](double current_subtotal, TransShadow* trans_shadow) {
-        trans_shadow->subtotal = Balance(rule, *trans_shadow->debit, *trans_shadow->credit) + current_subtotal;
+        trans_shadow->subtotal = Balance(rule, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit) + current_subtotal;
         return trans_shadow->subtotal;
     });
 }
 
 bool TableModel::UpdateRelatedNode(TransShadow* trans_shadow, int value)
 {
-    if (*trans_shadow->related_node == value)
+    if (*trans_shadow->rhs_node == value)
         return false;
 
-    *trans_shadow->related_node = value;
+    *trans_shadow->rhs_node = value;
     return true;
 }
 

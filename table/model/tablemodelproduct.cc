@@ -1,85 +1,165 @@
 #include "tablemodelproduct.h"
 
+#include <QtConcurrent/qtconcurrentrun.h>
+
+#include "component/constvalue.h"
+
 TableModelProduct::TableModelProduct(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
 {
 }
 
+QVariant TableModelProduct::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid() || role != Qt::DisplayRole)
+        return QVariant();
+
+    auto trans_shadow { trans_shadow_list_.at(index.row()) };
+    const TableEnum kColumn { index.column() };
+
+    switch (kColumn) {
+    case TableEnum::kID:
+        return *trans_shadow->id;
+    case TableEnum::kDateTime:
+        return *trans_shadow->date_time;
+    case TableEnum::kCode:
+        return *trans_shadow->code;
+    case TableEnum::kLhsRatio:
+        return *trans_shadow->unit_price;
+    case TableEnum::kDescription:
+        return *trans_shadow->description;
+    case TableEnum::kRhsNode:
+        return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
+    case TableEnum::kState:
+        return *trans_shadow->state;
+    case TableEnum::kDocument:
+        return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
+    case TableEnum::kDebit:
+        return *trans_shadow->lhs_debit == 0 ? QVariant() : *trans_shadow->lhs_debit;
+    case TableEnum::kCredit:
+        return *trans_shadow->lhs_credit == 0 ? QVariant() : *trans_shadow->lhs_credit;
+    case TableEnum::kSubtotal:
+        return trans_shadow->subtotal;
+    default:
+        return QVariant();
+    }
+}
+
+void TableModelProduct::sort(int column, Qt::SortOrder order)
+{
+    if (column <= -1 || column >= info_.part_table_header.size() - 1)
+        return;
+
+    auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {
+        const TableEnum kColumn { column };
+
+        switch (kColumn) {
+        case TableEnum::kDateTime:
+            return (order == Qt::AscendingOrder) ? (*lhs->date_time < *rhs->date_time) : (*lhs->date_time > *rhs->date_time);
+        case TableEnum::kCode:
+            return (order == Qt::AscendingOrder) ? (*lhs->code < *rhs->code) : (*lhs->code > *rhs->code);
+        case TableEnum::kLhsRatio:
+            return (order == Qt::AscendingOrder) ? (*lhs->unit_price < *rhs->unit_price) : (*lhs->unit_price > *rhs->unit_price);
+        case TableEnum::kDescription:
+            return (order == Qt::AscendingOrder) ? (*lhs->description < *rhs->description) : (*lhs->description > *rhs->description);
+        case TableEnum::kRhsNode:
+            return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
+        case TableEnum::kState:
+            return (order == Qt::AscendingOrder) ? (*lhs->state < *rhs->state) : (*lhs->state > *rhs->state);
+        case TableEnum::kDocument:
+            return (order == Qt::AscendingOrder) ? (lhs->document->size() < rhs->document->size()) : (lhs->document->size() > rhs->document->size());
+        case TableEnum::kDebit:
+            return (order == Qt::AscendingOrder) ? (*lhs->lhs_debit < *rhs->lhs_debit) : (*lhs->lhs_debit > *rhs->lhs_debit);
+        case TableEnum::kCredit:
+            return (order == Qt::AscendingOrder) ? (*lhs->lhs_credit < *rhs->lhs_credit) : (*lhs->lhs_credit > *rhs->lhs_credit);
+        default:
+            return false;
+        }
+    };
+
+    emit layoutAboutToBeChanged();
+    std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
+    emit layoutChanged();
+
+    AccumulateSubtotal(0, rule_);
+}
+
 bool TableModelProduct::UpdateDebit(TransShadow* trans_shadow, double value)
 {
-    double debit { *trans_shadow->debit };
-    if (std::abs(debit - value) < TOLERANCE)
+    double lhs_debit { *trans_shadow->lhs_debit };
+    if (std::abs(lhs_debit - value) < TOLERANCE)
         return false;
 
-    double credit { *trans_shadow->credit };
+    double lhs_credit { *trans_shadow->lhs_credit };
 
-    double abs { qAbs(value - credit) };
-    *trans_shadow->debit = (value > credit) ? abs : 0;
-    *trans_shadow->credit = (value <= credit) ? abs : 0;
+    double abs { qAbs(value - lhs_credit) };
+    *trans_shadow->lhs_debit = (value > lhs_credit) ? abs : 0;
+    *trans_shadow->lhs_credit = (value <= lhs_credit) ? abs : 0;
 
-    *trans_shadow->related_debit = *trans_shadow->credit;
-    *trans_shadow->related_credit = *trans_shadow->debit;
+    *trans_shadow->rhs_debit = *trans_shadow->lhs_credit;
+    *trans_shadow->rhs_credit = *trans_shadow->lhs_debit;
 
-    if (*trans_shadow->related_node == 0)
+    if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto unit_cost { *trans_shadow->ratio };
-    auto quantity_debit_diff { *trans_shadow->debit - debit };
-    auto quantity_credit_diff { *trans_shadow->credit - credit };
+    auto unit_cost { *trans_shadow->unit_price };
+    auto quantity_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    auto quantity_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
     auto amount_debit_diff { quantity_debit_diff * unit_cost };
     auto amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateLeafTotal(*trans_shadow->node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
-    emit SUpdateLeafTotal(*trans_shadow->related_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
+    emit SUpdateLeafTotal(*trans_shadow->lhs_node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
+    emit SUpdateLeafTotal(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
 
     return true;
 }
 
 bool TableModelProduct::UpdateCredit(TransShadow* trans_shadow, double value)
 {
-    double credit { *trans_shadow->credit };
-    if (std::abs(credit - value) < TOLERANCE)
+    double lhs_credit { *trans_shadow->lhs_credit };
+    if (std::abs(lhs_credit - value) < TOLERANCE)
         return false;
 
-    double debit { *trans_shadow->debit };
+    double lhs_debit { *trans_shadow->lhs_debit };
 
-    double abs { qAbs(value - debit) };
-    *trans_shadow->debit = (value > debit) ? 0 : abs;
-    *trans_shadow->credit = (value <= debit) ? 0 : abs;
+    double abs { qAbs(value - lhs_debit) };
+    *trans_shadow->lhs_debit = (value > lhs_debit) ? 0 : abs;
+    *trans_shadow->lhs_credit = (value <= lhs_debit) ? 0 : abs;
 
-    *trans_shadow->related_debit = *trans_shadow->credit;
-    *trans_shadow->related_credit = *trans_shadow->debit;
+    *trans_shadow->rhs_debit = *trans_shadow->lhs_credit;
+    *trans_shadow->rhs_credit = *trans_shadow->lhs_debit;
 
-    if (*trans_shadow->related_node == 0)
+    if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto unit_cost { *trans_shadow->ratio };
-    auto quantity_debit_diff { *trans_shadow->debit - debit };
-    auto quantity_credit_diff { *trans_shadow->credit - credit };
+    auto unit_cost { *trans_shadow->unit_price };
+    auto quantity_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    auto quantity_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
     auto amount_debit_diff { quantity_debit_diff * unit_cost };
     auto amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateLeafTotal(*trans_shadow->node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
-    emit SUpdateLeafTotal(*trans_shadow->related_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
+    emit SUpdateLeafTotal(*trans_shadow->lhs_node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
+    emit SUpdateLeafTotal(*trans_shadow->rhs_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
 
     return true;
 }
 
 bool TableModelProduct::UpdateRatio(TransShadow* trans_shadow, double value)
 {
-    double ratio { *trans_shadow->ratio };
-    if (std::abs(ratio - value) < TOLERANCE || value < 0)
+    double unit_cost { *trans_shadow->unit_price };
+    if (std::abs(unit_cost - value) < TOLERANCE || value < 0)
         return false;
 
-    auto result { value - ratio };
-    *trans_shadow->ratio = value;
-    *trans_shadow->related_ratio = value;
+    auto result { value - unit_cost };
+    *trans_shadow->unit_price = value;
 
-    if (*trans_shadow->related_node == 0)
+    if (*trans_shadow->rhs_node == 0)
         return false;
 
-    emit SUpdateLeafTotal(*trans_shadow->node, 0, 0, *trans_shadow->debit * result, *trans_shadow->credit * result);
-    emit SUpdateLeafTotal(*trans_shadow->related_node, 0, 0, *trans_shadow->related_debit * result, *trans_shadow->related_credit * result);
+    sql_->UpdateField(info_.transaction, value, UNIT_COST, *trans_shadow->id);
+
+    emit SUpdateLeafTotal(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
+    emit SUpdateLeafTotal(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * result, *trans_shadow->rhs_credit * result);
 
     return true;
 }

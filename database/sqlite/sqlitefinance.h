@@ -21,6 +21,7 @@ protected:
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override { return QString(); }
     QString RUpdateStakeholderReferenceQS() const override { return {}; }
+    QString UpdateTransQS() const override;
 };
 
 #endif // SQLITEFINANCE_H

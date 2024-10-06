@@ -1,10 +1,10 @@
 #ifndef TABLEWIDGET_H
 #define TABLEWIDGET_H
 
+#include <QTableView>
 #include <QWidget>
 
 #include "table/model/tablemodel.h"
-#include "widget/tablewidget/tableview.h"
 
 class TableWidget : public QWidget {
     Q_OBJECT
@@ -14,7 +14,7 @@ public:
 
     virtual void SetModel(TableModel* model) = 0;
     virtual TableModel* Model() = 0;
-    virtual TableView* View() = 0;
+    virtual QTableView* View() = 0;
 
 protected:
     explicit TableWidget(QWidget* parent = nullptr)

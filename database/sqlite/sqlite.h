@@ -55,6 +55,7 @@ public:
     void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id);
     void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
     bool InsertTransShadow(TransShadow* trans_shadow);
+    bool InsertTransShadowList(const QList<TransShadow*>& list);
     TransShadow* AllocateTransShadow();
 
     bool RemoveTrans(int trans_id);
@@ -80,6 +81,7 @@ protected:
     virtual QString InternalReferenceQS() const = 0;
     virtual QString ExternalReferenceQS() const = 0;
     virtual QString LeafTotalQS() const = 0;
+    virtual QString UpdateTransQS() const = 0;
 
     QString RemoveNodeFirstQS() const;
     QString RemoveNodeBranchQS() const;
@@ -94,6 +96,8 @@ protected:
 
     // table
     virtual void ReadTrans(Trans* trans, const QSqlQuery& query);
+    virtual void UpdateTransBind(Trans* trans, QSqlQuery& query);
+
     virtual void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query);
     virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/)
     {

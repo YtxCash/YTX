@@ -53,7 +53,7 @@ void Preferences::IniCombo(QComboBox* combo, const TreeModel* model)
 {
     combo->blockSignals(true);
 
-    model->ComboPathLeafBranch(combo);
+    model->LeafPathBranchPath(combo);
 
     combo->model()->sort(0);
     combo->blockSignals(false);

@@ -390,7 +390,7 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     return true;
 }
 
-void TreeModel::ComboPathLeafUnit(QComboBox* combo, int unit) const
+void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int specific_unit) const
 {
     if (!combo)
         return;
@@ -400,14 +400,14 @@ void TreeModel::ComboPathLeafUnit(QComboBox* combo, int unit) const
 
     for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
         auto it { node_hash_.constFind(id) };
-        if (it != node_hash_.constEnd() && it.value()->unit == unit)
+        if (it != node_hash_.constEnd() && it.value()->unit == specific_unit)
             combo->addItem(path, id);
     }
 
     combo->blockSignals(false);
 }
 
-void TreeModel::ComboPathLeafExcludeUnit(QComboBox* combo, int exclude_unit) const
+void TreeModel::LeafPathExcludeUnit(QComboBox* combo, int exclude_unit) const
 {
     if (!combo)
         return;
@@ -424,7 +424,7 @@ void TreeModel::ComboPathLeafExcludeUnit(QComboBox* combo, int exclude_unit) con
     combo->blockSignals(false);
 }
 
-void TreeModel::ComboPathLeafExclude(QComboBox* combo, int exclude) const
+void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
 {
     if (!combo)
         return;
@@ -433,14 +433,14 @@ void TreeModel::ComboPathLeafExclude(QComboBox* combo, int exclude) const
     combo->blockSignals(true);
 
     for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        if (id != exclude)
+        if (id != exclude_id)
             combo->addItem(path, id);
     }
 
     combo->blockSignals(false);
 }
 
-void TreeModel::ComboPathLeafBranch(QComboBox* combo) const
+void TreeModel::LeafPathBranchPath(QComboBox* combo) const
 {
     if (!combo)
         return;

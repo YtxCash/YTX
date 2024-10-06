@@ -17,7 +17,7 @@ QWidget* DateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*o
     if (hide_time_)
         format.remove(time_pattern_);
 
-    auto editor { new DateTimeEdit(parent) };
+    auto* editor { new DateTimeEdit(parent) };
     editor->setDisplayFormat(format);
 
     return editor;
@@ -29,14 +29,16 @@ void DateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
     if (!date_time.isValid())
         date_time = last_date_time_.isValid() ? last_date_time_.addSecs(1) : QDateTime::currentDateTime();
 
-    qobject_cast<DateTimeEdit*>(editor)->setDateTime(date_time);
+    auto* cast_ediotr { static_cast<DateTimeEdit*>(editor) };
+    cast_ediotr->setDateTime(date_time);
 }
 
 void DateTime::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    auto date_time { qobject_cast<DateTimeEdit*>(editor)->dateTime() };
-    last_date_time_ = date_time.date() == QDate::currentDate() ? QDateTime() : date_time;
+    auto* cast_ediotr { static_cast<DateTimeEdit*>(editor) };
+    auto date_time { cast_ediotr->dateTime() };
 
+    last_date_time_ = date_time.date() == QDate::currentDate() ? QDateTime() : date_time;
     model->setData(index, date_time.toString(DATE_TIME_FST));
 }
 

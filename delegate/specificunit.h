@@ -1,12 +1,12 @@
-#ifndef ORDERSTAKEHOLDER_H
-#define ORDERSTAKEHOLDER_H
+#ifndef SPECIFICUNIT_H
+#define SPECIFICUNIT_H
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-class OrderStakeholder : public StyledItemDelegate {
+class SpecificUnit : public StyledItemDelegate {
 public:
-    OrderStakeholder(const TreeModel* stakeholder_tree_model, int unit, QObject* parent = nullptr);
+    SpecificUnit(const TreeModel* tree_model, int specific_unit, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -17,8 +17,8 @@ private:
     QString GetPath(const QModelIndex& index) const;
 
 private:
-    const TreeModel* stakeholder_tree_model_ {};
-    int unit_ {};
+    const TreeModel* tree_model_ {};
+    int specific_unit_ {};
 };
 
-#endif // ORDERSTAKEHOLDER_H
+#endif // SPECIFICUNIT_H

@@ -34,6 +34,7 @@ protected:
     QString RReplaceNodeQS() const override { return QString(); }
     QString RUpdateProductReferenceQS() const override;
     QString RUpdateStakeholderReferenceQS() const override;
+    QString UpdateTransQS() const override { return {}; }
 };
 
 #endif // SQLITEPURCHASE_H

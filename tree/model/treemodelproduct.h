@@ -21,10 +21,6 @@ public:
 protected:
     bool IsReferenced(int node_id, CString& message) override;
     bool UpdateUnit(Node* node, int value) override;
-
-private:
-    bool UpdateUnitPrice(Node* node, double value, CString& field = LHS_RATIO);
-    bool UpdateCommission(Node* node, double value, CString& field = COMMISSION);
 };
 
 #endif // TREEMODELPRODUCT_H

@@ -33,13 +33,9 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
     UpdateField(node, tmp_node->code, CODE, &Node::code);
     UpdateField(node, tmp_node->note, NOTE, &Node::note);
-    UpdateField(node, tmp_node->second, LHS_RATIO, &Node::discount);
+    UpdateField(node, tmp_node->first, UNIT_PRICE, &Node::first);
     UpdateField(node, tmp_node->second, COMMISSION, &Node::second);
 }
-
-bool TreeModelProduct::UpdateUnitPrice(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::discount); }
-
-bool TreeModelProduct::UpdateCommission(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::second); }
 
 bool TreeModelProduct::IsReferenced(int node_id, CString& message)
 {
@@ -101,10 +97,12 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumProduct::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
+        case TreeEnumProduct::kColor:
+            return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
         case TreeEnumProduct::kCommission:
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
         case TreeEnumProduct::kUnitPrice:
-            return (order == Qt::AscendingOrder) ? (lhs->discount < rhs->discount) : (lhs->discount > rhs->discount);
+            return (order == Qt::AscendingOrder) ? (lhs->first < rhs->first) : (lhs->first > rhs->first);
         case TreeEnumProduct::kInitialTotal:
             return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
         case TreeEnumProduct::kFinalTotal:
@@ -147,10 +145,12 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
         return node->branch;
     case TreeEnumProduct::kUnit:
         return node->unit;
+    case TreeEnumProduct::kColor:
+        return node->date_time;
     case TreeEnumProduct::kCommission:
         return node->second == 0 ? QVariant() : node->second;
     case TreeEnumProduct::kUnitPrice:
-        return node->discount == 0 ? QVariant() : node->discount;
+        return node->first == 0 ? QVariant() : node->first;
     case TreeEnumProduct::kInitialTotal:
         return node->initial_total;
     case TreeEnumProduct::kFinalTotal:
@@ -187,14 +187,17 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
     case TreeEnumProduct::kBranch:
         UpdateBranch(node, value.toBool());
         break;
+    case TreeEnumProduct::kColor:
+        UpdateField(node, value.toString(), COLOR, &Node::date_time);
+        break;
     case TreeEnumProduct::kUnit:
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumProduct::kCommission:
-        UpdateCommission(node, value.toDouble());
+        UpdateField(node, value.toDouble(), COMMISSION, &Node::second);
         break;
     case TreeEnumProduct::kUnitPrice:
-        UpdateUnitPrice(node, value.toDouble());
+        UpdateField(node, value.toDouble(), UNIT_PRICE, &Node::first);
         break;
     default:
         return false;
@@ -220,6 +223,7 @@ Qt::ItemFlags TreeModelProduct::flags(const QModelIndex& index) const
     case TreeEnumProduct::kInitialTotal:
     case TreeEnumProduct::kFinalTotal:
     case TreeEnumProduct::kBranch:
+    case TreeEnumProduct::kColor:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

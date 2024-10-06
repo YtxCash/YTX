@@ -11,12 +11,12 @@ QWidget* Line::createEditor(QWidget* parent, const QStyleOptionViewItem& /*optio
 
 void Line::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    if (LineEdit * cast_editor { qobject_cast<LineEdit*>(editor) })
-        cast_editor->setText(index.data().toString());
+    auto* cast_editor { static_cast<LineEdit*>(editor) };
+    cast_editor->setText(index.data().toString());
 }
 
 void Line::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    if (auto cast_editor { qobject_cast<LineEdit*>(editor) })
-        model->setData(index, cast_editor->text());
+    auto* cast_editor { static_cast<LineEdit*>(editor) };
+    model->setData(index, cast_editor->text());
 }

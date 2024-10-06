@@ -74,7 +74,7 @@ void RemoveNode::IniDialog()
     ui->pBtnCancel->setDefault(true);
     this->setWindowTitle(tr("Remove %1").arg(model_->GetPath(node_id_)));
 
-    model_->ComboPathLeafExclude(ui->comboBox, node_id_);
+    model_->LeafPathExcludeID(ui->comboBox, node_id_);
 
     ui->comboBox->model()->sort(0);
 }

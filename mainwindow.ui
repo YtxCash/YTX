@@ -194,11 +194,10 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionInsertNode"/>
+    <addaction name="actionInsert"/>
     <addaction name="actionAppendNode"/>
-    <addaction name="actionAppendTrans"/>
     <addaction name="separator"/>
-    <addaction name="actionNode"/>
+    <addaction name="actionEdit"/>
     <addaction name="actionDocument"/>
     <addaction name="separator"/>
     <addaction name="actionRemove"/>
@@ -221,9 +220,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionInsertNode"/>
+   <addaction name="actionInsert"/>
    <addaction name="actionAppendNode"/>
-   <addaction name="actionAppendTrans"/>
    <addaction name="separator"/>
    <addaction name="actionRemove"/>
    <addaction name="separator"/>
@@ -232,9 +230,9 @@
    <addaction name="actionCheckNone"/>
    <addaction name="separator"/>
   </widget>
-  <action name="actionInsertNode">
+  <action name="actionInsert">
    <property name="text">
-    <string>InsertNode</string>
+    <string>Insert</string>
    </property>
    <property name="toolTip">
     <string>Insert</string>
@@ -267,9 +265,9 @@
     <string>Ctrl+J</string>
    </property>
   </action>
-  <action name="actionNode">
+  <action name="actionEdit">
    <property name="text">
-    <string>Node</string>
+    <string>Edit</string>
    </property>
    <property name="toolTip">
     <string>Edit Node</string>
@@ -376,17 +374,6 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
-   </property>
-  </action>
-  <action name="actionAppendTrans">
-   <property name="text">
-    <string>AppendTrans</string>
-   </property>
-   <property name="toolTip">
-    <string>AppendTrans</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

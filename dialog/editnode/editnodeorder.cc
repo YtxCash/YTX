@@ -63,8 +63,8 @@ void EditNodeOrder::RUpdateStakeholder()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_tree_->ComboPathLeafUnit(ui->comboEmployee, UNIT_EMPLOYEE);
-    stakeholder_tree_->ComboPathLeafUnit(ui->comboParty, unit_party_);
+    stakeholder_tree_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE);
+    stakeholder_tree_->LeafPathSpecificUnit(ui->comboParty, unit_party_);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -97,7 +97,7 @@ void EditNodeOrder::RUpdateLocked(int node_id, bool checked)
     }
 }
 
-TableView* EditNodeOrder::View() { return ui->tableViewOrder; }
+QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
 
 void EditNodeOrder::IniDialog()
 {
@@ -149,7 +149,7 @@ void EditNodeOrder::IniCombo(QComboBox* combo, int unit)
     if (!combo)
         return;
 
-    stakeholder_tree_->ComboPathLeafUnit(combo, unit);
+    stakeholder_tree_->LeafPathSpecificUnit(combo, unit);
     combo->model()->sort(0);
     combo->setCurrentIndex(-1);
 }

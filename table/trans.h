@@ -22,6 +22,8 @@ struct Trans {
 
     // order
     int node_id {};
+    double discount_price {};
+    double unit_price {};
 
     void Reset()
     {
@@ -40,6 +42,8 @@ struct Trans {
         state = false;
         document.clear();
         node_id = 0;
+        discount_price = 0.0;
+        unit_price = 0.0;
     }
 };
 
@@ -47,18 +51,20 @@ struct TransShadow {
     int* id {};
     QString* date_time {};
     QString* code {};
-    int* node {};
-    double* ratio {};
-    double* debit {};
-    double* credit {};
+    int* lhs_node {};
+    double* lhs_ratio {};
+    double* lhs_debit {};
+    double* lhs_credit {};
     QString* description {};
     QStringList* document {};
     bool* state {};
-    double* related_credit {};
-    double* related_debit {};
-    double* related_ratio {};
-    int* related_node {};
+    double* rhs_credit {};
+    double* rhs_debit {};
+    double* rhs_ratio {};
+    int* rhs_node {};
     int* node_id {};
+    double* discount_price {};
+    double* unit_price {};
 
     double subtotal {};
 
@@ -67,18 +73,20 @@ struct TransShadow {
         id = nullptr;
         date_time = nullptr;
         code = nullptr;
-        node = nullptr;
-        ratio = nullptr;
-        debit = nullptr;
-        credit = nullptr;
+        lhs_node = nullptr;
+        lhs_ratio = nullptr;
+        lhs_debit = nullptr;
+        lhs_credit = nullptr;
         description = nullptr;
-        related_node = nullptr;
-        related_ratio = nullptr;
-        related_debit = nullptr;
-        related_credit = nullptr;
+        rhs_node = nullptr;
+        rhs_ratio = nullptr;
+        rhs_debit = nullptr;
+        rhs_credit = nullptr;
         state = nullptr;
         document = nullptr;
         node_id = nullptr;
+        discount_price = nullptr;
+        unit_price = nullptr;
 
         subtotal = 0.0;
     }

@@ -21,7 +21,8 @@ QWidget* TreePlainText::createEditor(QWidget* parent, const QStyleOptionViewItem
 
 void TreePlainText::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    qobject_cast<PlainTextEdit*>(editor)->setPlainText(index.data().toString());
+    auto* cast_editor { static_cast<PlainTextEdit*>(editor) };
+    cast_editor->setPlainText(index.data().toString());
 }
 
 void TreePlainText::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -37,5 +38,6 @@ void TreePlainText::updateEditorGeometry(QWidget* editor, const QStyleOptionView
 
 void TreePlainText::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    model->setData(index, qobject_cast<PlainTextEdit*>(editor)->toPlainText());
+    auto* cast_editor { static_cast<PlainTextEdit*>(editor) };
+    model->setData(index, cast_editor->toPlainText());
 }

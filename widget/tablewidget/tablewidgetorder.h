@@ -22,7 +22,7 @@ public:
     void SetModel(TableModel* model) override;
 
     TableModel* Model() override { return order_table_model_; }
-    TableView* View() override;
+    QTableView* View() override;
 
 public slots:
     void RAccept();

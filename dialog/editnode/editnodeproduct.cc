@@ -57,7 +57,7 @@ void EditNodeProduct::Data(Node* node, bool enable_branch)
     ui->lineEditCode->setText(node->code);
     ui->lineEditDescription->setText(node->description);
     ui->plainTextEdit->setPlainText(node->note);
-    ui->dSpinBoxUnitPrice->setValue(node->discount);
+    ui->dSpinBoxUnitPrice->setValue(node->first);
     ui->dSpinBoxCommission->setValue(node->second);
 
     ui->chkBoxBranch->setChecked(node->branch);
@@ -96,6 +96,6 @@ void EditNodeProduct::on_chkBoxBranch_toggled(bool checked) { node_->branch = ch
 
 void EditNodeProduct::on_plainTextEdit_textChanged() { node_->note = ui->plainTextEdit->toPlainText(); }
 
-void EditNodeProduct::on_dSpinBoxUnitPrice_editingFinished() { node_->discount = ui->dSpinBoxUnitPrice->value(); }
+void EditNodeProduct::on_dSpinBoxUnitPrice_editingFinished() { node_->first = ui->dSpinBoxUnitPrice->value(); }
 
 void EditNodeProduct::on_dSpinBoxCommission_editingFinished() { node_->second = ui->dSpinBoxCommission->value(); }

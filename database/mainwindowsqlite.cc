@@ -212,6 +212,7 @@ QString MainwindowSqlite::NodeProduct(CString& table_name)
         rule             BOOLEAN    DEFAULT 0,
         branch           BOOLEAN    DEFAULT 0,
         unit             INTEGER,
+        color            TEXT,
         commission       NUMERIC,
         unit_price       NUMERIC,
         initial_total    NUMERIC,
@@ -291,15 +292,16 @@ QString MainwindowSqlite::TransactionOrder(CString& table_name)
     CREATE TABLE IF NOT EXISTS %1 (
         id                  INTEGER PRIMARY KEY AUTOINCREMENT,
         code                TEXT,
-        lhs_node            INTEGER,
-        lhs_ratio           NUMERIC    DEFAULT 1.0,
+        inside_product      INTEGER,
+        unit_price          NUMERIC,
+        description         TEXT,
+        first               NUMERIC,
         second              NUMERIC,
         node_id             INTEGER,
-        first               NUMERIC,
         initial_subtotal    NUMERIC,
+        discount_price      NUMERIC,
         discount            NUMERIC,
-        rhs_ratio           NUMERIC    DEFAULT 0.0,
-        rhs_node            INTEGER,
+        outside_product     INTEGER,
         removed             BOOLEAN    DEFAULT 0
     );
 )")
@@ -310,16 +312,16 @@ QString MainwindowSqlite::TransactionStakeholder(CString& table_name)
 {
     return QString(R"(
     CREATE TABLE IF NOT EXISTS %1 (
-        id             INTEGER PRIMARY KEY AUTOINCREMENT,
-        date_time      DATE,
-        code           TEXT,
-        lhs_node       INTEGER,
-        lhs_ratio      NUMERIC,
-        description    TEXT,
-        document       TEXT,
-        state          BOOLEAN    DEFAULT 0,
-        rhs_node       INTEGER,
-        removed        BOOLEAN    DEFAULT 0
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_time         DATE,
+        code              TEXT,
+        node              INTEGER,
+        unit_price        NUMERIC,
+        description       TEXT,
+        document          TEXT,
+        state             BOOLEAN    DEFAULT 0,
+        inside_product    INTEGER,
+        removed           BOOLEAN    DEFAULT 0
     );
 )")
         .arg(table_name);
@@ -333,7 +335,7 @@ QString MainwindowSqlite::TransactionTask(CString& table_name)
         date_time      DATE,
         code           TEXT,
         lhs_node       INTEGER,
-        lhs_ratio      NUMERIC,
+        unit_cost      NUMERIC,
         lhs_debit      NUMERIC                  CHECK (lhs_debit  >= 0),
         lhs_credit     NUMERIC                  CHECK (lhs_credit >= 0),
         description    TEXT,
@@ -341,7 +343,6 @@ QString MainwindowSqlite::TransactionTask(CString& table_name)
         state          BOOLEAN    DEFAULT 0,
         rhs_credit     NUMERIC                  CHECK (rhs_credit >= 0),
         rhs_debit      NUMERIC                  CHECK (rhs_debit  >= 0),
-        rhs_ratio      NUMERIC,
         rhs_node       INTEGER,
         removed        BOOLEAN    DEFAULT 0
     );
@@ -357,7 +358,7 @@ QString MainwindowSqlite::TransactionProduct(CString& table_name)
         date_time      DATE,
         code           TEXT,
         lhs_node       INTEGER,
-        lhs_ratio      NUMERIC,
+        unit_cost      NUMERIC,
         lhs_debit      NUMERIC                  CHECK (lhs_debit  >= 0),
         lhs_credit     NUMERIC                  CHECK (lhs_credit >= 0),
         description    TEXT,
@@ -365,7 +366,6 @@ QString MainwindowSqlite::TransactionProduct(CString& table_name)
         state          BOOLEAN    DEFAULT 0,
         rhs_credit     NUMERIC                  CHECK (rhs_credit >= 0),
         rhs_debit      NUMERIC                  CHECK (rhs_debit  >= 0),
-        rhs_ratio      NUMERIC,
         rhs_node       INTEGER,
         removed        BOOLEAN    DEFAULT 0
     );

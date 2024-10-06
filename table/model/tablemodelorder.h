@@ -11,6 +11,9 @@ public:
     TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, QObject* parent = nullptr);
     ~TableModelOrder() override = default;
 
+public slots:
+    void RUpdateNodeID(int node_id);
+
 public:
     // implemented functions
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -22,13 +25,34 @@ public:
     bool removeRows(int row, int, const QModelIndex& parent = QModelIndex()) override;
 
 private:
+    template <typename T>
+    bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {})
+    {
+        if (trans_shadow == nullptr || trans_shadow->*member == nullptr || *(trans_shadow->*member) == value)
+            return false;
+
+        *(trans_shadow->*member) = value;
+
+        if (*trans_shadow->node_id == 0 || *trans_shadow->lhs_node == 0)
+            return false;
+
+        try {
+            sql_->UpdateField(info_.transaction, value, field, *trans_shadow->id);
+            if (action)
+                action();
+        } catch (const std::exception& e) {
+            qWarning() << "Failed to update field:" << e.what();
+            return false;
+        }
+
+        return true;
+    }
+
     bool UpdateInsideProduct(TransShadow* trans_shadow, int value);
 
     bool UpdateUnitPrice(TransShadow* trans_shadow, double value);
     bool UpdateDiscountPrice(TransShadow* trans_shadow, double value);
     bool UpdateSecond(TransShadow* trans_shadow, double value);
-    bool UpdateFirst(TransShadow* trans_shadow, double value);
-    bool UpdateCode(TransShadow* trans_shadow, CString& value);
 
 private:
     TreeModel* product_ {};

@@ -4,28 +4,28 @@
 
 ### Relationship Between Node, Sql Node_Table And Header
 
-| Node        |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | locked  | initial_total  | final_total  |
-| ----------- | :---------: | :-----: | :-----: | :---------: | :-----: | :-------: | :-----: | :-----: | :------: | :------: | :-------: | :------------: | :--------: | :--------: | :-----: | :------------: | :----------: |
-| Qt          |   QString   |   int   | QString |   QString   | QString |   bool    |  bool   |   int   |   int    |   int    |  QString  |     double     |   double   |   double   |  bool   |     double     |    double    |
-| Sqlite3     |    TEXT     | INTEGER |  TEXT   |    TEXT     |  TEXT   |  BOOLEAN  | BOOLEAN | INTEGER | INTEGER  | INTEGER  |   TEXT    |    NUMERIC     |  NUMERIC   |  NUMERIC   | BOOLEAN |    NUMERIC     |   NUMERIC    |
-|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| finance     |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |     X      |    X    | initial_total  | final_total  |
-|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |     X      |    X    | Foreign Total  | Local Total  |
-|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| task        |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |     X      |    X    | initial_total  | final_total  |
-|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |     X      |    X    | Quantity Total | Amount Total |
-|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| product     |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        | commission | unit_price |    X    | initial_total  | final_total  |
-|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        | Commission | UnitPrice  |    X    | Quantity Total | Amount Total |
-|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| stakeholder |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   | deadline | employee |     X     | payment_period |  tax_rate  |     X      |    X    |       X        |      X       |
-|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Deadline | Employee |     X     | PaymentPeriod  |  TaxRate   |     X      |    X    |       X        |      X       |
-|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| purchase    | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | locked  | initial_total  | final_total  |
-|             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |  Vendor  | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Locked  | Initial Total  | Final Total  |
-|             |             |         |         |             |         |           |         |         |          |          |           |                |            |            |         |                |              |
-| sales       | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   |  discount  | locked  | initial_total  | final_total  |
-|             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Customer | Employee | DateTime  |  First/piece   | Second/SF  |  Discount  | Locked  | Initial Total  | Final Total  |
+| Node        |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   | discount | locked  | initial_total  | final_total  |
+| ----------- | :---------: | :-----: | :-----: | :---------: | :-----: | :-------: | :-----: | :-----: | :------: | :------: | :-------: | :------------: | :--------: | :------: | :-----: | :------------: | :----------: |
+| Qt          |   QString   |   int   | QString |   QString   | QString |   bool    |  bool   |   int   |   int    |   int    |  QString  |     double     |   double   |  double  |  bool   |     double     |    double    |
+| Sqlite3     |    TEXT     | INTEGER |  TEXT   |    TEXT     |  TEXT   |  BOOLEAN  | BOOLEAN | INTEGER | INTEGER  | INTEGER  |   TEXT    |    NUMERIC     |  NUMERIC   | NUMERIC  | BOOLEAN |    NUMERIC     |   NUMERIC    |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |          |         |                |              |
+| finance     |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |    X     |    X    | initial_total  | final_total  |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |    X     |    X    | Foreign Total  | Local Total  |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |          |         |                |              |
+| task        |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |     X     |       X        |     X      |    X     |    X    | initial_total  | final_total  |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |     X     |       X        |     X      |    X     |    X    | Quantity Total | Amount Total |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |          |         |                |              |
+| product     |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   |    X     |    X     |   color   |   unit_price   | commission |    X     |    X    | initial_total  | final_total  |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |    X     |    X     |   Color   |   UnitPrice    | Commission |    X     |    X    | Quantity Total | Amount Total |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |          |         |                |              |
+| stakeholder |    name     |   id    |  code   | description |  note   | node_rule | branch  |  unit   | deadline | employee |     X     | payment_period |  tax_rate  |    X     |    X    |       X        |      X       |
+|             |    Name     |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Deadline | Employee |     X     | PaymentPeriod  |  TaxRate   |    X     |    X    |       X        |      X       |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |          |         |                |              |
+| purchase    | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   | discount | locked  | initial_total  | final_total  |
+|             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    |  Vendor  | Employee | DateTime  |  First/piece   | Second/SF  | Discount | Locked  | Initial Total  | Final Total  |
+|             |             |         |         |             |         |           |         |         |          |          |           |                |            |          |         |                |              |
+| sales       | branch_name |   id    |  code   | description |  note   | node_rule | branch  |  unit   |  party   | employee | date_time |     first      |   second   | discount | locked  | initial_total  | final_total  |
+|             | Branch Name |   ID    |  Code   | Description |  Note   |     R     |    B    |    U    | Customer | Employee | DateTime  |  First/piece   | Second/SF  | Discount | Locked  | Initial Total  | Final Total  |
 
 -- stakeholder-U: Employee = 0, Customer = 1, Vendor = 2, Product = 3
 -- stakeholder-R: Cash = 0, Monthly = 1
@@ -38,45 +38,28 @@
 
 ### Relationship Between Transaction, Sql Transaction_Table And TableEnumSearch
 
-| Transaction     |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  |    X     |  document   |  state  |    rhs_credit    | rhs_debit | rhs_ratio | rhs_node |
-| --------------- | :-----: | :-------: | :-----: | :------: | :-------: | :-------: | :--------: | :----------: | :------: | :---------: | :-----: | :--------------: | :-------: | :-------: | :------: |
-| TableEnumSearch |   kID   | kDateTime |  KCode  | kLhsNode | kLhsRatio | kLhsDebit | kLhsCredit | kDescription |    X     |  kDocument  | kState  |    kRhsCredit    | kRhsDebit | kRhsRatio | kRhsNode |
-|                 |         |           |         |          |           |           |            |              |          |             |         |                  |           |           |          |
-| Qt              |   int   |  QString  | QString |   int    |  double   |  double   |   double   |   QString    |   int    | QStringList |  bool   |      double      |  double   |  double   |   int    |
-| Sqlite3         | INTEGER |   TEXT    |  TEXT   | INTEGER  |  NUMERIC  |  NUMERIC  |  NUMERIC   |     TEXT     | INTERGER |    TEXT     | BOOLEAN |     NUMERIC      |  NUMERIC  |  NUMERIC  | INTEGER  |
-|                 |         |           |         |          |           |           |            |              |          |             |         |                  |           |           |          |
-| finance         |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  |    X     |  document   |  state  |    rhs_credit    | rhs_debit | rhs_ratio | rhs_node |
-|                 |         |           |         |          |           |           |            |              |          |             |         |                  |           |           |          |
-| task            |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  |    X     |  document   |  state  |    rhs_credit    | rhs_debit | rhs_ratio | rhs_node |
-|                 |         |           |         |          |           |           |            |              |          |             |         |                  |           |           |          |
-| product         |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  |    X     |  document   |  state  |    rhs_credit    | rhs_debit | rhs_ratio | rhs_node |
-|                 |         |           |         |          |           |           |            |              |          |             |         |                  |           |           |          |
-| stakeholder     |   id    | date_time |  code   |    X     | lhs_ratio |     X     |     X      | description  |    X     |  document   |  state  |        X         |     X     |     X     | rhs_node |
-|                 |         |           |         |          |           |           |            |              |          |             |         |                  |           |           |          |
-| purchase        |   id    |     X     |  code   | lhs_node | lhs_ratio |   first   |   second   | description  | node_id  |      X      |    X    | initial_subtotal | discount  | rhs_ratio | rhs_node |
-|                 |         |           |         |          |           |           |            |              |          |             |         |                  |           |           |          |
-| sales           |   id    |     X     |  code   | lhs_node | lhs_ratio |   first   |   second   | description  | node_id  |      X      |    X    | initial_subtotal | discount  | rhs_ratio | rhs_node |
+| Transaction     |   id    | date_time |  code   |    lhs_node    | lhs_ratio | lhs_debit | lhs_credit | description  |     X      |    X     |       X        |  document   |  state  |    rhs_credit    | rhs_debit | rhs_ratio |    rhs_node     |
+| --------------- | :-----: | :-------: | :-----: | :------------: | :-------: | :-------: | :--------: | :----------: | :--------: | :------: | :------------: | :---------: | :-----: | :--------------: | :-------: | :-------: | :-------------: |
+| TableEnumSearch |   kID   | kDateTime |  KCode  |    kLhsNode    | kLhsRatio | kLhsDebit | kLhsCredit | kDescription |     X      |    X     |       X        |  kDocument  | kState  |    kRhsCredit    | kRhsDebit | kRhsRatio |    kRhsNode     |
+|                 |         |           |         |                |           |           |            |              |            |          |                |             |         |                  |           |           |                 |
+| Qt              |   int   |  QString  | QString |      int       |  double   |  double   |   double   |   QString    |   double   |   int    |     double     | QStringList |  bool   |      double      |  double   |  double   |       int       |
+| Sqlite3         | INTEGER |   TEXT    |  TEXT   |    INTEGER     |  NUMERIC  |  NUMERIC  |  NUMERIC   |     TEXT     |  NUMERIC   | INTERGER |    NUMERIC     |    TEXT     | BOOLEAN |     NUMERIC      |  NUMERIC  |  NUMERIC  |     INTEGER     |
+|                 |         |           |         |                |           |           |            |              |            |          |                |             |         |                  |           |           |                 |
+| finance         |   id    | date_time |  code   |    lhs_node    | lhs_ratio | lhs_debit | lhs_credit | description  |     X      |    X     |       X        |  document   |  state  |    rhs_credit    | rhs_debit | rhs_ratio |    rhs_node     |
+|                 |         |           |         |                |           |           |            |              |            |          |                |             |         |                  |           |           |                 |
+| task            |   id    | date_time |  code   |    lhs_node    |     X     | lhs_debit | lhs_credit | description  | unit_cost  |    X     |       X        |  document   |  state  |    rhs_credit    | rhs_debit |     X     |    rhs_node     |
+|                 |         |           |         |                |           |           |            |              |            |          |                |             |         |                  |           |           |                 |
+| product         |   id    | date_time |  code   |    lhs_node    |     X     | lhs_debit | lhs_credit | description  | unit_cost  |    X     |       X        |  document   |  state  |    rhs_credit    | rhs_debit |     X     |    rhs_node     |
+|                 |         |           |         |                |           |           |            |              |            |          |                |             |         |                  |           |           |                 |
+| stakeholder     |   id    | date_time |  code   |       X        |     X     |     X     |     X      | description  | unit_price |    X     |       X        |  document   |  state  |        X         |     X     |     X     |    rhs_node     |
+|                 |         |           |         |                |           |           |            |              |            |          |                |             |         |                  |           |           |                 |
+| purchase        |   id    |     X     |  code   | inside_product |     X     |   first   |   second   | description  | unit_price | node_id  | discount_price |      X      |    X    | initial_subtotal | discount  |     X     | outside_product |
+|                 |         |           |         |                |           |           |            |              |            |          |                |             |         |                  |           |           |                 |
+| sales           |   id    |     X     |  code   | inside_product |     X     |   first   |   second   | description  | unit_price | node_id  | discount_price |      X      |    X    | initial_subtotal | discount  |     X     | outside_product |
 
 -- stakestakeholder: lhs_ratio - party's unit_price/employee's commission, rhs_node - product_id
--- purchase: lhs_node - product_id, lhs_ratio - unit_price, rhs_node - party's product_id, rhs_ratio - party's discount_price, show lhs_node"s description, itself code
--- sales: lhs_node - product_id, lhs_ratio - unit_price, rhs_node - party's product_id, rhs_ratio - party's discount_price, show lhs_node"s description, itself code
-
-### Relationship Between Trans And Header
-
-| Trans              | id  | date_time | code |   ratio   | description | document | state | related_node | related_ratio | related_debit | related_credit |  balance  |
-| ------------------ | :-: | :-------: | :--: | :-------: | :---------: | :------: | :---: | :----------: | :-----------: | :-----------: | :------------: | :-------: |
-|                    |     |           |      |           |             |          |       |              |               |               |                |           |
-| finance_header     | ID  | DateTime  | Code |  FXRate   | Description |    D     |   S   | TransferNode |       X       |     Debit     |     Credit     |  Balance  |
-|                    |     |           |      |           |             |          |       |              |               |               |                |           |
-| task_header        | ID  | DateTime  | Code | UnitCost  | Description |    D     |   S   |  rhs_credit  |       X       |     Debit     |     Credit     | Remainder |
-|                    |     |           |      |           |             |          |       |              |               |               |                |           |
-| product_header     | ID  | DateTime  | Code | UnitCost  | Description |    D     |   S   |   Position   |       X       |     Debit     |     Credit     | Remainder |
-|                    |     |           |      |           |             |          |       |              |               |               |                |           |
-| stakeholder_header | ID  | DateTime  | Code | UnitPrice | Description |    D     |   S   |    Inside    |  Commission   |       X       |       X        |     X     |
-|                    |     |           |      |           |             |          |       |              |               |               |                |           |
-| purchase_header    | ID  | DateTime  |  X   |           |             |          |       |              |               |               |                |           |
-|                    |     |           |      |           |             |          |       |              |               |               |                |           |
-| sales_header       | ID  | DateTime  |  X   |           |             |          |       |              |               |               |                |           |
+-- purchase: lhs_node - inside_product_id, lhs_ratio - unit_price, rhs_node - outside_product_id, show lhs_node's description
+-- sales: lhs_node - inside_product_id, lhs_ratio - unit_price, rhs_node - outside_product_id, show lhs_node's description
 
 ## User
 

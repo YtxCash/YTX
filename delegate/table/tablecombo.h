@@ -6,7 +6,7 @@
 
 class TableCombo final : public StyledItemDelegate {
 public:
-    TableCombo(const TreeModel* model, int exclude, QObject* parent = nullptr);
+    TableCombo(const TreeModel* model, int exclude_id, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -14,7 +14,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    int exclude_ {};
+    int exclude_id_ {};
     mutable int last_insert_ {};
     const TreeModel* model_ {};
 };

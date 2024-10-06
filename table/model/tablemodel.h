@@ -67,7 +67,9 @@ public:
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
-    int GetRow(int node_id) const;
+    int GetRhsNodeRow(int rhs_node_id) const;
+    int GetLhsNodeRow(int lhs_node_id) const;
+
     QModelIndex GetIndex(int trans_id) const;
     QStringList* GetDocumentPointer(const QModelIndex& index) const;
 
@@ -79,7 +81,7 @@ protected:
     virtual bool UpdateCredit(TransShadow* trans_shadow, double value);
     virtual bool UpdateRatio(TransShadow* trans_shadow, double value);
 
-    virtual bool RemoveMulti(const QSet<int>& trans_id_list); // just remove trnas_shadow, keep related trans
+    virtual bool RemoveMulti(const QSet<int>& trans_id_list); // just remove trnas_shadow, keep trans
     virtual bool AppendMulti(int node_id, const QList<int>& trans_id_list);
 
     // member functions
@@ -92,24 +94,22 @@ protected:
     template <typename T>
     bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {})
     {
-        if (trans_shadow == nullptr || trans_shadow->*member == nullptr)
-            return false;
-
-        if (*(trans_shadow->*member) == value)
+        if (trans_shadow == nullptr || trans_shadow->*member == nullptr || *(trans_shadow->*member) == value)
             return false;
 
         *(trans_shadow->*member) = value;
 
-        if (*trans_shadow->related_node != 0) {
-            try {
-                sql_->UpdateField(info_.transaction, value, field, *trans_shadow->id);
+        if (*trans_shadow->rhs_node != 0)
+            return false;
 
-                if (action)
-                    action();
-            } catch (const std::exception& e) {
-                qWarning() << "Failed to update field:" << e.what();
-                return false;
-            }
+        try {
+            sql_->UpdateField(info_.transaction, value, field, *trans_shadow->id);
+
+            if (action)
+                action();
+        } catch (const std::exception& e) {
+            qWarning() << "Failed to update field:" << e.what();
+            return false;
         }
 
         return true;

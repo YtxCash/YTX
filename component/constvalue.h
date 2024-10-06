@@ -20,7 +20,7 @@ constexpr int UNIT_EMPLOYEE = 0;
 constexpr int UNIT_CUSTOMER = 1;
 constexpr int UNIT_VENDOR = 2;
 constexpr int UNIT_PRODUCT = 3;
-constexpr int UNIT_POSITION = 3;
+constexpr int UNIT_POSITION = 1;
 
 // Constants for datetime
 constexpr char DATE_FORMAT[] = "date_format";
@@ -57,6 +57,7 @@ constexpr char ZH_CN[] = "zh_CN";
 // Constants for tree and table's column
 constexpr char BRANCH[] = "branch";
 constexpr char CODE[] = "code";
+constexpr char COLOR[] = "color";
 constexpr char COMMISSION[] = "commission";
 constexpr char DEADLINE[] = "deadline";
 constexpr char DESCRIPTION[] = "description";
@@ -66,7 +67,6 @@ constexpr char EMPLOYEE[] = "employee";
 constexpr char FINAL_TOTAL[] = "final_total";
 constexpr char FIRST[] = "first";
 constexpr char INITIAL_TOTAL[] = "initial_total";
-constexpr char RHS_NODE[] = "rhs_node";
 constexpr char NAME[] = "name";
 constexpr char NODE_ID[] = "node/id";
 constexpr char RULE[] = "rule";
@@ -78,6 +78,10 @@ constexpr char STATE[] = "state";
 constexpr char TAX_RATE[] = "tax_rate";
 constexpr char UNIT[] = "unit";
 constexpr char LHS_RATIO[] = "lhs_ratio";
+constexpr char UNIT_PRICE[] = "unit_price";
+constexpr char UNIT_COST[] = "unit_cost";
+constexpr char INSIDE_PRODUCT[] = "inside_product";
+constexpr char OUTSIDE_PRODUCT[] = "outside_product";
 
 // Constants for app's state
 constexpr char HEADER_STATE[] = "header_state";

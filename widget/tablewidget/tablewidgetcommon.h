@@ -1,6 +1,8 @@
 #ifndef TABLEWIDGETCOMMON_H
 #define TABLEWIDGETCOMMON_H
 
+#include <QTableView>
+
 #include "table/model/tablemodel.h"
 #include "widget/tablewidget/tablewidget.h"
 
@@ -18,7 +20,7 @@ public:
     void SetModel(TableModel* model) override;
 
     TableModel* Model() override { return model_; }
-    TableView* View() override;
+    QTableView* View() override;
 
 private:
     Ui::TableWidgetCommon* ui;

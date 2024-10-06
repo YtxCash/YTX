@@ -2,9 +2,9 @@
 
 #include "widget/combobox.h"
 
-TableCombo::TableCombo(const TreeModel* model, int exclude, QObject* parent)
+TableCombo::TableCombo(const TreeModel* model, int exclude_id, QObject* parent)
     : StyledItemDelegate { parent }
-    , exclude_ { exclude }
+    , exclude_id_ { exclude_id }
     , model_ { model }
 {
 }
@@ -12,7 +12,7 @@ TableCombo::TableCombo(const TreeModel* model, int exclude, QObject* parent)
 QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     auto editor { new ComboBox(parent) };
-    model_->ComboPathLeafExclude(editor, exclude_);
+    model_->LeafPathExcludeID(editor, exclude_id_);
     editor->model()->sort(0);
 
     int height = option.rect.height();
@@ -24,7 +24,7 @@ QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& o
 
 void TableCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto cast_editor { qobject_cast<ComboBox*>(editor) };
+    auto cast_editor { static_cast<ComboBox*>(editor) };
 
     int key { index.data().toInt() };
     if (key == 0)
@@ -36,7 +36,9 @@ void TableCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
 
 void TableCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    int key { qobject_cast<ComboBox*>(editor)->currentData().toInt() };
+    auto cast_editor { static_cast<ComboBox*>(editor) };
+
+    int key { cast_editor->currentData().toInt() };
     last_insert_ = key;
     model->setData(index, key);
 }

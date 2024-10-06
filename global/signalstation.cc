@@ -19,9 +19,9 @@ void SignalStation::DeregisterModel(Section section, int node_id) { model_hash_[
 void SignalStation::RAppendOneTrans(Section section, const TransShadow* trans_shadow)
 {
     auto section_model_hash { model_hash_.value(section) };
-    int related_node_id { *trans_shadow->related_node };
+    int rhs_node_id { *trans_shadow->rhs_node };
 
-    auto model { section_model_hash.value(related_node_id, nullptr) };
+    auto model { section_model_hash.value(rhs_node_id, nullptr) };
     if (!model)
         return;
 

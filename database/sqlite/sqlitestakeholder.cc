@@ -84,7 +84,7 @@ QString SqliteStakeholder::RemoveNodeSecondQS() const
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction
     SET removed = 1
-    WHERE lhs_node = :node_id
+    WHERE node = :node_id
     )");
 }
 
@@ -92,7 +92,7 @@ QString SqliteStakeholder::InternalReferenceQS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM stakeholder_transaction
-    WHERE lhs_node = :node_id AND removed = 0
+    WHERE node = :node_id AND removed = 0
     )");
 }
 
@@ -102,8 +102,8 @@ QString SqliteStakeholder::ExternalReferenceQS() const
     SELECT
     (SELECT COUNT(*) FROM sales WHERE (party = :node_id OR employee = :node_id) AND removed = 0) +
     (SELECT COUNT(*) FROM purchase WHERE (party = :node_id OR employee = :node_id) AND removed = 0) +
-    (SELECT COUNT(*) FROM sales_transaction WHERE rhs_node = :node_id AND removed = 0) +
-    (SELECT COUNT(*) FROM purchase_transaction WHERE rhs_node = :node_id AND removed = 0)
+    (SELECT COUNT(*) FROM sales_transaction WHERE outside_product = :node_id AND removed = 0) +
+    (SELECT COUNT(*) FROM purchase_transaction WHERE outside_product = :node_id AND removed = 0)
     AS total_count;
     )");
 }
@@ -111,9 +111,9 @@ QString SqliteStakeholder::ExternalReferenceQS() const
 QString SqliteStakeholder::BuildTransShadowListQS() const
 {
     return QStringLiteral(R"(
-    SELECT id, date_time, code, lhs_node, lhs_ratio, description, document, state, rhs_node
+    SELECT id, date_time, code, node, unit_price, description, document, state, inside_product
     FROM stakeholder_transaction
-    WHERE lhs_node = :node_id AND removed = 0
+    WHERE node = :node_id AND removed = 0
     )");
 }
 
@@ -121,9 +121,9 @@ QString SqliteStakeholder::InsertTransShadowQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO stakeholder_transaction
-    (date_time, code, lhs_node, lhs_ratio, description, document, state, rhs_node)
+    (date_time, code, node, unit_price, description, document, state, inside_product)
     VALUES
-    (:date_time, :code, :lhs_node, :lhs_ratio, :description, :document, :state, :rhs_node)
+    (:date_time, :code, :node, :unit_price, :description, :document, :state, :inside_product)
     )");
 }
 
@@ -131,8 +131,8 @@ QString SqliteStakeholder::RReplaceNodeQS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction
-    SET lhs_node = :new_node_id
-    WHERE lhs_node = :old_node_id
+    SET node = :new_node_id
+    WHERE node = :old_node_id
     )");
 }
 
@@ -140,8 +140,8 @@ QString SqliteStakeholder::RUpdateProductReferenceQS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction
-    SET rhs_node = :new_node_id
-    WHERE rhs_node = :old_node_id
+    SET inside_product = :new_node_id
+    WHERE inside_product = :old_node_id
     )");
 }
 
@@ -164,12 +164,12 @@ void SqliteStakeholder::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& q
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":code", *trans_shadow->code);
-    query.bindValue(":lhs_node", *trans_shadow->node);
-    query.bindValue(":lhs_ratio", *trans_shadow->ratio);
+    query.bindValue(":node", *trans_shadow->lhs_node);
+    query.bindValue(":unit_price", *trans_shadow->unit_price);
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":state", *trans_shadow->state);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
-    query.bindValue(":rhs_node", *trans_shadow->related_node);
+    query.bindValue(":inside_product", *trans_shadow->rhs_node);
 }
 
 void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
@@ -206,7 +206,7 @@ void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list,
 QString SqliteStakeholder::BuildTransShadowListRangQS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, date_time, code, lhs_node, lhs_ratio, description, document, state, rhs_node
+    SELECT id, date_time, code, node, unit_price, description, document, state, inside_product
     FROM stakeholder_transaction
     WHERE id IN (%1) AND removed = 0
     )")
@@ -231,9 +231,9 @@ void SqliteStakeholder::ReadNode(Node* node, const QSqlQuery& query)
 
 void SqliteStakeholder::ReadTrans(Trans* trans, const QSqlQuery& query)
 {
-    trans->lhs_node = query.value("lhs_node").toInt();
-    trans->rhs_node = query.value("rhs_node").toInt();
-    trans->lhs_ratio = query.value("lhs_ratio").toDouble();
+    trans->lhs_node = query.value("node").toInt();
+    trans->rhs_node = query.value("inside_product").toInt();
+    trans->unit_price = query.value("unit_price").toDouble();
     trans->code = query.value("code").toString();
     trans->description = query.value("description").toString();
     trans->state = query.value("state").toBool();

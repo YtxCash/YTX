@@ -34,7 +34,7 @@ QWidget* TreeCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& op
 
 void TreeCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto cast_editor { qobject_cast<ComboBox*>(editor) };
+    auto* cast_editor { static_cast<ComboBox*>(editor) };
 
     int item_index { cast_editor->findData(index.data().toInt()) };
     if (item_index != -1)
@@ -43,7 +43,8 @@ void TreeCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
 
 void TreeCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    model->setData(index, qobject_cast<ComboBox*>(editor)->currentData().toInt());
+    auto* cast_editor { static_cast<ComboBox*>(editor) };
+    model->setData(index, cast_editor->currentData().toInt());
 }
 
 void TreeCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

@@ -105,7 +105,7 @@ public:
     int Employee(int node_id) const { return GetValue(node_id, &Node::employee); }
     int Unit(int node_id) const { return GetValue(node_id, &Node::unit); }
     const QString& Name(int node_id) const { return GetValue(node_id, &Node::name); }
-    const QString& Description(int node_id) const { return GetValue(node_id, &Node::description); }
+    const QString& Color(int node_id) const { return GetValue(node_id, &Node::date_time); }
     bool Branch(int node_id) const { return GetValue(node_id, &Node::branch); }
     bool Rule(int node_id) const { return GetValue(node_id, &Node::rule); }
     double InitialTotal(int node_id) const { return GetValue(node_id, &Node::initial_total); }
@@ -118,10 +118,10 @@ public:
     QModelIndex GetIndex(int node_id) const;
     void SetNodeShadow(NodeShadow* node_shadow, int node_id) const;
 
-    void ComboPathLeafUnit(QComboBox* combo, int unit) const;
-    void ComboPathLeafExcludeUnit(QComboBox* combo, int exclude_unit) const;
-    void ComboPathLeafExclude(QComboBox* combo, int exclude) const;
-    void ComboPathLeafBranch(QComboBox* combo) const;
+    void LeafPathSpecificUnit(QComboBox* combo, int specific_unit) const;
+    void LeafPathExcludeUnit(QComboBox* combo, int exclude_unit) const;
+    void LeafPathExcludeID(QComboBox* combo, int exclude_id) const;
+    void LeafPathBranchPath(QComboBox* combo) const;
 
     QStringList ChildrenName(int node_id, int exclude_child) const;
 

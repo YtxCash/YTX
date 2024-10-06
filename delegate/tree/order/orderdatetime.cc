@@ -27,12 +27,14 @@ QWidget* OrderDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem
 
 void OrderDateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    qobject_cast<DateTimeEdit*>(editor)->setDateTime(index.data().toDateTime());
+    auto* cast_editor { static_cast<DateTimeEdit*>(editor) };
+    cast_editor->setDateTime(index.data().toDateTime());
 }
 
 void OrderDateTime::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    auto string { qobject_cast<DateTimeEdit*>(editor)->dateTime().toString(DATE_TIME_FST) };
+    auto* cast_editor { static_cast<DateTimeEdit*>(editor) };
+    auto string { cast_editor->dateTime().toString(DATE_TIME_FST) };
     model->setData(index, string);
 }
 

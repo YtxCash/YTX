@@ -21,6 +21,11 @@ protected:
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override { return QString(); }
     QString RUpdateStakeholderReferenceQS() const override { return {}; }
+    QString UpdateTransQS() const override;
+
+    void ReadTrans(Trans* trans, const QSqlQuery& query) override;
+    void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query) override;
+    void UpdateTransBind(Trans* trans, QSqlQuery& query) override;
 };
 
 #endif // SQLITETASK_H
