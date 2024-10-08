@@ -66,7 +66,7 @@ bool TreeModelStakeholder::IsReferenced(int node_id, CString& message)
 
 void TreeModelStakeholder::ConstructTree()
 {
-    sql_->BuildTree(node_hash_);
+    sql_->ReadNode(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };
 
     for (auto* node : const_node_hash) {

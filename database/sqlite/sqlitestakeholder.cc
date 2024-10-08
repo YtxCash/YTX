@@ -47,7 +47,7 @@ bool SqliteStakeholder::RRemoveNode(int node_id)
     return true;
 }
 
-QString SqliteStakeholder::BuildTreeQS() const
+QString SqliteStakeholder::ReadNodeQS() const
 {
     return QStringLiteral(R"(
     SELECT name, id, code, description, note, rule, branch, unit, employee, deadline, payment_period, tax_rate
@@ -56,7 +56,7 @@ QString SqliteStakeholder::BuildTreeQS() const
     )");
 }
 
-QString SqliteStakeholder::InsertNodeQS() const
+QString SqliteStakeholder::WriteNodeQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO stakeholder (name, code, description, note, rule, branch, unit, employee, deadline, payment_period, tax_rate)
@@ -64,7 +64,7 @@ QString SqliteStakeholder::InsertNodeQS() const
     )");
 }
 
-void SqliteStakeholder::WriteNode(Node* node, QSqlQuery& query)
+void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query)
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);
@@ -108,7 +108,7 @@ QString SqliteStakeholder::ExternalReferenceQS() const
     )");
 }
 
-QString SqliteStakeholder::BuildTransShadowListQS() const
+QString SqliteStakeholder::ReadTransQS() const
 {
     return QStringLiteral(R"(
     SELECT id, date_time, code, node, unit_price, description, document, state, inside_product
@@ -117,7 +117,7 @@ QString SqliteStakeholder::BuildTransShadowListQS() const
     )");
 }
 
-QString SqliteStakeholder::InsertTransShadowQS() const
+QString SqliteStakeholder::WriteTransQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO stakeholder_transaction
@@ -160,7 +160,7 @@ QList<int> SqliteStakeholder::DialogReplaceNode(int old_node_id, int new_node_id
     return list;
 }
 
-void SqliteStakeholder::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":code", *trans_shadow->code);
@@ -181,7 +181,7 @@ void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
             trans->rhs_node = new_node_id;
 }
 
-void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list, int /*node_id*/, QSqlQuery& query)
+void SqliteStakeholder::ReadTransFunction(TransShadowList& trans_shadow_list, int /*node_id*/, QSqlQuery& query)
 {
     TransShadow* trans_shadow {};
     Trans* trans {};
@@ -195,7 +195,7 @@ void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list,
 
         trans->id = id;
 
-        ReadTrans(trans, query);
+        ReadTransQuery(trans, query);
         trans_hash_.insert(id, trans);
 
         ConvertTrans(trans, trans_shadow, true);
@@ -203,7 +203,7 @@ void SqliteStakeholder::QueryTransShadowList(TransShadowList& trans_shadow_list,
     }
 }
 
-QString SqliteStakeholder::BuildTransShadowListRangQS(CString& in_list) const
+QString SqliteStakeholder::ReadTransRangeQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, date_time, code, node, unit_price, description, document, state, inside_product
@@ -213,7 +213,7 @@ QString SqliteStakeholder::BuildTransShadowListRangQS(CString& in_list) const
         .arg(in_list);
 }
 
-void SqliteStakeholder::ReadNode(Node* node, const QSqlQuery& query)
+void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query)
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -229,7 +229,7 @@ void SqliteStakeholder::ReadNode(Node* node, const QSqlQuery& query)
     node->second = query.value("tax_rate").toDouble();
 }
 
-void SqliteStakeholder::ReadTrans(Trans* trans, const QSqlQuery& query)
+void SqliteStakeholder::ReadTransQuery(Trans* trans, const QSqlQuery& query)
 {
     trans->lhs_node = query.value("node").toInt();
     trans->rhs_node = query.value("inside_product").toInt();

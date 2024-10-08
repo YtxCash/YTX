@@ -9,7 +9,7 @@ SqliteTask::SqliteTask(CInfo& info, QObject* parent)
 {
 }
 
-QString SqliteTask::BuildTreeQS() const
+QString SqliteTask::ReadNodeQS() const
 {
     return QStringLiteral(R"(
     SELECT name, id, code, description, note, rule, branch, unit, initial_total, final_total
@@ -18,7 +18,7 @@ QString SqliteTask::BuildTreeQS() const
     )");
 }
 
-QString SqliteTask::InsertNodeQS() const
+QString SqliteTask::WriteNodeQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO task (name, code, description, note, rule, branch, unit)
@@ -72,7 +72,7 @@ QString SqliteTask::LeafTotalQS() const
     )");
 }
 
-QString SqliteTask::BuildTransShadowListQS() const
+QString SqliteTask::ReadTransQS() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time
@@ -81,7 +81,7 @@ QString SqliteTask::BuildTransShadowListQS() const
     )");
 }
 
-QString SqliteTask::InsertTransShadowQS() const
+QString SqliteTask::WriteTransQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO task_transaction
@@ -91,7 +91,7 @@ QString SqliteTask::InsertTransShadowQS() const
     )");
 }
 
-QString SqliteTask::BuildTransShadowListRangQS(CString& in_list) const
+QString SqliteTask::ReadTransRangeQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time
@@ -127,7 +127,7 @@ QString SqliteTask::UpdateTransQS() const
     )");
 }
 
-void SqliteTask::ReadTrans(Trans* trans, const QSqlQuery& query)
+void SqliteTask::ReadTransQuery(Trans* trans, const QSqlQuery& query)
 {
     trans->lhs_node = query.value("lhs_node").toInt();
     trans->lhs_debit = query.value("lhs_debit").toDouble();
@@ -145,7 +145,7 @@ void SqliteTask::ReadTrans(Trans* trans, const QSqlQuery& query)
     trans->state = query.value("state").toBool();
 }
 
-void SqliteTask::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":unit_cost", *trans_shadow->unit_price);

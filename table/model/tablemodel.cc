@@ -14,7 +14,7 @@ TableModel::TableModel(SPSqlite sql, bool rule, int node_id, CInfo& info, QObjec
     , node_id_ { node_id }
 {
     if (node_id >= 1)
-        sql_->BuildTransShadowList(trans_shadow_list_, node_id);
+        sql_->ReadTrans(trans_shadow_list_, node_id);
 }
 
 TableModel::~TableModel() { ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_); }
@@ -394,7 +394,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
     if (old_rhs_node == 0) {
         if (rel_changed) {
-            sql_->InsertTransShadow(trans_shadow);
+            sql_->WriteTrans(trans_shadow);
             QtConcurrent::run(&TableModel::AccumulateSubtotal, this, kRow, rule_);
 
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
@@ -629,7 +629,7 @@ bool TableModel::AppendMulti(int node_id, const QList<int>& trans_id_list)
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
 
-    sql_->BuildTransShadowList(trans_shadow_list, node_id, trans_id_list);
+    sql_->ReadTransRange(trans_shadow_list, node_id, trans_id_list);
     beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();

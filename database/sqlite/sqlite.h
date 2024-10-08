@@ -43,8 +43,8 @@ public slots:
 
 public:
     // tree
-    bool BuildTree(NodeHash& node_hash);
-    bool InsertNode(int parent_id, Node* node);
+    bool ReadNode(NodeHash& node_hash);
+    bool WriteNode(int parent_id, Node* node);
     bool RemoveNode(int node_id, bool branch);
     bool DragNode(int destination_node_id, int node_id);
     bool InternalReference(int node_id) const;
@@ -52,10 +52,10 @@ public:
     void LeafTotal(Node* node);
 
     // table
-    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id);
-    void BuildTransShadowList(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
-    bool InsertTransShadow(TransShadow* trans_shadow);
-    bool InsertTransShadowList(const QList<TransShadow*>& list);
+    void ReadTrans(TransShadowList& trans_shadow_list, int node_id);
+    void ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
+    bool WriteTrans(TransShadow* trans_shadow);
+    bool WriteTransRange(const QList<TransShadow*>& list);
     TransShadow* AllocateTransShadow();
 
     bool RemoveTrans(int trans_id);
@@ -69,14 +69,14 @@ public:
 
 protected:
     // tree
-    virtual void ReadNode(Node* node, const QSqlQuery& query);
-    virtual void WriteNode(Node* node, QSqlQuery& query);
+    virtual void ReadNodeQuery(Node* node, const QSqlQuery& query);
+    virtual void WriteNodeBind(Node* node, QSqlQuery& query);
 
     void CalculateLeafTotal(Node* node, QSqlQuery& query);
 
     // QS means QueryString
-    virtual QString BuildTreeQS() const = 0;
-    virtual QString InsertNodeQS() const = 0;
+    virtual QString ReadNodeQS() const = 0;
+    virtual QString WriteNodeQS() const = 0;
     virtual QString RemoveNodeSecondQS() const = 0;
     virtual QString InternalReferenceQS() const = 0;
     virtual QString ExternalReferenceQS() const = 0;
@@ -89,16 +89,14 @@ protected:
     QString DragNodeFirstQS() const;
     QString DragNodeSecondQS() const;
 
-    void BuildNodeHash(NodeHash& node_hash, QSqlQuery& query);
     bool DBTransaction(std::function<bool()> function);
     void ReadRelationship(const NodeHash& node_hash, QSqlQuery& query);
     void WriteRelationship(int node_id, int parent_id, QSqlQuery& query);
 
     // table
-    virtual void ReadTrans(Trans* trans, const QSqlQuery& query);
+    virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query);
     virtual void UpdateTransBind(Trans* trans, QSqlQuery& query);
-
-    virtual void WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query);
+    virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query);
     virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/)
     {
         // finance, product, task
@@ -107,14 +105,14 @@ protected:
     {
         // finance, product, task, stakeholder
     }
-    virtual void QueryTransShadowList(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
+    virtual void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
 
     virtual QString RReplaceNodeQS() const = 0;
     virtual QString RUpdateProductReferenceQS() const = 0;
     virtual QString RUpdateStakeholderReferenceQS() const = 0;
-    virtual QString BuildTransShadowListQS() const = 0;
-    virtual QString InsertTransShadowQS() const = 0;
-    virtual QString BuildTransShadowListRangQS(CString& in_list) const = 0;
+    virtual QString ReadTransQS() const = 0;
+    virtual QString WriteTransQS() const = 0;
+    virtual QString ReadTransRangeQS(CString& in_list) const = 0;
 
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
 

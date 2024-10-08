@@ -56,7 +56,7 @@ bool TableModelStakeholder::AppendMulti(int node_id, const QList<int>& trans_id_
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
 
-    sql_->BuildTransShadowList(trans_shadow_list, node_id, trans_id_list);
+    sql_->ReadTransRange(trans_shadow_list, node_id, trans_id_list);
     beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();
@@ -132,7 +132,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     }
 
     if (old_rhs_node == 0 && rel_changed)
-        sql_->InsertTransShadow(trans_shadow);
+        sql_->WriteTrans(trans_shadow);
 
     emit SResizeColumnToContents(index.column());
     return true;

@@ -15,7 +15,7 @@ void TableModelOrder::RUpdateNodeID(int node_id)
             *trans_shadow->node_id = node_id;
 
     // 一次向数据库添加多条交易
-    sql_->InsertTransShadowList(trans_shadow_list_);
+    sql_->WriteTransRange(trans_shadow_list_);
     node_id_ = node_id;
 }
 
@@ -202,6 +202,10 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
         return false;
 
     *trans_shadow->lhs_node = value;
+    UpdateField(trans_shadow, value, INSIDE_PRODUCT, &TransShadow::lhs_node);
+
+    // todo:  更新单价，更新客户相应的产品编号
+
     return true;
 }
 
@@ -213,6 +217,9 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
     auto diff { *trans_shadow->lhs_credit * (value - *trans_shadow->unit_price) };
     *trans_shadow->rhs_credit += diff;
     *trans_shadow->unit_price = value;
+
+    UpdateField(trans_shadow, value, UNIT_PRICE, &TransShadow::unit_price);
+    UpdateField(trans_shadow, *trans_shadow->rhs_credit, INITIAL_SUBTOTAL, &TransShadow::rhs_credit);
 
     return true;
 }

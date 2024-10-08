@@ -8,16 +8,16 @@ public:
     SqliteFinance(CInfo& info, QObject* parent = nullptr);
 
 protected:
-    QString BuildTreeQS() const override;
-    QString InsertNodeQS() const override;
+    QString ReadNodeQS() const override;
+    QString WriteNodeQS() const override;
     QString RemoveNodeSecondQS() const override;
     QString InternalReferenceQS() const override;
     QString ExternalReferenceQS() const override { return QString(); }
     QString LeafTotalQS() const override;
 
-    QString BuildTransShadowListQS() const override;
-    QString InsertTransShadowQS() const override;
-    QString BuildTransShadowListRangQS(CString& in_list) const override;
+    QString ReadTransQS() const override;
+    QString WriteTransQS() const override;
+    QString ReadTransRangeQS(CString& in_list) const override;
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override { return QString(); }
     QString RUpdateStakeholderReferenceQS() const override { return {}; }

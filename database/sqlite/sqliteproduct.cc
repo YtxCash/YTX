@@ -9,7 +9,7 @@ SqliteProduct::SqliteProduct(CInfo& info, QObject* parent)
 {
 }
 
-QString SqliteProduct::BuildTreeQS() const
+QString SqliteProduct::ReadNodeQS() const
 {
     return QStringLiteral(R"(
     SELECT name, id, code, description, note, rule, branch, unit, color, commission, unit_price, initial_total, final_total
@@ -18,7 +18,7 @@ QString SqliteProduct::BuildTreeQS() const
     )");
 }
 
-QString SqliteProduct::InsertNodeQS() const
+QString SqliteProduct::WriteNodeQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO product (name, code, description, note, rule, branch, unit, color, commission, unit_price)
@@ -83,7 +83,7 @@ QString SqliteProduct::LeafTotalQS() const
     )");
 }
 
-void SqliteProduct::WriteNode(Node* node, QSqlQuery& query)
+void SqliteProduct::WriteNodeBind(Node* node, QSqlQuery& query)
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);
@@ -97,7 +97,7 @@ void SqliteProduct::WriteNode(Node* node, QSqlQuery& query)
     query.bindValue(":unit_price", node->first);
 }
 
-void SqliteProduct::ReadNode(Node* node, const QSqlQuery& query)
+void SqliteProduct::ReadNodeQuery(Node* node, const QSqlQuery& query)
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -114,7 +114,7 @@ void SqliteProduct::ReadNode(Node* node, const QSqlQuery& query)
     node->final_total = query.value("final_total").toDouble();
 }
 
-void SqliteProduct::ReadTrans(Trans* trans, const QSqlQuery& query)
+void SqliteProduct::ReadTransQuery(Trans* trans, const QSqlQuery& query)
 {
     trans->lhs_node = query.value("lhs_node").toInt();
     trans->lhs_debit = query.value("lhs_debit").toDouble();
@@ -132,7 +132,7 @@ void SqliteProduct::ReadTrans(Trans* trans, const QSqlQuery& query)
     trans->state = query.value("state").toBool();
 }
 
-void SqliteProduct::WriteTransShadow(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":unit_cost", *trans_shadow->unit_price);
@@ -161,7 +161,7 @@ void SqliteProduct::UpdateTransBind(Trans* trans, QSqlQuery& query)
     query.bindValue(":trans_id", trans->id);
 }
 
-QString SqliteProduct::BuildTransShadowListQS() const
+QString SqliteProduct::ReadTransQS() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time
@@ -170,7 +170,7 @@ QString SqliteProduct::BuildTransShadowListQS() const
     )");
 }
 
-QString SqliteProduct::InsertTransShadowQS() const
+QString SqliteProduct::WriteTransQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO product_transaction
@@ -180,7 +180,7 @@ QString SqliteProduct::InsertTransShadowQS() const
     )");
 }
 
-QString SqliteProduct::BuildTransShadowListRangQS(CString& in_list) const
+QString SqliteProduct::ReadTransRangeQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time

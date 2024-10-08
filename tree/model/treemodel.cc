@@ -130,7 +130,7 @@ bool TreeModel::InsertNode(int row, const QModelIndex& parent, Node* node)
     parent_node->children.insert(row, node);
     endInsertRows();
 
-    sql_->InsertNode(parent_node->id, node);
+    sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
     QString path { ConstructPath(node) };
@@ -714,7 +714,7 @@ void TreeModel::UpdateSeparator(CString& old_separator, CString& new_separator)
 
 void TreeModel::ConstructTree()
 {
-    sql_->BuildTree(node_hash_);
+    sql_->ReadNode(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };
 
     for (auto* node : const_node_hash) {

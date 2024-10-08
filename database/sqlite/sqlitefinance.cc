@@ -5,7 +5,7 @@ SqliteFinance::SqliteFinance(CInfo& info, QObject* parent)
 {
 }
 
-QString SqliteFinance::BuildTreeQS() const
+QString SqliteFinance::ReadNodeQS() const
 {
     return QStringLiteral(R"(
     SELECT name, id, code, description, note, rule, branch, unit, initial_total, final_total
@@ -14,7 +14,7 @@ QString SqliteFinance::BuildTreeQS() const
     )");
 }
 
-QString SqliteFinance::InsertNodeQS() const
+QString SqliteFinance::WriteNodeQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO finance (name, code, description, note, rule, branch, unit)
@@ -68,7 +68,7 @@ QString SqliteFinance::LeafTotalQS() const
     )");
 }
 
-QString SqliteFinance::BuildTransShadowListQS() const
+QString SqliteFinance::ReadTransQS() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
@@ -77,7 +77,7 @@ QString SqliteFinance::BuildTransShadowListQS() const
     )");
 }
 
-QString SqliteFinance::InsertTransShadowQS() const
+QString SqliteFinance::WriteTransQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO finance_transaction
@@ -87,7 +87,7 @@ QString SqliteFinance::InsertTransShadowQS() const
     )");
 }
 
-QString SqliteFinance::BuildTransShadowListRangQS(CString& in_list) const
+QString SqliteFinance::ReadTransRangeQS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, code, document, date_time
