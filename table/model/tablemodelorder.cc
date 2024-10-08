@@ -105,7 +105,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 void TableModelOrder::sort(int column, Qt::SortOrder order)
 {
     // ignore subtotal column
-    if (column <= -1 || column >= info_.part_table_header.size() - 1)
+    if (column <= -1 || column >= info_.table_header.size() - 1)
         return;
 
     auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {

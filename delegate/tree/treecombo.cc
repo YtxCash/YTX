@@ -1,6 +1,5 @@
 #include "treecombo.h"
 
-#include <QtWidgets/qapplication.h>
 #include <widget/combobox.h>
 
 TreeCombo::TreeCombo(CStringHash& hash, QObject* parent)

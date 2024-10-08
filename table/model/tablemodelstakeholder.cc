@@ -27,7 +27,7 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
     return true;
 }
 
-bool TableModelStakeholder::RemoveMulti(const QSet<int>& trans_id_set)
+bool TableModelStakeholder::RemoveMultiTrans(const QSet<int>& trans_id_set)
 {
     if (trans_id_set.isEmpty())
         return false;
@@ -51,7 +51,7 @@ bool TableModelStakeholder::RemoveMulti(const QSet<int>& trans_id_set)
     return true;
 }
 
-bool TableModelStakeholder::AppendMulti(int node_id, const QList<int>& trans_id_list)
+bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
 {
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
@@ -106,7 +106,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     auto trans_shadow { trans_shadow_list_.at(kRow) };
     int old_rhs_node { *trans_shadow->rhs_node };
 
-    bool rel_changed { false };
+    bool rhs_changed { false };
 
     switch (kColumn) {
     case TableEnumStakeholder::kDateTime:
@@ -116,7 +116,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnumStakeholder::kUnitPrice:
-        UpdateUnitPrice(trans_shadow, value.toDouble());
+        UpdateField(trans_shadow, value.toDouble(), UNIT_PRICE, &TransShadow::unit_price);
         break;
     case TableEnumStakeholder::kDescription:
         UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
@@ -125,49 +125,27 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         UpdateField(trans_shadow, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnumStakeholder::kInsideProduct:
-        rel_changed = UpdateField(trans_shadow, value.toInt(), INSIDE_PRODUCT, &TransShadow::rhs_node);
+        rhs_changed = UpdateRhsNode(trans_shadow, value.toInt());
         break;
     default:
         return false;
     }
 
-    if (old_rhs_node == 0 && rel_changed)
-        sql_->WriteTrans(trans_shadow);
+    if (rhs_changed) {
+        if (old_rhs_node == 0)
+            sql_->WriteTrans(trans_shadow);
+        else
+            sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
+    }
 
     emit SResizeColumnToContents(index.column());
-    return true;
-}
-
-bool TableModelStakeholder::UpdateCommission(TransShadow* trans_shadow, double value)
-{
-    if (std::abs(*trans_shadow->rhs_debit - value) < TOLERANCE)
-        return false;
-
-    *trans_shadow->rhs_debit = value;
-
-    if (*trans_shadow->rhs_node != 0)
-        sql_->UpdateField(info_.transaction, value, COMMISSION, *trans_shadow->id);
-
-    return true;
-}
-
-bool TableModelStakeholder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
-{
-    if (std::abs(*trans_shadow->unit_price - value) < TOLERANCE)
-        return false;
-
-    *trans_shadow->unit_price = value;
-
-    if (*trans_shadow->rhs_node != 0)
-        sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
-
     return true;
 }
 
 void TableModelStakeholder::sort(int column, Qt::SortOrder order)
 {
     // ignore subtotal column
-    if (column <= -1 || column >= info_.part_table_header.size() - 1)
+    if (column <= -1 || column >= info_.table_header.size() - 1)
         return;
 
     auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {

@@ -1,17 +1,17 @@
-#include "searchtablemodel.h"
+#include "searchtransmodel.h"
 
 #include "component/enumclass.h"
 
-SearchTableModel::SearchTableModel(CInfo* info, QSharedPointer<SearchSqlite> sql, QObject* parent)
+SearchTransModel::SearchTransModel(CInfo* info, SPSqlite sql, QObject* parent)
     : QAbstractItemModel { parent }
     , sql_ { sql }
     , info_ { info }
 {
 }
 
-SearchTableModel::~SearchTableModel() { trans_list_.clear(); }
+SearchTransModel::~SearchTransModel() { trans_list_.clear(); }
 
-QModelIndex SearchTableModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex SearchTransModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -19,25 +19,25 @@ QModelIndex SearchTableModel::index(int row, int column, const QModelIndex& pare
     return createIndex(row, column);
 }
 
-QModelIndex SearchTableModel::parent(const QModelIndex& index) const
+QModelIndex SearchTransModel::parent(const QModelIndex& index) const
 {
     Q_UNUSED(index);
     return QModelIndex();
 }
 
-int SearchTableModel::rowCount(const QModelIndex& parent) const
+int SearchTransModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
     return trans_list_.size();
 }
 
-int SearchTableModel::columnCount(const QModelIndex& parent) const
+int SearchTransModel::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return info_->table_header.size();
+    return info_->search_trans_header.size();
 }
 
-QVariant SearchTableModel::data(const QModelIndex& index, int role) const
+QVariant SearchTransModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
@@ -62,6 +62,12 @@ QVariant SearchTableModel::data(const QModelIndex& index, int role) const
         return trans->lhs_credit == 0 ? QVariant() : trans->lhs_credit;
     case TableEnumSearch::kDescription:
         return trans->description;
+    case TableEnumSearch::kUnitPrice:
+        return trans->unit_price == 0 ? QVariant() : trans->unit_price;
+    case TableEnumSearch::kNodeID:
+        return trans->node_id == 0 ? QVariant() : trans->node_id;
+    case TableEnumSearch::kDiscountPrice:
+        return trans->discount_price == 0 ? QVariant() : trans->discount_price;
     case TableEnumSearch::kRhsNode:
         return trans->rhs_node;
     case TableEnumSearch::kRhsRatio:
@@ -79,17 +85,17 @@ QVariant SearchTableModel::data(const QModelIndex& index, int role) const
     }
 }
 
-QVariant SearchTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant SearchTransModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return info_->table_header.at(section);
+        return info_->search_trans_header.at(section);
 
     return QVariant();
 }
 
-void SearchTableModel::sort(int column, Qt::SortOrder order)
+void SearchTransModel::sort(int column, Qt::SortOrder order)
 {
-    if (column <= -1 || column >= info_->table_header.size() - 1)
+    if (column <= -1 || column >= info_->search_trans_header.size() - 1)
         return;
 
     auto Compare = [column, order](const Trans* lhs, const Trans* rhs) -> bool {
@@ -122,6 +128,12 @@ void SearchTableModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->state < rhs->state) : (lhs->state > rhs->state);
         case TableEnumSearch::kDocument:
             return (order == Qt::AscendingOrder) ? (lhs->document.size() < rhs->document.size()) : (lhs->document.size() > rhs->document.size());
+        case TableEnumSearch::kUnitPrice:
+            return (order == Qt::AscendingOrder) ? (lhs->unit_price < rhs->unit_price) : (lhs->unit_price > rhs->unit_price);
+        case TableEnumSearch::kNodeID:
+            return (order == Qt::AscendingOrder) ? (lhs->node_id < rhs->node_id) : (lhs->node_id > rhs->node_id);
+        case TableEnumSearch::kDiscountPrice:
+            return (order == Qt::AscendingOrder) ? (lhs->discount_price < rhs->discount_price) : (lhs->discount_price > rhs->discount_price);
         default:
             return false;
         }
@@ -132,18 +144,13 @@ void SearchTableModel::sort(int column, Qt::SortOrder order)
     emit layoutChanged();
 }
 
-void SearchTableModel::Query(const QString& text)
+void SearchTransModel::Query(const QString& text)
 {
+    beginResetModel();
     if (!trans_list_.isEmpty())
         trans_list_.clear();
 
-    TransList trans_list {};
     if (!text.isEmpty())
-        trans_list = sql_->QueryTransList(text);
-
-    beginResetModel();
-    for (auto* trans : trans_list)
-        trans_list_.emplace_back(trans);
-
+        sql_->SearchTrans(trans_list_, text);
     endResetModel();
 }

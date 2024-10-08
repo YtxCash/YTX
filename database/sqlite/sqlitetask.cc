@@ -173,3 +173,13 @@ void SqliteTask::UpdateTransBind(Trans* trans, QSqlQuery& query)
     query.bindValue(":rhs_credit", trans->rhs_credit);
     query.bindValue(":trans_id", trans->id);
 }
+
+QString SqliteTask::SearchTransQS() const
+{
+    return QStringLiteral(R"(
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time
+    FROM task_transaction
+    WHERE (lhs_debit = :text OR lhs_credit = :text OR rhs_debit = :text OR rhs_credit = :text OR description LIKE :description) AND removed = 0
+    ORDER BY date_time
+    )");
+}

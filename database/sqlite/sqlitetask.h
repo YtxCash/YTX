@@ -26,6 +26,7 @@ protected:
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) override;
     void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) override;
     void UpdateTransBind(Trans* trans, QSqlQuery& query) override;
+    QString SearchTransQS() const override;
 };
 
 #endif // SQLITETASK_H

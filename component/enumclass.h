@@ -17,6 +17,9 @@ enum class TableEnumSearch {
     kLhsDebit,
     kLhsCredit,
     kDescription,
+    kUnitPrice,
+    kNodeID,
+    kDiscountPrice,
     kDocument,
     kState,
     kRhsCredit,
@@ -53,17 +56,8 @@ enum class TreeEnum {
     kRule,
     kBranch,
     kUnit,
-    kFirst,
-    kSecond,
-    kThird,
-    kFourth,
-    kFifth,
-    kSixth,
-    kSeventh,
-    kDateTime,
     kInitialTotal,
     kFinalTotal,
-    kPlaceholder
 };
 
 enum class TreeEnumFinanceTask { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kInitialTotal, kFinalTotal, kPlaceholder };
@@ -78,8 +72,8 @@ enum class TreeEnumProduct {
     kBranch,
     kUnit,
     kColor,
-    kCommission,
     kUnitPrice,
+    kCommission,
     kInitialTotal,
     kFinalTotal,
     kPlaceholder

@@ -11,7 +11,6 @@
 #include "component/settings.h"
 #include "component/using.h"
 #include "database/mainwindowsqlite.h"
-#include "database/searchsqlite.h"
 #include "table/model/tablemodel.h"
 #include "tree/model/treemodel.h"
 #include "ui_mainwindow.h"
@@ -26,7 +25,6 @@ struct Data {
     Tab tab {};
     Info info {};
     QSharedPointer<Sqlite> sql {};
-    QSharedPointer<SearchSqlite> search_sql {};
 };
 
 using PDialog = QPointer<QDialog>;

@@ -25,16 +25,16 @@ void TableModel::RRemoveMultiTrans(const QMultiHash<int, int>& node_trans)
         return;
 
     auto trans_id_list { node_trans.values(node_id_) };
-    RemoveMulti(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
+    RemoveMultiTrans(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
 }
 
 void TableModel::RMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
 {
     if (node_id_ == old_node_id)
-        RemoveMulti(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
+        RemoveMultiTrans(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
 
     if (node_id_ == new_node_id)
-        AppendMulti(node_id_, trans_id_list);
+        AppendMultiTrans(node_id_, trans_id_list);
 }
 
 void TableModel::RRule(int node_id, bool rule)
@@ -300,13 +300,13 @@ int TableModel::rowCount(const QModelIndex& parent) const
 int TableModel::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return info_.part_table_header.size();
+    return info_.table_header.size();
 }
 
 QVariant TableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return info_.part_table_header.at(section);
+        return info_.table_header.at(section);
 
     return QVariant();
 }
@@ -358,7 +358,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     auto trans_shadow { trans_shadow_list_.at(kRow) };
     int old_rhs_node { *trans_shadow->rhs_node };
 
-    bool rel_changed { false };
+    bool rhs_changed { false };
     bool deb_changed { false };
     bool cre_changed { false };
     bool rat_changed { false };
@@ -380,7 +380,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
         break;
     case TableEnum::kRhsNode:
-        rel_changed = UpdateRelatedNode(trans_shadow, value.toInt());
+        rhs_changed = UpdateRhsNode(trans_shadow, value.toInt());
         break;
     case TableEnum::kDebit:
         deb_changed = UpdateDebit(trans_shadow, value.toDouble());
@@ -393,7 +393,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     }
 
     if (old_rhs_node == 0) {
-        if (rel_changed) {
+        if (rhs_changed) {
             sql_->WriteTrans(trans_shadow);
             QtConcurrent::run(&TableModel::AccumulateSubtotal, this, kRow, rule_);
 
@@ -426,7 +426,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
         emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
     }
 
-    if (rel_changed) {
+    if (rhs_changed) {
         sql_->UpdateTrans(*trans_shadow->id);
         emit SRemoveOneTrans(info_.section, old_rhs_node, *trans_shadow->id);
         emit SAppendOneTrans(info_.section, trans_shadow);
@@ -444,7 +444,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
 void TableModel::sort(int column, Qt::SortOrder order)
 { // ignore subtotal column
-    if (column <= -1 || column >= info_.part_table_header.size() - 1)
+    if (column <= -1 || column >= info_.table_header.size() - 1)
         return;
 
     auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {
@@ -588,7 +588,7 @@ void TableModel::AccumulateSubtotal(int start, bool rule)
     });
 }
 
-bool TableModel::UpdateRelatedNode(TransShadow* trans_shadow, int value)
+bool TableModel::UpdateRhsNode(TransShadow* trans_shadow, int value)
 {
     if (*trans_shadow->rhs_node == value)
         return false;
@@ -597,7 +597,7 @@ bool TableModel::UpdateRelatedNode(TransShadow* trans_shadow, int value)
     return true;
 }
 
-bool TableModel::RemoveMulti(const QSet<int>& trans_id_set)
+bool TableModel::RemoveMultiTrans(const QSet<int>& trans_id_set)
 {
     if (trans_id_set.isEmpty())
         return false;
@@ -624,7 +624,7 @@ bool TableModel::RemoveMulti(const QSet<int>& trans_id_set)
     return true;
 }
 
-bool TableModel::AppendMulti(int node_id, const QList<int>& trans_id_list)
+bool TableModel::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
 {
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};

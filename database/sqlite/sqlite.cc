@@ -236,11 +236,43 @@ void Sqlite::LeafTotal(Node* node)
     query.prepare(string);
     query.bindValue(":node_id", node->id);
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Error in calculate leaf total." << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in calculate leaf total" << query.lastError().text();
         return;
     }
 
     CalculateLeafTotal(node, query);
+}
+
+QList<int> Sqlite::SearchNodeName(CString& text)
+{
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    QString string {};
+    if (text.isEmpty())
+        string = QString("SELECT id FROM %1 WHERE removed = 0").arg(info_.node);
+    else
+        string = QString("SELECT id FROM %1 WHERE removed = 0 AND name LIKE :text").arg(info_.node);
+
+    query.prepare(string);
+
+    if (!text.isEmpty())
+        query.bindValue(":text", "%" + text + "%");
+
+    if (!query.exec()) {
+        qWarning() << "Failed in Search Node Name" << query.lastError().text();
+        return {};
+    }
+
+    int node_id {};
+    QList<int> node_list {};
+
+    while (query.next()) {
+        node_id = query.value("id").toInt();
+        node_list.emplaceBack(node_id);
+    }
+
+    return node_list;
 }
 
 bool Sqlite::RemoveNode(int node_id, bool branch)
@@ -630,6 +662,45 @@ bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state)
     }
 
     return true;
+}
+
+void Sqlite::SearchTrans(TransList& trans_list, CString& text)
+{
+    if (text.isEmpty())
+        return;
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    auto string { SearchTransQS() };
+    query.prepare(string);
+
+    query.bindValue(":text", text);
+    query.bindValue(":description", "%" + text + "%");
+
+    if (!query.exec()) {
+        qWarning() << "Failed in Search Trans" << query.lastError().text();
+        return;
+    }
+
+    Trans* trans {};
+    int id {};
+
+    while (query.next()) {
+        id = query.value("id").toInt();
+
+        if (trans_hash_.contains(id)) {
+            trans = trans_hash_.value(id);
+            trans_list.emplaceBack(trans);
+            continue;
+        }
+
+        trans = ResourcePool<Trans>::Instance().Allocate();
+        trans->id = id;
+
+        ReadTransQuery(trans, query);
+        trans_list.emplaceBack(trans);
+    }
 }
 
 void Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)

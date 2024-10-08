@@ -20,12 +20,8 @@ public:
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
 protected:
-    bool RemoveMulti(const QSet<int>& trans_id_list) override; // just remove trnas_shadow, keep trans
-    bool AppendMulti(int node_id, const QList<int>& trans_id_list) override;
-
-private:
-    bool UpdateCommission(TransShadow* trans_shadow, double value);
-    bool UpdateUnitPrice(TransShadow* trans_shadow, double value);
+    bool RemoveMultiTrans(const QSet<int>& trans_id_list) override; // just remove trnas_shadow, keep trans
+    bool AppendMultiTrans(int node_id, const QList<int>& trans_id_list) override;
 };
 
 #endif // TABLEMODELSTAKEHOLDER_H

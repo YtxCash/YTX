@@ -527,11 +527,11 @@ void TreeModel::SetNodeShadow(NodeShadow* node_shadow, int node_id) const
         node_shadow->Set(it.value());
 }
 
-void TreeModel::NodeList(QList<const Node*>& node_list, const QList<int>& id_list) const
+void TreeModel::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
 {
-    node_list.reserve(id_list.size());
+    node_list.reserve(node_id_list.size());
 
-    for (int node_id : id_list) {
+    for (int node_id : node_id_list) {
         auto it { node_hash_.constFind(node_id) };
         if (it != node_hash_.constEnd() && it.value()) {
             node_list.emplaceBack(it.value());

@@ -1,19 +1,16 @@
-#ifndef SEARCHTREEMODEL_H
-#define SEARCHTREEMODEL_H
+#ifndef SEARCHTRANSMODEL_H
+#define SEARCHTRANSMODEL_H
 
 #include <QAbstractItemModel>
 
 #include "component/info.h"
-#include "component/settings.h"
-#include "component/using.h"
-#include "database/searchsqlite.h"
-#include "tree/model/treemodel.h"
+#include "database/sqlite/sqlite.h"
 
-class SearchTreeModel final : public QAbstractItemModel {
+class SearchTransModel final : public QAbstractItemModel {
     Q_OBJECT
 public:
-    SearchTreeModel(CInfo& info, const TreeModel& tree_model, CSettings& settings, QSharedPointer<SearchSqlite> sql, QObject* parent = nullptr);
-    ~SearchTreeModel() = default;
+    SearchTransModel(CInfo* info, SPSqlite sql, QObject* parent = nullptr);
+    ~SearchTransModel();
 
 public:
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
@@ -28,16 +25,13 @@ public:
     void sort(int column, Qt::SortOrder order) override;
 
 public:
-    void Query(CString& text);
+    void Query(const QString& text);
 
 private:
-    QSharedPointer<SearchSqlite> sql_ {};
+    SPSqlite sql_ {};
 
-    CInfo& info_;
-    CSettings& settings_;
-    const TreeModel& tree_model_;
-
-    QList<const Node*> node_list_ {};
+    TransList trans_list_ {};
+    CInfo* info_ {};
 };
 
-#endif // SEARCHTREEMODEL_H
+#endif // SEARCHTRANSMODEL_H

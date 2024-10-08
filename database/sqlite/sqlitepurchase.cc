@@ -89,6 +89,15 @@ QString SqlitePurchase::RUpdateStakeholderReferenceQS() const
     )");
 }
 
+QString SqlitePurchase::SearchTransQS() const
+{
+    return QStringLiteral(R"(
+    SELECT id, code, inside_product, unit_price, second, description, node_id, first, initial_subtotal, discount, outside_product, discount_price
+    FROM purchase_transaction
+    WHERE (first = :text OR second = :text OR description LIKE :description) AND removed = 0
+    )");
+}
+
 void SqlitePurchase::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
 {
     query.bindValue(":code", *trans_shadow->code);

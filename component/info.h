@@ -15,8 +15,10 @@ struct Info {
     QString transaction {}; // SQL database node_transaction table name
 
     QStringList tree_header {};
-    QStringList part_table_header {};
     QStringList table_header {};
+
+    QStringList search_trans_header {};
+    QStringList search_node_header {};
 
     QHash<int, QString> unit_hash {};
     QHash<int, QString> unit_symbol_hash {};

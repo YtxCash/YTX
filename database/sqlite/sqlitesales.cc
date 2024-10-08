@@ -55,6 +55,15 @@ QString SqliteSales::RUpdateStakeholderReferenceQS() const
     )");
 }
 
+QString SqliteSales::SearchTransQS() const
+{
+    return QStringLiteral(R"(
+    SELECT id, code, inside_product, unit_price, description, second, node_id, first, initial_subtotal, discount, outside_product, discount_price
+    FROM sales_transaction
+    WHERE (first = :text OR second = :text OR description LIKE :description) AND removed = 0
+    )");
+}
+
 QString SqliteSales::WriteTransQS() const
 {
     return QStringLiteral(R"(

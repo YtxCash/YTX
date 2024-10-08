@@ -145,6 +145,16 @@ QString SqliteStakeholder::RUpdateProductReferenceQS() const
     )");
 }
 
+QString SqliteStakeholder::SearchTransQS() const
+{
+    return QStringLiteral(R"(
+    SELECT  id, date_time, code, node, unit_price, description, document, state, inside_product
+    FROM stakeholder_transaction
+    WHERE (unit_price = :text OR description LIKE :description) AND removed = 0
+    ORDER BY date_time
+    )");
+}
+
 QList<int> SqliteStakeholder::DialogReplaceNode(int old_node_id, int new_node_id)
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };

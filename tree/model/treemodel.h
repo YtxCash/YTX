@@ -100,7 +100,7 @@ public:
     }
 
     // member functions
-    void NodeList(QList<const Node*>& node_list, const QList<int>& id_list) const;
+    void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const;
 
     int Employee(int node_id) const { return GetValue(node_id, &Node::employee); }
     int Unit(int node_id) const { return GetValue(node_id, &Node::unit); }

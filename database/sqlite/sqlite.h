@@ -50,6 +50,7 @@ public:
     bool InternalReference(int node_id) const;
     bool ExternalReference(int node_id) const;
     void LeafTotal(Node* node);
+    QList<int> SearchNodeName(CString& text);
 
     // table
     void ReadTrans(TransShadowList& trans_shadow_list, int node_id);
@@ -61,8 +62,7 @@ public:
     bool RemoveTrans(int trans_id);
     bool UpdateTrans(int trans_id);
     bool UpdateCheckState(CString& column, CVariant& value, Check state);
-
-    QHash<int, Trans*>* TransHash() { return &trans_hash_; } // 需要改变设计
+    void SearchTrans(TransList& trans_list, CString& text);
 
     // common
     bool UpdateField(CString& table, CVariant& value, CString& field, int id);
@@ -82,6 +82,7 @@ protected:
     virtual QString ExternalReferenceQS() const = 0;
     virtual QString LeafTotalQS() const = 0;
     virtual QString UpdateTransQS() const = 0;
+    virtual QString SearchTransQS() const = 0;
 
     QString RemoveNodeFirstQS() const;
     QString RemoveNodeBranchQS() const;

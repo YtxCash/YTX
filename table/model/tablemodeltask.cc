@@ -45,7 +45,7 @@ QVariant TableModelTask::data(const QModelIndex& index, int role) const
 
 void TableModelTask::sort(int column, Qt::SortOrder order)
 {
-    if (column <= -1 || column >= info_.part_table_header.size() - 1)
+    if (column <= -1 || column >= info_.table_header.size() - 1)
         return;
 
     auto Compare = [column, order](TransShadow* lhs, TransShadow* rhs) -> bool {

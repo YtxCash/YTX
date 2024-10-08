@@ -940,7 +940,6 @@ void MainWindow::SetFinanceData()
     sql_.QuerySettings(finance_settings_, section);
 
     sql = QSharedPointer<SqliteFinance>::create(info);
-    finance_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelFinanceTask(sql, info, finance_settings_.base_unit, finance_table_hash_, interface_.separator, this);
     finance_tree_.widget = new TreeWidgetCommon(model, info, finance_settings_, this);
@@ -967,7 +966,6 @@ void MainWindow::SetProductData()
     sql_.QuerySettings(product_settings_, section);
 
     sql = QSharedPointer<SqliteProduct>::create(info);
-    product_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelProduct(sql, info, product_settings_.base_unit, product_table_hash_, interface_.separator, this);
     product_tree_.widget = new TreeWidgetCommon(model, info, product_settings_, this);
@@ -997,7 +995,6 @@ void MainWindow::SetStakeholderData()
     sql_.QuerySettings(stakeholder_settings_, section);
 
     sql = QSharedPointer<SqliteStakeholder>::create(info);
-    stakeholder_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     stakeholder_tree_.model = new TreeModelStakeholder(sql, info, stakeholder_settings_.base_unit, stakeholder_table_hash_, interface_.separator, this);
     stakeholder_tree_.widget = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
@@ -1026,7 +1023,6 @@ void MainWindow::SetTaskData()
     sql_.QuerySettings(task_settings_, section);
 
     sql = QSharedPointer<SqliteTask>::create(info);
-    task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelFinanceTask(sql, info, task_settings_.base_unit, task_table_hash_, interface_.separator, this);
     task_tree_.widget = new TreeWidgetCommon(model, info, task_settings_, this);
@@ -1056,7 +1052,6 @@ void MainWindow::SetSalesData()
     sql_.QuerySettings(sales_settings_, section);
 
     sql = QSharedPointer<SqliteSales>::create(info);
-    task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelOrder(sql, info, sales_settings_.base_unit, sales_table_hash_, interface_.separator, this);
     sales_tree_.widget = new TreeWidgetOrder(model, info, sales_settings_, this);
@@ -1090,7 +1085,6 @@ void MainWindow::SetPurchaseData()
     sql_.QuerySettings(purchase_settings_, section);
 
     sql = QSharedPointer<SqlitePurchase>::create(info);
-    task_data_.search_sql = QSharedPointer<SearchSqlite>::create(info, sql->TransHash());
 
     model = new TreeModelOrder(sql, info, purchase_settings_.base_unit, purchase_table_hash_, interface_.separator, this);
     purchase_tree_.widget = new TreeWidgetOrder(model, info, purchase_settings_, this);
@@ -1105,94 +1099,51 @@ void MainWindow::SetHeader()
 {
     finance_data_.info.tree_header
         = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Foreign Total"), tr("Local Total"), "" };
-    finance_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("FXRate"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
-        tr("Debit"), tr("Credit"), tr("Subtotal") };
-    finance_data_.info.table_header = {
-        tr("ID"),
-        tr("DateTime"),
-        tr("Code"),
-        tr("LhsNode"),
-        tr("LhsFXRate"),
-        tr("LhsDebit"),
-        tr("LhsCredit"),
-        tr("Description"),
-        tr("D"),
-        tr("S"),
-        tr("RhsCredit"),
-        tr("RhsDebit"),
-        tr("RhsFXRate"),
-        tr("RhsNode"),
-    };
+    finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("FXRate"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Debit"),
+        tr("Credit"), tr("Subtotal") };
+    finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
+        tr("Description"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
+    finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
+        {}, {}, {}, {}, tr("Foreign Total"), tr("Base Total") };
 
     product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Color"),
-        tr("Commission"), tr("UnitPrice"), tr("Quantity Total"), tr("Amount Total"), "" };
-    product_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
+        tr("UnitPrice"), tr("Commission"), tr("Quantity Total"), tr("Amount Total"), "" };
+    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
         tr("Debit"), tr("Credit"), tr("Subtotal") };
-    product_data_.info.table_header = {
-        tr("ID"),
-        tr("DateTime"),
-        tr("Code"),
-        tr("LhsNode"),
-        tr("LhsUnitCost"),
-        tr("LhsDebit"),
-        tr("LhsCredit"),
-        tr("Description"),
-        tr("D"),
-        tr("S"),
-        tr("RhsCredit"),
-        tr("RhsDebit"),
-        tr("RhsUnitCost"),
-        tr("RhsNode"),
-    };
+    product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
+        tr("UnitCost"), {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
+    product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
+        tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity Total"), tr("Amount Total") };
 
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), "" };
-    stakeholder_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), tr("D"), tr("S"), tr("Inside") };
-    stakeholder_data_.info.table_header = {
-        tr("ID"),
-        tr("DateTime"),
-        tr("Code"),
-        tr("LhsNode"),
-        tr("LhsRatio"),
-        tr("LhsDebit"),
-        tr("LhsCredit"),
-        tr("Description"),
-        tr("D"),
-        tr("S"),
-        tr("RhsCredit"),
-        tr("RhsDebit"),
-        tr("RhsRatio"),
-        tr("RhsNode"),
-    };
+    stakeholder_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), tr("D"), tr("S"), tr("Inside") };
+    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("Node"), {}, {}, {}, tr("Description"), tr("UnitPrice"), {}, {},
+        tr("D"), tr("S"), {}, {}, {}, tr("InsideProduct") };
+    stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
+        tr("Deadline"), tr("Employee"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
     task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Quantity Total"),
         tr("Amount Total"), "" };
-    task_data_.info.part_table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
-        tr("Debit"), tr("Credit"), tr("Subtotal") };
-    task_data_.info.table_header = {
-        tr("ID"),
-        tr("DateTime"),
-        tr("Code"),
-        tr("LhsNode"),
-        tr("LhsUnitCost"),
-        tr("LhsDebit"),
-        tr("LhsCredit"),
-        tr("Description"),
-        tr("D"),
-        tr("S"),
-        tr("RhsCredit"),
-        tr("RhsDebit"),
-        tr("RhsUnitCost"),
-        tr("RhsNode"),
-    };
+    task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Debit"),
+        tr("Credit"), tr("Subtotal") };
+    task_data_.info.search_trans_header = product_data_.info.search_trans_header;
+    task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
+        tr("Color"), {}, {}, {}, {}, tr("Quantity Total"), tr("Amount Total") };
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
-    sales_data_.info.part_table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("node_id"),
-        tr("First"), tr("Second"), tr("OutsideProduct"), tr("InitialSubtotal"), tr("DiscountPrice"), tr("Discount") };
+    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("node_id"), tr("First"),
+        tr("Second"), tr("OutsideProduct"), tr("InitialSubtotal"), tr("DiscountPrice"), tr("Discount") };
+    sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
+        tr("NodeID"), tr("DiscountPrice"), {}, {}, tr("InitialSubtotal"), tr("discount"), {}, tr("OutsideProduct") };
+    sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
+        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
 
     purchase_data_.info.tree_header = sales_data_.info.tree_header;
-    purchase_data_.info.part_table_header = sales_data_.info.part_table_header;
+    purchase_data_.info.table_header = sales_data_.info.table_header;
+    purchase_data_.info.search_trans_header = sales_data_.info.search_trans_header;
+    purchase_data_.info.search_node_header = sales_data_.info.search_node_header;
 }
 
 void MainWindow::SetAction()
@@ -1812,7 +1763,7 @@ void MainWindow::RSearchTriggered()
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    auto dialog { new Search(data_->info, interface_, *tree_->model, data_->search_sql, *settings_, data_->info.rule_hash, this) };
+    auto dialog { new Search(data_->info, tree_->model, stakeholder_tree_.model, data_->sql, data_->info.rule_hash, *settings_, this) };
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);
     connect(dialog, &Search::STableLocation, this, &MainWindow::RTableLocation);
     connect(tree_->model, &TreeModel::SSearch, dialog, &Search::RSearch);

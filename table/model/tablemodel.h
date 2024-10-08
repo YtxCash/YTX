@@ -81,14 +81,14 @@ protected:
     virtual bool UpdateCredit(TransShadow* trans_shadow, double value);
     virtual bool UpdateRatio(TransShadow* trans_shadow, double value);
 
-    virtual bool RemoveMulti(const QSet<int>& trans_id_list); // just remove trnas_shadow, keep trans
-    virtual bool AppendMulti(int node_id, const QList<int>& trans_id_list);
+    virtual bool RemoveMultiTrans(const QSet<int>& trans_id_list); // just remove trnas_shadow, keep trans
+    virtual bool AppendMultiTrans(int node_id, const QList<int>& trans_id_list);
 
     // member functions
     double Balance(bool rule, double debit, double credit) { return (rule ? 1 : -1) * (credit - debit); }
     void AccumulateSubtotal(int start, bool rule);
 
-    bool UpdateRelatedNode(TransShadow* trans_shadow, int value);
+    bool UpdateRhsNode(TransShadow* trans_shadow, int value);
 
 protected:
     template <typename T>
@@ -99,7 +99,7 @@ protected:
 
         *(trans_shadow->*member) = value;
 
-        if (*trans_shadow->rhs_node != 0)
+        if (*trans_shadow->rhs_node == 0)
             return false;
 
         try {

@@ -4,10 +4,10 @@
 #include <QDialog>
 #include <QTableView>
 
+#include "component/settings.h"
 #include "component/using.h"
-#include "database/searchsqlite.h"
-#include "table/searchtablemodel.h"
-#include "table/searchtreemodel.h"
+#include "table/searchnodemodel.h"
+#include "table/searchtransmodel.h"
 
 namespace Ui {
 class Search;
@@ -17,7 +17,7 @@ class Search final : public QDialog {
     Q_OBJECT
 
 public:
-    Search(CInfo& info, CInterface& interface, const TreeModel& tree_model, QSharedPointer<SearchSqlite> sql, CSettings& settings, CStringHash& rule_hash,
+    Search(CInfo& info, const TreeModel* tree, const TreeModel* stakeholder_tree, SPSqlite sql, CStringHash& rule_hash, CSettings& settings,
         QWidget* parent = nullptr);
     ~Search();
 
@@ -38,27 +38,29 @@ private:
     void IniDialog();
     void IniConnect();
 
-    void IniTree(QTableView* view, SearchTreeModel* model);
-    void IniTable(QTableView* view, SearchTableModel* model);
+    void TreeViewDelegate(QTableView* view, SearchNodeModel* model);
+    void TableViewDelegate(QTableView* view, SearchTransModel* model);
 
     void IniView(QTableView* view);
-    void HideColumn(QTableView* view, Section section);
 
     void ResizeTreeColumn(QHeaderView* header);
     void ResizeTableColumn(QHeaderView* header);
 
+    void HideTreeColumn(QTableView* view, Section section);
+    void HideTableColumn(QTableView* view, Section section);
+
 private:
     Ui::Search* ui;
-    SearchTreeModel* search_tree_model_ {};
-    SearchTableModel* search_table_model_ {};
 
-    QSharedPointer<SearchSqlite> sql_ {};
+    SearchNodeModel* search_tree_ {};
+    SearchTransModel* search_table_ {};
+    QSharedPointer<Sqlite> sql_ {};
+    const TreeModel* tree_ {};
+    const TreeModel* stakeholder_tree_ {};
 
-    CStringHash& rule_hash_;
     CSettings& settings_;
-    const TreeModel& tree_model_;
     CInfo& info_;
-    CInterface& interface_;
+    CStringHash& rule_hash_;
 };
 
 #endif // SEARCH_H

@@ -38,6 +38,7 @@ protected:
     QString RUpdateProductReferenceQS() const override;
     QString RUpdateStakeholderReferenceQS() const override { return {}; }
     QString UpdateTransQS() const override { return {}; }
+    QString SearchTransQS() const override;
 
 private:
     QList<int> DialogReplaceNode(int old_node_id, int new_node_id);

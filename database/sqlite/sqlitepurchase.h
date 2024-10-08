@@ -35,6 +35,7 @@ protected:
     QString RUpdateProductReferenceQS() const override;
     QString RUpdateStakeholderReferenceQS() const override;
     QString UpdateTransQS() const override { return {}; }
+    QString SearchTransQS() const override;
 };
 
 #endif // SQLITEPURCHASE_H
