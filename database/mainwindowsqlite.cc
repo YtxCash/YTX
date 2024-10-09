@@ -242,8 +242,8 @@ QString MainwindowSqlite::NodeOrder(CString& table_name)
         second            NUMERIC,
         discount          NUMERIC,
         locked            BOOLEAN    DEFAULT 0,
-        initial_total     NUMERIC,
-        final_total       NUMERIC,
+        amount            NUMERIC,
+        settled           NUMERIC,
         removed           BOOLEAN    DEFAULT 0
     );
 )")
@@ -299,8 +299,9 @@ QString MainwindowSqlite::TransactionOrder(CString& table_name)
         unit_price          NUMERIC,
         node_id             INTEGER,
         discount_price      NUMERIC,
-        initial_subtotal    NUMERIC,
+        amount              NUMERIC,
         discount            NUMERIC,
+        settled             NUMERIC,
         outside_product     INTEGER,
         removed             BOOLEAN    DEFAULT 0
     );

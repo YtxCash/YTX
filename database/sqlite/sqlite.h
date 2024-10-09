@@ -35,7 +35,7 @@ signals:
 
 public slots:
     // receive from remove node dialog
-    virtual bool RRemoveNode(int node_id);
+    virtual void RRemoveNode(int node_id);
     virtual bool RReplaceNode(int old_node_id, int new_node_id);
     // receive from sql
     bool RUpdateProductReference(int old_node_id, int new_node_id);
@@ -49,12 +49,12 @@ public:
     bool DragNode(int destination_node_id, int node_id);
     bool InternalReference(int node_id) const;
     bool ExternalReference(int node_id) const;
-    void LeafTotal(Node* node);
+    bool LeafTotal(Node* node);
     QList<int> SearchNodeName(CString& text);
 
     // table
-    void ReadTrans(TransShadowList& trans_shadow_list, int node_id);
-    void ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
+    bool ReadTrans(TransShadowList& trans_shadow_list, int node_id);
+    bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
     bool WriteTrans(TransShadow* trans_shadow);
     bool WriteTransRange(const QList<TransShadow*>& list);
     TransShadow* AllocateTransShadow();
@@ -62,7 +62,7 @@ public:
     bool RemoveTrans(int trans_id);
     bool UpdateTrans(int trans_id);
     bool UpdateCheckState(CString& column, CVariant& value, Check state);
-    void SearchTrans(TransList& trans_list, CString& text);
+    bool SearchTrans(TransList& trans_list, CString& text);
 
     // common
     bool UpdateField(CString& table, CVariant& value, CString& field, int id);
@@ -73,16 +73,21 @@ protected:
     virtual void WriteNodeBind(Node* node, QSqlQuery& query);
 
     void CalculateLeafTotal(Node* node, QSqlQuery& query);
+    bool DBTransaction(std::function<bool()> function);
+    bool ReadRelationship(const NodeHash& node_hash, QSqlQuery& query);
+    bool WriteRelationship(int node_id, int parent_id, QSqlQuery& query);
 
     // QS means QueryString
     virtual QString ReadNodeQS() const = 0;
     virtual QString WriteNodeQS() const = 0;
     virtual QString RemoveNodeSecondQS() const = 0;
     virtual QString InternalReferenceQS() const = 0;
-    virtual QString ExternalReferenceQS() const = 0;
-    virtual QString LeafTotalQS() const = 0;
-    virtual QString UpdateTransQS() const = 0;
     virtual QString SearchTransQS() const = 0;
+
+    // default query string is empty
+    virtual QString ExternalReferenceQS() const { return {}; }
+    virtual QString LeafTotalQS() const { return {}; }
+    virtual QString UpdateTransQS() const { return {}; }
 
     QString RemoveNodeFirstQS() const;
     QString RemoveNodeBranchQS() const;
@@ -90,35 +95,28 @@ protected:
     QString DragNodeFirstQS() const;
     QString DragNodeSecondQS() const;
 
-    bool DBTransaction(std::function<bool()> function);
-    void ReadRelationship(const NodeHash& node_hash, QSqlQuery& query);
-    void WriteRelationship(int node_id, int parent_id, QSqlQuery& query);
-
     // table
     virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query);
     virtual void UpdateTransBind(Trans* trans, QSqlQuery& query);
     virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query);
-    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/)
-    {
-        // finance, product, task
-    }
-    virtual void UpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/)
-    {
-        // finance, product, task, stakeholder
-    }
     virtual void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
 
-    virtual QString RReplaceNodeQS() const = 0;
-    virtual QString RUpdateProductReferenceQS() const = 0;
-    virtual QString RUpdateStakeholderReferenceQS() const = 0;
-    virtual QString ReadTransQS() const = 0;
-    virtual QString WriteTransQS() const = 0;
-    virtual QString ReadTransRangeQS(CString& in_list) const = 0;
+    // default function do nothing
+    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/) { }
+    virtual void UpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/) { }
 
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
-
     QMultiHash<int, int> DialogReplaceNode(int old_node_id, int new_node_id);
     QMultiHash<int, int> DialogRemoveNode(int node_id);
+
+    // default query string is empty
+    virtual QString ReadTransQS() const = 0;
+    virtual QString WriteTransQS() const = 0;
+
+    virtual QString RUpdateProductReferenceQS() const { return {}; }
+    virtual QString RUpdateStakeholderReferenceQS() const { return {}; }
+    virtual QString RReplaceNodeQS() const { return {}; }
+    virtual QString ReadTransRangeQS(CString& /*in_list*/) const { return {}; }
 
 protected:
     QHash<int, Trans*> trans_hash_ {};

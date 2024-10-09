@@ -21,7 +21,7 @@ QString FinanceForeign::Format(const QModelIndex& index) const
 {
     static const QString empty_string {};
 
-    int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
+    int unit { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kUnit)).data().toInt() };
     if (unit == base_unit_)
         return empty_string;
 

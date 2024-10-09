@@ -68,6 +68,7 @@ constexpr char FINAL_TOTAL[] = "final_total";
 constexpr char FIRST[] = "first";
 constexpr char INITIAL_TOTAL[] = "initial_total";
 constexpr char INITIAL_SUBTOTAL[] = "initial_subtotal";
+constexpr char AMOUNT[] = "amount";
 constexpr char NAME[] = "name";
 constexpr char NODE_ID[] = "node/id";
 constexpr char RULE[] = "rule";

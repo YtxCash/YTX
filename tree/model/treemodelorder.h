@@ -14,8 +14,11 @@ signals:
     void SUpdateLocked(int node_id, bool checked);
 
 public slots:
-    bool RUpdateStakeholderReference(int old_node_id, int new_node_id) override;
+    bool RUpdateStakeholderReference(int old_node_id, int new_node_id);
     void RUpdateLocked(int node_id, bool checked);
+    void RUpdateFirst(int node_id, double first_diff);
+
+    void RUpdateLeafTotal(int node_id, double second_diff, double amount_diff, double discount_diff, double settled_diff) override;
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -34,7 +37,7 @@ protected:
     bool UpdateName(Node* node, CString& value) override;
 
 private:
-    void RecalculateAncestor(Node* node, double first_diff, double second_diff, double discount_diff, double initial_total_diff, double final_total_diff);
+    void RecalculateAncestor(Node* node, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
     bool UpdateLocked(Node* node, bool value);
 };
 

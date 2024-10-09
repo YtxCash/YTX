@@ -10,6 +10,7 @@ RemoveNode::RemoveNode(const TreeModel* model, int node_id, int unit, bool disab
     : QDialog(parent)
     , ui(new Ui::RemoveNode)
     , node_id_ { node_id }
+    , unit_ { unit }
     , model_ { model }
 {
     ui->setupUi(this);
@@ -74,7 +75,11 @@ void RemoveNode::IniDialog()
     ui->pBtnCancel->setDefault(true);
     this->setWindowTitle(tr("Remove %1").arg(model_->GetPath(node_id_)));
 
-    model_->LeafPathExcludeID(ui->comboBox, node_id_);
+    model_->LeafPathSpecificUnit(ui->comboBox, unit_);
+
+    auto index { ui->comboBox->findData(node_id_) };
+    if (index)
+        ui->comboBox->removeItem(index);
 
     ui->comboBox->model()->sort(0);
 }

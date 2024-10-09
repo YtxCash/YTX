@@ -33,6 +33,7 @@ private:
 
 private:
     int node_id_ {};
+    int unit_ {};
     int section_ {};
 
     const TreeModel* model_ {};

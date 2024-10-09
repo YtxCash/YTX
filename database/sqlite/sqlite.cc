@@ -16,7 +16,7 @@ Sqlite::Sqlite(CInfo& info, QObject* parent)
 
 Sqlite::~Sqlite() { qDeleteAll(trans_hash_); }
 
-bool Sqlite::RRemoveNode(int node_id)
+void Sqlite::RRemoveNode(int node_id)
 {
     QMultiHash<int, int> node_trans { DialogRemoveNode(node_id) };
 
@@ -32,8 +32,6 @@ bool Sqlite::RRemoveNode(int node_id)
     // Recycle will mark all transactions for removal. This must occur after SRemoveMultiTrans()
     for (int trans_id : node_trans.values())
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
-
-    return true;
 }
 
 QMultiHash<int, int> Sqlite::DialogRemoveNode(int node_id)
@@ -73,12 +71,14 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
     // begin deal with database
     QSqlQuery query(*db_);
     CString& string { RReplaceNodeQS() };
+    if (string.isEmpty())
+        return false;
 
     query.prepare(string);
     query.bindValue(":new_node_id", new_node_id);
     query.bindValue(":old_node_id", old_node_id);
     if (!query.exec()) {
-        qWarning() << "Error in replace node setp" << query.lastError().text();
+        qWarning() << "Failed in RReplaceNode" << query.lastError().text();
         return false;
     }
     // end deal with database
@@ -109,7 +109,7 @@ bool Sqlite::RUpdateProductReference(int old_node_id, int new_node_id)
     query.bindValue(":old_node_id", old_node_id);
     query.bindValue(":new_node_id", new_node_id);
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "error in RUpdateProductReference." << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in RUpdateProductReference" << query.lastError().text();
         return false;
     }
 
@@ -129,7 +129,7 @@ bool Sqlite::RUpdateStakeholderReference(int old_node_id, int new_node_id)
     query.bindValue(":old_node_id", old_node_id);
     query.bindValue(":new_node_id", new_node_id);
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "error in RUpdateStakeholderReference." << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in RUpdateStakeholderReference" << query.lastError().text();
         return false;
     }
 
@@ -146,7 +146,7 @@ bool Sqlite::ReadNode(NodeHash& node_hash)
     query.prepare(string);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed to read node" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadNode" << query.lastError().text();
         return false;
     }
 
@@ -176,7 +176,7 @@ bool Sqlite::WriteNode(int parent_id, Node* node)
             WriteNodeBind(node, query);
 
             if (!query.exec()) {
-                qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed to write node" << query.lastError().text();
+                qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in WriteNode" << query.lastError().text();
                 return false;
             }
 
@@ -187,7 +187,7 @@ bool Sqlite::WriteNode(int parent_id, Node* node)
             WriteRelationship(node->id, parent_id, query);
             return true;
         })) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed to commit write node";
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in WriteNode commit";
         return false;
     }
 
@@ -221,26 +221,27 @@ void Sqlite::CalculateLeafTotal(Node* node, QSqlQuery& query)
     }
 }
 
-void Sqlite::LeafTotal(Node* node)
+bool Sqlite::LeafTotal(Node* node)
 {
     if (!node || node->id <= 0 || node->branch)
-        return;
+        return false;
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
     CString& string { LeafTotalQS() };
     if (string.isEmpty())
-        return;
+        return false;
 
     query.prepare(string);
     query.bindValue(":node_id", node->id);
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in calculate leaf total" << query.lastError().text();
-        return;
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in LeafTotal" << query.lastError().text();
+        return false;
     }
 
     CalculateLeafTotal(node, query);
+    return true;
 }
 
 QList<int> Sqlite::SearchNodeName(CString& text)
@@ -260,7 +261,7 @@ QList<int> Sqlite::SearchNodeName(CString& text)
         query.bindValue(":text", "%" + text + "%");
 
     if (!query.exec()) {
-        qWarning() << "Failed in Search Node Name" << query.lastError().text();
+        qWarning() << "Failed in SearchNodeName" << query.lastError().text();
         return {};
     }
 
@@ -291,7 +292,7 @@ bool Sqlite::RemoveNode(int node_id, bool branch)
             query.prepare(string_frist);
             query.bindValue(":node_id", node_id);
             if (!query.exec()) {
-                qWarning() << "Failed to remove node record 1st step: " << query.lastError().text();
+                qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in RemoveNode 1st" << query.lastError().text();
                 return false;
             }
 
@@ -300,8 +301,7 @@ bool Sqlite::RemoveNode(int node_id, bool branch)
             query.prepare(string_second);
             query.bindValue(":node_id", node_id);
             if (!query.exec()) {
-                qWarning() << "Section: " << std::to_underlying(info_.section)
-                           << "Failed to remove node_transaction record 2nd step: " << query.lastError().text();
+                qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in RemoveNode 2nd" << query.lastError().text();
                 return false;
             }
 
@@ -310,13 +310,13 @@ bool Sqlite::RemoveNode(int node_id, bool branch)
             query.prepare(string_third);
             query.bindValue(":node_id", node_id);
             if (!query.exec()) {
-                qWarning() << "Failed to remove node_path record 3rd step: " << query.lastError().text();
+                qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in RemoveNode 3rd" << query.lastError().text();
                 return false;
             }
 
             return true;
         })) {
-        qWarning() << "Failed to remove node";
+        qWarning() << "Failed in RemoveNode";
         return false;
     }
 
@@ -396,7 +396,7 @@ bool Sqlite::DragNode(int destination_node_id, int node_id)
             query.bindValue(":node_id", node_id);
 
             if (!query.exec()) {
-                qWarning() << "Failed to drag node_path record 1st step: " << query.lastError().text();
+                qWarning() << "Failed in DragNode 1st" << query.lastError().text();
                 return false;
             }
 
@@ -408,12 +408,12 @@ bool Sqlite::DragNode(int destination_node_id, int node_id)
             query.bindValue(":destination_node_id", destination_node_id);
 
             if (!query.exec()) {
-                qWarning() << "Failed to drag node_path record 2nd step: " << query.lastError().text();
+                qWarning() << "Failed in DragNode 2nd" << query.lastError().text();
                 return false;
             }
             return true;
         })) {
-        qWarning() << "Failed to drag node";
+        qWarning() << "Failed in DragNode";
         return false;
     }
 
@@ -433,7 +433,7 @@ bool Sqlite::InternalReference(int node_id) const
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed to count internal reference times." << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in InternalReference" << query.lastError().text();
         return false;
     }
 
@@ -454,7 +454,7 @@ bool Sqlite::ExternalReference(int node_id) const
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed to count external reference times." << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ExternalReference" << query.lastError().text();
         return false;
     }
 
@@ -462,7 +462,7 @@ bool Sqlite::ExternalReference(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-void Sqlite::ReadTrans(TransShadowList& trans_shadow_list, int node_id)
+bool Sqlite::ReadTrans(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -472,11 +472,12 @@ void Sqlite::ReadTrans(TransShadowList& trans_shadow_list, int node_id)
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed to read trans" << query.lastError().text();
-        return;
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTrans" << query.lastError().text();
+        return false;
     }
 
     ReadTransFunction(trans_shadow_list, node_id, query);
+    return true;
 }
 
 void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left)
@@ -490,6 +491,7 @@ void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left)
     trans_shadow->node_id = &trans->node_id;
     trans_shadow->discount_price = &trans->discount_price;
     trans_shadow->unit_price = &trans->unit_price;
+    trans_shadow->settled = &trans->settled;
 
     trans_shadow->lhs_node = &(left ? trans->lhs_node : trans->rhs_node);
     trans_shadow->lhs_ratio = &(left ? trans->lhs_ratio : trans->rhs_ratio);
@@ -545,7 +547,7 @@ bool Sqlite::WriteTrans(TransShadow* trans_shadow)
     WriteTransBind(trans_shadow, query);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed to write trans" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in WriteTrans" << query.lastError().text();
         return false;
     }
 
@@ -587,7 +589,7 @@ bool Sqlite::RemoveTrans(int trans_id)
     query.prepare(part);
     query.bindValue(":trans_id", trans_id);
     if (!query.exec()) {
-        qWarning() << "Failed to remove record in transaction table" << query.lastError().text();
+        qWarning() << "Failed in RemoveTrans" << query.lastError().text();
         return false;
     }
 
@@ -608,7 +610,7 @@ bool Sqlite::UpdateTrans(int trans_id)
     UpdateTransBind(trans, query);
 
     if (!query.exec()) {
-        qWarning() << "Failed to update record in transaction table 1st " << query.lastError().text();
+        qWarning() << "Failed in UpdateTrans" << query.lastError().text();
         return false;
     }
 
@@ -631,7 +633,7 @@ bool Sqlite::UpdateField(CString& table, CVariant& value, CString& field, int id
     query.bindValue(":value", value);
 
     if (!query.exec()) {
-        qWarning() << "Failed to update record: " << query.lastError().text();
+        qWarning() << "Failed in UpdateField" << query.lastError().text();
         return false;
     }
 
@@ -657,17 +659,17 @@ bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state)
     query.bindValue(":value", value);
 
     if (!query.exec()) {
-        qWarning() << "Failed to update record in transaction table " << query.lastError().text();
+        qWarning() << "Failed in UpdateCheckState" << query.lastError().text();
         return false;
     }
 
     return true;
 }
 
-void Sqlite::SearchTrans(TransList& trans_list, CString& text)
+bool Sqlite::SearchTrans(TransList& trans_list, CString& text)
 {
     if (text.isEmpty())
-        return;
+        return false;
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -680,7 +682,7 @@ void Sqlite::SearchTrans(TransList& trans_list, CString& text)
 
     if (!query.exec()) {
         qWarning() << "Failed in Search Trans" << query.lastError().text();
-        return;
+        return false;
     }
 
     Trans* trans {};
@@ -701,12 +703,14 @@ void Sqlite::SearchTrans(TransList& trans_list, CString& text)
         ReadTransQuery(trans, query);
         trans_list.emplaceBack(trans);
     }
+
+    return true;
 }
 
-void Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
+bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
 {
     if (trans_id_list.empty() || node_id <= 0)
-        return;
+        return false;
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -729,12 +733,15 @@ void Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
             query.bindValue(i, current_batch.at(i));
 
         if (!query.exec()) {
-            qWarning() << "Section: " << std::to_underlying(info_.section) << "Error in batch " << batch_index << ": " << query.lastError().text();
+            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTransRange, batch" << batch_index << ": "
+                       << query.lastError().text();
             continue;
         }
 
         ReadTransFunction(trans_shadow_list, node_id, query);
     }
+
+    return true;
 }
 
 TransShadow* Sqlite::AllocateTransShadow()
@@ -767,12 +774,12 @@ bool Sqlite::DBTransaction(std::function<bool()> function)
         return true;
     } else {
         db_->rollback();
-        qWarning() << "Transaction failed";
+        qWarning() << "Failed in Transaction";
         return false;
     }
 }
 
-void Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query)
+bool Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query)
 {
     auto part = QString(R"(
     SELECT ancestor, descendant
@@ -782,8 +789,10 @@ void Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query)
                     .arg(info_.path);
 
     query.prepare(part);
-    if (!query.exec())
-        qWarning() << "Error in sql ReadRelationship " << query.lastError().text();
+    if (!query.exec()) {
+        qWarning() << "Failed in ReadRelationship" << query.lastError().text();
+        return false;
+    }
 
     int ancestor_id {};
     int descendant_id {};
@@ -800,9 +809,11 @@ void Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query)
         ancestor->children.emplaceBack(descendant);
         descendant->parent = ancestor;
     }
+
+    return true;
 }
 
-void Sqlite::WriteRelationship(int node_id, int parent_id, QSqlQuery& query)
+bool Sqlite::WriteRelationship(int node_id, int parent_id, QSqlQuery& query)
 {
     auto part = QString(R"(
     INSERT INTO %1 (ancestor, descendant, distance)
@@ -818,9 +829,11 @@ void Sqlite::WriteRelationship(int node_id, int parent_id, QSqlQuery& query)
     query.bindValue(":parent", parent_id);
 
     if (!query.exec()) {
-        qWarning() << "Error in sql WriteRelationship " << query.lastError().text();
-        return;
+        qWarning() << "Failed in WriteRelationship" << query.lastError().text();
+        return false;
     }
+
+    return true;
 }
 
 void Sqlite::ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query)

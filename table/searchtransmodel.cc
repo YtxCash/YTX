@@ -68,6 +68,8 @@ QVariant SearchTransModel::data(const QModelIndex& index, int role) const
         return trans->node_id == 0 ? QVariant() : trans->node_id;
     case TableEnumSearch::kDiscountPrice:
         return trans->discount_price == 0 ? QVariant() : trans->discount_price;
+    case TableEnumSearch::kSettled:
+        return trans->settled == 0 ? QVariant() : trans->settled == 0;
     case TableEnumSearch::kRhsNode:
         return trans->rhs_node;
     case TableEnumSearch::kRhsRatio:

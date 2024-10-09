@@ -80,7 +80,7 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
     case TableEnumStakeholder::kCode:
         return *trans_shadow->code;
     case TableEnumStakeholder::kUnitPrice:
-        return *trans_shadow->unit_price;
+        return *trans_shadow->unit_price == 0 ? QVariant() : *trans_shadow->unit_price;
     case TableEnumStakeholder::kDescription:
         return *trans_shadow->description;
     case TableEnumStakeholder::kDocument:

@@ -75,9 +75,9 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
         return node->discount == 0 ? QVariant() : node->discount;
     case TreeEnumOrder::kLocked:
         return node->locked == 0 ? QVariant() : node->locked;
-    case TreeEnumOrder::kInitialTotal:
+    case TreeEnumOrder::kAmount:
         return node->initial_total;
-    case TreeEnumOrder::kFinalTotal:
+    case TreeEnumOrder::kSettled:
         return node->final_total;
     default:
         return QVariant();
@@ -129,7 +129,7 @@ void SearchNodeModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->discount < rhs->discount) : (lhs->discount > rhs->discount);
         case TreeEnumOrder::kLocked:
             return (order == Qt::AscendingOrder) ? (lhs->locked < rhs->locked) : (lhs->locked > rhs->locked);
-        case TreeEnumOrder::kInitialTotal:
+        case TreeEnumOrder::kAmount:
             return (order == Qt::AscendingOrder) ? (lhs->final_total < rhs->final_total) : (lhs->final_total > rhs->final_total);
         default:
             return false;

@@ -11,7 +11,7 @@ public:
 
 public slots:
     bool RReplaceNode(int old_node_id, int new_node_id) override;
-    bool RRemoveNode(int node_id) override;
+    void RRemoveNode(int node_id) override;
 
 protected:
     // tree
@@ -23,7 +23,6 @@ protected:
     QString RemoveNodeSecondQS() const override;
     QString InternalReferenceQS() const override;
     QString ExternalReferenceQS() const override;
-    QString LeafTotalQS() const override { return {}; }
 
     // table
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) override;
@@ -36,8 +35,6 @@ protected:
     QString WriteTransQS() const override;
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override;
-    QString RUpdateStakeholderReferenceQS() const override { return {}; }
-    QString UpdateTransQS() const override { return {}; }
     QString SearchTransQS() const override;
 
 private:

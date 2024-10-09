@@ -40,11 +40,10 @@ bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
     return true;
 }
 
-bool SqliteStakeholder::RRemoveNode(int node_id)
+void SqliteStakeholder::RRemoveNode(int node_id)
 {
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
-    return true;
 }
 
 QString SqliteStakeholder::ReadNodeQS() const

@@ -58,17 +58,35 @@ QString SqliteSales::RUpdateStakeholderReferenceQS() const
 QString SqliteSales::SearchTransQS() const
 {
     return QStringLiteral(R"(
-    SELECT id, code, inside_product, unit_price, description, second, node_id, first, initial_subtotal, discount, outside_product, discount_price
+    SELECT id, code, inside_product, unit_price, description, second, node_id, first, amount, discount, settled, outside_product, discount_price
     FROM sales_transaction
     WHERE (first = :text OR second = :text OR description LIKE :description) AND removed = 0
     )");
 }
 
+QString SqliteSales::UpdateTransQS() const
+{
+    return QStringLiteral(R"(
+    UPDATE sales_transaction SET
+    second = :second, amount = :amount, discount = :discount, settled = :settled
+    WHERE id = :trans_id
+    )");
+}
+
+void SqliteSales::UpdateTransBind(Trans* trans, QSqlQuery& query)
+{
+    query.bindValue(":second", trans->lhs_credit);
+    query.bindValue(":amount", trans->rhs_credit);
+    query.bindValue(":discount", trans->rhs_debit);
+    query.bindValue(":settled", trans->settled);
+    query.bindValue(":trans_id", trans->id);
+}
+
 QString SqliteSales::WriteTransQS() const
 {
     return QStringLiteral(R"(
-    INSERT INTO sales_transaction (code, inside_product, unit_price, description, second, node_id, first, initial_subtotal, discount, outside_product, discount_price)
-    VALUES (:code, :inside_product, :unit_price, :description, :second, :node_id, :first, :initial_subtotal, :discount, :outside_product, :discount_price)
+    INSERT INTO sales_transaction (code, inside_product, unit_price, description, second, node_id, first, amount, discount, settled, outside_product, discount_price)
+    VALUES (:code, :inside_product, :unit_price, :description, :second, :node_id, :first, :amount, :discount, :settled, :outside_product, :discount_price)
     )");
 }
 
@@ -80,8 +98,9 @@ void SqliteSales::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":second", *trans_shadow->lhs_credit);
     query.bindValue(":node_id", *trans_shadow->node_id);
     query.bindValue(":first", *trans_shadow->lhs_debit);
-    query.bindValue(":initial_subtotal", *trans_shadow->rhs_credit);
+    query.bindValue(":amount", *trans_shadow->rhs_credit);
     query.bindValue(":discount", *trans_shadow->rhs_debit);
+    query.bindValue(":settled", *trans_shadow->settled);
     query.bindValue(":outside_product", *trans_shadow->rhs_node);
     query.bindValue(":discount_price", *trans_shadow->discount_price);
     query.bindValue(":description", *trans_shadow->description);
@@ -90,7 +109,7 @@ void SqliteSales::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
 QString SqliteSales::ReadTransQS() const
 {
     return QStringLiteral(R"(
-    SELECT id, code, inside_product, unit_price, description, second, node_id, first, initial_subtotal, discount, outside_product, discount_price
+    SELECT id, code, inside_product, unit_price, description, second, node_id, first, amount, discount, settled, outside_product, discount_price
     FROM sales_transaction
     WHERE node_id = :node_id AND removed = 0
     )");
@@ -104,8 +123,9 @@ void SqliteSales::ReadTransQuery(Trans* trans, const QSqlQuery& query)
     trans->lhs_credit = query.value("second").toDouble();
     trans->node_id = query.value("node_id").toInt();
     trans->lhs_debit = query.value("first").toInt();
-    trans->rhs_credit = query.value("initial_subtotal").toDouble();
+    trans->rhs_credit = query.value("amount").toDouble();
     trans->rhs_debit = query.value("discount").toDouble();
+    trans->settled = query.value("settled").toDouble();
     trans->rhs_node = query.value("outside_product").toInt();
     trans->discount_price = query.value("discount_price").toDouble();
     trans->description = query.value("description").toString();
@@ -157,7 +177,7 @@ void SqliteSales::ReadTransFunction(TransShadowList& trans_shadow_list, int /*no
 QString SqliteSales::ReadNodeQS() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, initial_total, final_total
+    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, amount, settled
     FROM sales
     WHERE removed = 0
     )");
@@ -180,15 +200,15 @@ void SqliteSales::ReadNodeQuery(Node* node, const QSqlQuery& query)
     node->second = query.value("second").toDouble();
     node->discount = query.value("discount").toDouble();
     node->locked = query.value("locked").toBool();
-    node->initial_total = query.value("initial_total").toDouble();
-    node->final_total = query.value("final_total").toDouble();
+    node->initial_total = query.value("amount").toDouble();
+    node->final_total = query.value("settled").toDouble();
 }
 
 QString SqliteSales::WriteNodeQS() const
 {
     return QStringLiteral(R"(
-    INSERT INTO sales (name, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, initial_total, final_total)
-    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :locked, :initial_total, :final_total)
+    INSERT INTO sales (name, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, amount, settled)
+    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :locked, :amount, :settled)
     )");
 }
 
@@ -208,6 +228,6 @@ void SqliteSales::WriteNodeBind(Node* node, QSqlQuery& query)
     query.bindValue(":second", node->second);
     query.bindValue(":discount", node->discount);
     query.bindValue(":locked", node->locked);
-    query.bindValue(":initial_total", node->initial_total);
-    query.bindValue(":final_total", node->final_total);
+    query.bindValue(":amount", node->initial_total);
+    query.bindValue(":settled", node->final_total);
 }

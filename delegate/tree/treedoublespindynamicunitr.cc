@@ -27,7 +27,7 @@ QString TreeDoubleSpinDynamicUnitR::Format(const QModelIndex& index) const
     if (value == 0)
         return empty_string;
 
-    int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
+    int unit { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kUnit)).data().toInt() };
     auto it { unit_symbol_hash_.constFind(unit) };
     auto symbol { (it != unit_symbol_hash_.constEnd()) ? it.value() : empty_string };
 

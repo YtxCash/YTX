@@ -10,10 +10,6 @@ public:
     TreeModelStakeholder(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelStakeholder() override = default;
 
-public slots:
-    // receive from sql
-    bool RUpdateMultiLeafTotal(const QList<int>& /*node_list*/) override { return true; };
-
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;

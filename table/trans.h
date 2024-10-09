@@ -24,6 +24,7 @@ struct Trans {
     int node_id {};
     double discount_price {};
     double unit_price {};
+    double settled {};
 
     void Reset()
     {
@@ -44,6 +45,7 @@ struct Trans {
         node_id = 0;
         discount_price = 0.0;
         unit_price = 0.0;
+        settled = 0.0;
     }
 };
 
@@ -65,6 +67,7 @@ struct TransShadow {
     int* node_id {};
     double* discount_price {};
     double* unit_price {};
+    double* settled {};
 
     double subtotal {};
 
@@ -87,6 +90,7 @@ struct TransShadow {
         node_id = nullptr;
         discount_price = nullptr;
         unit_price = nullptr;
+        settled = nullptr;
 
         subtotal = 0.0;
     }

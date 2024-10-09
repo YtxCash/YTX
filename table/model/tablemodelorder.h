@@ -11,6 +11,9 @@ public:
     TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, QObject* parent = nullptr);
     ~TableModelOrder() override = default;
 
+signals:
+    void SUpdateFirst(int node_id, double first_diff);
+
 public slots:
     void RUpdateNodeID(int node_id);
 

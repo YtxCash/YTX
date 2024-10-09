@@ -44,9 +44,8 @@ signals:
 
 public slots:
     // receive from sqlite
-    virtual bool RUpdateMultiLeafTotal(const QList<int>& node_list);
-    virtual bool RRemoveNode(int node_id);
-    virtual bool RUpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/) { return false; }
+    bool RUpdateMultiLeafTotal(const QList<int>& node_list);
+    bool RRemoveNode(int node_id);
 
     // receive from related table model
     virtual void RUpdateLeafTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);

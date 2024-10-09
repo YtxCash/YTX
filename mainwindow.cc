@@ -263,11 +263,11 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
     if (index.column() != 0)
         return;
 
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kBranch)).data().toBool() };
     if (branch)
         return;
 
-    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
     if (node_id == -1)
         return;
 
@@ -515,29 +515,29 @@ void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSettings* setting
 void MainWindow::DelegateCommon(QTreeView* view, CInfo* info)
 {
     auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kCode), line);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kCode), line);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kDescription), line);
 
     auto plain_text { new TreePlainText(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNote), plain_text);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kNote), plain_text);
 
     auto rule { new TreeCombo(info->rule_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
 
     auto branch { new CheckBox(QEvent::MouseButtonDblClick, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kBranch), branch);
 
     auto unit { new TreeCombo(info->unit_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
 }
 
 void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSettings* settings)
 {
     auto final_total { new TreeDoubleSpinUnitR(settings->value_decimal, settings->base_unit, info->unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kFinalTotal), final_total);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kFinalTotal), final_total);
 
     auto initial_total { new FinanceForeign(settings->value_decimal, settings->base_unit, info->unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinanceTask::kInitialTotal), initial_total);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
 }
 
 void MainWindow::DelegateProduct(QTreeView* view, CInfo* info, CSettings* settings)
@@ -571,8 +571,8 @@ void MainWindow::DelegateStakeholder(QTreeView* view, CSettings* settings)
 void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings* settings)
 {
     auto total { new OrderTotalR(settings->value_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kInitialTotal), total);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFinalTotal), total);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), total);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), total);
 
     auto second { new TreeDoubleSpinR(settings->ratio_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), second);
@@ -622,7 +622,7 @@ void MainWindow::InsertNode(TreeWidget* tree_widget)
     auto parent_index { current_index.parent() };
     parent_index = parent_index.isValid() ? parent_index : QModelIndex();
 
-    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
+    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() : -1 };
     InsertNodeFunction(parent_index, parent_id, current_index.row() + 1);
 }
 
@@ -666,8 +666,8 @@ void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
     if (!index.isValid())
         return;
 
-    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
+    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kBranch)).data().toBool() };
 
     if (branch) {
         if (model->ChildrenEmpty(node_id))
@@ -687,7 +687,7 @@ void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
         return;
     }
 
-    const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
+    const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kUnit)).data().toInt() };
 
     auto dialog { new class RemoveNode(model, node_id, unit, exteral_reference, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql.data(), &Sqlite::RRemoveNode);
@@ -1102,7 +1102,7 @@ void MainWindow::SetHeader()
     finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("FXRate"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Debit"),
         tr("Credit"), tr("Subtotal") };
     finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
-        tr("Description"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
+        tr("Description"), {}, {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
     finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
         {}, {}, {}, {}, tr("Foreign Total"), tr("Base Total") };
 
@@ -1111,14 +1111,14 @@ void MainWindow::SetHeader()
     product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
         tr("Debit"), tr("Credit"), tr("Subtotal") };
     product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
-        tr("UnitCost"), {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
+        tr("UnitCost"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
     product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
         tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity Total"), tr("Amount Total") };
 
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), "" };
     stakeholder_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), tr("D"), tr("S"), tr("Inside") };
-    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("Node"), {}, {}, {}, tr("Description"), tr("UnitPrice"), {}, {},
+    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("Node"), {}, {}, {}, tr("Description"), tr("UnitPrice"), {}, {}, {},
         tr("D"), tr("S"), {}, {}, {}, tr("InsideProduct") };
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
@@ -1134,9 +1134,9 @@ void MainWindow::SetHeader()
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
     sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("node_id"), tr("First"),
-        tr("Second"), tr("OutsideProduct"), tr("InitialSubtotal"), tr("DiscountPrice"), tr("Discount") };
+        tr("Second"), tr("Subamount"), tr("DiscountPrice"), tr("Subdiscount"), tr("Subsettled"), tr("OutsideProduct") };
     sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
-        tr("NodeID"), tr("DiscountPrice"), {}, {}, tr("InitialSubtotal"), tr("discount"), {}, tr("OutsideProduct") };
+        tr("NodeID"), tr("DiscountPrice"), tr("Subsettled"), {}, {}, tr("InitialSubtotal"), tr("discount"), {}, tr("OutsideProduct") };
     sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
 
@@ -1180,7 +1180,7 @@ void MainWindow::SetView(QTreeView* view)
 
     auto header { view->header() };
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
-    header->setSectionResizeMode(std::to_underlying(TreeEnum::kDescription), QHeaderView::Stretch);
+    header->setSectionResizeMode(std::to_underlying(TreeEnumCommon::kDescription), QHeaderView::Stretch);
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignCenter);
 }
@@ -1199,11 +1199,11 @@ void MainWindow::RAppendNodeTriggered()
     if (!parent_index.isValid())
         return;
 
-    const bool branch { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
+    const bool branch { parent_index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kBranch)).data().toBool() };
     if (!branch)
         return;
 
-    const int parent_id { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+    const int parent_id { parent_index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
     InsertNodeFunction(parent_index, parent_id, 0);
 }
 
@@ -1293,7 +1293,7 @@ void MainWindow::REditNode()
     auto section { info.section };
     CStringHash& unit_hash { info.unit_hash };
 
-    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
 
     if (section == Section::kSales || section == Section::kPurchase) {
         auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
@@ -1339,11 +1339,12 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
     assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
 
     auto dialog_cast { static_cast<EditNodeOrder*>(dialog) };
-    auto model_cast { static_cast<TreeModelOrder*>(tree_->model) };
+    auto tree_model { static_cast<TreeModelOrder*>(tree_->model) };
 
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &EditNodeOrder::RUpdateStakeholder);
-    connect(model_cast, &TreeModelOrder::SUpdateLocked, dialog_cast, &EditNodeOrder::RUpdateLocked);
-    connect(dialog_cast, &EditNodeOrder::SUpdateLocked, model_cast, &TreeModelOrder::RUpdateLocked);
+    connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &EditNodeOrder::RUpdateLocked);
+    connect(dialog_cast, &EditNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
+    connect(table_model, &TableModelOrder::SUpdateFirst, tree_model, &TreeModelOrder::RUpdateFirst);
 
     if (!(*node_shadow->branch)) {
         SetView(dialog_cast->View());
@@ -1358,7 +1359,7 @@ void MainWindow::EditNodeFPST(Section section, TreeModel* model, Node* tmp_node,
     QDialog* dialog {};
 
     const auto& parent { index.parent() };
-    const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
+    const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() : -1 };
     auto parent_path { model->GetPath(parent_id) };
     if (!parent_path.isEmpty())
         parent_path += interface_.separator;
@@ -1464,11 +1465,12 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
 
     auto dialog_cast { static_cast<InsertNodeOrder*>(dialog) };
-    auto model_cast { static_cast<TreeModelOrder*>(model) };
+    auto tree_model { static_cast<TreeModelOrder*>(model) };
 
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &InsertNodeOrder::RUpdateStakeholder);
-    connect(model_cast, &TreeModelOrder::SUpdateLocked, dialog_cast, &InsertNodeOrder::RUpdateLocked);
-    connect(dialog_cast, &InsertNodeOrder::SUpdateLocked, model_cast, &TreeModelOrder::RUpdateLocked);
+    connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &InsertNodeOrder::RUpdateLocked);
+    connect(dialog_cast, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
+    connect(table_model, &TableModelOrder::SUpdateFirst, tree_model, &TreeModelOrder::RUpdateFirst);
 
     dialog_list_->append(dialog);
 
@@ -1684,7 +1686,7 @@ void MainWindow::ResizeColumn(QHeaderView* header, bool table_view)
 {
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
     table_view ? header->setSectionResizeMode(std::to_underlying(TableEnumSearch::kDescription), QHeaderView::Stretch)
-               : header->setSectionResizeMode(std::to_underlying(TreeEnum::kDescription), QHeaderView::Stretch);
+               : header->setSectionResizeMode(std::to_underlying(TreeEnumCommon::kDescription), QHeaderView::Stretch);
     ;
 }
 

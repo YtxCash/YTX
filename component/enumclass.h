@@ -20,6 +20,7 @@ enum class TableEnumSearch {
     kUnitPrice,
     kNodeID,
     kDiscountPrice,
+    kSettled,
     kDocument,
     kState,
     kRhsCredit,
@@ -40,14 +41,15 @@ enum class TableEnumOrder {
     kNodeID,
     kFirst,
     kSecond,
-    kOutsideProduct,
-    kInitialSubtotal,
+    kAmount,
     kDiscountPrice,
-    kDiscount
+    kDiscount,
+    kSettled,
+    kOutsideProduct
 };
 
 // Enum class defining node columns
-enum class TreeEnum {
+enum class TreeEnumCommon {
     kName,
     kID,
     kCode,
@@ -56,11 +58,9 @@ enum class TreeEnum {
     kRule,
     kBranch,
     kUnit,
-    kInitialTotal,
-    kFinalTotal,
 };
 
-enum class TreeEnumFinanceTask { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kInitialTotal, kFinalTotal, kPlaceholder };
+enum class TreeEnum { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kInitialTotal, kFinalTotal, kPlaceholder };
 
 enum class TreeEnumProduct {
     kName,
@@ -97,8 +97,8 @@ enum class TreeEnumOrder {
     kSecond,
     kDiscount,
     kLocked,
-    kInitialTotal,
-    kFinalTotal
+    kAmount,
+    kSettled
 };
 
 // Enum class defining check options
