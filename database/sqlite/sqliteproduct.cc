@@ -150,15 +150,15 @@ void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
 }
 
-void SqliteProduct::UpdateTransBind(Trans* trans, QSqlQuery& query)
+void SqliteProduct::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
 {
-    query.bindValue(":lhs_node", trans->lhs_node);
-    query.bindValue(":lhs_debit", trans->lhs_debit);
-    query.bindValue(":lhs_credit", trans->lhs_credit);
-    query.bindValue(":rhs_node", trans->rhs_node);
-    query.bindValue(":rhs_debit", trans->rhs_debit);
-    query.bindValue(":rhs_credit", trans->rhs_credit);
-    query.bindValue(":trans_id", trans->id);
+    query.bindValue(":lhs_node", *trans_shadow->lhs_node);
+    query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
+    query.bindValue(":lhs_credit", *trans_shadow->lhs_credit);
+    query.bindValue(":rhs_node", *trans_shadow->rhs_node);
+    query.bindValue(":rhs_debit", *trans_shadow->rhs_debit);
+    query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
+    query.bindValue(":trans_id", *trans_shadow->id);
 }
 
 QString SqliteProduct::ReadTransQS() const
@@ -168,6 +168,22 @@ QString SqliteProduct::ReadTransQS() const
     FROM product_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
+}
+
+QString SqliteProduct::UpdateNodeValueQS() const
+{
+    return QStringLiteral(R"(
+    UPDATE product SET
+    initial_total = :initial_total, final_total = :final_total
+    WHERE id = :node_id
+    )");
+}
+
+void SqliteProduct::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+{
+    query.bindValue(":initial_total", node->initial_total);
+    query.bindValue(":final_total", node->final_total);
+    query.bindValue(":node_id", node->id);
 }
 
 QString SqliteProduct::WriteTransQS() const
@@ -206,7 +222,7 @@ QString SqliteProduct::RReplaceNodeQS() const
     )");
 }
 
-QString SqliteProduct::UpdateTransQS() const
+QString SqliteProduct::UpdateTransValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET

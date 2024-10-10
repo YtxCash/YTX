@@ -393,7 +393,7 @@ void MainWindow::SetConnect(const QTableView* view, const TableModel* table, con
     connect(table, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
     connect(table, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
 
-    connect(table, &TableModel::SUpdateLeafTotal, tree, &TreeModel::RUpdateLeafTotal);
+    connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
     connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
 
     connect(tree, &TreeModel::SRule, table, &TableModel::RRule);
@@ -411,7 +411,7 @@ void MainWindow::CreateDelegate(QTableView* view, const TreeModel* tree_model, C
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), value);
 
-    auto subtotal { new TableDoubleSpinR(settings->value_decimal, view) };
+    auto subtotal { new TableDoubleSpinR(settings->value_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 
     auto ratio { new TableDoubleSpin(settings->ratio_decimal, DMIN, DMAX, view) };
@@ -465,6 +465,23 @@ void MainWindow::DelegateOrder(QTableView* view, CSettings* settings)
 
     auto color { new ColorR(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);
+
+    auto line { new Line(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
+
+    auto price { new TableDoubleSpin(settings->ratio_decimal, DMIN, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
+
+    auto quantity { new TableDoubleSpin(settings->value_decimal, DMIN, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
+
+    auto amount { new TableDoubleSpinR(settings->ratio_decimal, false, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kAmount), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscount), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
 }
 
 void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings* settings)
@@ -1104,16 +1121,16 @@ void MainWindow::SetHeader()
     finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
         tr("Description"), {}, {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
     finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
-        {}, {}, {}, {}, tr("Foreign Total"), tr("Base Total") };
+        {}, {}, {}, {}, tr("Foreign Total"), tr("Local Total") };
 
     product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Color"),
-        tr("UnitPrice"), tr("Commission"), tr("Quantity Total"), tr("Amount Total"), "" };
+        tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), "" };
     product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
         tr("Debit"), tr("Credit"), tr("Subtotal") };
     product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
         tr("UnitCost"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
     product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
-        tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity Total"), tr("Amount Total") };
+        tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity"), tr("Amount") };
 
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), "" };
@@ -1123,22 +1140,22 @@ void MainWindow::SetHeader()
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
-    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Quantity Total"),
-        tr("Amount Total"), "" };
+    task_data_.info.tree_header
+        = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Quantity"), tr("Amount"), "" };
     task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Debit"),
         tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
     task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
-        tr("Color"), {}, {}, {}, {}, tr("Quantity Total"), tr("Amount Total") };
+        tr("Color"), {}, {}, {}, {}, tr("Quantity"), tr("Amount") };
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
-        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
+        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled") };
     sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("node_id"), tr("First"),
-        tr("Second"), tr("Subamount"), tr("DiscountPrice"), tr("Subdiscount"), tr("Subsettled"), tr("OutsideProduct") };
+        tr("Second"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled"), tr("OutsideProduct") };
     sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
-        tr("NodeID"), tr("DiscountPrice"), tr("Subsettled"), {}, {}, tr("InitialSubtotal"), tr("discount"), {}, tr("OutsideProduct") };
+        tr("NodeID"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };
     sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
-        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Discount"), tr("Locked"), tr("Initial Total"), tr("Final Total") };
+        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled") };
 
     purchase_data_.info.tree_header = sales_data_.info.tree_header;
     purchase_data_.info.table_header = sales_data_.info.table_header;
@@ -1344,7 +1361,7 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &EditNodeOrder::RUpdateStakeholder);
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &EditNodeOrder::RUpdateLocked);
     connect(dialog_cast, &EditNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
-    connect(table_model, &TableModelOrder::SUpdateFirst, tree_model, &TreeModelOrder::RUpdateFirst);
+    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
 
     if (!(*node_shadow->branch)) {
         SetView(dialog_cast->View());
@@ -1470,7 +1487,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &InsertNodeOrder::RUpdateStakeholder);
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &InsertNodeOrder::RUpdateLocked);
     connect(dialog_cast, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
-    connect(table_model, &TableModelOrder::SUpdateFirst, tree_model, &TreeModelOrder::RUpdateFirst);
+    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
 
     dialog_list_->append(dialog);
 

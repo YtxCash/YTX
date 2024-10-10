@@ -106,11 +106,11 @@ bool TableModelTask::UpdateDebit(TransShadow* trans_shadow, double value)
 
     auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
     auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * lhs_ratio, rhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * lhs_ratio, rhs_credit_diff * lhs_ratio);
 
     return true;
 }
@@ -138,11 +138,11 @@ bool TableModelTask::UpdateCredit(TransShadow* trans_shadow, double value)
 
     auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff, lhs_credit_diff);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff, lhs_credit_diff);
 
     auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff, rhs_credit_diff);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff, rhs_credit_diff);
 
     return true;
 }
@@ -161,8 +161,8 @@ bool TableModelTask::UpdateRatio(TransShadow* trans_shadow, double value)
 
     sql_->UpdateField(info_.transaction, value, UNIT_COST, *trans_shadow->id);
 
-    emit SUpdateLeafTotal(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
-    emit SUpdateLeafTotal(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * result, *trans_shadow->rhs_credit * result);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * result, *trans_shadow->rhs_credit * result);
 
     return true;
 }

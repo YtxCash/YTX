@@ -25,14 +25,17 @@ protected:
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) override;
     void UpdateProductReference(int old_node_id, int new_node_id) override;
     void UpdateStakeholderReference(int old_node_id, int new_node_id) override;
-    void UpdateTransBind(Trans* trans, QSqlQuery& query) override;
+    void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) override; // for UpdateSecond
+
+    QString UpdateNodeValueQS() const override;
+    void UpdateNodeValueBind(const Node* node, QSqlQuery& query) override;
 
     QString ReadTransQS() const override;
     QString WriteTransQS() const override;
     QString RUpdateProductReferenceQS() const override;
     QString RUpdateStakeholderReferenceQS() const override;
     QString SearchTransQS() const override;
-    QString UpdateTransQS() const override;
+    QString UpdateTransValueQS() const override; // for UpdateSecond
 };
 
 #endif // SQLITEPURCHASE_H

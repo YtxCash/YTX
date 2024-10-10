@@ -124,12 +124,12 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
         auto ratio { *trans_shadow->lhs_ratio };
         auto debit { *trans_shadow->lhs_debit };
         auto credit { *trans_shadow->lhs_credit };
-        emit SUpdateLeafTotal(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafValue(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
 
         ratio = *trans_shadow->rhs_ratio;
         debit = *trans_shadow->rhs_debit;
         credit = *trans_shadow->rhs_credit;
-        emit SUpdateLeafTotal(*trans_shadow->rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafValue(*trans_shadow->rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
@@ -203,11 +203,11 @@ bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 
     auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
     auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
@@ -237,11 +237,11 @@ bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 
     auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
     auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
@@ -268,11 +268,11 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    emit SUpdateLeafTotal(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
 
     auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafTotal(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
@@ -403,12 +403,12 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
             auto ratio { *trans_shadow->lhs_ratio };
             auto debit { *trans_shadow->lhs_debit };
             auto credit { *trans_shadow->lhs_credit };
-            emit SUpdateLeafTotal(node_id_, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafValue(node_id_, debit, credit, ratio * debit, ratio * credit);
 
             ratio = *trans_shadow->rhs_ratio;
             debit = *trans_shadow->rhs_debit;
             credit = *trans_shadow->rhs_credit;
-            emit SUpdateLeafTotal(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
         }
 
         emit SResizeColumnToContents(index.column());
@@ -416,7 +416,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     }
 
     if (deb_changed || cre_changed || rat_changed) {
-        sql_->UpdateTrans(*trans_shadow->id);
+        sql_->UpdateTransValue(trans_shadow);
         emit SSearch();
         emit SUpdateBalance(info_.section, old_rhs_node, *trans_shadow->id);
     }
@@ -427,15 +427,15 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     }
 
     if (rhs_changed) {
-        sql_->UpdateTrans(*trans_shadow->id);
+        sql_->UpdateTransValue(trans_shadow);
         emit SRemoveOneTrans(info_.section, old_rhs_node, *trans_shadow->id);
         emit SAppendOneTrans(info_.section, trans_shadow);
 
         auto ratio { *trans_shadow->rhs_ratio };
         auto debit { *trans_shadow->rhs_debit };
         auto credit { *trans_shadow->rhs_credit };
-        emit SUpdateLeafTotal(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
-        emit SUpdateLeafTotal(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+        emit SUpdateLeafValue(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
     }
 
     emit SResizeColumnToContents(index.column());

@@ -95,9 +95,9 @@ enum class TreeEnumOrder {
     kDateTime,
     kFirst,
     kSecond,
-    kDiscount,
     kLocked,
     kAmount,
+    kDiscount,
     kSettled
 };
 

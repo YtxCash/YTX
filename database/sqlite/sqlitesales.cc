@@ -64,7 +64,7 @@ QString SqliteSales::SearchTransQS() const
     )");
 }
 
-QString SqliteSales::UpdateTransQS() const
+QString SqliteSales::UpdateTransValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE sales_transaction SET
@@ -73,13 +73,32 @@ QString SqliteSales::UpdateTransQS() const
     )");
 }
 
-void SqliteSales::UpdateTransBind(Trans* trans, QSqlQuery& query)
+void SqliteSales::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
 {
-    query.bindValue(":second", trans->lhs_credit);
-    query.bindValue(":amount", trans->rhs_credit);
-    query.bindValue(":discount", trans->rhs_debit);
-    query.bindValue(":settled", trans->settled);
-    query.bindValue(":trans_id", trans->id);
+    query.bindValue(":second", *trans_shadow->lhs_credit);
+    query.bindValue(":amount", *trans_shadow->rhs_credit);
+    query.bindValue(":discount", *trans_shadow->rhs_debit);
+    query.bindValue(":settled", *trans_shadow->settled);
+    query.bindValue(":trans_id", *trans_shadow->id);
+}
+
+QString SqliteSales::UpdateNodeValueQS() const
+{
+    return QStringLiteral(R"(
+    UPDATE sales SET
+    amount = :amount, settled = :settled, first = :first, second = :second, discount = :discount
+    WHERE id = :node_id
+    )");
+}
+
+void SqliteSales::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+{
+    query.bindValue(":amount", node->initial_total);
+    query.bindValue(":second", node->second);
+    query.bindValue(":first", node->first);
+    query.bindValue(":discount", node->discount);
+    query.bindValue(":settled", node->final_total);
+    query.bindValue(":node_id", node->id);
 }
 
 QString SqliteSales::WriteTransQS() const

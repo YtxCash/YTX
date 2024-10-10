@@ -168,7 +168,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), party);
 
-    auto value { new TableDoubleSpinR(settings_.value_decimal, view) };
+    auto value { new TableDoubleSpinR(settings_.value_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), value);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), value);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), value);
@@ -181,14 +181,14 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
 {
     view->setModel(model);
 
-    auto value { new TableDoubleSpinR(settings_.value_decimal, view) };
+    auto value { new TableDoubleSpinR(settings_.value_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kSettled), value);
 
-    auto ratio { new TableDoubleSpinR(settings_.ratio_decimal, view) };
+    auto ratio { new TableDoubleSpinR(settings_.ratio_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDiscountPrice), ratio);
