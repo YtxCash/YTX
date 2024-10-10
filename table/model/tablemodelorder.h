@@ -12,7 +12,8 @@ public:
     ~TableModelOrder() override = default;
 
 signals:
-    void SUpdateFirst(int node_id, double first_diff);
+    void SUpdateLeafValueOrder(
+        int node_id, double first_diff = 0.0, double second_diff = 0.0, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
 
 public slots:
     void RUpdateNodeID(int node_id);
@@ -44,7 +45,7 @@ private:
             if (action)
                 action();
         } catch (const std::exception& e) {
-            qWarning() << "Failed to update field:" << e.what();
+            qWarning() << "Failed in UpdateField" << e.what();
             return false;
         }
 

@@ -48,7 +48,7 @@ public slots:
     bool RRemoveNode(int node_id);
 
     // receive from related table model
-    virtual void RUpdateLeafTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
+    void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
 
     // receive from table model, member function
     void RSearch() { emit SSearch(); }
@@ -147,8 +147,7 @@ protected:
     QString ConstructPath(const Node* node) const;
 
     // jsus store leaf's total into sqlite3 table, ignore branch's total
-    bool UpdateLeafTotal(const Node* node, CString& initial_field, CString& final_field = QString());
-    void RecalculateAncestor(Node* node, double initial_diff, double final_diff);
+    void UpdateAncestorValue(Node* node, double initial_diff, double final_diff);
     void UpdatePath(const Node* node);
     void UpdateBranchUnit(Node* node) const;
     bool UpdateBranch(Node* node, bool new_value);

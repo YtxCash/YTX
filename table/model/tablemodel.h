@@ -4,6 +4,7 @@
 // default implementations are for finance.
 
 #include <QAbstractItemModel>
+#include <QtConcurrent>
 
 #include "component/enumclass.h"
 #include "component/info.h"
@@ -22,7 +23,7 @@ protected:
 
 signals:
     // send to tree model
-    void SUpdateLeafTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
+    void SUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
     void SSearch();
 
     // send to signal station
@@ -86,9 +87,10 @@ protected:
 
     // member functions
     double Balance(bool rule, double debit, double credit) { return (rule ? 1 : -1) * (credit - debit); }
-    void AccumulateSubtotal(int start, bool rule);
 
     bool UpdateRhsNode(TransShadow* trans_shadow, int value);
+
+    void RunAccumulateSubtotal(int row, bool rule) { QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule); }
 
 protected:
     template <typename T>
@@ -108,12 +110,15 @@ protected:
             if (action)
                 action();
         } catch (const std::exception& e) {
-            qWarning() << "Failed to update field:" << e.what();
+            qWarning() << "Failed in UpdateField" << e.what();
             return false;
         }
 
         return true;
     }
+
+private:
+    void AccumulateSubtotal(int start, bool rule);
 
 protected:
     SPSqlite sql_ {};

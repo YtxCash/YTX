@@ -1,8 +1,8 @@
-#include "financeforeign.h"
+#include "financeforeignr.h"
 
 #include "component/enumclass.h"
 
-FinanceForeign::FinanceForeign(const int& decimal, const int& base_unit, CStringHash& unit_symbol_hash, QObject* parent)
+FinanceForeignR::FinanceForeignR(const int& decimal, const int& base_unit, CStringHash& unit_symbol_hash, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , base_unit_ { base_unit }
@@ -10,14 +10,14 @@ FinanceForeign::FinanceForeign(const int& decimal, const int& base_unit, CString
 {
 }
 
-void FinanceForeign::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void FinanceForeignR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     PaintText(Format(index), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize FinanceForeign::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(Format(index), option); }
+QSize FinanceForeignR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(Format(index), option); }
 
-QString FinanceForeign::Format(const QModelIndex& index) const
+QString FinanceForeignR::Format(const QModelIndex& index) const
 {
     static const QString empty_string {};
 

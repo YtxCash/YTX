@@ -62,22 +62,7 @@ enum class TreeEnumCommon {
 
 enum class TreeEnum { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kInitialTotal, kFinalTotal, kPlaceholder };
 
-enum class TreeEnumProduct {
-    kName,
-    kID,
-    kCode,
-    kDescription,
-    kNote,
-    kRule,
-    kBranch,
-    kUnit,
-    kColor,
-    kUnitPrice,
-    kCommission,
-    kInitialTotal,
-    kFinalTotal,
-    kPlaceholder
-};
+enum class TreeEnumProduct { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kColor, kUnitPrice, kCommission, kQuantity, kAmount, kPlaceholder };
 
 enum class TreeEnumStakeholder { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kDeadline, kEmployee, kPaymentPeriod, kTaxRate, kPlaceholder };
 
@@ -95,9 +80,9 @@ enum class TreeEnumOrder {
     kDateTime,
     kFirst,
     kSecond,
-    kDiscount,
     kLocked,
     kAmount,
+    kDiscount,
     kSettled
 };
 

@@ -1,14 +1,14 @@
-#ifndef FINANCEFOREIGN_H
-#define FINANCEFOREIGN_H
+#ifndef FINANCEFOREIGNR_H
+#define FINANCEFOREIGNR_H
 
 // read only
 
 #include "component/using.h"
 #include "delegate/styleditemdelegate.h"
 
-class FinanceForeign final : public StyledItemDelegate {
+class FinanceForeignR final : public StyledItemDelegate {
 public:
-    FinanceForeign(const int& decimal, const int& base_unit, CStringHash& unit_symbol_hash, QObject* parent = nullptr);
+    FinanceForeignR(const int& decimal, const int& base_unit, CStringHash& unit_symbol_hash, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -21,4 +21,4 @@ private:
     CStringHash& unit_symbol_hash_;
 };
 
-#endif // FINANCEFOREIGN_H
+#endif // FINANCEFOREIGNR_H

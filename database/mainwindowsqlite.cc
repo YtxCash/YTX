@@ -83,21 +83,21 @@ void MainwindowSqlite::NewFile(CString& file_path)
     if (!db.open())
         return;
 
-    QString finance = NodeFinanceTask(FINANCE);
+    QString finance = NodeFinance();
     QString finance_path = Path(FINANCE_PATH);
-    QString finance_transaction = TransactionFinance(FINANCE_TRANSACTION);
+    QString finance_transaction = TransactionFinance();
 
-    QString product = NodeProduct(PRODUCT);
+    QString product = NodeProduct();
     QString product_path = Path(PRODUCT_PATH);
-    QString product_transaction = TransactionProduct(PRODUCT_TRANSACTION);
+    QString product_transaction = TransactionProduct();
 
-    QString task = NodeFinanceTask(TASK);
+    QString task = NodeTask();
     QString task_path = Path(TASK_PATH);
-    QString task_transaction = TransactionTask(TASK_TRANSACTION);
+    QString task_transaction = TransactionTask();
 
-    QString stakeholder = NodeStakeholder(STAKEHOLDER);
+    QString stakeholder = NodeStakeholder();
     QString stakeholder_path = Path(STAKEHOLDER_PATH);
-    QString stakeholder_transaction = TransactionStakeholder(STAKEHOLDER_TRANSACTION);
+    QString stakeholder_transaction = TransactionStakeholder();
 
     QString purchase = NodeOrder(PURCHASE);
     QString purchase_path = Path(PURCHASE_PATH);
@@ -107,7 +107,7 @@ void MainwindowSqlite::NewFile(CString& file_path)
     QString sales_path = Path(SALES_PATH);
     QString sales_transaction = TransactionOrder(SALES_TRANSACTION);
 
-    QString settings = R"(
+    QString settings = QStringLiteral(R"(
     CREATE TABLE IF NOT EXISTS settings (
         id                  INTEGER PRIMARY KEY AUTOINCREMENT,
         static_label        TEXT,
@@ -120,9 +120,9 @@ void MainwindowSqlite::NewFile(CString& file_path)
         base_unit           INTEGER,
         document_dir        TEXT,
         value_decimal       INTEGER    DEFAULT 2,
-        ratio_decimal       INTEGER    DEFAULT 4
+        ratio_decimal       INTEGER    DEFAULT 2
     );
-)";
+    )");
 
     QString settings_row = "INSERT INTO settings (static_node) VALUES (0);";
 
@@ -140,28 +140,28 @@ void MainwindowSqlite::NewFile(CString& file_path)
                 }
             } else {
                 // Handle commit failure
-                qDebug() << "Error committing transaction:" << db.lastError().text();
+                qDebug() << "Error committing transaction" << db.lastError().text();
                 // Rollback the transaction in case of failure
                 db.rollback();
             }
         } else {
             // Handle query execution failure
-            qDebug() << "Error creating tables:" << query.lastError().text();
+            qDebug() << "Error creating tables" << query.lastError().text();
             // Rollback the transaction in case of failure
             db.rollback();
         }
     } else {
         // Handle transaction start failure
-        qDebug() << "Error starting transaction:" << db.lastError().text();
+        qDebug() << "Error starting transaction" << db.lastError().text();
     }
 
     db.close();
 }
 
-QString MainwindowSqlite::NodeFinanceTask(CString& table_name)
+QString MainwindowSqlite::NodeFinance()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS finance (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
         name             TEXT,
         code             TEXT,
@@ -174,14 +174,13 @@ QString MainwindowSqlite::NodeFinanceTask(CString& table_name)
         final_total      NUMERIC,
         removed          BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
 }
 
-QString MainwindowSqlite::NodeStakeholder(CString& table_name)
+QString MainwindowSqlite::NodeStakeholder()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS stakeholder (
         id                INTEGER PRIMARY KEY AUTOINCREMENT,
         name              TEXT,
         code              TEXT,
@@ -196,14 +195,13 @@ QString MainwindowSqlite::NodeStakeholder(CString& table_name)
         tax_rate          NUMERIC,
         removed           BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
 }
 
-QString MainwindowSqlite::NodeProduct(CString& table_name)
+QString MainwindowSqlite::NodeProduct()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS product (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
         name             TEXT,
         code             TEXT,
@@ -215,12 +213,30 @@ QString MainwindowSqlite::NodeProduct(CString& table_name)
         color            TEXT,
         commission       NUMERIC,
         unit_price       NUMERIC,
-        initial_total    NUMERIC,
-        final_total      NUMERIC,
+        quantity         NUMERIC,
+        amount           NUMERIC,
         removed          BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+)");
+}
+
+QString MainwindowSqlite::NodeTask()
+{
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS task (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        name             TEXT,
+        code             TEXT,
+        description      TEXT,
+        note             TEXT,
+        rule             BOOLEAN    DEFAULT 0,
+        branch           BOOLEAN    DEFAULT 0,
+        unit             INTEGER,
+        quantity         NUMERIC,
+        amount           NUMERIC,
+        removed          BOOLEAN    DEFAULT 0
+    );
+    )");
 }
 
 QString MainwindowSqlite::NodeOrder(CString& table_name)
@@ -262,10 +278,10 @@ QString MainwindowSqlite::Path(CString& table_name)
         .arg(table_name);
 }
 
-QString MainwindowSqlite::TransactionFinance(CString& table_name)
+QString MainwindowSqlite::TransactionFinance()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS finance_transaction (
         id             INTEGER PRIMARY KEY AUTOINCREMENT,
         date_time      DATE,
         code           TEXT,
@@ -282,8 +298,7 @@ QString MainwindowSqlite::TransactionFinance(CString& table_name)
         rhs_node       INTEGER,
         removed        BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
 }
 
 QString MainwindowSqlite::TransactionOrder(CString& table_name)
@@ -309,10 +324,10 @@ QString MainwindowSqlite::TransactionOrder(CString& table_name)
         .arg(table_name);
 }
 
-QString MainwindowSqlite::TransactionStakeholder(CString& table_name)
+QString MainwindowSqlite::TransactionStakeholder()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS stakeholder_transaction (
         id                INTEGER PRIMARY KEY AUTOINCREMENT,
         date_time         DATE,
         code              TEXT,
@@ -324,14 +339,13 @@ QString MainwindowSqlite::TransactionStakeholder(CString& table_name)
         inside_product    INTEGER,
         removed           BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
 }
 
-QString MainwindowSqlite::TransactionTask(CString& table_name)
+QString MainwindowSqlite::TransactionTask()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS task_transaction (
         id             INTEGER PRIMARY KEY AUTOINCREMENT,
         date_time      DATE,
         code           TEXT,
@@ -347,14 +361,13 @@ QString MainwindowSqlite::TransactionTask(CString& table_name)
         rhs_node       INTEGER,
         removed        BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
 }
 
-QString MainwindowSqlite::TransactionProduct(CString& table_name)
+QString MainwindowSqlite::TransactionProduct()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS product_transaction (
         id             INTEGER PRIMARY KEY AUTOINCREMENT,
         date_time      DATE,
         code           TEXT,
@@ -370,6 +383,5 @@ QString MainwindowSqlite::TransactionProduct(CString& table_name)
         rhs_node       INTEGER,
         removed        BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
 }

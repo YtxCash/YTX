@@ -38,12 +38,12 @@ bool TreeModel::RUpdateMultiLeafTotal(const QList<int>& node_list)
         old_initial_total = node->initial_total;
 
         sql_->LeafTotal(node);
-        UpdateLeafTotal(node, INITIAL_TOTAL, FINAL_TOTAL);
+        sql_->UpdateNodeValue(node);
 
         final_diff = node->final_total - old_final_total;
         initial_diff = node->initial_total - old_initial_total;
 
-        RecalculateAncestor(node, initial_diff, final_diff);
+        UpdateAncestorValue(node, initial_diff, final_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -60,9 +60,15 @@ bool TreeModel::RRemoveNode(int node_id)
     return true;
 }
 
-void TreeModel::RUpdateLeafTotal(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff)
+void TreeModel::RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff)
 {
     auto node { GetNodeByID(node_id) };
+    if (!node || node == root_ || node->branch)
+        return;
+
+    if (initial_credit_diff == 0 && initial_debit_diff == 0 && final_debit_diff == 0 && final_credit_diff == 0)
+        return;
+
     auto rule { node->rule };
 
     auto initial_diff { (rule ? 1 : -1) * (initial_credit_diff - initial_debit_diff) };
@@ -71,8 +77,8 @@ void TreeModel::RUpdateLeafTotal(int node_id, double initial_debit_diff, double 
     node->initial_total += initial_diff;
     node->final_total += final_diff;
 
-    UpdateLeafTotal(node, INITIAL_TOTAL, FINAL_TOTAL);
-    RecalculateAncestor(node, initial_diff, final_diff);
+    sql_->UpdateNodeValue(node);
+    UpdateAncestorValue(node, initial_diff, final_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -105,7 +111,7 @@ bool TreeModel::RemoveNode(int row, const QModelIndex& parent)
     }
 
     if (!branch) {
-        RecalculateAncestor(node, -node->initial_total, -node->final_total);
+        UpdateAncestorValue(node, -node->initial_total, -node->final_total);
         leaf_path_.remove(node_id);
         sql_->RemoveNode(node_id, false);
     }
@@ -373,11 +379,11 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        RecalculateAncestor(node, -node->initial_total, -node->final_total);
+        UpdateAncestorValue(node, -node->initial_total, -node->final_total);
 
         destination_parent->children.insert(begin_row, node);
         node->parent = destination_parent;
-        RecalculateAncestor(node, node->initial_total, node->final_total);
+        UpdateAncestorValue(node, node->initial_total, node->final_total);
 
         endMoveRows();
     }
@@ -638,9 +644,12 @@ Node* TreeModel::GetNodeByID(int node_id) const
     return nullptr;
 }
 
-void TreeModel::RecalculateAncestor(Node* node, double initial_diff, double final_diff)
+void TreeModel::UpdateAncestorValue(Node* node, double initial_diff, double final_diff)
 {
-    if (!node || node == root_ || !node->parent || node->parent == root_)
+    if (!node || node == root_ || node->parent == root_ || !node->parent)
+        return;
+
+    if (initial_diff == 0 && final_diff == 0)
         return;
 
     bool equal {};
@@ -654,20 +663,6 @@ void TreeModel::RecalculateAncestor(Node* node, double initial_diff, double fina
         if (node->unit == unit)
             node->initial_total += (equal ? 1 : -1) * initial_diff;
     }
-}
-
-bool TreeModel::UpdateLeafTotal(const Node* node, CString& initial_field, CString& final_field)
-{
-    if (!node || node->branch)
-        return false;
-
-    auto node_id { node->id };
-
-    sql_->UpdateField(info_.node, node->initial_total, initial_field, node_id);
-    if (!final_field.isEmpty())
-        sql_->UpdateField(info_.node, node->final_total, final_field, node_id);
-
-    return true;
 }
 
 bool TreeModel::UpdateBranch(Node* node, bool value)
@@ -733,7 +728,7 @@ void TreeModel::ConstructTree()
             continue;
         }
 
-        RecalculateAncestor(node, node->initial_total, node->final_total);
+        UpdateAncestorValue(node, node->initial_total, node->final_total);
         leaf_path_.insert(node->id, path);
     }
 
@@ -752,7 +747,7 @@ bool TreeModel::UpdateRule(Node* node, bool value)
     node->initial_total = -node->initial_total;
     if (!node->branch) {
         emit SRule(node->id, value);
-        UpdateLeafTotal(node, INITIAL_TOTAL, FINAL_TOTAL);
+        sql_->UpdateNodeValue(node);
     }
 
     return true;

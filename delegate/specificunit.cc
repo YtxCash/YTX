@@ -11,17 +11,18 @@ SpecificUnit::SpecificUnit(const TreeModel* tree_model, int specific_unit, QObje
 {
 }
 
-QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     Q_UNUSED(option);
-
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool() };
-    if (branch)
-        return nullptr;
 
     auto editor { new ComboBox(parent) };
     tree_model_->LeafPathSpecificUnit(editor, specific_unit_);
     editor->model()->sort(0);
+
+    int height = option.rect.height();
+    int width = option.rect.width();
+    editor->setFixedHeight(std::max(height, editor->height()));
+    editor->setMinimumWidth(std::max(width, editor->width()));
 
     return editor;
 }

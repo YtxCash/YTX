@@ -37,7 +37,7 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
     case TableEnumOrder::kUnitPrice:
         return *trans_shadow->unit_price == 0 ? QVariant() : *trans_shadow->unit_price;
     case TableEnumOrder::kSecond:
-        return *trans_shadow->lhs_credit == 0 ? QVariant() : *trans_shadow->lhs_debit;
+        return *trans_shadow->lhs_credit == 0 ? QVariant() : *trans_shadow->lhs_credit;
     case TableEnumOrder::kDescription:
         return *trans_shadow->description;
     case TableEnumOrder::kColor:
@@ -77,22 +77,24 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
     const double old_amount { *trans_shadow->rhs_credit };
     const double old_settled { *trans_shadow->settled };
 
-    bool lhs_changed { false };
+    bool ins_changed { false };
     bool fir_changed { false };
     bool sec_changed { false };
+    bool uni_changed { false };
+    bool dis_changed { false };
 
     switch (kColumn) {
     case TableEnumOrder::kCode:
-        UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::description);
+        UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnumOrder::kDescription:
         UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description);
         break;
     case TableEnumOrder::kInsideProduct:
-        lhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
+        ins_changed = UpdateInsideProduct(trans_shadow, value.toInt());
         break;
     case TableEnumOrder::kUnitPrice:
-        UpdateUnitPrice(trans_shadow, value.toDouble());
+        uni_changed = UpdateUnitPrice(trans_shadow, value.toDouble());
         break;
     case TableEnumOrder::kSecond:
         sec_changed = UpdateSecond(trans_shadow, value.toDouble());
@@ -101,7 +103,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         fir_changed = UpdateField(trans_shadow, value.toDouble(), FIRST, &TransShadow::lhs_debit);
         break;
     case TableEnumOrder::kDiscountPrice:
-        UpdateDiscountPrice(trans_shadow, value.toDouble());
+        dis_changed = UpdateDiscountPrice(trans_shadow, value.toDouble());
         break;
     case TableEnumOrder::kOutsideProduct:
         UpdateField(trans_shadow, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
@@ -115,22 +117,36 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         return false;
     }
 
-    if (lhs_changed) {
-        if (old_lhs_node == 0)
+    if (ins_changed) {
+        if (old_lhs_node == 0) {
             sql_->WriteTrans(trans_shadow);
-        else
+            emit SUpdateLeafValueOrder(*trans_shadow->node_id, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit, *trans_shadow->rhs_credit,
+                *trans_shadow->rhs_debit, *trans_shadow->settled);
+        } else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
     }
 
     if (fir_changed)
-        emit SUpdateFirst(*trans_shadow->id, value.toDouble() - old_first);
+        emit SUpdateLeafValueOrder(*trans_shadow->node_id, value.toDouble() - old_first);
 
     if (sec_changed) {
         double second_diff { value.toDouble() - old_second };
         double amount_diff { *trans_shadow->rhs_credit - old_amount };
         double discount_diff { *trans_shadow->rhs_debit - old_discount };
         double settled_diff { *trans_shadow->settled - old_settled };
-        emit SUpdateLeafTotal(*trans_shadow->id, second_diff, amount_diff, discount_diff, settled_diff);
+        emit SUpdateLeafValueOrder(*trans_shadow->node_id, 0.0, second_diff, amount_diff, discount_diff, settled_diff);
+    }
+
+    if (uni_changed) {
+        double amount_diff { *trans_shadow->rhs_credit - old_amount };
+        double settled_diff { *trans_shadow->settled - old_settled };
+        emit SUpdateLeafValueOrder(*trans_shadow->node_id, 0.0, 0.0, amount_diff, 0.0, settled_diff);
+    }
+
+    if (dis_changed) {
+        double discount_diff { *trans_shadow->rhs_debit - old_discount };
+        double settled_diff { *trans_shadow->settled - old_settled };
+        emit SUpdateLeafValueOrder(*trans_shadow->node_id, 0.0, 0.0, 0.0, discount_diff, settled_diff);
     }
 
     emit SResizeColumnToContents(index.column());
@@ -190,6 +206,7 @@ Qt::ItemFlags TableModelOrder::flags(const QModelIndex& index) const
     case TableEnumOrder::kNodeID:
     case TableEnumOrder::kAmount:
     case TableEnumOrder::kDiscount:
+    case TableEnumOrder::kSettled:
     case TableEnumOrder::kColor:
         flags &= ~Qt::ItemIsEditable;
         break;
@@ -254,11 +271,13 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
 
     auto diff { *trans_shadow->lhs_credit * (value - *trans_shadow->unit_price) };
     *trans_shadow->rhs_credit += diff;
+    *trans_shadow->settled += diff;
     *trans_shadow->unit_price = value;
 
-    sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
-    sql_->UpdateField(info_.transaction, *trans_shadow->rhs_credit, AMOUNT, *trans_shadow->id);
+    if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
+        return false;
 
+    sql_->UpdateTransValue(trans_shadow);
     return true;
 }
 
@@ -269,8 +288,13 @@ bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double valu
 
     auto diff { *trans_shadow->lhs_credit * (value - *trans_shadow->discount_price) };
     *trans_shadow->rhs_debit += diff;
+    *trans_shadow->settled -= diff;
     *trans_shadow->discount_price = value;
 
+    if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
+        return false;
+
+    sql_->UpdateTransValue(trans_shadow);
     return true;
 }
 
@@ -285,6 +309,10 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     *trans_shadow->settled += (*trans_shadow->unit_price - *trans_shadow->discount_price) * diff;
 
     *trans_shadow->lhs_credit = value;
-    sql_->UpdateTrans(*trans_shadow->id);
+
+    if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
+        return false;
+
+    sql_->UpdateTransValue(trans_shadow);
     return true;
 }

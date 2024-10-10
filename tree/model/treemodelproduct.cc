@@ -1,7 +1,6 @@
 #include "treemodelproduct.h"
 
 #include <QMimeData>
-#include <QQueue>
 #include <QRegularExpression>
 
 #include "component/enumclass.h"
@@ -103,9 +102,9 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
         case TreeEnumProduct::kUnitPrice:
             return (order == Qt::AscendingOrder) ? (lhs->first < rhs->first) : (lhs->first > rhs->first);
-        case TreeEnumProduct::kInitialTotal:
+        case TreeEnumProduct::kQuantity:
             return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
-        case TreeEnumProduct::kFinalTotal:
+        case TreeEnumProduct::kAmount:
             return (order == Qt::AscendingOrder) ? (lhs->final_total < rhs->final_total) : (lhs->final_total > rhs->final_total);
         default:
             return false;
@@ -151,9 +150,9 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
         return node->second == 0 ? QVariant() : node->second;
     case TreeEnumProduct::kUnitPrice:
         return node->first == 0 ? QVariant() : node->first;
-    case TreeEnumProduct::kInitialTotal:
-        return node->initial_total;
-    case TreeEnumProduct::kFinalTotal:
+    case TreeEnumProduct::kQuantity:
+        return node->initial_total == 0 ? QVariant() : node->initial_total;
+    case TreeEnumProduct::kAmount:
         return node->final_total;
     default:
         return QVariant();
@@ -220,8 +219,8 @@ Qt::ItemFlags TreeModelProduct::flags(const QModelIndex& index) const
         flags |= Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
         flags &= ~Qt::ItemIsEditable;
         break;
-    case TreeEnumProduct::kInitialTotal:
-    case TreeEnumProduct::kFinalTotal:
+    case TreeEnumProduct::kQuantity:
+    case TreeEnumProduct::kAmount:
     case TreeEnumProduct::kBranch:
     case TreeEnumProduct::kColor:
         flags &= ~Qt::ItemIsEditable;

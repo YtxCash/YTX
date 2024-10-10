@@ -3,7 +3,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
-#include "component/constvalue.h"
 #include "global/resourcepool.h"
 #include "global/sqlconnection.h"
 
@@ -192,18 +191,6 @@ bool Sqlite::WriteNode(int parent_id, Node* node)
     }
 
     return true;
-}
-
-void Sqlite::WriteNodeBind(Node* node, QSqlQuery& query)
-{
-    // finance, task
-    query.bindValue(":name", node->name);
-    query.bindValue(":code", node->code);
-    query.bindValue(":description", node->description);
-    query.bindValue(":note", node->note);
-    query.bindValue(":rule", node->rule);
-    query.bindValue(":branch", node->branch);
-    query.bindValue(":unit", node->unit);
 }
 
 void Sqlite::CalculateLeafTotal(Node* node, QSqlQuery& query)
@@ -504,40 +491,6 @@ void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left)
     trans_shadow->rhs_credit = &(left ? trans->rhs_credit : trans->lhs_credit);
 }
 
-void Sqlite::ReadTransQuery(Trans* trans, const QSqlQuery& query)
-{
-    // finance
-    trans->lhs_node = query.value("lhs_node").toInt();
-    trans->lhs_ratio = query.value("lhs_ratio").toDouble();
-    trans->lhs_debit = query.value("lhs_debit").toDouble();
-    trans->lhs_credit = query.value("lhs_credit").toDouble();
-
-    trans->rhs_node = query.value("rhs_node").toInt();
-    trans->rhs_ratio = query.value("rhs_ratio").toDouble();
-    trans->rhs_debit = query.value("rhs_debit").toDouble();
-    trans->rhs_credit = query.value("rhs_credit").toDouble();
-
-    trans->code = query.value("code").toString();
-    trans->description = query.value("description").toString();
-    trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
-    trans->date_time = query.value("date_time").toString();
-    trans->state = query.value("state").toBool();
-}
-
-void Sqlite::UpdateTransBind(Trans* trans, QSqlQuery& query)
-{
-    // finance
-    query.bindValue(":lhs_node", trans->lhs_node);
-    query.bindValue(":lhs_ratio", trans->lhs_ratio);
-    query.bindValue(":lhs_debit", trans->lhs_debit);
-    query.bindValue(":lhs_credit", trans->lhs_credit);
-    query.bindValue(":rhs_node", trans->rhs_node);
-    query.bindValue(":rhs_ratio", trans->rhs_ratio);
-    query.bindValue(":rhs_debit", trans->rhs_debit);
-    query.bindValue(":rhs_credit", trans->rhs_credit);
-    query.bindValue(":trans_id", trans->id);
-}
-
 bool Sqlite::WriteTrans(TransShadow* trans_shadow)
 {
     QSqlQuery query(*db_);
@@ -557,24 +510,6 @@ bool Sqlite::WriteTrans(TransShadow* trans_shadow)
 }
 
 bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) { }
-
-void Sqlite::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
-{
-    // finance
-    query.bindValue(":date_time", *trans_shadow->date_time);
-    query.bindValue(":lhs_node", *trans_shadow->lhs_node);
-    query.bindValue(":lhs_ratio", *trans_shadow->lhs_ratio);
-    query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
-    query.bindValue(":lhs_credit", *trans_shadow->lhs_credit);
-    query.bindValue(":rhs_node", *trans_shadow->rhs_node);
-    query.bindValue(":rhs_ratio", *trans_shadow->rhs_ratio);
-    query.bindValue(":rhs_debit", *trans_shadow->rhs_debit);
-    query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
-    query.bindValue(":state", *trans_shadow->state);
-    query.bindValue(":description", *trans_shadow->description);
-    query.bindValue(":code", *trans_shadow->code);
-    query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
-}
 
 bool Sqlite::RemoveTrans(int trans_id)
 {
@@ -597,20 +532,41 @@ bool Sqlite::RemoveTrans(int trans_id)
     return true;
 }
 
-bool Sqlite::UpdateTrans(int trans_id)
+bool Sqlite::UpdateNodeValue(const Node* node)
 {
-    CString& string { UpdateTransQS() };
+    if (node->branch)
+        return false;
+
+    CString& string { UpdateNodeValueQS() };
     if (string.isEmpty())
         return false;
 
     QSqlQuery query(*db_);
-    auto trans { trans_hash_.value(trans_id) };
 
     query.prepare(string);
-    UpdateTransBind(trans, query);
+    UpdateNodeValueBind(node, query);
 
     if (!query.exec()) {
-        qWarning() << "Failed in UpdateTrans" << query.lastError().text();
+        qWarning() << "Failed in UpdateNodeValue" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+bool Sqlite::UpdateTransValue(const TransShadow* trans_shadow)
+{
+    CString& string { UpdateTransValueQS() };
+    if (string.isEmpty())
+        return false;
+
+    QSqlQuery query(*db_);
+
+    query.prepare(string);
+    UpdateTransValueBind(trans_shadow, query);
+
+    if (!query.exec()) {
+        qWarning() << "Failed in UpdateTransValue" << query.lastError().text();
         return false;
     }
 
@@ -751,21 +707,6 @@ TransShadow* Sqlite::AllocateTransShadow()
 
     ConvertTrans(last_trans_, trans_shadow, true);
     return trans_shadow;
-}
-
-void Sqlite::ReadNodeQuery(Node* node, const QSqlQuery& query)
-{
-    // finance, task
-    node->id = query.value("id").toInt();
-    node->name = query.value("name").toString();
-    node->code = query.value("code").toString();
-    node->description = query.value("description").toString();
-    node->note = query.value("note").toString();
-    node->rule = query.value("rule").toBool();
-    node->branch = query.value("branch").toBool();
-    node->unit = query.value("unit").toInt();
-    node->initial_total = query.value("initial_total").toDouble();
-    node->final_total = query.value("final_total").toDouble();
 }
 
 bool Sqlite::DBTransaction(std::function<bool()> function)

@@ -1,7 +1,6 @@
 #include "treemodelstakeholder.h"
 
 #include <QMimeData>
-#include <QQueue>
 #include <QRegularExpression>
 
 #include "component/constvalue.h"

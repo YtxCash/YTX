@@ -12,7 +12,7 @@ SqliteTask::SqliteTask(CInfo& info, QObject* parent)
 QString SqliteTask::ReadNodeQS() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, initial_total, final_total
+    SELECT name, id, code, description, note, rule, branch, unit, quantity, amount
     FROM task
     WHERE removed = 0
     )");
@@ -117,7 +117,7 @@ QString SqliteTask::RReplaceNodeQS() const
     )");
 }
 
-QString SqliteTask::UpdateTransQS() const
+QString SqliteTask::UpdateTransValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET
@@ -163,15 +163,56 @@ void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
 }
 
-void SqliteTask::UpdateTransBind(Trans* trans, QSqlQuery& query)
+void SqliteTask::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
 {
-    query.bindValue(":lhs_node", trans->lhs_node);
-    query.bindValue(":lhs_debit", trans->lhs_debit);
-    query.bindValue(":lhs_credit", trans->lhs_credit);
-    query.bindValue(":rhs_node", trans->rhs_node);
-    query.bindValue(":rhs_debit", trans->rhs_debit);
-    query.bindValue(":rhs_credit", trans->rhs_credit);
-    query.bindValue(":trans_id", trans->id);
+    query.bindValue(":lhs_node", *trans_shadow->lhs_node);
+    query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
+    query.bindValue(":lhs_credit", *trans_shadow->lhs_credit);
+    query.bindValue(":rhs_node", *trans_shadow->rhs_node);
+    query.bindValue(":rhs_debit", *trans_shadow->rhs_debit);
+    query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
+    query.bindValue(":trans_id", *trans_shadow->id);
+}
+
+void SqliteTask::WriteNodeBind(Node* node, QSqlQuery& query)
+{
+    query.bindValue(":name", node->name);
+    query.bindValue(":code", node->code);
+    query.bindValue(":description", node->description);
+    query.bindValue(":note", node->note);
+    query.bindValue(":rule", node->rule);
+    query.bindValue(":branch", node->branch);
+    query.bindValue(":unit", node->unit);
+}
+
+void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query)
+{
+    node->id = query.value("id").toInt();
+    node->name = query.value("name").toString();
+    node->code = query.value("code").toString();
+    node->description = query.value("description").toString();
+    node->note = query.value("note").toString();
+    node->rule = query.value("rule").toBool();
+    node->branch = query.value("branch").toBool();
+    node->unit = query.value("unit").toInt();
+    node->initial_total = query.value("quantity").toDouble();
+    node->final_total = query.value("amount").toDouble();
+}
+
+QString SqliteTask::UpdateNodeValueQS() const
+{
+    return QStringLiteral(R"(
+    UPDATE task SET
+    quantity = :quantity, amount = :amount
+    WHERE id = :node_id
+    )");
+}
+
+void SqliteTask::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+{
+    query.bindValue(":quantity", node->initial_total);
+    query.bindValue(":amount", node->final_total);
+    query.bindValue(":node_id", node->id);
 }
 
 QString SqliteTask::SearchTransQS() const

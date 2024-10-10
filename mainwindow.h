@@ -143,7 +143,7 @@ private:
     void CreateDelegate(QTreeView* view, CInfo* info, CSettings* settings);
     void DelegateCommon(QTreeView* view, CInfo* info);
     void DelegateFinance(QTreeView* view, CInfo* info, CSettings* settings);
-    void DelegateProduct(QTreeView* view, CInfo* info, CSettings* settings);
+    void DelegateProduct(QTreeView* view, CSettings* settings);
     void DelegateStakeholder(QTreeView* view, CSettings* settings);
     void DelegateOrder(QTreeView* view, CInfo* info, CSettings* settings);
 
