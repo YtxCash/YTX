@@ -10,13 +10,25 @@ TableModelOrder::TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& in
 
 void TableModelOrder::RUpdateNodeID(int node_id)
 {
-    for (auto* trans_shadow : trans_shadow_list_)
-        if (*trans_shadow->lhs_node != 0)
+    node_id_ = node_id;
+    if (trans_shadow_list_.isEmpty())
+        return;
+
+    TransShadow* trans_shadow {};
+
+    for (auto i { trans_shadow_list_.size() - 1 }; i >= 0; --i) {
+        trans_shadow = trans_shadow_list_.at(i);
+        if (*trans_shadow->lhs_node == 0) {
+            beginRemoveRows(QModelIndex(), i, i);
+            ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
+            endRemoveRows();
+        } else
             *trans_shadow->node_id = node_id;
+    }
 
     // 一次向数据库添加多条交易
-    sql_->WriteTransRange(trans_shadow_list_);
-    node_id_ = node_id;
+    if (!trans_shadow_list_.isEmpty())
+        sql_->WriteTransRange(trans_shadow_list_);
 }
 
 QVariant TableModelOrder::data(const QModelIndex& index, int role) const
@@ -256,8 +268,6 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
         return false;
 
     *trans_shadow->lhs_node = value;
-
-    sql_->UpdateField(info_.transaction, value, INSIDE_PRODUCT, *trans_shadow->id);
 
     // todo:  更新单价，更新客户相应的产品编号
 

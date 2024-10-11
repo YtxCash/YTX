@@ -438,7 +438,7 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings* settings)
     auto inside_product { new InsideProduct(product_tree_.model, UNIT_POSITION, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
-    auto unit_price { new TableDoubleSpin(settings->ratio_decimal, DMIN, DMAX, view) };
+    auto unit_price { new TableDoubleSpin(settings->value_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
     auto date_time { new DateTime(interface_.date_format, settings->hide_time, view) };
@@ -471,15 +471,15 @@ void MainWindow::DelegateOrder(QTableView* view, CSettings* settings)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
 
-    auto price { new TableDoubleSpin(settings->ratio_decimal, DMIN, DMAX, view) };
+    auto price { new TableDoubleSpin(settings->value_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
 
-    auto quantity { new TableDoubleSpin(settings->value_decimal, DMIN, DMAX, view) };
+    auto quantity { new TableDoubleSpin(settings->ratio_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
 
-    auto amount { new TableDoubleSpinR(settings->ratio_decimal, false, view) };
+    auto amount { new TableDoubleSpinR(settings->value_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kAmount), amount);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscount), amount);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
@@ -565,10 +565,10 @@ void MainWindow::DelegateTask(QTreeView* view, CSettings* settings)
     auto quantity { new TreeDoubleSpinR(settings->value_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
 
-    auto amount { new TreeDoubleSpinUnitR(settings->ratio_decimal, finance_settings_.base_unit, finance_data_.info.unit_symbol_hash, view) };
+    auto amount { new TreeDoubleSpinUnitR(settings->value_decimal, finance_settings_.base_unit, finance_data_.info.unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
-    auto unit_cost { new TreeDoubleSpin(settings->ratio_decimal, DMIN, DMAX, view) };
+    auto unit_cost { new TreeDoubleSpin(settings->value_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
 
     auto color { new Color(view) };
@@ -605,15 +605,13 @@ void MainWindow::DelegateStakeholder(QTreeView* view, CSettings* settings)
 
 void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings* settings)
 {
-    auto total { new OrderTotalR(settings->value_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), total);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), total);
+    auto amount { new OrderTotalR(settings->value_decimal, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
 
-    auto second { new TreeDoubleSpinR(settings->ratio_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), second);
-
-    auto first { new TreeSpinR(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), first);
+    auto quantity { new TreeDoubleSpinR(settings->ratio_decimal, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
     auto discount { new TreeDoubleSpinR(settings->value_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), discount);
@@ -1352,11 +1350,11 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
 
     switch (section) {
     case Section::kSales:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, sales_settings_.value_decimal, UNIT_CUSTOMER, this);
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_CUSTOMER, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, sales_settings_.value_decimal, UNIT_VENDOR, this);
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_VENDOR, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -1476,11 +1474,11 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
 
     switch (section) {
     case Section::kSales:
-        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, purchase_settings_.value_decimal, UNIT_CUSTOMER, this);
+        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_CUSTOMER, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, purchase_settings_.value_decimal, UNIT_VENDOR, this);
+        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_VENDOR, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -1505,6 +1503,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
 
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog_cast, &InsertNodeOrder::RUpdateStakeholder);
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &InsertNodeOrder::RUpdateLocked);
+    connect(dialog_cast, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
     connect(dialog_cast, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
     connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);

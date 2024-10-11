@@ -9,15 +9,15 @@
 #include "ui_insertnodeorder.h"
 
 InsertNodeOrder::InsertNodeOrder(
-    Node* node, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, int value_decimal, int unit_party, QWidget* parent)
+    Node* node, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int unit_party, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::InsertNodeOrder)
     , sql_ { sql }
     , node_ { node }
     , unit_party_ { unit_party }
-    , value_decimal_ { value_decimal }
     , order_table_ { order_table }
     , stakeholder_model_ { stakeholder_model }
+    , settings_ { settings }
     , info_node_ { unit_party == UNIT_CUSTOMER ? SALES : PURCHASE }
 {
     ui->setupUi(this);
@@ -78,6 +78,7 @@ void InsertNodeOrder::RUpdateLocked(int node_id, bool checked)
     if (checked) {
         ui->pBtnPrint->setFocus();
         ui->pBtnPrint->setDefault(true);
+        ui->tableViewOrder->clearSelection();
     }
 }
 
@@ -92,14 +93,18 @@ void InsertNodeOrder::IniDialog()
     ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);
-    ui->dSpinDiscount->setDecimals(value_decimal_);
-    ui->dSpinFinalTotal->setDecimals(value_decimal_);
-    ui->dSpinFinalTotal->setRange(DMIN, DMAX);
-    ui->dSpinInitialTotal->setDecimals(value_decimal_);
-    ui->dSpinInitialTotal->setRange(DMIN, DMAX);
+    ui->dSpinAmount->setRange(DMIN, DMAX);
+    ui->dSpinSettled->setRange(DMIN, DMAX);
     ui->dSpinSecond->setRange(DMIN, DMAX);
-    ui->dSpinSecond->setDecimals(value_decimal_);
-    ui->dSpinFirst->setRange(IMIN, IMAX);
+    ui->dSpinFirst->setRange(DMIN, DMAX);
+
+    ui->dSpinDiscount->setDecimals(settings_.value_decimal);
+    ui->dSpinAmount->setDecimals(settings_.value_decimal);
+    ui->dSpinSettled->setDecimals(settings_.value_decimal);
+    ui->dSpinSecond->setDecimals(settings_.ratio_decimal);
+    ui->dSpinFirst->setDecimals(settings_.ratio_decimal);
+
+    ui->comboParty->setFocus();
 }
 
 void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
@@ -121,8 +126,10 @@ void InsertNodeOrder::accept()
         emit QDialog::accepted();
         is_saved_ = true;
         node_id_ = node_->id;
+        emit SUpdateNodeID(node_id_);
         ui->chkBoxBranch->setEnabled(false);
         ui->pBtnSaveOrder->setEnabled(false);
+        ui->tableViewOrder->clearSelection();
     }
 }
 
@@ -146,10 +153,10 @@ void InsertNodeOrder::LockWidgets(bool locked, bool branch)
 
     ui->pBtnInsertParty->setEnabled(not_branch_enable);
 
-    ui->labelInitialTotal->setEnabled(not_branch_enable);
-    ui->dSpinInitialTotal->setEnabled(not_branch_enable);
+    ui->labelSettled->setEnabled(not_branch_enable);
+    ui->dSpinSettled->setEnabled(not_branch_enable);
 
-    ui->dSpinFinalTotal->setEnabled(!branch);
+    ui->dSpinAmount->setEnabled(!branch);
 
     ui->labelDiscount->setEnabled(not_branch_enable);
     ui->dSpinDiscount->setEnabled(not_branch_enable);
@@ -174,14 +181,14 @@ void InsertNodeOrder::UpdateUnit(int unit)
     switch (unit) {
     case UNIT_CASH:
         ui->rBtnCash->setChecked(true);
-        ui->dSpinFinalTotal->setValue(ui->dSpinInitialTotal->value() - ui->dSpinDiscount->value());
+        ui->dSpinAmount->setValue(ui->dSpinSettled->value() - ui->dSpinDiscount->value());
         break;
     case UNIT_MONTHLY:
-        ui->dSpinFinalTotal->setValue(0.0);
+        ui->dSpinAmount->setValue(0.0);
         ui->rBtnMonthly->setChecked(true);
         break;
     case UNIT_PENDING:
-        ui->dSpinFinalTotal->setValue(0.0);
+        ui->dSpinAmount->setValue(0.0);
         ui->rBtnPending->setChecked(true);
         break;
     default:
@@ -260,8 +267,8 @@ void InsertNodeOrder::on_rBtnCash_toggled(bool checked)
 
     node_->unit = UNIT_CASH;
 
-    ui->dSpinFinalTotal->setValue(ui->dSpinInitialTotal->value() - ui->dSpinDiscount->value());
-    node_->final_total = ui->dSpinFinalTotal->value();
+    ui->dSpinAmount->setValue(ui->dSpinSettled->value() - ui->dSpinDiscount->value());
+    node_->final_total = ui->dSpinAmount->value();
 
     if (is_saved_) {
         sql_->UpdateField(info_node_, UNIT_CASH, UNIT, node_id_);
@@ -275,7 +282,7 @@ void InsertNodeOrder::on_rBtnMonthly_toggled(bool checked)
         return;
 
     node_->unit = UNIT_MONTHLY;
-    ui->dSpinFinalTotal->setValue(0.0);
+    ui->dSpinAmount->setValue(0.0);
     node_->final_total = 0.0;
 
     if (is_saved_) {
@@ -290,7 +297,7 @@ void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
         return;
 
     node_->unit = UNIT_PENDING;
-    ui->dSpinFinalTotal->setValue(0.0);
+    ui->dSpinAmount->setValue(0.0);
     node_->final_total = 0.0;
 
     if (is_saved_) {
@@ -347,38 +354,6 @@ void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
     }
 }
 
-void InsertNodeOrder::on_dSpinInitialTotal_editingFinished()
-{
-    auto value { ui->dSpinInitialTotal->value() };
-
-    node_->final_total = value - node_->discount;
-    ui->dSpinFinalTotal->setValue(node_->final_total);
-    node_->initial_total = value;
-
-    if (is_saved_) {
-        sql_->UpdateField(info_node_, value, INITIAL_TOTAL, node_id_);
-        sql_->UpdateField(info_node_, node_->final_total, FINAL_TOTAL, node_id_);
-    }
-}
-
-void InsertNodeOrder::on_dSpinDiscount_editingFinished()
-{
-    auto value { ui->dSpinDiscount->value() };
-
-    if (node_->rule == UNIT_CASH) {
-        node_->final_total = node_->initial_total - value;
-        ui->dSpinFinalTotal->setValue(node_->final_total);
-
-        if (is_saved_)
-            sql_->UpdateField(info_node_, node_->final_total, FINAL_TOTAL, node_id_);
-    }
-
-    node_->discount = value;
-
-    if (is_saved_)
-        sql_->UpdateField(info_node_, value, DISCOUNT, node_id_);
-}
-
 void InsertNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1)
 {
     bool enable { arg1 == Qt::Checked };
@@ -392,20 +367,4 @@ void InsertNodeOrder::on_lineDescription_editingFinished()
 
     if (is_saved_)
         sql_->UpdateField(info_node_, node_->description, DESCRIPTION, node_id_);
-}
-
-void InsertNodeOrder::on_dSpinFirst_editingFinished()
-{
-    node_->first = ui->dSpinFirst->value();
-
-    if (is_saved_)
-        sql_->UpdateField(info_node_, node_->first, FIRST, node_id_);
-}
-
-void InsertNodeOrder::on_dSpinSecond_editingFinished()
-{
-    node_->second = ui->dSpinSecond->value();
-
-    if (is_saved_)
-        sql_->UpdateField(info_node_, node_->second, SECOND, node_id_);
 }

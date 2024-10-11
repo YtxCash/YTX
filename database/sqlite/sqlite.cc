@@ -509,7 +509,109 @@ bool Sqlite::WriteTrans(TransShadow* trans_shadow)
     return true;
 }
 
-bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) { }
+bool Sqlite::WriteTransRange(const QList<TransShadow*>& list)
+{
+    if (list.isEmpty())
+        return false;
+
+    QSqlQuery query(*db_);
+
+    query.exec("PRAGMA synchronous = OFF");
+    query.exec("PRAGMA journal_mode = MEMORY");
+
+    if (!db_->transaction()) {
+        qDebug() << "Failed to start transaction" << db_->lastError();
+        return false;
+    }
+
+    CString& string { WriteTransQS() };
+
+    // 插入多条记录的 SQL 语句
+    query.prepare(string);
+
+    const int size = list.size();
+    QVariantList code_list {};
+    QVariantList inside_product_list {};
+    QVariantList unit_price_list {};
+    QVariantList description_list {};
+    QVariantList second_list {};
+    QVariantList node_id_list {};
+    QVariantList first_list {};
+    QVariantList amount_list {};
+    QVariantList discount_list {};
+    QVariantList settled_list {};
+    QVariantList outside_product_list {};
+    QVariantList discount_price_list {};
+
+    code_list.reserve(size);
+    inside_product_list.reserve(size);
+    unit_price_list.reserve(size);
+    description_list.reserve(size);
+    second_list.reserve(size);
+    node_id_list.reserve(size);
+    first_list.reserve(size);
+    amount_list.reserve(size);
+    discount_list.reserve(size);
+    settled_list.reserve(size);
+    outside_product_list.reserve(size);
+    discount_price_list.reserve(size);
+
+    // 遍历 list 并将每个字段的值添加到相应的 QVariantList 中
+    for (const TransShadow* trans_shadow : list) {
+        code_list.emplaceBack(*trans_shadow->code);
+        inside_product_list.emplaceBack(*trans_shadow->lhs_node);
+        unit_price_list.emplaceBack(*trans_shadow->unit_price);
+        description_list.emplaceBack(*trans_shadow->description);
+        second_list.emplaceBack(*trans_shadow->lhs_credit);
+        node_id_list.emplaceBack(*trans_shadow->node_id);
+        first_list.emplaceBack(*trans_shadow->lhs_debit);
+        amount_list.emplaceBack(*trans_shadow->rhs_credit);
+        discount_list.emplaceBack(*trans_shadow->rhs_debit);
+        settled_list.emplaceBack(*trans_shadow->settled);
+        outside_product_list.emplaceBack(*trans_shadow->rhs_node);
+        discount_price_list.emplaceBack(*trans_shadow->discount_price);
+    }
+
+    // 批量绑定 QVariantList
+    query.bindValue(":code", code_list);
+    query.bindValue(":inside_product", inside_product_list);
+    query.bindValue(":unit_price", unit_price_list);
+    query.bindValue(":description", description_list);
+    query.bindValue(":second", second_list);
+    query.bindValue(":node_id", node_id_list);
+    query.bindValue(":first", first_list);
+    query.bindValue(":amount", amount_list);
+    query.bindValue(":discount", discount_list);
+    query.bindValue(":settled", settled_list);
+    query.bindValue(":outside_product", outside_product_list);
+    query.bindValue(":discount_price", discount_price_list);
+
+    // 执行批量插入
+    if (!query.execBatch()) {
+        qDebug() << "Failed in WriteTransRange" << query.lastError();
+        db_->rollback();
+        return false;
+    }
+
+    // 提交事务
+    if (!db_->commit()) {
+        qDebug() << "Failed to commit transaction" << db_->lastError();
+        db_->rollback();
+        return false;
+    }
+
+    query.exec("PRAGMA synchronous = FULL");
+    query.exec("PRAGMA journal_mode = DELETE");
+
+    int last_id { query.lastInsertId().toInt() };
+
+    for (auto i { list.size() - 1 }; i >= 0; --i) {
+        *list.at(i)->id = last_id;
+        --last_id;
+    }
+
+    return true;
+}
 
 bool Sqlite::RemoveTrans(int trans_id)
 {

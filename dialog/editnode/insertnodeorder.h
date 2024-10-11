@@ -4,6 +4,7 @@
 #include <QComboBox>
 #include <QDialog>
 
+#include "component/settings.h"
 #include "tree/model/treemodel.h"
 
 namespace Ui {
@@ -15,10 +16,11 @@ class InsertNodeOrder final : public QDialog {
 
 public:
     InsertNodeOrder(
-        Node* node, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, int value_decimal, int unit_party, QWidget* parent = nullptr);
+        Node* node, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int unit_party, QWidget* parent = nullptr);
     ~InsertNodeOrder();
 
 signals:
+    void SUpdateNodeID(int node_id);
     void SUpdateLocked(int node_id, bool checked);
 
 public slots:
@@ -32,7 +34,6 @@ public:
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);
-
     void on_comboParty_currentIndexChanged(int index);
     void on_comboEmployee_currentIndexChanged(int index);
 
@@ -43,16 +44,10 @@ private slots:
     void on_rBtnPending_toggled(bool checked);
 
     void on_pBtnInsertParty_clicked();
-
     void on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time);
+    void on_lineDescription_editingFinished();
 
     void on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1);
-
-    void on_lineDescription_editingFinished();
-    void on_dSpinFirst_editingFinished();
-    void on_dSpinSecond_editingFinished();
-    void on_dSpinDiscount_editingFinished();
-    void on_dSpinInitialTotal_editingFinished();
 
 private:
     void IniDialog();
@@ -68,9 +63,9 @@ private:
 
     Node* node_ {};
     int unit_party_ {};
-    int value_decimal_ {};
     TableModel* order_table_ {};
     TreeModel* stakeholder_model_ {};
+    CSettings& settings_ {};
 
     const QString info_node_ {};
 
