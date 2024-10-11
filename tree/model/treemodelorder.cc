@@ -13,6 +13,24 @@ TreeModelOrder::TreeModelOrder(SPSqlite sql, CInfo& info, int base_unit, CTableH
     TreeModelOrder::ConstructTree();
 }
 
+void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff)
+{
+    auto* node { node_hash_.value(node_id) };
+    if (!node || node == root_ || node->branch || diff == 0.0)
+        return;
+
+    node->first += diff;
+
+    sql_->UpdateField(info_.node, node->first, FIRST, node_id);
+
+    const int column { std::to_underlying(TreeEnumOrder::kFirst) };
+
+    auto index { GetIndex(node_id) };
+    emit dataChanged(index.siblingAtColumn(column), index.siblingAtColumn(column));
+
+    UpdateAncestorValue(node, diff);
+}
+
 bool TreeModelOrder::RUpdateStakeholderReference(int old_node_id, int new_node_id)
 {
     const auto& const_node_hash { std::as_const(node_hash_) };
@@ -73,11 +91,12 @@ void TreeModelOrder::UpdateAncestorValue(Node* node, double first_diff, double s
         return;
 
     const int unit { node->unit };
-    int column_end { std::to_underlying(TreeEnumOrder::kFirst) };
+    const int column_begin { std::to_underlying(TreeEnumOrder::kFirst) };
+    int column_end { std::to_underlying(TreeEnumOrder::kSettled) };
 
     // 确定需要更新的列范围
-    if (second_diff != 0.0 || amount_diff != 0.0 || discount_diff != 0.0 || settled_diff != 0.0)
-        column_end = std::to_underlying(TreeEnumOrder::kSettled);
+    if (second_diff == 0.0 && amount_diff == 0.0 && discount_diff == 0.0 && settled_diff == 0.0)
+        column_end = column_begin;
 
     QModelIndexList ancestor {};
     for (node = node->parent; node && node != root_; node = node->parent) {
@@ -94,8 +113,7 @@ void TreeModelOrder::UpdateAncestorValue(Node* node, double first_diff, double s
     }
 
     if (!ancestor.isEmpty())
-        emit dataChanged(
-            index(ancestor.first().row(), std::to_underlying(TreeEnumOrder::kFirst)), index(ancestor.last().row(), column_end), { Qt::DisplayRole });
+        emit dataChanged(index(ancestor.first().row(), column_begin), index(ancestor.last().row(), column_end), { Qt::DisplayRole });
 }
 
 void TreeModelOrder::ConstructTree()

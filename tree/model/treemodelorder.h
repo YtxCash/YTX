@@ -14,6 +14,8 @@ signals:
     void SUpdateLocked(int node_id, bool checked);
 
 public slots:
+    void RUpdateLeafValueOne(int node_id, double diff) override; // first
+
     bool RUpdateStakeholderReference(int old_node_id, int new_node_id);
     void RUpdateLocked(int node_id, bool checked);
     void RUpdateLeafValueOrder(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
@@ -35,7 +37,8 @@ protected:
     bool UpdateName(Node* node, CString& value) override;
 
 private:
-    void UpdateAncestorValue(Node* node, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
+    void UpdateAncestorValue(
+        Node* node, double first_diff, double second_diff = 0.0, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
     bool UpdateLocked(Node* node, bool value);
 };
 

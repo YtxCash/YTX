@@ -48,6 +48,7 @@ public slots:
     bool RRemoveNode(int node_id);
 
     // receive from related table model
+    virtual void RUpdateLeafValueOne(int /*node_id*/, double /*diff*/) { };
     void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
 
     // receive from table model, member function

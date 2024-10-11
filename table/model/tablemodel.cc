@@ -256,7 +256,7 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
     if (std::abs(lhs_ratio - value) < TOLERANCE || value <= 0)
         return false;
 
-    auto result { value - lhs_ratio };
+    auto diff { value - lhs_ratio };
     auto proportion { value / *trans_shadow->lhs_ratio };
 
     *trans_shadow->lhs_ratio = value;
@@ -271,7 +271,7 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
 
     auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };

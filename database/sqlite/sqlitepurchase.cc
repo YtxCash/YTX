@@ -197,7 +197,7 @@ QString SqlitePurchase::UpdateNodeValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE purchase SET
-    amount = :amount, settled = :settled, first = :first, second = :second, discount = :discount
+    amount = :amount, settled = :settled, second = :second, discount = :discount
     WHERE id = :node_id
     )");
 }
@@ -206,7 +206,6 @@ void SqlitePurchase::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
 {
     query.bindValue(":amount", node->initial_total);
     query.bindValue(":second", node->second);
-    query.bindValue(":first", node->first);
     query.bindValue(":discount", node->discount);
     query.bindValue(":settled", node->final_total);
     query.bindValue(":node_id", node->id);

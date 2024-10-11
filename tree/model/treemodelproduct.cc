@@ -34,6 +34,7 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->note, NOTE, &Node::note);
     UpdateField(node, tmp_node->first, UNIT_PRICE, &Node::first);
     UpdateField(node, tmp_node->second, COMMISSION, &Node::second);
+    UpdateField(node, tmp_node->date_time, COLOR, &Node::date_time);
 }
 
 bool TreeModelProduct::IsReferenced(int node_id, CString& message)

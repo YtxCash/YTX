@@ -29,10 +29,10 @@
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespin.h"
 #include "delegate/table/tabledoublespinr.h"
+#include "delegate/tree/color.h"
 #include "delegate/tree/finance/financeforeignr.h"
 #include "delegate/tree/order/orderdatetime.h"
 #include "delegate/tree/order/ordertotal.h"
-#include "delegate/tree/stakeholder/color.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedoublespin.h"
 #include "delegate/tree/treedoublespinpercent.h"
@@ -394,6 +394,7 @@ void MainWindow::SetConnect(const QTableView* view, const TableModel* table, con
     connect(table, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
 
     connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
+    connect(table, &TableModel::SUpdateLeafValueOne, tree, &TreeModel::RUpdateLeafValueOne);
     connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
 
     connect(tree, &TreeModel::SRule, table, &TableModel::RRule);
@@ -511,8 +512,10 @@ void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSettings* setting
 
     switch (info->section) {
     case Section::kFinance:
-    case Section::kTask:
         DelegateFinance(view, info, settings);
+        break;
+    case Section::kTask:
+        DelegateTask(view, settings);
         break;
     case Section::kStakeholder:
         DelegateStakeholder(view, settings);
@@ -555,6 +558,21 @@ void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSettings* settin
 
     auto initial_total { new FinanceForeignR(settings->value_decimal, settings->base_unit, info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
+}
+
+void MainWindow::DelegateTask(QTreeView* view, CSettings* settings)
+{
+    auto quantity { new TreeDoubleSpinR(settings->value_decimal, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
+
+    auto amount { new TreeDoubleSpinUnitR(settings->ratio_decimal, finance_settings_.base_unit, finance_data_.info.unit_symbol_hash, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
+
+    auto unit_cost { new TreeDoubleSpin(settings->ratio_decimal, DMIN, DMAX, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
+
+    auto color { new Color(view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
 }
 
 void MainWindow::DelegateProduct(QTreeView* view, CSettings* settings)
@@ -1031,7 +1049,7 @@ void MainWindow::SetTaskData()
     info.path = TASK_PATH;
     info.transaction = TASK_TRANSACTION;
 
-    QStringList unit_list { {}, tr("POSITION"), tr("BOX"), tr("PIECE"), tr("SET"), tr("SQUARE_FEET") };
+    QStringList unit_list { {}, tr("PRODUCT"), tr("PARTY") };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1140,13 +1158,13 @@ void MainWindow::SetHeader()
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
-    task_data_.info.tree_header
-        = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Quantity"), tr("Amount"), "" };
+    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Color"),
+        tr("UnitCost"), tr("Quantity"), tr("Amount"), "" };
     task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Debit"),
         tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
     task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
-        tr("Color"), {}, {}, {}, {}, tr("Quantity"), tr("Amount") };
+        tr("Color"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled") };
@@ -1362,6 +1380,7 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &EditNodeOrder::RUpdateLocked);
     connect(dialog_cast, &EditNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
     connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
     if (!(*node_shadow->branch)) {
         SetView(dialog_cast->View());
@@ -1488,6 +1507,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &InsertNodeOrder::RUpdateLocked);
     connect(dialog_cast, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
     connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
     dialog_list_->append(dialog);
 

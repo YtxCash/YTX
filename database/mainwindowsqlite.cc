@@ -232,6 +232,8 @@ QString MainwindowSqlite::NodeTask()
         rule             BOOLEAN    DEFAULT 0,
         branch           BOOLEAN    DEFAULT 0,
         unit             INTEGER,
+        color            TEXT,
+        unit_cost        NUMERIC,
         quantity         NUMERIC,
         amount           NUMERIC,
         removed          BOOLEAN    DEFAULT 0

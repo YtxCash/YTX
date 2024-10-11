@@ -70,7 +70,6 @@ void Search::IniConnect()
 void Search::HideTreeColumn(QTableView* view, Section section)
 {
     switch (section) {
-    case Section::kTask:
     case Section::kFinance:
         view->setColumnHidden(std::to_underlying(TreeEnumOrder::kParty), true);
         view->setColumnHidden(std::to_underlying(TreeEnumOrder::kEmployee), true);
@@ -79,6 +78,13 @@ void Search::HideTreeColumn(QTableView* view, Section section)
         view->setColumnHidden(std::to_underlying(TreeEnumOrder::kSecond), true);
         view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDiscount), true);
         view->setColumnHidden(std::to_underlying(TreeEnumOrder::kLocked), true);
+        break;
+    case Section::kTask:
+        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kEmployee), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kParty), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDiscount), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kSecond), true);
         break;
     case Section::kProduct:
         view->setColumnHidden(std::to_underlying(TreeEnumOrder::kEmployee), true);

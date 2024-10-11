@@ -182,7 +182,7 @@ bool TableModelTask::UpdateRatio(TransShadow* trans_shadow, double value)
     if (std::abs(unit_cost - value) < TOLERANCE || value < 0)
         return false;
 
-    auto result { value - unit_cost };
+    auto diff { value - unit_cost };
     *trans_shadow->unit_price = value;
 
     if (*trans_shadow->rhs_node == 0)
@@ -190,8 +190,9 @@ bool TableModelTask::UpdateRatio(TransShadow* trans_shadow, double value)
 
     sql_->UpdateField(info_.transaction, value, UNIT_COST, *trans_shadow->id);
 
-    emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * result, *trans_shadow->lhs_credit * result);
-    emit SUpdateLeafValue(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * result, *trans_shadow->rhs_credit * result);
+    emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * diff, *trans_shadow->rhs_credit * diff);
+    emit SUpdateLeafValueOne(node_id_, diff);
 
     return true;
 }

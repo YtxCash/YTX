@@ -44,10 +44,13 @@ bool Color::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOp
         return StyledItemDelegate::editorEvent(event, model, option, index);
 
     auto* mouse_event { static_cast<QMouseEvent*>(event) };
-    if (mouse_event->button() != Qt::LeftButton || !option.rect.contains(mouse_event->pos()))
+    if (!mouse_event || mouse_event->button() != Qt::LeftButton || !option.rect.contains(mouse_event->pos()))
         return false;
 
     QColor color(index.data().toString());
+    if (!color.isValid())
+        color = Qt::white;
+
     QColor selected_color { QColorDialog::getColor(color, nullptr, tr("Choose Color"), QColorDialog::ShowAlphaChannel) };
 
     if (selected_color.isValid())
