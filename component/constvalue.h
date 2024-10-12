@@ -22,6 +22,9 @@ constexpr int UNIT_VENDOR = 2;
 constexpr int UNIT_PRODUCT = 3;
 constexpr int UNIT_POSITION = 1;
 
+constexpr int RULE_CASH = 0;
+constexpr int RULE_MONTHLY = 1;
+
 // Constants for datetime
 constexpr char DATE_FORMAT[] = "date_format";
 constexpr char DATE_FST[] = "yyyy-MM-dd";

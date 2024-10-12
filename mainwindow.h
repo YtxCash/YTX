@@ -185,18 +185,16 @@ private:
     void ResourceFile();
     void Recent();
 
-    void SaveTableWidget(const TableHash& table_hash, CString& section_name, CString& property);
-    void RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property);
+    void SaveTab(const TableHash& table_hash, CString& section_name, CString& property);
+    void RestoreTab(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property);
 
     template <InheritQAbstractItemView T> bool HasSelection(const T* view) { return view && view->selectionModel() && view->selectionModel()->hasSelection(); }
 
     template <InheritQWidget T> void FreeWidget(T*& widget)
     {
         if (widget) {
-            if (auto model = widget->Model()) {
-                widget->SetModel(nullptr);
+            if (auto model = widget->Model())
                 delete model;
-            }
 
             delete widget;
             widget = nullptr;

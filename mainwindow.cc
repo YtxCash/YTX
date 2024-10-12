@@ -109,42 +109,42 @@ MainWindow::~MainWindow()
     shared_interface_->setValue(START_SECTION, std::to_underlying(start_));
 
     if (finance_tree_.widget) {
-        SaveTableWidget(finance_table_hash_, finance_data_.info.node, VIEW);
+        SaveTab(finance_table_hash_, finance_data_.info.node, VIEW);
         SaveState(finance_tree_.widget->Header(), exclusive_interface_, finance_data_.info.node, HEADER_STATE);
 
         finance_dialog_list_.clear();
     }
 
     if (product_tree_.widget) {
-        SaveTableWidget(product_table_hash_, product_data_.info.node, VIEW);
+        SaveTab(product_table_hash_, product_data_.info.node, VIEW);
         SaveState(product_tree_.widget->Header(), exclusive_interface_, product_data_.info.node, HEADER_STATE);
 
         product_dialog_list_.clear();
     }
 
     if (stakeholder_tree_.widget) {
-        SaveTableWidget(stakeholder_table_hash_, stakeholder_data_.info.node, VIEW);
+        SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, VIEW);
         SaveState(stakeholder_tree_.widget->Header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
 
         stakeholder_dialog_list_.clear();
     }
 
     if (task_tree_.widget) {
-        SaveTableWidget(task_table_hash_, task_data_.info.node, VIEW);
+        SaveTab(task_table_hash_, task_data_.info.node, VIEW);
         SaveState(task_tree_.widget->Header(), exclusive_interface_, task_data_.info.node, HEADER_STATE);
 
         task_dialog_list_.clear();
     }
 
     if (sales_tree_.widget) {
-        SaveTableWidget(sales_table_hash_, sales_data_.info.node, VIEW);
+        SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
         SaveState(sales_tree_.widget->Header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
 
         sales_dialog_list_.clear();
     }
 
     if (purchase_tree_.widget) {
-        SaveTableWidget(purchase_table_hash_, purchase_data_.info.node, VIEW);
+        SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
         SaveState(purchase_tree_.widget->Header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
 
         purchase_dialog_list_.clear();
@@ -320,31 +320,31 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name)
 void MainWindow::CreateTableFPST(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id)
 {
     CString& name { tree_model->Name(node_id) };
-    auto section { data->info.section };
+    auto sql { data->sql };
+    const auto& info { data->info };
+    auto section { info.section };
     auto rule { tree_model->Rule(node_id) };
 
     TableModel* model {};
 
     switch (section) {
     case Section::kFinance:
-        model = new TableModelFinance(data->sql, rule, node_id, data->info, this);
+        model = new TableModelFinance(sql, rule, node_id, info, this);
         break;
     case Section::kProduct:
-        model = new TableModelProduct(data->sql, rule, node_id, data->info, this);
+        model = new TableModelProduct(sql, rule, node_id, info, this);
         break;
     case Section::kTask:
-        model = new TableModelTask(data->sql, rule, node_id, data->info, this);
+        model = new TableModelTask(sql, rule, node_id, info, this);
         break;
     case Section::kStakeholder:
-        model = new TableModelStakeholder(data->sql, rule, node_id, data->info, this);
+        model = new TableModelStakeholder(sql, rule, node_id, info, this);
         break;
     default:
         break;
     }
 
-    TableWidget* widget { new TableWidgetCommon(this) };
-
-    widget->SetModel(model);
+    TableWidgetCommon* widget { new TableWidgetCommon(model, this) };
 
     int tab_index { ui->tabWidget->addTab(widget, name) };
     auto tab_bar { ui->tabWidget->tabBar() };
@@ -382,27 +382,27 @@ void MainWindow::CreateTableFPST(Data* data, TreeModel* tree_model, CSettings& s
 void MainWindow::CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id)
 {
     CString& name { stakeholder_tree_.model->Name(party_id) };
-    auto section { data->info.section };
+    auto sql { data->sql };
+    const auto& info { data->info };
+    auto section { info.section };
 
     auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node_id);
 
-    TableModel* table_model { new TableModelOrder(data->sql, true, node_id, data->info, product_tree_.model, this) };
+    TableModel* table_model { new TableModelOrder(sql, true, node_id, info, product_tree_.model, this) };
 
     TableWidget* widget {};
 
     switch (section) {
     case Section::kSales:
-        widget = new TableWidgetOrder(node_shadow, data_->sql, table_model, stakeholder_tree_.model, settings, UNIT_CUSTOMER, this);
+        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_.model, settings, UNIT_CUSTOMER, this);
         break;
     case Section::kPurchase:
-        widget = new TableWidgetOrder(node_shadow, data_->sql, table_model, stakeholder_tree_.model, settings, UNIT_VENDOR, this);
+        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_.model, settings, UNIT_VENDOR, this);
         break;
     default:
         break;
     }
-
-    widget->SetModel(table_model);
 
     int tab_index { ui->tabWidget->addTab(widget, name) };
     auto tab_bar { ui->tabWidget->tabBar() };
@@ -563,7 +563,7 @@ void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash*
     tab_widget->tabBar()->setTabData(tab_widget->addTab(widget, name), QVariant::fromValue(Tab { info->section, 0 }));
 
     RestoreState(view->header(), exclusive_interface_, info->node, HEADER_STATE);
-    RestoreTableWidget(data, model, settings, table_hash, VIEW);
+    RestoreTab(data, model, settings, table_hash, VIEW);
 
     SetView(view);
     // view->setColumnHidden(1, true);
@@ -844,7 +844,7 @@ void MainWindow::RemoveView(TreeModel* model, const QModelIndex& index, int node
     }
 }
 
-void MainWindow::SaveTableWidget(const TableHash& table_hash, CString& section_name, CString& property)
+void MainWindow::SaveTab(const TableHash& table_hash, CString& section_name, CString& property)
 {
     auto keys { table_hash.keys() };
     QStringList list {};
@@ -855,8 +855,12 @@ void MainWindow::SaveTableWidget(const TableHash& table_hash, CString& section_n
     exclusive_interface_->setValue(QString("%1/%2").arg(section_name, property), list);
 }
 
-void MainWindow::RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property)
+void MainWindow::RestoreTab(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property)
 {
+    // 有没有必要恢复已打开的tab？
+    if (data->info.section == Section::kSales || data->info.section == Section::kPurchase)
+        return;
+
     auto variant { exclusive_interface_->value(QString("%1/%2").arg(data->info.node, property)) };
 
     QSet<int> list {};

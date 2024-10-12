@@ -245,8 +245,8 @@ void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     auto employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == 0);
-    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == 1);
+    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == RULE_CASH);
+    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == RULE_MONTHLY);
 }
 
 void InsertNodeOrder::on_chkBoxRefund_toggled(bool checked)
@@ -346,20 +346,20 @@ void InsertNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time
 
 void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 {
+    if (node_id_ == 0)
+        return;
+
     *node_shadow_->locked = checked;
 
-    if (node_id_ != 0) {
-        sql_->UpdateField(info_node_, checked, LOCKED, node_id_);
-        emit SUpdateLocked(node_id_, checked);
-    }
+    sql_->UpdateField(info_node_, checked, LOCKED, node_id_);
+    emit SUpdateLocked(node_id_, checked);
 
     ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
 
     LockWidgets(checked, *node_shadow_->branch);
 
     if (checked) {
-        accept();
-
+        ui->tableViewOrder->clearSelection();
         ui->pBtnPrint->setFocus();
         ui->pBtnPrint->setDefault(true);
     }

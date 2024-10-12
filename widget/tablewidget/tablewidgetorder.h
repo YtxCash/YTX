@@ -24,7 +24,6 @@ signals:
     void SUpdateLocked(int node_id, bool checked);
 
 public slots:
-    void RAccept();
     void RUpdateStakeholder();
     void RUpdateLocked(int node_id, bool checked);
 
@@ -32,8 +31,6 @@ public slots:
     void RUpdateLeafValueOrder(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
 
 public:
-    void SetModel(TableModel* model) override;
-
     TableModel* Model() override { return order_table_; }
     QTableView* View() override;
 
@@ -57,7 +54,6 @@ private:
     void IniDialog();
     void IniData();
     void IniCombo(QComboBox* combo, int mark);
-    void IniConnect();
     void LockWidgets(bool locked, bool branch);
     void IniUnit(int unit);
 
@@ -71,7 +67,7 @@ private:
     CSettings& settings_;
 
     const QString info_node_ {};
-    int node_id_ {};
+    const int node_id_ {};
 };
 
 #endif // TABLEWIDGETORDER_H

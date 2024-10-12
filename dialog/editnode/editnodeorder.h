@@ -20,7 +20,6 @@ public:
     ~EditNodeOrder();
 
 signals:
-    void SUpdateNodeID(int node_id);
     void SUpdateLocked(int node_id, bool checked);
 
 public slots:
@@ -35,7 +34,6 @@ public:
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);
-
     void on_comboParty_currentIndexChanged(int index);
     void on_comboEmployee_currentIndexChanged(int index);
 
@@ -68,7 +66,7 @@ private:
     CSettings& settings_;
 
     const QString info_node_ {};
-    int node_id_ {};
+    const int node_id_ {};
 };
 
 #endif // EDITNODEORDER_H

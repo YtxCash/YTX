@@ -12,7 +12,6 @@ class TableWidget : public QWidget {
 public:
     virtual ~TableWidget() = default;
 
-    virtual void SetModel(TableModel* model) = 0;
     virtual TableModel* Model() = 0;
     virtual QTableView* View() = 0;
 

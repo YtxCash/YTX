@@ -14,10 +14,8 @@ class TableWidgetCommon final : public TableWidget {
     Q_OBJECT
 
 public:
-    explicit TableWidgetCommon(QWidget* parent = nullptr);
+    explicit TableWidgetCommon(TableModel* model, QWidget* parent = nullptr);
     ~TableWidgetCommon();
-
-    void SetModel(TableModel* model) override;
 
     TableModel* Model() override { return model_; }
     QTableView* View() override;

@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 
+#include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_tablewidgetorder.h"
 
@@ -19,23 +20,44 @@ TableWidgetOrder::TableWidgetOrder(
     , node_id_ { *node_shadow->id }
 {
     ui->setupUi(this);
+    SignalBlocker blocker(this);
+
+    bool branch { *node_shadow_->branch };
+    bool locked { *node_shadow->locked };
+
+    if (branch) {
+        ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
+        ui->comboParty->lineEdit()->setText(*node_shadow_->name);
+        ui->comboParty->setFocus();
+    }
+
+    if (!branch) {
+        IniDialog();
+        IniData();
+        ui->tableViewOrder->setFocus();
+    }
+
+    IniUnit(*node_shadow_->unit);
+
+    ui->chkBoxBranch->setChecked(branch);
+    ui->chkBoxBranch->setEnabled(false);
+
+    ui->pBtnLockOrder->setChecked(locked);
+    ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
+    ui->labelParty->setText(branch ? tr("Branch") : tr("Party"));
+    if (locked)
+        ui->pBtnPrint->setFocus();
+
+    LockWidgets(locked, branch);
 }
 
-TableWidgetOrder::~TableWidgetOrder() { delete ui; }
-
-void TableWidgetOrder::SetModel(TableModel* model)
+TableWidgetOrder::~TableWidgetOrder()
 {
-    ui->tableViewOrder->setModel(model);
-    order_table_ = model;
+    ResourcePool<NodeShadow>::Instance().Recycle(node_shadow_);
+    delete ui;
 }
 
 QTableView* TableWidgetOrder::View() { return ui->tableViewOrder; }
-
-void TableWidgetOrder::RAccept()
-{
-    if (auto focus_widget { this->focusWidget() })
-        focus_widget->clearFocus();
-}
 
 void TableWidgetOrder::RUpdateStakeholder()
 {
@@ -148,8 +170,6 @@ void TableWidgetOrder::IniCombo(QComboBox* combo, int unit)
     combo->setCurrentIndex(-1);
 }
 
-void TableWidgetOrder::IniConnect() { connect(ui->pBtnLockOrder, &QPushButton::clicked, this, &TableWidgetOrder::RAccept); }
-
 void TableWidgetOrder::LockWidgets(bool locked, bool branch)
 {
     bool basic_enable { !locked };
@@ -232,8 +252,8 @@ void TableWidgetOrder::on_comboParty_currentIndexChanged(int /*index*/)
     auto employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == 0);
-    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == 1);
+    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == RULE_CASH);
+    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == RULE_MONTHLY);
 }
 
 void TableWidgetOrder::on_chkBoxRefund_toggled(bool checked)
