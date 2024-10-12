@@ -110,7 +110,7 @@ void EditNodeOrder::RUpdateLeafValueOrder(int /*node_id*/, double first_diff, do
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
     ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
     ui->dSpinDiscount->setValue(ui->dSpinDiscount->value() + discount_diff);
-    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + settled_diff);
+    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + *node_shadow_->unit == UNIT_CASH ? settled_diff : 0.0);
 }
 
 QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
