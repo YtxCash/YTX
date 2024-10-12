@@ -1414,6 +1414,7 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
     connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, dialog_cast, &EditNodeOrder::RUpdateLeafValueOrder);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog_cast, &EditNodeOrder::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SResizeColumnToContents, dialog_cast->View(), &QTableView::resizeColumnToContents);
 
     if (!(*node_shadow->branch)) {
         SetView(dialog_cast->View());
@@ -1544,6 +1545,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, dialog_cast, &InsertNodeOrder::RUpdateLeafValueOrder);
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog_cast, &InsertNodeOrder::RUpdateLeafValueOne);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SResizeColumnToContents, dialog_cast->View(), &QTableView::resizeColumnToContents);
 
     dialog_list_->append(dialog);
 

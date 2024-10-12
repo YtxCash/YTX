@@ -298,6 +298,9 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
     *trans_shadow->settled += diff;
     *trans_shadow->unit_price = value;
 
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kAmount));
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kSettled));
+
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
         return false;
 
@@ -315,6 +318,9 @@ bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double valu
     *trans_shadow->rhs_debit += diff;
     *trans_shadow->settled -= diff;
     *trans_shadow->discount_price = value;
+
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kDiscount));
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kSettled));
 
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
         return false;
@@ -335,6 +341,10 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     *trans_shadow->settled += (*trans_shadow->unit_price - *trans_shadow->discount_price) * diff;
 
     *trans_shadow->lhs_credit = value;
+
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kAmount));
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kDiscount));
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kSettled));
 
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
         return false;
