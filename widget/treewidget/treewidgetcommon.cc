@@ -13,7 +13,7 @@ TreeWidgetCommon::TreeWidgetCommon(TreeModel* model, CInfo& info, CSettings& set
     , settings_ { settings }
 {
     ui->setupUi(this);
-    ui->treeView->setModel(model);
+    ui->treeViewCommon->setModel(model);
     ui->dspin_box_dynamic_->setRange(DMIN, DMAX);
     ui->dspin_box_static_->setRange(DMIN, DMAX);
     SetStatus();
@@ -21,7 +21,7 @@ TreeWidgetCommon::TreeWidgetCommon(TreeModel* model, CInfo& info, CSettings& set
 
 TreeWidgetCommon::~TreeWidgetCommon() { delete ui; }
 
-void TreeWidgetCommon::SetCurrentIndex(const QModelIndex& index) { ui->treeView->setCurrentIndex(index); }
+void TreeWidgetCommon::SetCurrentIndex(const QModelIndex& index) { ui->treeViewCommon->setCurrentIndex(index); }
 
 void TreeWidgetCommon::SetStatus()
 {
@@ -51,9 +51,9 @@ void TreeWidgetCommon::SetStatus()
     }
 }
 
-QTreeView* TreeWidgetCommon::View() { return ui->treeView; }
+QTreeView* TreeWidgetCommon::View() { return ui->treeViewCommon; }
 
-QHeaderView* TreeWidgetCommon::Header() { return ui->treeView->header(); }
+QHeaderView* TreeWidgetCommon::Header() { return ui->treeViewCommon->header(); }
 
 void TreeWidgetCommon::RUpdateDSpinBox()
 {

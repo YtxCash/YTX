@@ -19,8 +19,7 @@ QWidget QPushButton {
 /*--------------------------------------border-------------------------------------------------*/
 
 QPushButton, QGroupBox, QComboBox,
-QPlainTextEdit, QLineEdit, QDateTimeEdit,
-QSpinBox, QDoubleSpinBox,
+QPlainTextEdit, QLineEdit,
 QTreeView, QTableView, QListView, QHeaderView::section,
 QTabBar::tab, QToolBar, QToolTip {
     border: 1px solid #93A1A1;
@@ -28,24 +27,28 @@ QTabBar::tab, QToolBar, QToolTip {
 
 /*-------------------------------------disabled border-----------------------------------------------*/
 
-QPushButton:disabled, QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QDateEdit:disabled,
-QDateTimeEdit:disabled {
+QPushButton:disabled, QGroupBox:disabled, QComboBox:disabled,
+QLineEdit:disabled,
+QHeaderView::section:disabled {
     border: 1px solid #586E75;
 }
 
 /*-------------------------------------border none-----------------------------------------------*/
 
-QPushButton#pBtnLink, QLineEdit#lineStatic, QLineEdit#lineDynamic,
-QDialog QDoubleSpinBox, QDialog QSpinBox, QDialog QDoubleSpinBox:disabled, QDialog QSpinBox:disabled, QDialog QDateEdit, QDialog QDateEdit:disabled,
-QDoubleSpinBox#dspin_box_static_, QDoubleSpinBox#dspin_box_dynamic_, QLineEdit#lineEditOrder,
-QTableView QComboBox, QTableView QDoubleSpinBox, QTableView QLineEdit, QTableView QDateTimeEdit,
-QTreeView::item,
-QWidget QDateEdit,
-QDialog#Preferences QGroupBox {
+QPushButton#pBtnLink, QDialog#Preferences QGroupBox,
+QTableView QComboBox, QTableView QLineEdit,
+QTreeView::item
+{
     border: none;
 }
 
-QHeaderView::section {
+QSpinBox, QDoubleSpinBox, QDateEdit, QDateTimeEdit,
+QSpinBox:disabled, QDoubleSpinBox:disabled, QDateEdit:disabled, QDateTimeEdit:disabled
+{
+    border: none;
+}
+
+QHeaderView::section, QHeaderView::section:disabled {
     border-top: none;
     border-left: none;
 }
@@ -54,18 +57,18 @@ QHeaderView::section:last {
     border-right: none;
 }
 
-QTabBar::tab, QTreeView#treeView, QWidget QGroupBox#groupBoxTreeWidget_2 {
+QTabBar::tab, QTreeView#treeViewCommon, QGroupBox#treeWidgetOrder {
     border-bottom: none;
 }
 
-QWidget QGroupBox#groupBoxTreeWidget, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnLockOrder,
+QGroupBox#treeWidgetCommon, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnLockOrder,
 QPushButton#pBtnSaveOrder {
     border-top: none;
 }
 
 /*-------------------------------------border add-----------------------------------------------*/
 
-QDialog QComboBox, QDialog QLineEdit, QSpinBox#spinValueDecimal, QSpinBox#spinRatioDecimal {
+QDialog QComboBox, QDialog QLineEdit, QSpinBox#spinAmountDecimal, QSpinBox#spinCommonDecimal {
     border: 1px solid #93A1A1;
 }
 

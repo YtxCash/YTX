@@ -643,13 +643,11 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings* settings
     auto amount { new OrderTotalR(settings->amount_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), amount);
 
     auto quantity { new TreeDoubleSpinR(settings->common_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
-
-    auto discount { new TreeDoubleSpinR(settings->amount_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), discount);
 
     auto employee { new SpecificUnit(stakeholder_tree_.model, UNIT_EMPLOYEE, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
@@ -1413,7 +1411,9 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog_cast, &EditNodeOrder::RUpdateLocked);
     connect(dialog_cast, &EditNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
     connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
+    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, dialog_cast, &EditNodeOrder::RUpdateLeafValueOrder);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, dialog_cast, &EditNodeOrder::RUpdateLeafValueOne);
 
     if (!(*node_shadow->branch)) {
         SetView(dialog_cast->View());
@@ -1541,6 +1541,8 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     connect(dialog_cast, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
     connect(dialog_cast, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
     connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
+    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, dialog_cast, &InsertNodeOrder::RUpdateLeafValueOrder);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, dialog_cast, &InsertNodeOrder::RUpdateLeafValueOne);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
     dialog_list_->append(dialog);

@@ -33,7 +33,7 @@
     <widget class="QTreeView" name="treeViewOrder"/>
    </item>
    <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBoxTreeWidget_2">
+    <widget class="QGroupBox" name="treeWidgetOrder">
      <property name="title">
       <string/>
      </property>

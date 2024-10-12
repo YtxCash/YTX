@@ -27,6 +27,9 @@ public slots:
     void RUpdateStakeholder();
     void RUpdateLocked(int node_id, bool checked);
 
+    void RUpdateLeafValueOne(int node_id, double diff); // first
+    void RUpdateLeafValueOrder(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
+
 public:
     QTableView* View();
 
@@ -52,7 +55,7 @@ private:
     void IniCombo(QComboBox* combo, int mark);
     void IniConnect();
     void LockWidgets(bool locked, bool branch);
-    void UpdateUnit(int unit);
+    void IniUnit(int unit);
 
 private:
     Ui::EditNodeOrder* ui;

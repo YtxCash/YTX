@@ -15,6 +15,11 @@ void TableModelOrder::RUpdateNodeID(int node_id)
         return;
 
     TransShadow* trans_shadow {};
+    double first_diff {};
+    double second_diff {};
+    double amount_diff {};
+    double discount_diff {};
+    double settled_diff {};
 
     for (auto i { trans_shadow_list_.size() - 1 }; i >= 0; --i) {
         trans_shadow = trans_shadow_list_.at(i);
@@ -22,13 +27,22 @@ void TableModelOrder::RUpdateNodeID(int node_id)
             beginRemoveRows(QModelIndex(), i, i);
             ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
             endRemoveRows();
-        } else
+        } else {
             *trans_shadow->node_id = node_id;
+
+            first_diff += *trans_shadow->lhs_debit;
+            second_diff += *trans_shadow->lhs_credit;
+            amount_diff += *trans_shadow->rhs_credit;
+            discount_diff += *trans_shadow->rhs_debit;
+            settled_diff += *trans_shadow->settled;
+        }
     }
 
     // 一次向数据库添加多条交易
     if (!trans_shadow_list_.isEmpty())
         sql_->WriteTransRange(trans_shadow_list_);
+
+    emit SUpdateLeafValueOrder(node_id, first_diff, second_diff, amount_diff, discount_diff, settled_diff);
 }
 
 QVariant TableModelOrder::data(const QModelIndex& index, int role) const
@@ -287,6 +301,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
         return false;
 
+    sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
     return true;
 }
@@ -304,6 +319,7 @@ bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double valu
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
         return false;
 
+    sql_->UpdateField(info_.transaction, value, DISCOUNT_PRICE, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
     return true;
 }

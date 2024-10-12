@@ -173,24 +173,44 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="labelFirst">
           <property name="text">
            <string>First</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="DoubleSpinBox" name="dSpinFirst"/>
+         <widget class="DoubleSpinBox" name="dSpinFirst">
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_2">
+         <widget class="QLabel" name="labelSecond">
           <property name="text">
            <string>Second</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="DoubleSpinBox" name="dSpinSecond"/>
+         <widget class="DoubleSpinBox" name="dSpinSecond">
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pBtnPrint">

@@ -14,6 +14,18 @@
    <string/>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <property name="verticalSpacing">
     <number>0</number>
    </property>
@@ -472,6 +484,11 @@
    <header location="global">widget/combobox.h</header>
   </customwidget>
   <customwidget>
+   <class>SpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">widget/spinbox.h</header>
+  </customwidget>
+  <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
    <header location="global">widget/lineedit.h</header>
@@ -485,11 +502,6 @@
    <class>DateTimeEdit</class>
    <extends>QDateTimeEdit</extends>
    <header location="global">widget/datetimeedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>SpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">widget/spinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

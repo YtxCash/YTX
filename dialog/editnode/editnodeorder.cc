@@ -25,29 +25,33 @@ EditNodeOrder::EditNodeOrder(
     SignalBlocker blocker(this);
 
     bool branch { *node_shadow_->branch };
+    bool locked { *node_shadow->locked };
 
     if (branch) {
         ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
         ui->comboParty->lineEdit()->setText(*node_shadow_->name);
-        ui->chkBoxBranch->setChecked(true);
-        UpdateUnit(*node_shadow_->unit);
-
-        ui->pBtnLockOrder->setChecked(*node_shadow_->locked);
+        ui->comboParty->setFocus();
     }
 
     if (!branch) {
         IniDialog();
         IniData();
+        ui->tableViewOrder->setFocus();
     }
 
     IniConnect();
+    IniUnit(*node_shadow_->unit);
 
+    ui->chkBoxBranch->setChecked(branch);
     ui->chkBoxBranch->setEnabled(false);
 
-    ui->pBtnLockOrder->setText(*node_shadow_->locked ? tr("UnLock") : tr("Lock"));
+    ui->pBtnLockOrder->setChecked(locked);
+    ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
     ui->labelParty->setText(branch ? tr("Branch") : tr("Party"));
+    if (locked)
+        ui->pBtnPrint->setFocus();
 
-    LockWidgets(*node_shadow_->locked, branch);
+    LockWidgets(locked, branch);
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }
@@ -98,6 +102,17 @@ void EditNodeOrder::RUpdateLocked(int node_id, bool checked)
     }
 }
 
+void EditNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
+
+void EditNodeOrder::RUpdateLeafValueOrder(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+{
+    ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
+    ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
+    ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
+    ui->dSpinDiscount->setValue(ui->dSpinDiscount->value() + discount_diff);
+    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + settled_diff);
+}
+
 QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
 
 void EditNodeOrder::IniDialog()
@@ -118,8 +133,6 @@ void EditNodeOrder::IniDialog()
     ui->dSpinSettled->setDecimals(settings_.amount_decimal);
     ui->dSpinSecond->setDecimals(settings_.common_decimal);
     ui->dSpinFirst->setDecimals(settings_.common_decimal);
-
-    ui->tableViewOrder->setFocus();
 }
 
 void EditNodeOrder::IniData()
@@ -130,12 +143,11 @@ void EditNodeOrder::IniData()
     auto employee_index { ui->comboEmployee->findData(*node_shadow_->employee) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->dSpinSettled->setValue(*node_shadow_->initial_total);
+    ui->dSpinSettled->setValue(*node_shadow_->final_total);
     ui->dSpinDiscount->setValue(*node_shadow_->discount);
     ui->dSpinFirst->setValue(*node_shadow_->first);
     ui->dSpinSecond->setValue(*node_shadow_->second);
-
-    UpdateUnit(*node_shadow_->unit);
+    ui->dSpinAmount->setValue(*node_shadow_->initial_total);
 
     ui->chkBoxRefund->setChecked(*node_shadow_->rule);
     ui->chkBoxBranch->setChecked(*node_shadow_->branch);
@@ -177,7 +189,7 @@ void EditNodeOrder::LockWidgets(bool locked, bool branch)
     ui->labelSettled->setEnabled(not_branch_enable);
     ui->dSpinSettled->setEnabled(not_branch_enable);
 
-    ui->dSpinAmount->setEnabled(!branch);
+    ui->dSpinAmount->setEnabled(not_branch_enable);
 
     ui->labelDiscount->setEnabled(not_branch_enable);
     ui->dSpinDiscount->setEnabled(not_branch_enable);
@@ -191,25 +203,27 @@ void EditNodeOrder::LockWidgets(bool locked, bool branch)
     ui->rBtnPending->setEnabled(not_branch_enable);
     ui->dateTimeEdit->setEnabled(not_branch_enable);
 
+    ui->dSpinFirst->setEnabled(not_branch_enable);
+    ui->labelFirst->setEnabled(not_branch_enable);
+    ui->dSpinSecond->setEnabled(not_branch_enable);
+    ui->labelSecond->setEnabled(not_branch_enable);
+
     ui->chkBoxRefund->setEnabled(not_branch_enable);
     ui->lineDescription->setEnabled(basic_enable);
 
     ui->pBtnPrint->setEnabled(locked && !branch);
 }
 
-void EditNodeOrder::UpdateUnit(int unit)
+void EditNodeOrder::IniUnit(int unit)
 {
     switch (unit) {
     case UNIT_CASH:
         ui->rBtnCash->setChecked(true);
-        ui->dSpinAmount->setValue(ui->dSpinSettled->value() - ui->dSpinDiscount->value());
         break;
     case UNIT_MONTHLY:
-        ui->dSpinAmount->setValue(0.0);
         ui->rBtnMonthly->setChecked(true);
         break;
     case UNIT_PENDING:
-        ui->dSpinAmount->setValue(0.0);
         ui->rBtnPending->setChecked(true);
         break;
     default:
@@ -267,11 +281,11 @@ void EditNodeOrder::on_rBtnCash_toggled(bool checked)
 
     *node_shadow_->unit = UNIT_CASH;
 
-    ui->dSpinAmount->setValue(ui->dSpinSettled->value() - ui->dSpinDiscount->value());
-    *node_shadow_->final_total = ui->dSpinAmount->value();
+    *node_shadow_->final_total = *node_shadow_->initial_total - *node_shadow_->discount;
+    ui->dSpinSettled->setValue(*node_shadow_->final_total);
 
     sql_->UpdateField(info_node_, UNIT_CASH, UNIT, node_id_);
-    sql_->UpdateField(info_node_, *node_shadow_->final_total, FINAL_TOTAL, node_id_);
+    sql_->UpdateField(info_node_, *node_shadow_->final_total, SETTLED, node_id_);
 }
 
 void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
@@ -280,11 +294,12 @@ void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
         return;
 
     *node_shadow_->unit = UNIT_MONTHLY;
-    sql_->UpdateField(info_node_, UNIT_MONTHLY, UNIT, node_id_);
 
-    ui->dSpinAmount->setValue(0.0);
     *node_shadow_->final_total = 0.0;
-    sql_->UpdateField(info_node_, 0.0, FINAL_TOTAL, node_id_);
+    ui->dSpinSettled->setValue(0.0);
+
+    sql_->UpdateField(info_node_, UNIT_MONTHLY, UNIT, node_id_);
+    sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
 }
 
 void EditNodeOrder::on_rBtnPending_toggled(bool checked)
@@ -293,11 +308,12 @@ void EditNodeOrder::on_rBtnPending_toggled(bool checked)
         return;
 
     *node_shadow_->unit = UNIT_PENDING;
-    sql_->UpdateField(info_node_, UNIT_PENDING, UNIT, node_id_);
 
-    ui->dSpinAmount->setValue(0.0);
     *node_shadow_->final_total = 0.0;
-    sql_->UpdateField(info_node_, 0.0, FINAL_TOTAL, node_id_);
+    ui->dSpinSettled->setValue(0.0);
+
+    sql_->UpdateField(info_node_, UNIT_PENDING, UNIT, node_id_);
+    sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
 }
 
 void EditNodeOrder::on_pBtnInsertParty_clicked()
