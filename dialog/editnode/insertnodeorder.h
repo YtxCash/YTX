@@ -15,8 +15,8 @@ class InsertNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    InsertNodeOrder(
-        Node* node, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int unit_party, QWidget* parent = nullptr);
+    InsertNodeOrder(NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int unit_party,
+        QWidget* parent = nullptr);
     ~InsertNodeOrder();
 
 signals:
@@ -25,7 +25,6 @@ signals:
 
 public slots:
     void accept() override;
-    void reject() override;
     void RUpdateStakeholder();
     void RUpdateLocked(int node_id, bool checked);
     void RUpdateLeafValueOne(int node_id, double diff); // first
@@ -61,18 +60,15 @@ private:
 private:
     Ui::InsertNodeOrder* ui;
 
+    NodeShadow* node_shadow_ {};
     SPSqlite sql_ {};
-
-    Node* node_ {};
     int unit_party_ {};
     TableModel* order_table_ {};
-    TreeModel* stakeholder_model_ {};
-    CSettings& settings_ {};
+    TreeModel* stakeholder_tree_ {};
+    CSettings& settings_;
 
     const QString info_node_ {};
-
     int node_id_ {};
-    bool is_saved_ { false };
 };
 
 #endif // INSERTNODEORDER_H

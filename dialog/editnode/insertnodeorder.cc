@@ -9,16 +9,17 @@
 #include "ui_insertnodeorder.h"
 
 InsertNodeOrder::InsertNodeOrder(
-    Node* node, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int unit_party, QWidget* parent)
+    NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int unit_party, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::InsertNodeOrder)
+    , node_shadow_ { node_shadow }
     , sql_ { sql }
-    , node_ { node }
     , unit_party_ { unit_party }
     , order_table_ { order_table }
-    , stakeholder_model_ { stakeholder_model }
+    , stakeholder_tree_ { stakeholder_model }
     , settings_ { settings }
     , info_node_ { unit_party == UNIT_CUSTOMER ? SALES : PURCHASE }
+    , node_id_ { *node_shadow->id }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
@@ -34,14 +35,14 @@ InsertNodeOrder::InsertNodeOrder(
     ui->labelParty->setText(tr("Party"));
     ui->comboParty->setFocus();
 
-    IniUnit(node->unit);
+    IniUnit(*node_shadow->unit);
 }
 
 InsertNodeOrder::~InsertNodeOrder() { delete ui; }
 
 void InsertNodeOrder::RUpdateStakeholder()
 {
-    if (node_->branch)
+    if (*node_shadow_->branch)
         return;
 
     ui->comboParty->blockSignals(true);
@@ -50,8 +51,8 @@ void InsertNodeOrder::RUpdateStakeholder()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_model_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE);
-    stakeholder_model_->LeafPathSpecificUnit(ui->comboParty, unit_party_);
+    stakeholder_tree_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE);
+    stakeholder_tree_->LeafPathSpecificUnit(ui->comboParty, unit_party_);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -76,7 +77,7 @@ void InsertNodeOrder::RUpdateLocked(int node_id, bool checked)
     ui->pBtnLockOrder->setChecked(checked);
     ui->pBtnLockOrder->blockSignals(false);
 
-    LockWidgets(checked, node_->branch);
+    LockWidgets(checked, *node_shadow_->branch);
 
     if (checked) {
         ui->pBtnPrint->setFocus();
@@ -94,7 +95,7 @@ void InsertNodeOrder::RUpdateLeafValueOrder(
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
     ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
     ui->dSpinDiscount->setValue(ui->dSpinDiscount->value() + discount_diff);
-    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + node_->unit == UNIT_CASH ? settled_diff : 0.0);
+    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + *node_shadow_->unit == UNIT_CASH ? settled_diff : 0.0);
 }
 
 QTableView* InsertNodeOrder::View() { return ui->tableViewOrder; }
@@ -127,7 +128,7 @@ void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
     if (!combo)
         return;
 
-    stakeholder_model_->LeafPathSpecificUnit(combo, unit);
+    stakeholder_tree_->LeafPathSpecificUnit(combo, unit);
     combo->model()->sort(0);
     combo->setCurrentIndex(-1);
 }
@@ -137,23 +138,14 @@ void InsertNodeOrder::accept()
     if (auto focus_widget { this->focusWidget() })
         focus_widget->clearFocus();
 
-    if (!is_saved_) {
+    if (node_id_ == 0) {
         emit QDialog::accepted();
-        is_saved_ = true;
-        node_id_ = node_->id;
+        node_id_ = *node_shadow_->id;
         emit SUpdateNodeID(node_id_);
         ui->chkBoxBranch->setEnabled(false);
         ui->pBtnSaveOrder->setEnabled(false);
         ui->tableViewOrder->clearSelection();
     }
-}
-
-void InsertNodeOrder::reject()
-{
-    if (!is_saved_)
-        ResourcePool<Node>::Instance().Recycle(node_);
-
-    QDialog::reject();
 }
 
 void InsertNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &InsertNodeOrder::accept); }
@@ -215,66 +207,66 @@ void InsertNodeOrder::IniUnit(int unit)
 
 void InsertNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
 {
-    if (!node_->branch || arg1.isEmpty())
+    if (!*node_shadow_->branch || arg1.isEmpty())
         return;
 
-    node_->name = arg1;
+    *node_shadow_->name = arg1;
 
-    if (!is_saved_) {
+    if (node_id_ == 0) {
         ui->pBtnSaveOrder->setEnabled(true);
         ui->pBtnLockOrder->setEnabled(true);
     }
 
-    if (is_saved_)
+    if (node_id_ != 0)
         sql_->UpdateField(info_node_, arg1, NAME, node_id_);
 }
 
 void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
 {
-    if (node_->branch)
+    if (*node_shadow_->branch)
         return;
 
     auto party_id { ui->comboParty->currentData().toInt() };
     if (party_id <= 0)
         return;
 
-    node_->party = party_id;
-    if (!is_saved_) {
+    *node_shadow_->party = party_id;
+    if (node_id_ == 0) {
         ui->pBtnSaveOrder->setEnabled(true);
         ui->pBtnLockOrder->setEnabled(true);
     }
 
-    if (is_saved_)
+    if (node_id_ != 0)
         sql_->UpdateField(info_node_, party_id, PARTY, node_id_);
 
     if (ui->comboEmployee->currentIndex() != -1)
         return;
 
-    auto employee_index { ui->comboEmployee->findData(stakeholder_model_->Employee(party_id)) };
+    auto employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakeholder_model_->Rule(party_id) == 0);
-    ui->rBtnMonthly->setChecked(stakeholder_model_->Rule(party_id) == 1);
+    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == 0);
+    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == 1);
 }
 
 void InsertNodeOrder::on_chkBoxRefund_toggled(bool checked)
 {
-    node_->rule = checked;
+    *node_shadow_->rule = checked;
 
-    if (is_saved_)
+    if (node_id_ != 0)
         sql_->UpdateField(info_node_, checked, RULE, node_id_);
 }
 
 void InsertNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
 {
-    node_->employee = ui->comboEmployee->currentData().toInt();
-    if (!is_saved_) {
+    *node_shadow_->employee = ui->comboEmployee->currentData().toInt();
+    if (node_id_ == 0) {
         ui->pBtnSaveOrder->setEnabled(true);
         ui->pBtnLockOrder->setEnabled(true);
     }
 
-    if (is_saved_)
-        sql_->UpdateField(info_node_, node_->employee, EMPLOYEE, node_id_);
+    if (node_id_ != 0)
+        sql_->UpdateField(info_node_, *node_shadow_->employee, EMPLOYEE, node_id_);
 }
 
 void InsertNodeOrder::on_rBtnCash_toggled(bool checked)
@@ -282,14 +274,14 @@ void InsertNodeOrder::on_rBtnCash_toggled(bool checked)
     if (!checked)
         return;
 
-    node_->unit = UNIT_CASH;
+    *node_shadow_->unit = UNIT_CASH;
 
-    node_->final_total = node_->initial_total - node_->discount;
-    ui->dSpinSettled->setValue(node_->final_total);
+    *node_shadow_->final_total = *node_shadow_->initial_total - *node_shadow_->discount;
+    ui->dSpinSettled->setValue(*node_shadow_->final_total);
 
-    if (is_saved_) {
+    if (node_id_ != 0) {
         sql_->UpdateField(info_node_, UNIT_CASH, UNIT, node_id_);
-        sql_->UpdateField(info_node_, node_->final_total, SETTLED, node_id_);
+        sql_->UpdateField(info_node_, *node_shadow_->final_total, SETTLED, node_id_);
     }
 }
 
@@ -298,12 +290,12 @@ void InsertNodeOrder::on_rBtnMonthly_toggled(bool checked)
     if (!checked)
         return;
 
-    node_->unit = UNIT_MONTHLY;
+    *node_shadow_->unit = UNIT_MONTHLY;
 
-    node_->final_total = 0.0;
+    *node_shadow_->final_total = 0.0;
     ui->dSpinSettled->setValue(0.0);
 
-    if (is_saved_) {
+    if (node_id_ != 0) {
         sql_->UpdateField(info_node_, UNIT_MONTHLY, UNIT, node_id_);
         sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
     }
@@ -314,12 +306,12 @@ void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
     if (!checked)
         return;
 
-    node_->unit = UNIT_PENDING;
+    *node_shadow_->unit = UNIT_PENDING;
 
-    node_->final_total = 0.0;
+    *node_shadow_->final_total = 0.0;
     ui->dSpinSettled->setValue(0.0);
 
-    if (is_saved_) {
+    if (node_id_ != 0) {
         sql_->UpdateField(info_node_, UNIT_PENDING, UNIT, node_id_);
         sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
     }
@@ -328,17 +320,17 @@ void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
 void InsertNodeOrder::on_pBtnInsertParty_clicked()
 {
     auto name { ui->comboParty->currentText() };
-    if (node_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
+    if (*node_shadow_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
         return;
 
     auto node { ResourcePool<Node>::Instance().Allocate() };
-    node->rule = stakeholder_model_->Rule(-1);
-    stakeholder_model_->SetParent(node, -1);
+    node->rule = stakeholder_tree_->Rule(-1);
+    stakeholder_tree_->SetParent(node, -1);
     node->name = name;
 
     node->unit = unit_party_;
 
-    stakeholder_model_->InsertNode(0, QModelIndex(), node);
+    stakeholder_tree_->InsertNode(0, QModelIndex(), node);
 
     int party_index { ui->comboParty->findData(node->id) };
     ui->comboParty->setCurrentIndex(party_index);
@@ -346,24 +338,24 @@ void InsertNodeOrder::on_pBtnInsertParty_clicked()
 
 void InsertNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
 {
-    node_->date_time = date_time.toString(DATE_TIME_FST);
+    *node_shadow_->date_time = date_time.toString(DATE_TIME_FST);
 
-    if (is_saved_)
-        sql_->UpdateField(info_node_, node_->date_time, DATE_TIME, node_id_);
+    if (node_id_ != 0)
+        sql_->UpdateField(info_node_, *node_shadow_->date_time, DATE_TIME, node_id_);
 }
 
 void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 {
-    node_->locked = checked;
+    *node_shadow_->locked = checked;
 
-    if (is_saved_) {
+    if (node_id_ != 0) {
         sql_->UpdateField(info_node_, checked, LOCKED, node_id_);
         emit SUpdateLocked(node_id_, checked);
     }
 
     ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
 
-    LockWidgets(checked, node_->branch);
+    LockWidgets(checked, *node_shadow_->branch);
 
     if (checked) {
         accept();
@@ -376,14 +368,14 @@ void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 void InsertNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1)
 {
     bool enable { arg1 == Qt::Checked };
-    node_->branch = enable;
+    *node_shadow_->branch = enable;
     LockWidgets(false, enable);
 }
 
 void InsertNodeOrder::on_lineDescription_editingFinished()
 {
-    node_->description = ui->lineDescription->text();
+    *node_shadow_->description = ui->lineDescription->text();
 
-    if (is_saved_)
-        sql_->UpdateField(info_node_, node_->description, DESCRIPTION, node_id_);
+    if (node_id_ != 0)
+        sql_->UpdateField(info_node_, *node_shadow_->description, DESCRIPTION, node_id_);
 }

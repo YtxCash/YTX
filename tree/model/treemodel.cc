@@ -525,12 +525,20 @@ QModelIndex TreeModel::GetIndex(int node_id) const
 
 void TreeModel::SetNodeShadow(NodeShadow* node_shadow, int node_id) const
 {
-    if (!node_shadow)
+    if (!node_shadow || node_id <= 0)
         return;
 
     auto it { node_hash_.constFind(node_id) };
     if (it != node_hash_.constEnd() && it.value())
         node_shadow->Set(it.value());
+}
+
+void TreeModel::SetNodeShadow(NodeShadow* node_shadow, Node* node) const
+{
+    if (!node_shadow || !node)
+        return;
+
+    node_shadow->Set(node);
 }
 
 void TreeModel::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const

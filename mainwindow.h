@@ -162,9 +162,8 @@ private:
 
     void AppendTrans(TableWidget* table_widget);
 
-    void EditNodePS(Section section, NodeShadow* node_shadow); // Purchase Sales
-    void EditNodeFPST(
-        Section section, TreeModel* model, Node* tmp_node, const QModelIndex& index, int node_id, CStringHash& unit_hash); // Finance Product Stakeholder Task
+    void EditNodePS(Section section, int node_id); // Purchase Sales
+    void EditNodeFPST(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash); // Finance Product Stakeholder Task
 
     void SwitchTab(int node_id, int trans_id = 0);
     bool LockFile(CString& absolute_path, CString& complete_base_name);

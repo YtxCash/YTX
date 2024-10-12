@@ -40,7 +40,6 @@
 #include "delegate/tree/treedoublespinunitr.h"
 #include "delegate/tree/treeplaintext.h"
 #include "delegate/tree/treespin.h"
-#include "delegate/tree/treespinr.h"
 #include "dialog/about.h"
 #include "dialog/editdocument.h"
 #include "dialog/editnode/editnodefinance.h"
@@ -1383,30 +1382,29 @@ void MainWindow::REditNode()
     if (!index.isValid())
         return;
 
-    auto model { tree_->model };
     const auto& info { data_->info };
     auto section { info.section };
-    CStringHash& unit_hash { info.unit_hash };
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
 
-    if (section == Section::kSales || section == Section::kPurchase) {
-        auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
-        model->SetNodeShadow(node_shadow, node_id);
-        EditNodePS(section, node_shadow);
-    }
+    if (section == Section::kSales || section == Section::kPurchase)
+        EditNodePS(section, node_id);
 
     if (section != Section::kSales && section != Section::kPurchase) {
-        auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
-        model->CopyNode(tmp_node, node_id);
-        EditNodeFPST(section, model, tmp_node, index, node_id, unit_hash);
+        EditNodeFPST(section, node_id, index, info.unit_hash);
     }
 }
 
-void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
+void MainWindow::EditNodePS(Section section, int node_id)
 {
     QDialog* dialog {};
     auto sql { data_->sql };
+    auto model { tree_->model };
+
+    auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
+    model->SetNodeShadow(node_shadow, node_id);
+    if (!node_shadow->id)
+        return;
 
     auto table_model { new TableModelOrder(sql, *node_shadow->rule, *node_shadow->id, data_->info, product_tree_.model, this) };
 
@@ -1453,9 +1451,13 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
     dialog->show();
 }
 
-void MainWindow::EditNodeFPST(Section section, TreeModel* model, Node* tmp_node, const QModelIndex& index, int node_id, CStringHash& unit_hash)
+void MainWindow::EditNodeFPST(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash)
 {
     QDialog* dialog {};
+    auto model { tree_->model };
+
+    auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
+    model->CopyNode(tmp_node, node_id);
 
     const auto& parent { index.parent() };
     const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() : -1 };
@@ -1535,19 +1537,26 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     QDialog* dialog {};
     auto sql { data_->sql };
 
+    auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
+    model->SetNodeShadow(node_shadow, node);
+    if (!node_shadow->id)
+        return;
+
     auto table_model { new TableModelOrder(sql, node->rule, 0, data_->info, product_tree_.model, this) };
 
     switch (section) {
     case Section::kSales:
-        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_CUSTOMER, this);
+        dialog = new InsertNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_CUSTOMER, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new InsertNodeOrder(node, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_VENDOR, this);
+        dialog = new InsertNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_VENDOR, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
-        return ResourcePool<Node>::Instance().Recycle(node);
+        ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
+        ResourcePool<Node>::Instance().Recycle(node);
+        return;
     }
 
     connect(dialog, &QDialog::accepted, this, [=, this]() {
@@ -1556,7 +1565,13 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
             tree_->widget->SetCurrentIndex(index);
         }
     });
-    connect(dialog, &QDialog::rejected, this, [=, this]() { dialog_list_->removeOne(dialog); });
+    connect(dialog, &QDialog::rejected, this, [=, this]() {
+        ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
+        if (node->id == 0)
+            ResourcePool<Node>::Instance().Recycle(node);
+
+        dialog_list_->removeOne(dialog);
+    });
 
     dialog->setAttribute(Qt::WA_DeleteOnClose);
 
