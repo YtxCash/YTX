@@ -17,7 +17,7 @@ public:
     virtual ~TreeModel();
 
 protected:
-    TreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+    TreeModel(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
 
     TreeModel() = delete;
     TreeModel(const TreeModel&) = delete;
@@ -59,7 +59,7 @@ public:
     virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex());
     virtual bool InsertNode(int row, const QModelIndex& parent, Node* node);
     virtual void UpdateNode(const Node* tmp_node);
-    virtual void UpdateBaseUnit(int base_unit);
+    virtual void UpdateBaseUnit(int default_unit);
 
     // implemented functions
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
@@ -153,7 +153,7 @@ protected:
     void UpdateBranchUnit(Node* node) const;
     bool UpdateBranch(Node* node, bool new_value);
 
-    void InitializeRoot(int base_unit);
+    void InitializeRoot(int default_unit);
     void ShowTemporaryTooltip(CString& message, int duration = 3000);
     bool HasChildren(Node* node, CString& message);
     bool IsOpened(int node_id, CString& message);

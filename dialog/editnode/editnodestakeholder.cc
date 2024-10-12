@@ -5,7 +5,7 @@
 #include "ui_editnodestakeholder.h"
 
 EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch,
-    int ratio_decimal, TreeModel* stakeholder_tree, QWidget* parent)
+    int amount_decimal, TreeModel* stakeholder_tree, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
     , node_ { node }
@@ -15,14 +15,14 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CSt
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_hash, stakeholder_tree, ratio_decimal);
+    IniDialog(unit_hash, stakeholder_tree, amount_decimal);
     IniConnect();
     Data(node, enable_branch);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 
-void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int ratio_decimal)
+void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int amount_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
@@ -34,7 +34,7 @@ void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakehold
 
     ui->dSpinPaymentPeriod->setRange(IZERO, IMAX);
     ui->dSpinTaxRate->setRange(0.0, DMAX);
-    ui->dSpinTaxRate->setDecimals(ratio_decimal);
+    ui->dSpinTaxRate->setDecimals(amount_decimal);
 }
 
 void EditNodeStakeholder::IniComboWithStringHash(QComboBox* combo, CStringHash& hash)

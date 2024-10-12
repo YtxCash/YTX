@@ -8,14 +8,14 @@
 #include "global/resourcepool.h"
 #include "widget/temporarylabel.h"
 
-TreeModel::TreeModel(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent)
+TreeModel::TreeModel(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : QAbstractItemModel(parent)
     , sql_ { sql }
     , info_ { info }
     , table_hash_ { table_hash }
     , separator_ { separator }
 {
-    InitializeRoot(base_unit);
+    InitializeRoot(default_unit);
 }
 
 TreeModel::~TreeModel() { qDeleteAll(node_hash_); }
@@ -174,17 +174,17 @@ void TreeModel::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->note, NOTE, &Node::note);
 }
 
-void TreeModel::UpdateBaseUnit(int base_unit)
+void TreeModel::UpdateBaseUnit(int default_unit)
 {
-    if (root_->unit == base_unit)
+    if (root_->unit == default_unit)
         return;
 
-    root_->unit = base_unit;
+    root_->unit = default_unit;
 
     const auto& const_node_hash { std::as_const(node_hash_) };
 
     for (auto* node : const_node_hash)
-        if (node->branch && node->unit != base_unit)
+        if (node->branch && node->unit != default_unit)
             UpdateBranchUnit(node);
 }
 
@@ -836,13 +836,13 @@ bool TreeModel::UpdateName(Node* node, CString& value)
     return true;
 }
 
-void TreeModel::InitializeRoot(int base_unit)
+void TreeModel::InitializeRoot(int default_unit)
 {
     if (root_ == nullptr) {
         root_ = ResourcePool<Node>::Instance().Allocate();
         root_->id = -1;
         root_->branch = true;
-        root_->unit = base_unit;
+        root_->unit = default_unit;
     }
 
     assert(root_ != nullptr && "Root node should not be null after initialization");

@@ -7,7 +7,7 @@ class TreeModelTask : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelTask(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+    TreeModelTask(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelTask() = default;
 
 public slots:

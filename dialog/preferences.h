@@ -29,17 +29,17 @@ private slots:
     void on_pBtnDocumentDir_clicked();
     void on_pBtnResetDocumentDir_clicked();
 
-    void on_comboBaseUnit_currentIndexChanged(int index);
+    void on_comboDefaultUnit_currentIndexChanged(int index);
 
     void on_comboOperation_currentIndexChanged(int index);
     void on_comboStatic_currentIndexChanged(int index);
     void on_comboDynamicLhs_currentIndexChanged(int index);
     void on_comboDynamicRhs_currentIndexChanged(int index);
 
-    void on_spinValueDecimal_editingFinished();
+    void on_spinAmountDecimal_editingFinished();
+    void on_spinCommonDecimal_editingFinished();
     void on_lineStatic_editingFinished();
     void on_lineDynamic_editingFinished();
-    void on_spinRatioDecimal_editingFinished();
 
     void on_comboTheme_currentIndexChanged(int index);
     void on_comboLanguage_currentIndexChanged(int index);
@@ -56,7 +56,7 @@ private:
     void IniConnect();
     void IniStringList();
     void ResizeLine(QLineEdit* line, CString& text);
-    void RenameLable(Section section);
+    void DynamicLable(Section section);
 
     void Data();
     void DataCombo(QComboBox* combo, int value);

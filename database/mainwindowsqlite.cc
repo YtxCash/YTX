@@ -17,7 +17,7 @@ void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
     query.setForwardOnly(true);
 
     auto part = R"(
-    SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, base_unit, document_dir, value_decimal, ratio_decimal
+    SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, default_unit, document_dir, amount_decimal, common_decimal
     FROM settings
     WHERE id = :section
 )";
@@ -37,10 +37,10 @@ void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
         settings.operation = query.value("operation").toString();
         settings.dynamic_node_rhs = query.value("dynamic_node_rhs").toInt();
         settings.hide_time = query.value("hide_time").toBool();
-        settings.base_unit = query.value("base_unit").toInt();
+        settings.default_unit = query.value("default_unit").toInt();
         settings.document_dir = query.value("document_dir").toString();
-        settings.value_decimal = query.value("value_decimal").toInt();
-        settings.ratio_decimal = query.value("ratio_decimal").toInt();
+        settings.amount_decimal = query.value("amount_decimal").toInt();
+        settings.common_decimal = query.value("common_decimal").toInt();
     }
 }
 
@@ -49,8 +49,8 @@ void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
     auto part = R"(
     UPDATE settings
     SET static_label = :static_label, static_node = :static_node, dynamic_label = :dynamic_label, dynamic_node_lhs = :dynamic_node_lhs,
-        operation = :operation, dynamic_node_rhs = :dynamic_node_rhs, hide_time = :hide_time, base_unit = :base_unit, document_dir = :document_dir,
-        value_decimal = :value_decimal, ratio_decimal = :ratio_decimal
+        operation = :operation, dynamic_node_rhs = :dynamic_node_rhs, hide_time = :hide_time, default_unit = :default_unit, document_dir = :document_dir,
+        amount_decimal = :amount_decimal, common_decimal = :common_decimal
     WHERE id = :section
 )";
 
@@ -65,10 +65,10 @@ void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
     query.bindValue(":operation", settings.operation);
     query.bindValue(":dynamic_node_rhs", settings.dynamic_node_rhs);
     query.bindValue(":hide_time", settings.hide_time);
-    query.bindValue(":base_unit", settings.base_unit);
+    query.bindValue(":default_unit", settings.default_unit);
     query.bindValue(":document_dir", settings.document_dir);
-    query.bindValue(":value_decimal", settings.value_decimal);
-    query.bindValue(":ratio_decimal", settings.ratio_decimal);
+    query.bindValue(":amount_decimal", settings.amount_decimal);
+    query.bindValue(":common_decimal", settings.common_decimal);
 
     if (!query.exec()) {
         qWarning() << "Failed to update section settings: " << query.lastError().text();
@@ -117,10 +117,10 @@ void MainwindowSqlite::NewFile(CString& file_path)
         operation           TEXT,
         dynamic_node_rhs    INTEGER,
         hide_time           BOOLEAN    DEFAULT 1,
-        base_unit           INTEGER,
+        default_unit        INTEGER,
         document_dir        TEXT,
-        value_decimal       INTEGER    DEFAULT 2,
-        ratio_decimal       INTEGER    DEFAULT 2
+        amount_decimal      INTEGER    DEFAULT 2,
+        common_decimal      INTEGER    DEFAULT 2
     );
     )");
 

@@ -98,11 +98,11 @@ void InsertNodeOrder::IniDialog()
     ui->dSpinSecond->setRange(DMIN, DMAX);
     ui->dSpinFirst->setRange(DMIN, DMAX);
 
-    ui->dSpinDiscount->setDecimals(settings_.value_decimal);
-    ui->dSpinAmount->setDecimals(settings_.value_decimal);
-    ui->dSpinSettled->setDecimals(settings_.value_decimal);
-    ui->dSpinSecond->setDecimals(settings_.ratio_decimal);
-    ui->dSpinFirst->setDecimals(settings_.ratio_decimal);
+    ui->dSpinDiscount->setDecimals(settings_.amount_decimal);
+    ui->dSpinAmount->setDecimals(settings_.amount_decimal);
+    ui->dSpinSettled->setDecimals(settings_.amount_decimal);
+    ui->dSpinSecond->setDecimals(settings_.common_decimal);
+    ui->dSpinFirst->setDecimals(settings_.common_decimal);
 
     ui->comboParty->setFocus();
 }

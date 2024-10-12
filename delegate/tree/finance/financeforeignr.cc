@@ -2,10 +2,10 @@
 
 #include "component/enumclass.h"
 
-FinanceForeignR::FinanceForeignR(const int& decimal, const int& base_unit, CStringHash& unit_symbol_hash, QObject* parent)
+FinanceForeignR::FinanceForeignR(const int& decimal, const int& default_unit, CStringHash& unit_symbol_hash, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
-    , base_unit_ { base_unit }
+    , default_unit_ { default_unit }
     , unit_symbol_hash_ { unit_symbol_hash }
 {
 }
@@ -22,7 +22,7 @@ QString FinanceForeignR::Format(const QModelIndex& index) const
     static const QString empty_string {};
 
     int unit { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kUnit)).data().toInt() };
-    if (unit == base_unit_)
+    if (unit == default_unit_)
         return empty_string;
 
     double value { index.data().toDouble() };

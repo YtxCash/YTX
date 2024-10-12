@@ -8,7 +8,7 @@
 
 class FinanceForeignR final : public StyledItemDelegate {
 public:
-    FinanceForeignR(const int& decimal, const int& base_unit, CStringHash& unit_symbol_hash, QObject* parent = nullptr);
+    FinanceForeignR(const int& decimal, const int& default_unit, CStringHash& unit_symbol_hash, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -17,7 +17,7 @@ private:
 
 private:
     const int& decimal_;
-    const int& base_unit_;
+    const int& default_unit_;
     CStringHash& unit_symbol_hash_;
 };
 

@@ -24,7 +24,7 @@ Preferences::Preferences(CInfo& info, const TreeModel* model, CStringList& date_
     IniConnect();
 
     Data();
-    RenameLable(info.section);
+    DynamicLable(info.section);
 }
 
 Preferences::~Preferences() { delete ui; }
@@ -41,7 +41,7 @@ void Preferences::IniDialog(CStringHash& unit_hash, CStringList& date_format_lis
     IniCombo(ui->comboSeparator, separator_list_);
     IniCombo(ui->comboTheme, theme_list_);
 
-    IniCombo(ui->comboBaseUnit, unit_hash);
+    IniCombo(ui->comboDefaultUnit, unit_hash);
 
     IniCombo(ui->comboDynamicLhs, model_);
     IniCombo(ui->comboStatic, model_);
@@ -89,10 +89,10 @@ void Preferences::Data()
     DataCombo(ui->comboSeparator, interface_.separator);
     DataCombo(ui->comboDateTime, interface_.date_format);
 
-    DataCombo(ui->comboBaseUnit, settings_.base_unit);
+    DataCombo(ui->comboDefaultUnit, settings_.default_unit);
     ui->pBtnDocumentDir->setText(settings_.document_dir);
-    ui->spinValueDecimal->setValue(settings_.value_decimal);
-    ui->spinRatioDecimal->setValue(settings_.ratio_decimal);
+    ui->spinAmountDecimal->setValue(settings_.amount_decimal);
+    ui->spinCommonDecimal->setValue(settings_.common_decimal);
 
     ui->lineStatic->setText(settings_.static_label);
     DataCombo(ui->comboStatic, settings_.static_node);
@@ -160,21 +160,30 @@ void Preferences::on_pBtnResetDocumentDir_clicked()
 
 void Preferences::ResizeLine(QLineEdit* line, CString& text) { line->setMinimumWidth(QFontMetrics(line->font()).horizontalAdvance(text) + 8); }
 
-void Preferences::RenameLable(Section section)
+void Preferences::DynamicLable(Section section)
 {
     switch (section) {
     case Section::kFinance:
-        ui->labelBaseUnit->setText(tr("Base Currency"));
-        ui->labelRatioDecimal->setText(tr("FXRate Decimal"));
+        ui->labelDefaultUnit->setText(tr("Default Currency"));
+        ui->labelAmountDecimal->setText(tr("Amount Decimal"));
+        ui->labelCommonDecimal->setText(tr("FXRate Decimal"));
         break;
     case Section::kStakeholder:
-        ui->labelRatioDecimal->setText(tr("TaxRate Decimal"));
-        ui->labelBaseUnit->setText(tr("Default Mark"));
+        ui->labelDefaultUnit->setText(tr("Default Stakeholder"));
+        ui->labelAmountDecimal->setText(tr("Amount Decimal"));
+        ui->labelCommonDecimal->setText(tr("Placeholder"));
         break;
     case Section::kTask:
     case Section::kProduct:
-        ui->labelValueDecimal->setText(tr("Amount Decimal"));
-        ui->labelRatioDecimal->setText(tr("Price Decimal"));
+        ui->labelDefaultUnit->setText(tr("Default Unit"));
+        ui->labelAmountDecimal->setText(tr("Amount Decimal"));
+        ui->labelCommonDecimal->setText(tr("Quantity Decimal"));
+        break;
+    case Section::kSales:
+    case Section::kPurchase:
+        ui->labelDefaultUnit->setText(tr("Default Term"));
+        ui->labelAmountDecimal->setText(tr("Amount Decimal"));
+        ui->labelCommonDecimal->setText(tr("Quantity Decimal"));
         break;
     default:
         break;
@@ -183,10 +192,10 @@ void Preferences::RenameLable(Section section)
 
 void Preferences::on_checkHideTime_toggled(bool checked) { settings_.hide_time = checked; }
 
-void Preferences::on_comboBaseUnit_currentIndexChanged(int index)
+void Preferences::on_comboDefaultUnit_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    settings_.base_unit = ui->comboBaseUnit->currentData().toInt();
+    settings_.default_unit = ui->comboDefaultUnit->currentData().toInt();
 }
 
 void Preferences::on_comboStatic_currentIndexChanged(int index)
@@ -207,7 +216,7 @@ void Preferences::on_comboDynamicRhs_currentIndexChanged(int index)
     settings_.dynamic_node_rhs = ui->comboDynamicRhs->currentData().toInt();
 }
 
-void Preferences::on_spinValueDecimal_editingFinished() { settings_.value_decimal = ui->spinValueDecimal->value(); }
+void Preferences::on_spinAmountDecimal_editingFinished() { settings_.amount_decimal = ui->spinAmountDecimal->value(); }
 
 void Preferences::on_lineStatic_editingFinished()
 {
@@ -221,7 +230,7 @@ void Preferences::on_lineDynamic_editingFinished()
     ResizeLine(ui->lineDynamic, settings_.dynamic_label);
 }
 
-void Preferences::on_spinRatioDecimal_editingFinished() { settings_.ratio_decimal = ui->spinRatioDecimal->value(); }
+void Preferences::on_spinCommonDecimal_editingFinished() { settings_.common_decimal = ui->spinCommonDecimal->value(); }
 
 void Preferences::on_comboTheme_currentIndexChanged(int index)
 {

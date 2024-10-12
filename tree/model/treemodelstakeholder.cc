@@ -7,8 +7,8 @@
 #include "component/enumclass.h"
 #include "global/resourcepool.h"
 
-TreeModelStakeholder::TreeModelStakeholder(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent)
-    : TreeModel { sql, info, base_unit, table_hash, separator, parent }
+TreeModelStakeholder::TreeModelStakeholder(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
+    : TreeModel { sql, info, default_unit, table_hash, separator, parent }
 {
     TreeModelStakeholder::ConstructTree();
 }

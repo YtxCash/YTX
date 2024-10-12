@@ -5,7 +5,7 @@
 #include "ui_editnodeproduct.h"
 
 EditNodeProduct::EditNodeProduct(
-    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int ratio_decimal, QWidget* parent)
+    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int amount_decimal, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeProduct)
     , node_ { node }
@@ -15,14 +15,14 @@ EditNodeProduct::EditNodeProduct(
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_hash, ratio_decimal);
+    IniDialog(unit_hash, amount_decimal);
     IniConnect();
     Data(node, enable_branch);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }
 
-void EditNodeProduct::IniDialog(CStringHash& unit_hash, int ratio_decimal)
+void EditNodeProduct::IniDialog(CStringHash& unit_hash, int amount_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
@@ -36,8 +36,8 @@ void EditNodeProduct::IniDialog(CStringHash& unit_hash, int ratio_decimal)
 
     ui->dSpinBoxUnitPrice->setRange(0.0, DMAX);
     ui->dSpinBoxCommission->setRange(0.0, DMAX);
-    ui->dSpinBoxUnitPrice->setDecimals(ratio_decimal);
-    ui->dSpinBoxCommission->setDecimals(ratio_decimal);
+    ui->dSpinBoxUnitPrice->setDecimals(amount_decimal);
+    ui->dSpinBoxCommission->setDecimals(amount_decimal);
 }
 
 void EditNodeProduct::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeProduct::RNameEdited); }

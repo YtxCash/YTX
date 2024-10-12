@@ -6,12 +6,12 @@
 #include "ui_tablewidgetorder.h"
 
 TableWidgetOrder::TableWidgetOrder(
-    Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel* product_model, int value_decimal, int unit_party, QWidget* parent)
+    Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel* product_model, int amount_decimal, int unit_party, QWidget* parent)
     : TableWidget(parent)
     , ui(new Ui::TableWidgetOrder)
     , node_ { node }
     , unit_party_ { unit_party }
-    , value_decimal_ { value_decimal }
+    , amount_decimal_ { amount_decimal }
     , stakeholder_model_ { stakeholder_model }
     , order_model_ { order_model }
     , product_model_ { product_model }
@@ -125,13 +125,13 @@ void TableWidgetOrder::IniDialog()
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);
-    ui->dSpinDiscount->setDecimals(value_decimal_);
-    ui->dSpinFinalTotal->setDecimals(value_decimal_);
+    ui->dSpinDiscount->setDecimals(amount_decimal_);
+    ui->dSpinFinalTotal->setDecimals(amount_decimal_);
     ui->dSpinFinalTotal->setRange(DMIN, DMAX);
-    ui->dSpinInitialTotal->setDecimals(value_decimal_);
+    ui->dSpinInitialTotal->setDecimals(amount_decimal_);
     ui->dSpinInitialTotal->setRange(DMIN, DMAX);
     ui->dSpinSecond->setRange(DMIN, DMAX);
-    ui->dSpinSecond->setDecimals(value_decimal_);
+    ui->dSpinSecond->setDecimals(amount_decimal_);
     ui->spinFirst->setRange(IMIN, IMAX);
 }
 

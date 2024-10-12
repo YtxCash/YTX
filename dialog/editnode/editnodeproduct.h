@@ -15,7 +15,7 @@ class EditNodeProduct final : public QDialog {
 
 public:
     EditNodeProduct(
-        Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int ratio_decimal, QWidget* parent = nullptr);
+        Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int amount_decimal, QWidget* parent = nullptr);
     ~EditNodeProduct();
 
 private slots:
@@ -35,7 +35,7 @@ private slots:
     void on_plainTextEdit_textChanged();
 
 private:
-    void IniDialog(CStringHash& unit_hash, int ratio_decimal);
+    void IniDialog(CStringHash& unit_hash, int amount_decimal);
     void IniConnect();
     void Data(Node* node, bool enable_branch);
 

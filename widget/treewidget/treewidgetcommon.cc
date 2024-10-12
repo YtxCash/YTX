@@ -25,7 +25,7 @@ void TreeWidgetCommon::SetCurrentIndex(const QModelIndex& index) { ui->treeView-
 
 void TreeWidgetCommon::SetStatus()
 {
-    ui->dspin_box_static_->setDecimals(settings_.value_decimal);
+    ui->dspin_box_static_->setDecimals(settings_.amount_decimal);
     ui->lable_static_->setText(settings_.static_label);
 
     auto static_node_id { settings_.static_node };
@@ -35,7 +35,7 @@ void TreeWidgetCommon::SetStatus()
         StaticStatus(static_node_id);
     }
 
-    ui->dspin_box_dynamic_->setDecimals(settings_.value_decimal);
+    ui->dspin_box_dynamic_->setDecimals(settings_.amount_decimal);
     ui->label_dynamic_->setText(settings_.dynamic_label);
 
     auto dynamic_node_id_lhs { settings_.dynamic_node_lhs };
@@ -46,7 +46,7 @@ void TreeWidgetCommon::SetStatus()
         auto rhs_unit { model_->Unit(dynamic_node_id_rhs) };
         equal_unit = lhs_unit == rhs_unit;
 
-        ui->dspin_box_dynamic_->setPrefix(info_.unit_symbol_hash.value((equal_unit ? lhs_unit : settings_.base_unit), QString()));
+        ui->dspin_box_dynamic_->setPrefix(info_.unit_symbol_hash.value((equal_unit ? lhs_unit : settings_.default_unit), QString()));
         DynamicStatus(dynamic_node_id_lhs, dynamic_node_id_rhs);
     }
 }

@@ -52,7 +52,7 @@
    <item row="0" column="2">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QGridLayout" name="gridLayout">
@@ -179,7 +179,7 @@
      <widget class="QWidget" name="page_2">
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="5" column="2">
-        <widget class="SpinBox" name="spinRatioDecimal">
+        <widget class="SpinBox" name="spinCommonDecimal">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -190,14 +190,14 @@
           <bool>false</bool>
          </property>
          <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="QLabel" name="labelRatioDecimal">
+        <widget class="QLabel" name="labelCommonDecimal">
          <property name="text">
-          <string>Ratio Decimal</string>
+          <string>Common Decimal</string>
          </property>
         </widget>
        </item>
@@ -215,7 +215,7 @@
         </spacer>
        </item>
        <item row="4" column="2">
-        <widget class="SpinBox" name="spinValueDecimal">
+        <widget class="SpinBox" name="spinAmountDecimal">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -226,7 +226,7 @@
           <bool>false</bool>
          </property>
          <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
          </property>
          <property name="stepType">
           <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
@@ -267,7 +267,7 @@
         </widget>
        </item>
        <item row="0" column="2">
-        <widget class="ComboBox" name="comboBaseUnit"/>
+        <widget class="ComboBox" name="comboDefaultUnit"/>
        </item>
        <item row="3" column="3" rowspan="2" colspan="2">
         <spacer name="horizontalSpacer_8">
@@ -283,16 +283,16 @@
         </spacer>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="labelValueDecimal">
+        <widget class="QLabel" name="labelAmountDecimal">
          <property name="text">
-          <string>Value Decimal</string>
+          <string>Amount Decimal</string>
          </property>
         </widget>
        </item>
        <item row="0" column="0">
-        <widget class="QLabel" name="labelBaseUnit">
+        <widget class="QLabel" name="labelDefaultUnit">
          <property name="text">
-          <string>Base Unit</string>
+          <string>Default Unit</string>
          </property>
         </widget>
        </item>

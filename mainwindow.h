@@ -129,7 +129,10 @@ private:
     void SetPurchaseData();
 
     void CreateTable(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, int node_id);
-    void CreateDelegate(QTableView* view, const TreeModel* tree_model, CSettings* settings, int node_id);
+    void DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings* settings, int node_id);
+    void DelegateFinance(QTableView* view, CSettings* settings);
+    void DelegateTask(QTableView* view, CSettings* settings);
+    void DelegateProduct(QTableView* view, CSettings* settings);
     void DelegateStakeholder(QTableView* view, CSettings* settings);
     void DelegateOrder(QTableView* view, CSettings* settings);
     void SetView(QTableView* view);

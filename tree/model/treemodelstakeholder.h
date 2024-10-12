@@ -7,7 +7,7 @@ class TreeModelStakeholder final : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelStakeholder(SPSqlite sql, CInfo& info, int base_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+    TreeModelStakeholder(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelStakeholder() override = default;
 
 public:
@@ -19,7 +19,7 @@ public:
 
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     void UpdateNode(const Node* tmp_node) override;
-    void UpdateBaseUnit(int base_unit) override { root_->unit = base_unit; }
+    void UpdateBaseUnit(int default_unit) override { root_->unit = default_unit; }
 
 protected:
     bool UpdateRule(Node* node, bool value) override; // Cash = 0, Monthly = 1

@@ -153,7 +153,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     auto rule { new TreeComboR(rule_hash_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kRule), rule);
 
-    auto total { new TreeDoubleSpinR(settings_.value_decimal, view) };
+    auto total { new TreeDoubleSpinR(settings_.amount_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), total);
@@ -174,7 +174,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), party);
 
-    auto value { new TableDoubleSpinR(settings_.value_decimal, false, view) };
+    auto value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), value);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), value);
 
@@ -185,14 +185,14 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
 {
     view->setModel(model);
 
-    auto value { new TableDoubleSpinR(settings_.value_decimal, false, view) };
+    auto value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kSettled), value);
 
-    auto ratio { new TableDoubleSpinR(settings_.ratio_decimal, false, view) };
+    auto ratio { new TableDoubleSpinR(settings_.common_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDiscountPrice), ratio);
