@@ -180,12 +180,12 @@ void MainWindow::ROpenFile(CString& file_path)
         SetSalesData();
         SetPurchaseData();
 
-        CreateSection(finance_tree_, tr(Finance), &finance_data_, &finance_table_hash_, &finance_settings_);
-        CreateSection(stakeholder_tree_, tr(Stakeholder), &stakeholder_data_, &stakeholder_table_hash_, &stakeholder_settings_);
-        CreateSection(product_tree_, tr(Product), &product_data_, &product_table_hash_, &product_settings_);
-        CreateSection(task_tree_, tr(Task), &task_data_, &task_table_hash_, &task_settings_);
-        CreateSection(sales_tree_, tr(Sales), &sales_data_, &sales_table_hash_, &sales_settings_);
-        CreateSection(purchase_tree_, tr(Purchase), &purchase_data_, &purchase_table_hash_, &purchase_settings_);
+        CreateSection(finance_tree_, tr(Finance), &finance_data_, &finance_table_hash_, finance_settings_);
+        CreateSection(stakeholder_tree_, tr(Stakeholder), &stakeholder_data_, &stakeholder_table_hash_, stakeholder_settings_);
+        CreateSection(product_tree_, tr(Product), &product_data_, &product_table_hash_, product_settings_);
+        CreateSection(task_tree_, tr(Task), &task_data_, &task_table_hash_, task_settings_);
+        CreateSection(sales_tree_, tr(Sales), &sales_data_, &sales_table_hash_, sales_settings_);
+        CreateSection(purchase_tree_, tr(Purchase), &purchase_data_, &purchase_table_hash_, purchase_settings_);
 
         switch (start_) {
         case Section::kFinance:
@@ -268,11 +268,23 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
         return;
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
-    if (node_id == -1)
+    if (node_id <= 0)
         return;
 
-    if (!table_hash_->contains(node_id))
-        CreateTable(data_, tree_->model, settings_, table_hash_, node_id);
+    if (!table_hash_->contains(node_id)) {
+        auto section { data_->info.section };
+
+        if (section == Section::kSales || section == Section::kPurchase) {
+            const int party_id { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kParty)).data().toInt() };
+            if (party_id <= 0)
+                return;
+
+            CreateTablePS(data_, tree_->model, *settings_, table_hash_, node_id, party_id);
+        }
+
+        if (section != Section::kSales && section != Section::kPurchase)
+            CreateTableFPST(data_, tree_->model, *settings_, table_hash_, node_id);
+    }
 
     SwitchTab(node_id);
 }
@@ -306,28 +318,11 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name)
     return true;
 }
 
-void MainWindow::CreateTable(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, int node_id)
+void MainWindow::CreateTableFPST(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id)
 {
     CString& name { tree_model->Name(node_id) };
     auto section { data->info.section };
     auto rule { tree_model->Rule(node_id) };
-
-    auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
-    tree_model->CopyNode(tmp_node, node_id);
-
-    TableWidget* widget {};
-
-    switch (section) {
-    case Section::kSales:
-        widget = new TableWidgetOrder(tmp_node, tree_model, stakeholder_tree_.model, product_tree_.model, settings->amount_decimal, UNIT_CUSTOMER, this);
-        break;
-    case Section::kPurchase:
-        widget = new TableWidgetOrder(tmp_node, tree_model, stakeholder_tree_.model, product_tree_.model, settings->amount_decimal, UNIT_VENDOR, this);
-        break;
-    default:
-        widget = new TableWidgetCommon(this);
-        break;
-    }
 
     TableModel* model {};
 
@@ -344,15 +339,11 @@ void MainWindow::CreateTable(Data* data, TreeModel* tree_model, CSettings* setti
     case Section::kStakeholder:
         model = new TableModelStakeholder(data->sql, rule, node_id, data->info, this);
         break;
-    case Section::kSales:
-        model = new TableModelOrder(data->sql, rule, node_id, data->info, product_tree_.model, this);
-        break;
-    case Section::kPurchase:
-        model = new TableModelOrder(data->sql, rule, node_id, data->info, product_tree_.model, this);
-        break;
     default:
         break;
     }
+
+    TableWidget* widget { new TableWidgetCommon(this) };
 
     widget->SetModel(model);
 
@@ -362,33 +353,71 @@ void MainWindow::CreateTable(Data* data, TreeModel* tree_model, CSettings* setti
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
     tab_bar->setTabToolTip(tab_index, tree_model->GetPath(node_id));
 
-    if (section != Section::kSales && section != Section::kPurchase) {
-        auto view { widget->View() };
-        SetView(view);
-        SetConnect(view, model, tree_model, data);
+    auto view { widget->View() };
+    SetView(view);
+    SetConnect(view, model, tree_model, data);
 
-        DelegateCommon(view, tree_model, settings, node_id);
+    DelegateCommon(view, tree_model, settings, node_id);
 
-        switch (section) {
-        case Section::kFinance:
-            DelegateFinance(view, settings);
-            break;
-        case Section::kProduct:
-            DelegateProduct(view, settings);
-            break;
-        case Section::kTask:
-            DelegateTask(view, settings);
-            break;
-        case Section::kStakeholder:
-            DelegateStakeholder(view, settings);
-            break;
-        default:
-            break;
-        }
+    switch (section) {
+    case Section::kFinance:
+        DelegateFinance(view, settings);
+        break;
+    case Section::kProduct:
+        DelegateProduct(view, settings);
+        break;
+    case Section::kTask:
+        DelegateTask(view, settings);
+        break;
+    case Section::kStakeholder:
+        DelegateStakeholder(view, settings);
+        break;
+    default:
+        break;
     }
 
     table_hash->insert(node_id, widget);
     SignalStation::Instance().RegisterModel(section, node_id, model);
+}
+
+void MainWindow::CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id)
+{
+    CString& name { stakeholder_tree_.model->Name(party_id) };
+    auto section { data->info.section };
+
+    auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
+    tree_model->SetNodeShadow(node_shadow, node_id);
+
+    TableModel* table_model { new TableModelOrder(data->sql, true, node_id, data->info, product_tree_.model, this) };
+
+    TableWidget* widget {};
+
+    switch (section) {
+    case Section::kSales:
+        widget = new TableWidgetOrder(node_shadow, data_->sql, table_model, stakeholder_tree_.model, settings, UNIT_CUSTOMER, this);
+        break;
+    case Section::kPurchase:
+        widget = new TableWidgetOrder(node_shadow, data_->sql, table_model, stakeholder_tree_.model, settings, UNIT_VENDOR, this);
+        break;
+    default:
+        break;
+    }
+
+    widget->SetModel(table_model);
+
+    int tab_index { ui->tabWidget->addTab(widget, name) };
+    auto tab_bar { ui->tabWidget->tabBar() };
+
+    tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
+    tab_bar->setTabToolTip(tab_index, stakeholder_tree_.model->GetPath(party_id));
+
+    auto* view { widget->View() };
+    SetView(view);
+
+    SetConnect(view, table_model, tree_model, data);
+    DelegateCommon(view, tree_model, settings, node_id);
+
+    table_hash->insert(node_id, widget);
 }
 
 void MainWindow::SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data)
@@ -409,12 +438,12 @@ void MainWindow::SetConnect(const QTableView* view, const TableModel* table, con
     connect(data->sql.data(), &Sqlite::SMoveMultiTrans, table, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings* settings, int node_id)
+void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id)
 {
     auto node { new TableCombo(tree_model, node_id, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
 
-    auto date_time { new DateTime(interface_.date_format, settings->hide_time, view) };
+    auto date_time { new DateTime(interface_.date_format, settings.hide_time, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
 
     auto line { new Line(view) };
@@ -429,54 +458,54 @@ void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, C
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 }
 
-void MainWindow::DelegateFinance(QTableView* view, CSettings* settings)
+void MainWindow::DelegateFinance(QTableView* view, CSettings& settings)
 {
-    auto amount { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
+    auto amount { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), amount);
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), amount);
 
-    auto fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
+    auto fx_rate { new TableDoubleSpin(settings.common_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), fx_rate);
 
-    auto subtotal { new TableDoubleSpinR(settings->amount_decimal, true, view) };
+    auto subtotal { new TableDoubleSpinR(settings.amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateTask(QTableView* view, CSettings* settings)
+void MainWindow::DelegateTask(QTableView* view, CSettings& settings)
 {
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
+    auto quantity { new TableDoubleSpin(settings.common_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
+    auto unit_cost { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_cost);
 
-    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, view) };
+    auto subtotal { new TableDoubleSpinR(settings.common_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateProduct(QTableView* view, CSettings* settings)
+void MainWindow::DelegateProduct(QTableView* view, CSettings& settings)
 {
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
+    auto quantity { new TableDoubleSpin(settings.common_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
+    auto unit_price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_price);
 
-    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, view) };
+    auto subtotal { new TableDoubleSpinR(settings.common_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateStakeholder(QTableView* view, CSettings* settings)
+void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
 {
     auto inside_product { new InsideProduct(product_tree_.model, UNIT_POSITION, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
-    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
+    auto unit_price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
-    auto date_time { new DateTime(interface_.date_format, settings->hide_time, view) };
+    auto date_time { new DateTime(interface_.date_format, settings.hide_time, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
 
     auto line { new Line(view) };
@@ -491,7 +520,7 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings* settings)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 }
 
-void MainWindow::DelegateOrder(QTableView* view, CSettings* settings)
+void MainWindow::DelegateOrder(QTableView* view, CSettings& settings)
 {
     auto inside_product { new InsideProduct(product_tree_.model, UNIT_POSITION, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
@@ -506,21 +535,21 @@ void MainWindow::DelegateOrder(QTableView* view, CSettings* settings)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
 
-    auto price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
+    auto price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
 
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
+    auto quantity { new TableDoubleSpin(settings.common_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
 
-    auto amount { new TableDoubleSpinR(settings->amount_decimal, false, view) };
+    auto amount { new TableDoubleSpinR(settings.amount_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kAmount), amount);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscount), amount);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
 }
 
-void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings* settings)
+void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings)
 {
     const auto* info { &data->info };
     auto tab_widget { ui->tabWidget };
@@ -541,7 +570,7 @@ void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash*
     // view->setColumnHidden(1, true);
 }
 
-void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSettings* settings)
+void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSettings& settings)
 {
     DelegateCommon(view, info);
 
@@ -586,39 +615,39 @@ void MainWindow::DelegateCommon(QTreeView* view, CInfo* info)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
 }
 
-void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSettings* settings)
+void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSettings& settings)
 {
-    auto final_total { new TreeDoubleSpinUnitR(settings->amount_decimal, settings->default_unit, info->unit_symbol_hash, view) };
+    auto final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kFinalTotal), final_total);
 
-    auto initial_total { new FinanceForeignR(settings->amount_decimal, settings->default_unit, info->unit_symbol_hash, view) };
+    auto initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
 }
 
-void MainWindow::DelegateTask(QTreeView* view, CSettings* settings)
+void MainWindow::DelegateTask(QTreeView* view, CSettings& settings)
 {
-    auto quantity { new TreeDoubleSpinR(settings->common_decimal, view) };
+    auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
 
-    auto amount { new TreeDoubleSpinUnitR(settings->amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, view) };
+    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
-    auto unit_cost { new TreeDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
+    auto unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
 
     auto color { new Color(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
 }
 
-void MainWindow::DelegateProduct(QTreeView* view, CSettings* settings)
+void MainWindow::DelegateProduct(QTreeView* view, CSettings& settings)
 {
-    auto quantity { new TreeDoubleSpinR(settings->common_decimal, view) };
+    auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
 
-    auto amount { new TreeDoubleSpinUnitR(settings->amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, view) };
+    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
 
-    auto price { new TreeDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
+    auto price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
 
@@ -626,26 +655,26 @@ void MainWindow::DelegateProduct(QTreeView* view, CSettings* settings)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
 }
 
-void MainWindow::DelegateStakeholder(QTreeView* view, CSettings* settings)
+void MainWindow::DelegateStakeholder(QTreeView* view, CSettings& settings)
 {
     auto payment_period { new TreeSpin(IZERO, IMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
-    auto tax_rate { new TreeDoubleSpinPercent(settings->amount_decimal, DZERO, DMAX, view) };
+    auto tax_rate { new TreeDoubleSpinPercent(settings.amount_decimal, DZERO, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
     auto deadline { new TreeSpin(IZERO, THIRTY_ONE, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 }
 
-void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings* settings)
+void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings)
 {
-    auto amount { new OrderTotalR(settings->amount_decimal, view) };
+    auto amount { new OrderTotalR(settings.amount_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), amount);
 
-    auto quantity { new TreeDoubleSpinR(settings->common_decimal, view) };
+    auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
@@ -827,7 +856,7 @@ void MainWindow::SaveTableWidget(const TableHash& table_hash, CString& section_n
     exclusive_interface_->setValue(QString("%1/%2").arg(section_name, property), list);
 }
 
-void MainWindow::RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, CString& property)
+void MainWindow::RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property)
 {
     auto variant { exclusive_interface_->value(QString("%1/%2").arg(data->info.node, property)) };
 
@@ -841,7 +870,7 @@ void MainWindow::RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings
 
     for (int node_id : list) {
         if (tree_model->Contains(node_id) && !tree_model->Branch(node_id) && node_id >= 1)
-            CreateTable(data, tree_model, settings, table_hash, node_id);
+            CreateTableFPST(data, tree_model, settings, table_hash, node_id);
     }
 }
 
@@ -1321,7 +1350,7 @@ void MainWindow::RJumpTriggered()
         return;
 
     if (!table_hash_->contains(rhs_node_id))
-        CreateTable(data_, tree_->model, settings_, table_hash_, rhs_node_id);
+        CreateTableFPST(data_, tree_->model, *settings_, table_hash_, rhs_node_id);
 
     const int trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
     SwitchTab(rhs_node_id, trans_id);
@@ -1418,7 +1447,7 @@ void MainWindow::EditNodePS(Section section, NodeShadow* node_shadow)
 
     if (!(*node_shadow->branch)) {
         SetView(dialog_cast->View());
-        DelegateOrder(dialog_cast->View(), settings_);
+        DelegateOrder(dialog_cast->View(), *settings_);
     }
     dialog_list_->append(dialog);
     dialog->show();
@@ -1550,7 +1579,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     dialog_list_->append(dialog);
 
     SetView(dialog_cast->View());
-    DelegateOrder(dialog_cast->View(), settings_);
+    DelegateOrder(dialog_cast->View(), *settings_);
     dialog->show();
 }
 
@@ -1873,7 +1902,7 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     };
 
     if (!Contains(lhs_node_id) && !Contains(rhs_node_id))
-        CreateTable(data_, tree_->model, settings_, table_hash_, id);
+        CreateTableFPST(data_, tree_->model, *settings_, table_hash_, id);
 
     SwitchTab(id, trans_id);
 }

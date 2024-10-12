@@ -128,28 +128,29 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTable(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, int node_id);
-    void DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings* settings, int node_id);
-    void DelegateFinance(QTableView* view, CSettings* settings);
-    void DelegateTask(QTableView* view, CSettings* settings);
-    void DelegateProduct(QTableView* view, CSettings* settings);
-    void DelegateStakeholder(QTableView* view, CSettings* settings);
-    void DelegateOrder(QTableView* view, CSettings* settings);
+    void CreateTableFPST(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
+    void CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
+    void DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id);
+    void DelegateFinance(QTableView* view, CSettings& settings);
+    void DelegateTask(QTableView* view, CSettings& settings);
+    void DelegateProduct(QTableView* view, CSettings& settings);
+    void DelegateStakeholder(QTableView* view, CSettings& settings);
+    void DelegateOrder(QTableView* view, CSettings& settings);
     void SetView(QTableView* view);
     void SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
 
-    void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings* settings);
+    void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab);
     void SwitchDialog(QList<PDialog>* dialog_list, bool enable);
     void UpdateLastTab();
 
-    void CreateDelegate(QTreeView* view, CInfo* info, CSettings* settings);
+    void CreateDelegate(QTreeView* view, CInfo* info, CSettings& settings);
     void DelegateCommon(QTreeView* view, CInfo* info);
-    void DelegateFinance(QTreeView* view, CInfo* info, CSettings* settings);
-    void DelegateTask(QTreeView* view, CSettings* settings);
-    void DelegateProduct(QTreeView* view, CSettings* settings);
-    void DelegateStakeholder(QTreeView* view, CSettings* settings);
-    void DelegateOrder(QTreeView* view, CInfo* info, CSettings* settings);
+    void DelegateFinance(QTreeView* view, CInfo* info, CSettings& settings);
+    void DelegateTask(QTreeView* view, CSettings& settings);
+    void DelegateProduct(QTreeView* view, CSettings& settings);
+    void DelegateStakeholder(QTreeView* view, CSettings& settings);
+    void DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings);
 
     void SetView(QTreeView* view);
     void SetConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql);
@@ -186,7 +187,7 @@ private:
     void Recent();
 
     void SaveTableWidget(const TableHash& table_hash, CString& section_name, CString& property);
-    void RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings* settings, TableHash* table_hash, CString& property);
+    void RestoreTableWidget(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property);
 
     template <InheritQAbstractItemView T> bool HasSelection(const T* view) { return view && view->selectionModel() && view->selectionModel()->hasSelection(); }
 

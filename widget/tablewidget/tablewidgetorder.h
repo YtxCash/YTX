@@ -3,6 +3,7 @@
 
 #include <QComboBox>
 
+#include "component/settings.h"
 #include "table/model/tablemodel.h"
 #include "tree/model/treemodel.h"
 #include "widget/tablewidget/tablewidget.h"
@@ -15,20 +16,26 @@ class TableWidgetOrder final : public TableWidget {
     Q_OBJECT
 
 public:
-    TableWidgetOrder(Node* node, TreeModel* order_model, TreeModel* stakeholder_model, const TreeModel* product_model, int amount_decimal, int unit_party,
+    TableWidgetOrder(NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings& settings, int unit_party,
         QWidget* parent = nullptr);
     ~TableWidgetOrder();
 
-    void SetModel(TableModel* model) override;
-
-    TableModel* Model() override { return order_table_model_; }
-    QTableView* View() override;
+signals:
+    void SUpdateLocked(int node_id, bool checked);
 
 public slots:
     void RAccept();
-    void RReject();
     void RUpdateStakeholder();
-    void RUpdateOrder(const QVariant& value, TreeEnumOrder column);
+    void RUpdateLocked(int node_id, bool checked);
+
+    void RUpdateLeafValueOne(int node_id, double diff); // first
+    void RUpdateLeafValueOrder(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
+
+public:
+    void SetModel(TableModel* model) override;
+
+    TableModel* Model() override { return order_table_; }
+    QTableView* View() override;
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);
@@ -43,38 +50,28 @@ private slots:
     void on_rBtnPending_toggled(bool checked);
 
     void on_pBtnInsertParty_clicked();
-
     void on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time);
-
     void on_lineDescription_editingFinished();
-    void on_spinFirst_editingFinished();
-    void on_dSpinSecond_editingFinished();
-    void on_dSpinDiscount_editingFinished();
-    void on_dSpinInitialTotal_editingFinished();
-
-    void on_lineDescription_textChanged(const QString& arg1);
-    void on_spinFirst_valueChanged(int arg1);
-    void on_dSpinSecond_valueChanged(double arg1);
-    void on_dSpinDiscount_valueChanged(double arg1);
-    void on_dSpinInitialTotal_valueChanged(double arg1);
 
 private:
     void IniDialog();
     void IniData();
     void IniCombo(QComboBox* combo, int mark);
+    void IniConnect();
     void LockWidgets(bool locked, bool branch);
-    void UpdateUnit(int unit);
+    void IniUnit(int unit);
 
 private:
     Ui::TableWidgetOrder* ui;
-    TableModel* order_table_model_ {};
-
-    Node* node_ {};
+    NodeShadow* node_shadow_ {};
+    SPSqlite sql_ {};
     int unit_party_ {};
-    int amount_decimal_ {};
-    TreeModel* stakeholder_model_ {};
-    TreeModel* order_model_ {};
-    const TreeModel* product_model_ {};
+    TableModel* order_table_ {};
+    TreeModel* stakeholder_tree_ {};
+    CSettings& settings_;
+
+    const QString info_node_ {};
+    int node_id_ {};
 };
 
 #endif // TABLEWIDGETORDER_H
