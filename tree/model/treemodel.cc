@@ -60,7 +60,8 @@ bool TreeModel::RRemoveNode(int node_id)
     return true;
 }
 
-void TreeModel::RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff)
+void TreeModel::RUpdateLeafValue(
+    int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
     auto node { GetNodeByID(node_id) };
     if (!node || node == root_ || node->branch)

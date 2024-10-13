@@ -1453,8 +1453,8 @@ void MainWindow::EditNodePS(Section section, int node_id)
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &EditNodeOrder::RUpdateStakeholder);
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog, &EditNodeOrder::RUpdateLocked);
     connect(dialog, &EditNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
-    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
-    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, dialog, &EditNodeOrder::RUpdateLeafValueOrder);
+    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValue, dialog, &EditNodeOrder::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &EditNodeOrder::RUpdateLeafValueOne);
     connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
@@ -1599,8 +1599,8 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog, &InsertNodeOrder::RUpdateLocked);
     connect(dialog, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
-    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, tree_model, &TreeModelOrder::RUpdateLeafValueOrder);
-    connect(table_model, &TableModelOrder::SUpdateLeafValueOrder, dialog, &InsertNodeOrder::RUpdateLeafValueOrder);
+    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValue, dialog, &InsertNodeOrder::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &InsertNodeOrder::RUpdateLeafValueOne);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
     connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);

@@ -104,7 +104,7 @@ void EditNodeOrder::RUpdateLocked(int node_id, bool checked)
 
 void EditNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void EditNodeOrder::RUpdateLeafValueOrder(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);

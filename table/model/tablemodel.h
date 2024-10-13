@@ -24,7 +24,8 @@ protected:
 signals:
     // send to tree model
     void SUpdateLeafValueOne(int node_id, double diff);
-    void SUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
+    void SUpdateLeafValue(
+        int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff = 0.0);
     void SSearch();
 
     // send to signal station

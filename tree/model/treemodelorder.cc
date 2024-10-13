@@ -31,6 +31,31 @@ void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff)
     UpdateAncestorValue(node, diff);
 }
 
+void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+{
+    auto* node { node_hash_.value(node_id) };
+    if (!node || node == root_ || node->branch)
+        return;
+
+    if (first_diff == 0 && second_diff == 0 && amount_diff == 0 && discount_diff == 0 && settled_diff == 0)
+        return;
+
+    double settled { node->unit == UNIT_CASH ? settled_diff : 0.0 };
+
+    node->first += first_diff;
+    node->second += second_diff;
+    node->discount += discount_diff;
+    node->initial_total += amount_diff;
+    node->final_total += settled;
+
+    sql_->UpdateNodeValue(node);
+
+    auto index { GetIndex(node->id) };
+    emit dataChanged(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFirst)), index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kSettled)));
+
+    UpdateAncestorValue(node, first_diff, second_diff, amount_diff, discount_diff, settled);
+}
+
 bool TreeModelOrder::RUpdateStakeholderReference(int old_node_id, int new_node_id)
 {
     const auto& const_node_hash { std::as_const(node_hash_) };
@@ -57,31 +82,6 @@ void TreeModelOrder::RUpdateLocked(int node_id, bool checked)
     int coefficient = checked ? 1 : -1;
     UpdateAncestorValue(node, coefficient * node->first, coefficient * node->second, coefficient * node->initial_total, coefficient * node->discount,
         coefficient * node->final_total);
-}
-
-void TreeModelOrder::RUpdateLeafValueOrder(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
-{
-    auto* node { node_hash_.value(node_id) };
-    if (!node || node == root_ || node->branch)
-        return;
-
-    if (first_diff == 0 && second_diff == 0 && amount_diff == 0 && discount_diff == 0 && settled_diff == 0)
-        return;
-
-    double settled { node->unit == UNIT_CASH ? settled_diff : 0.0 };
-
-    node->first += first_diff;
-    node->second += second_diff;
-    node->discount += discount_diff;
-    node->initial_total += amount_diff;
-    node->final_total += settled;
-
-    sql_->UpdateNodeValue(node);
-
-    auto index { GetIndex(node->id) };
-    emit dataChanged(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFirst)), index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kSettled)));
-
-    UpdateAncestorValue(node, first_diff, second_diff, amount_diff, discount_diff, settled);
 }
 
 void TreeModelOrder::UpdateAncestorValue(Node* node, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)

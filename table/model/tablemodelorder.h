@@ -11,10 +11,6 @@ public:
     TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, QObject* parent = nullptr);
     ~TableModelOrder() override = default;
 
-signals:
-    void SUpdateLeafValueOrder(
-        int node_id, double first_diff = 0.0, double second_diff = 0.0, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
-
 public slots:
     void RUpdateNodeID(int node_id);
 

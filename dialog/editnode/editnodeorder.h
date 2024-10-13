@@ -27,7 +27,7 @@ public slots:
     void RUpdateStakeholder();
     void RUpdateLocked(int node_id, bool checked);
     void RUpdateLeafValueOne(int node_id, double diff); // first
-    void RUpdateLeafValueOrder(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
+    void RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
 
 public:
     QTableView* View();

@@ -49,7 +49,8 @@ public slots:
 
     // receive from related table model
     virtual void RUpdateLeafValueOne(int /*node_id*/, double /*diff*/) { };
-    void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff);
+    virtual void RUpdateLeafValue(
+        int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff = 0.0);
 
     // receive from table model, member function
     void RSearch() { emit SSearch(); }

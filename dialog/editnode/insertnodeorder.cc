@@ -88,7 +88,7 @@ void InsertNodeOrder::RUpdateLocked(int node_id, bool checked)
 
 void InsertNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void InsertNodeOrder::RUpdateLeafValueOrder(
+void InsertNodeOrder::RUpdateLeafValue(
     int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
