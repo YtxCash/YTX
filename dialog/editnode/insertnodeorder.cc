@@ -9,16 +9,16 @@
 #include "ui_insertnodeorder.h"
 
 InsertNodeOrder::InsertNodeOrder(
-    NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int unit_party, QWidget* parent)
+    NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::InsertNodeOrder)
     , node_shadow_ { node_shadow }
     , sql_ { sql }
-    , unit_party_ { unit_party }
+    , party_unit_ { party_unit }
     , order_table_ { order_table }
     , stakeholder_tree_ { stakeholder_model }
     , settings_ { settings }
-    , info_node_ { unit_party == UNIT_CUSTOMER ? SALES : PURCHASE }
+    , info_node_ { party_unit == UNIT_CUSTOMER ? SALES : PURCHASE }
     , node_id_ { *node_shadow->id }
 {
     ui->setupUi(this);
@@ -52,7 +52,7 @@ void InsertNodeOrder::RUpdateStakeholder()
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
     stakeholder_tree_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE);
-    stakeholder_tree_->LeafPathSpecificUnit(ui->comboParty, unit_party_);
+    stakeholder_tree_->LeafPathSpecificUnit(ui->comboParty, party_unit_);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -102,7 +102,7 @@ QTableView* InsertNodeOrder::View() { return ui->tableViewOrder; }
 
 void InsertNodeOrder::IniDialog()
 {
-    IniCombo(ui->comboParty, unit_party_);
+    IniCombo(ui->comboParty, party_unit_);
     IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
@@ -328,7 +328,7 @@ void InsertNodeOrder::on_pBtnInsertParty_clicked()
     stakeholder_tree_->SetParent(node, -1);
     node->name = name;
 
-    node->unit = unit_party_;
+    node->unit = party_unit_;
 
     stakeholder_tree_->InsertNode(0, QModelIndex(), node);
 

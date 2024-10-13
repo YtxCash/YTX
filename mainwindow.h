@@ -128,8 +128,8 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTableFPST(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
-    void CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
+    void CreateTabFPST(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
+    void CreateTabPS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
     void DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id);
     void DelegateFinance(QTableView* view, CSettings& settings);
     void DelegateTask(QTableView* view, CSettings& settings);
@@ -137,7 +137,10 @@ private:
     void DelegateStakeholder(QTableView* view, CSettings& settings);
     void DelegateOrder(QTableView* view, CSettings& settings);
     void SetView(QTableView* view);
-    void SetConnect(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
+
+    void SetConnectCommon(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
+    void SetConnectOrder(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
+    void SetConnectStakeholder(const QTableView* view, const TableModel* table, const TreeModel* tree);
 
     void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab);
