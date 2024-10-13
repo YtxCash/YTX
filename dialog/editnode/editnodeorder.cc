@@ -91,7 +91,8 @@ void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double 
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
     ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
     ui->dSpinDiscount->setValue(ui->dSpinDiscount->value() + discount_diff);
-    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + *node_shadow_->unit == UNIT_CASH ? settled_diff : 0.0);
+    auto settled { *node_shadow_->unit == UNIT_CASH ? settled_diff : 0.0 };
+    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + settled);
 }
 
 void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
