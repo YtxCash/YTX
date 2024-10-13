@@ -192,7 +192,7 @@ bool TableModelTask::UpdateRatio(TransShadow* trans_shadow, double value)
 
     emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
     emit SUpdateLeafValue(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * diff, *trans_shadow->rhs_credit * diff);
-    emit SUpdateLeafValueOne(node_id_, diff);
+    emit SUpdateLeafValueOne(node_id_, diff, UNIT_COST);
 
     return true;
 }

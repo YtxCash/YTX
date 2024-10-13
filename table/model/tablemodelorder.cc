@@ -153,7 +153,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
     }
 
     if (fir_changed)
-        emit SUpdateLeafValueOne(*trans_shadow->node_id, value.toDouble() - old_first);
+        emit SUpdateLeafValueOne(*trans_shadow->node_id, value.toDouble() - old_first, FIRST);
 
     if (sec_changed) {
         double second_diff { value.toDouble() - old_second };

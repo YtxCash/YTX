@@ -6,7 +6,7 @@ TreeModelTask::TreeModelTask(SPSqlite sql, CInfo& info, int default_unit, CTable
     ConstructTree();
 }
 
-void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff)
+void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch || diff == 0.0)
@@ -14,7 +14,7 @@ void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff)
 
     node->first += diff;
 
-    sql_->UpdateField(info_.node, node->first, UNIT_COST, node_id);
+    sql_->UpdateField(info_.node, node->first, node_field, node_id);
 }
 
 QVariant TreeModelTask::data(const QModelIndex& index, int role) const

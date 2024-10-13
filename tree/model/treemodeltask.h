@@ -11,7 +11,7 @@ public:
     ~TreeModelTask() = default;
 
 public slots:
-    void RUpdateLeafValueOne(int node_id, double diff) override; // unit_cost
+    void RUpdateLeafValueOne(int node_id, double diff, CString& node_field) override; // unit_cost
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

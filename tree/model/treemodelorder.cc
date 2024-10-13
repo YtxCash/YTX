@@ -13,7 +13,7 @@ TreeModelOrder::TreeModelOrder(SPSqlite sql, CInfo& info, int default_unit, CTab
     TreeModelOrder::ConstructTree();
 }
 
-void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff)
+void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch || diff == 0.0)
@@ -21,7 +21,7 @@ void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff)
 
     node->first += diff;
 
-    sql_->UpdateField(info_.node, node->first, FIRST, node_id);
+    sql_->UpdateField(info_.node, node->first, node_field, node_id);
 
     const int column { std::to_underlying(TreeEnumOrder::kFirst) };
 
