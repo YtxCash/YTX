@@ -450,12 +450,18 @@ void MainWindow::SetConnectOrder(const QTableView* view, const TableModel* table
 {
     connect(table, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
+    connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, widget, &TableWidgetOrder::RUpdateStakeholder);
 
     connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
     connect(table, &TableModel::SUpdateLeafValueOne, tree, &TreeModel::RUpdateLeafValueOne);
 
     connect(table, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
     connect(table, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
+
+    assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
+    auto tree_model { static_cast<const TreeModelOrder*>(tree) };
+    connect(tree_model, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
+    connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
 }
 
 void MainWindow::SetConnectStakeholder(const QTableView* view, const TableModel* table, const TreeModel* tree)
@@ -1605,7 +1611,6 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     dialog->setAttribute(Qt::WA_DeleteOnClose);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
-
     auto tree_model { static_cast<TreeModelOrder*>(model) };
 
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &InsertNodeOrder::RUpdateStakeholder);
