@@ -83,25 +83,6 @@ void EditNodeOrder::RUpdateStakeholder()
     ui->comboEmployee->blockSignals(false);
 }
 
-void EditNodeOrder::RUpdateLocked(int node_id, bool checked)
-{
-    if (node_id != node_id_)
-        return;
-
-    ui->pBtnLockOrder->blockSignals(true);
-    ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
-    ui->pBtnLockOrder->setChecked(checked);
-    ui->pBtnLockOrder->blockSignals(false);
-
-    LockWidgets(checked, *node_shadow_->branch);
-
-    if (checked) {
-        ui->pBtnPrint->setFocus();
-        ui->pBtnPrint->setDefault(true);
-        ui->tableViewOrder->clearSelection();
-    }
-}
-
 void EditNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
 void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
@@ -111,6 +92,55 @@ void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double 
     ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
     ui->dSpinDiscount->setValue(ui->dSpinDiscount->value() + discount_diff);
     ui->dSpinSettled->setValue(ui->dSpinSettled->value() + *node_shadow_->unit == UNIT_CASH ? settled_diff : 0.0);
+}
+
+void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
+{
+    if (node_id != node_id_)
+        return;
+
+    SignalBlocker blocker(this);
+
+    switch (column) {
+    case TreeEnumOrder::kDescription:
+        ui->lineDescription->setText(value.toString());
+        break;
+    case TreeEnumOrder::kRule:
+        ui->chkBoxRefund->setChecked(value.toBool());
+        break;
+    case TreeEnumOrder::kUnit:
+        IniUnit(value.toInt());
+        break;
+    case TreeEnumOrder::kParty: {
+        auto party_index { ui->comboParty->findData(value.toInt()) };
+        ui->comboParty->setCurrentIndex(party_index);
+        break;
+    }
+    case TreeEnumOrder::kEmployee: {
+        auto employee_index { ui->comboEmployee->findData(value.toInt()) };
+        ui->comboEmployee->setCurrentIndex(employee_index);
+        break;
+    }
+    case TreeEnumOrder::kDateTime:
+        ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), DATE_TIME_FST));
+        break;
+    case TreeEnumOrder::kLocked: {
+        bool locked { value.toBool() };
+
+        ui->pBtnLockOrder->setChecked(locked);
+        ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
+        LockWidgets(locked, *node_shadow_->branch);
+
+        if (locked) {
+            ui->pBtnPrint->setFocus();
+            ui->pBtnPrint->setDefault(true);
+            ui->tableViewOrder->clearSelection();
+        }
+        break;
+    }
+    default:
+        return;
+    }
 }
 
 QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }

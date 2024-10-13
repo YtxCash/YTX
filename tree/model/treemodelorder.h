@@ -11,7 +11,7 @@ public:
     ~TreeModelOrder() override = default;
 
 signals:
-    void SUpdateLocked(int node_id, bool checked);
+    void SUpdateData(int node_id, TreeEnumOrder column, const QVariant& value);
 
 public slots:
     void RUpdateLeafValueOne(int node_id, double diff, CString& node_field) override; // first

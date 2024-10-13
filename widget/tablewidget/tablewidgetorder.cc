@@ -86,29 +86,58 @@ void TableWidgetOrder::RUpdateStakeholder()
     ui->comboEmployee->blockSignals(false);
 }
 
-void TableWidgetOrder::RUpdateLocked(int node_id, bool checked)
+void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
 {
     if (node_id != node_id_)
         return;
 
-    ui->pBtnLockOrder->blockSignals(true);
-    ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
-    ui->pBtnLockOrder->setChecked(checked);
-    ui->pBtnLockOrder->blockSignals(false);
+    SignalBlocker blocker(this);
 
-    LockWidgets(checked, *node_shadow_->branch);
+    switch (column) {
+    case TreeEnumOrder::kDescription:
+        ui->lineDescription->setText(value.toString());
+        break;
+    case TreeEnumOrder::kRule:
+        ui->chkBoxRefund->setChecked(value.toBool());
+        break;
+    case TreeEnumOrder::kUnit:
+        IniUnit(value.toInt());
+        break;
+    case TreeEnumOrder::kParty: {
+        auto party_index { ui->comboParty->findData(value.toInt()) };
+        ui->comboParty->setCurrentIndex(party_index);
+        break;
+    }
+    case TreeEnumOrder::kEmployee: {
+        auto employee_index { ui->comboEmployee->findData(value.toInt()) };
+        ui->comboEmployee->setCurrentIndex(employee_index);
+        break;
+    }
+    case TreeEnumOrder::kDateTime:
+        ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), DATE_TIME_FST));
+        break;
+    case TreeEnumOrder::kLocked: {
+        bool locked { value.toBool() };
 
-    if (checked) {
-        ui->pBtnPrint->setFocus();
-        ui->pBtnPrint->setDefault(true);
-        ui->tableViewOrder->clearSelection();
+        ui->pBtnLockOrder->setChecked(locked);
+        ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
+        LockWidgets(locked, *node_shadow_->branch);
+
+        if (locked) {
+            ui->pBtnPrint->setFocus();
+            ui->pBtnPrint->setDefault(true);
+            ui->tableViewOrder->clearSelection();
+        }
+        break;
+    }
+    default:
+        return;
     }
 }
 
 void TableWidgetOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void TableWidgetOrder::RUpdateLeafValue(
-    int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void TableWidgetOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);

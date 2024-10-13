@@ -1464,7 +1464,7 @@ void MainWindow::EditNodePS(Section section, int node_id)
     auto tree_model { static_cast<TreeModelOrder*>(tree_->model) };
 
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &EditNodeOrder::RUpdateStakeholder);
-    connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog, &EditNodeOrder::RUpdateLocked);
+    connect(tree_model, &TreeModelOrder::SUpdateData, dialog, &EditNodeOrder::RUpdateData);
     connect(dialog, &EditNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValue, dialog, &EditNodeOrder::RUpdateLeafValue);
@@ -1609,7 +1609,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     auto tree_model { static_cast<TreeModelOrder*>(model) };
 
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &InsertNodeOrder::RUpdateStakeholder);
-    connect(tree_model, &TreeModelOrder::SUpdateLocked, dialog, &InsertNodeOrder::RUpdateLocked);
+    connect(tree_model, &TreeModelOrder::SUpdateData, dialog, &InsertNodeOrder::RUpdateData);
     connect(dialog, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);

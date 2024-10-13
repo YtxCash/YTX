@@ -158,8 +158,8 @@ bool TreeModelOrder::UpdateRule(Node* node, bool value)
     sql_->UpdateField(info_.node, node->first, FIRST, node->id);
     sql_->UpdateField(info_.node, node->second, SECOND, node->id);
     sql_->UpdateField(info_.node, node->discount, DISCOUNT, node->id);
-    sql_->UpdateField(info_.node, node->initial_total, INITIAL_TOTAL, node->id);
-    sql_->UpdateField(info_.node, node->final_total, FINAL_TOTAL, node->id);
+    sql_->UpdateField(info_.node, node->initial_total, AMOUNT, node->id);
+    sql_->UpdateField(info_.node, node->final_total, SETTLED, node->id);
 
     return true;
 }
@@ -186,7 +186,7 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
     }
 
     sql_->UpdateField(info_.node, value, UNIT, node->id);
-    sql_->UpdateField(info_.node, node->final_total, FINAL_TOTAL, node->id);
+    sql_->UpdateField(info_.node, node->final_total, AMOUNT, node->id);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kSettled));
     return true;
@@ -203,8 +203,8 @@ bool TreeModelOrder::UpdateLocked(Node* node, bool value)
         coefficient * node->final_total);
 
     node->locked = value;
+    emit SUpdateData(node->id, TreeEnumOrder::kLocked, value);
     sql_->UpdateField(info_.node, value, LOCKED, node->id);
-    emit SUpdateLocked(node->id, value);
     return true;
 }
 
@@ -429,6 +429,8 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
     }
 
     emit SResizeColumnToContents(index.column());
+    if (unlocked)
+        emit SUpdateData(node->id, kColumn, value);
     return true;
 }
 
