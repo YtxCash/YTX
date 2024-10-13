@@ -93,7 +93,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="rBtnSales">
+         <widget class="QRadioButton" name="rBtnProduct">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -101,7 +101,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Sales</string>
+           <string>Product</string>
           </property>
          </widget>
         </item>
@@ -132,7 +132,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="rBtnProduct">
+         <widget class="QRadioButton" name="rBtnSales">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -140,7 +140,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Product</string>
+           <string>Sales</string>
           </property>
          </widget>
         </item>

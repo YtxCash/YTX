@@ -14,6 +14,7 @@
 #include "table/model/tablemodel.h"
 #include "tree/model/treemodel.h"
 #include "ui_mainwindow.h"
+#include "widget/tablewidget/tablewidgetorder.h"
 #include "widget/treewidget/treewidget.h"
 
 struct Tree {
@@ -128,7 +129,7 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTabFPST(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
+    void CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
     void CreateTabPS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
     void DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id);
     void DelegateFinance(QTableView* view, CSettings& settings);
@@ -138,8 +139,8 @@ private:
     void DelegateOrder(QTableView* view, CSettings& settings);
     void SetView(QTableView* view);
 
-    void SetConnectCommon(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
-    void SetConnectOrder(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
+    void SetConnectFPT(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
+    void SetConnectOrder(const QTableView* view, const TableModel* table, const TreeModel* tree, const TableWidgetOrder* widget);
     void SetConnectStakeholder(const QTableView* view, const TableModel* table, const TreeModel* tree);
 
     void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
@@ -166,7 +167,7 @@ private:
     void AppendTrans(TableWidget* table_widget);
 
     void EditNodePS(Section section, int node_id); // Purchase Sales
-    void EditNodeFPST(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash); // Finance Product Stakeholder Task
+    void EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash); // Finance Product Stakeholder Task
 
     void SwitchTab(int node_id, int trans_id = 0);
     bool LockFile(CString& absolute_path, CString& complete_base_name);

@@ -65,7 +65,6 @@
 #include "tree/model/treemodeltask.h"
 #include "ui_mainwindow.h"
 #include "widget/tablewidget/tablewidgetcommon.h"
-#include "widget/tablewidget/tablewidgetorder.h"
 #include "widget/treewidget/treewidgetcommon.h"
 #include "widget/treewidget/treewidgetorder.h"
 #include "widget/treewidget/treewidgetstakeholder.h"
@@ -137,14 +136,14 @@ MainWindow::~MainWindow()
     }
 
     if (sales_tree_.widget) {
-        SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
+        // SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
         SaveState(sales_tree_.widget->Header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
 
         sales_dialog_list_.clear();
     }
 
     if (purchase_tree_.widget) {
-        SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
+        // SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
         SaveState(purchase_tree_.widget->Header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
 
         purchase_dialog_list_.clear();
@@ -282,7 +281,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
         }
 
         if (section != Section::kSales && section != Section::kPurchase)
-            CreateTabFPST(data_, tree_->model, *settings_, table_hash_, node_id);
+            CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, node_id);
     }
 
     SwitchTab(node_id);
@@ -317,7 +316,7 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name)
     return true;
 }
 
-void MainWindow::CreateTabFPST(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id)
+void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id)
 {
     CString& name { tree_model->Name(node_id) };
     auto sql { data->sql };
@@ -354,7 +353,19 @@ void MainWindow::CreateTabFPST(Data* data, TreeModel* tree_model, CSettings& set
 
     auto view { widget->View() };
     SetView(view);
-    SetConnectCommon(view, model, tree_model, data);
+
+    switch (section) {
+    case Section::kFinance:
+    case Section::kProduct:
+    case Section::kTask:
+        SetConnectFPT(view, model, tree_model, data);
+        break;
+    case Section::kStakeholder:
+        SetConnectStakeholder(view, model, tree_model);
+        break;
+    default:
+        break;
+    }
 
     DelegateCommon(view, tree_model, settings, node_id);
 
@@ -412,37 +423,39 @@ void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& setti
     auto* view { widget->View() };
     SetView(view);
 
-    SetConnectCommon(view, table_model, tree_model, data);
+    SetConnectOrder(view, table_model, tree_model, widget);
     DelegateOrder(view, settings);
 
     table_hash->insert(node_id, widget);
 }
 
-void MainWindow::SetConnectCommon(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data)
+void MainWindow::SetConnectFPT(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data)
 {
     connect(table, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
+    connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
+    connect(tree, &TreeModel::SRule, table, &TableModel::RRule);
+
+    connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
+    connect(table, &TableModel::SUpdateLeafValueOne, tree, &TreeModel::RUpdateLeafValueOne);
 
     connect(table, &TableModel::SRemoveOneTrans, &SignalStation::Instance(), &SignalStation::RRemoveOneTrans);
     connect(table, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
     connect(table, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
 
-    connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
-    connect(table, &TableModel::SUpdateLeafValueOne, tree, &TreeModel::RUpdateLeafValueOne);
-    connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
-
-    connect(tree, &TreeModel::SRule, table, &TableModel::RRule);
-
     connect(data->sql.data(), &Sqlite::SRemoveMultiTrans, table, &TableModel::RRemoveMultiTrans);
     connect(data->sql.data(), &Sqlite::SMoveMultiTrans, table, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::SetConnectOrder(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data)
+void MainWindow::SetConnectOrder(const QTableView* view, const TableModel* table, const TreeModel* tree, const TableWidgetOrder* widget)
 {
     connect(table, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
 
     connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
     connect(table, &TableModel::SUpdateLeafValueOne, tree, &TreeModel::RUpdateLeafValueOne);
+
+    connect(table, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
+    connect(table, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
 }
 
 void MainWindow::SetConnectStakeholder(const QTableView* view, const TableModel* table, const TreeModel* tree)
@@ -887,7 +900,7 @@ void MainWindow::RestoreTab(Data* data, TreeModel* tree_model, CSettings& settin
 
     for (int node_id : list) {
         if (tree_model->Contains(node_id) && !tree_model->Branch(node_id) && node_id >= 1)
-            CreateTabFPST(data, tree_model, settings, table_hash, node_id);
+            CreateTabFPTS(data, tree_model, settings, table_hash, node_id);
     }
 }
 
@@ -1367,7 +1380,7 @@ void MainWindow::RJumpTriggered()
         return;
 
     if (!table_hash_->contains(rhs_node_id))
-        CreateTabFPST(data_, tree_->model, *settings_, table_hash_, rhs_node_id);
+        CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, rhs_node_id);
 
     const int trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
     SwitchTab(rhs_node_id, trans_id);
@@ -1409,7 +1422,7 @@ void MainWindow::REditNode()
         EditNodePS(section, node_id);
 
     if (section != Section::kSales && section != Section::kPurchase) {
-        EditNodeFPST(section, node_id, index, info.unit_hash);
+        EditNodeFPTS(section, node_id, index, info.unit_hash);
     }
 }
 
@@ -1467,7 +1480,7 @@ void MainWindow::EditNodePS(Section section, int node_id)
     dialog->show();
 }
 
-void MainWindow::EditNodeFPST(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash)
+void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash)
 {
     QDialog* dialog {};
     auto model { tree_->model };
@@ -1931,7 +1944,7 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     };
 
     if (!Contains(lhs_node_id) && !Contains(rhs_node_id))
-        CreateTabFPST(data_, tree_->model, *settings_, table_hash_, id);
+        CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, id);
 
     SwitchTab(id, trans_id);
 }

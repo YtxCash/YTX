@@ -2,7 +2,7 @@
 #define ENUMCLASS_H
 
 // Enum class defining sections
-enum class Section { kFinance, kSales, kTask, kStakeholder, kProduct, kPurchase };
+enum class Section { kFinance, kProduct, kTask, kStakeholder, kSales, kPurchase };
 
 // Enum class defining trans columns
 enum class TableEnum { kID, kDateTime, kCode, kLhsRatio, kDescription, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };

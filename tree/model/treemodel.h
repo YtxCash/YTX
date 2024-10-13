@@ -139,6 +139,8 @@ protected:
     virtual bool UpdateUnit(Node* node, int value);
     virtual bool UpdateName(Node* node, CString& value);
     virtual bool IsReferenced(int node_id, CString& message);
+    virtual void UpdateAncestorValue(
+        Node* node, double initial_diff, double final_diff, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
 
     // member functions
 
@@ -150,7 +152,6 @@ protected:
     QString ConstructPath(const Node* node) const;
 
     // jsus store leaf's total into sqlite3 table, ignore branch's total
-    void UpdateAncestorValue(Node* node, double initial_diff, double final_diff);
     void UpdatePath(const Node* node);
     void UpdateBranchUnit(Node* node) const;
     bool UpdateBranch(Node* node, bool new_value);

@@ -653,7 +653,8 @@ Node* TreeModel::GetNodeByID(int node_id) const
     return nullptr;
 }
 
-void TreeModel::UpdateAncestorValue(Node* node, double initial_diff, double final_diff)
+void TreeModel::UpdateAncestorValue(
+    Node* node, double initial_diff, double final_diff, double /*amount_diff*/, double /*discount_diff*/, double /*settled_diff*/)
 {
     if (!node || node == root_ || node->parent == root_ || !node->parent)
         return;
