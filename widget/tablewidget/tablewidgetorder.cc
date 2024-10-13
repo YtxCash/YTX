@@ -26,7 +26,7 @@ TableWidgetOrder::TableWidgetOrder(
     bool locked { *node_shadow->locked };
 
     if (branch) {
-        ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
+        ui->comboParty->lineEdit()->setValidator(&LineEdit::kInputValidator);
         ui->comboParty->lineEdit()->setText(*node_shadow_->name);
         ui->comboParty->setFocus();
     }

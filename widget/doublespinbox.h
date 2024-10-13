@@ -2,23 +2,38 @@
 #define DOUBLESPINBOX_H
 
 #include <QDoubleSpinBox>
+#include <QKeyEvent>
+#include <QLineEdit>
+
+#include "component/constvalue.h"
 
 class DoubleSpinBox final : public QDoubleSpinBox {
     Q_OBJECT
 
 public:
-    DoubleSpinBox(QWidget* parent = nullptr);
+    explicit DoubleSpinBox(QWidget* parent = nullptr)
+        : QDoubleSpinBox { parent }
+    {
+        setStepType(QAbstractSpinBox::AdaptiveDecimalStepType);
+        setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        setGroupSeparatorShown(true);
+    }
 
 protected:
-    void wheelEvent(QWheelEvent* event) override;
-    void keyPressEvent(QKeyEvent* event) override;
-    void focusOutEvent(QFocusEvent* event) override;
-
-private:
-    inline void EmptyText()
+    void wheelEvent(QWheelEvent* event) override { event->ignore(); };
+    void keyPressEvent(QKeyEvent* event) override
     {
-        if (cleanText().isEmpty())
-            setValue(0.0);
+        if (event->text() == QString::fromUtf8(FULL_WIDTH_PERIOD)) {
+            QKeyEvent new_event(QEvent::KeyPress, Qt::Key_Period, Qt::NoModifier, HALF_WIDTH_PERIOD);
+            QDoubleSpinBox::keyPressEvent(&new_event);
+            return;
+        }
+
+        if (cleanText().isEmpty()) {
+            setValue(DZERO);
+        }
+
+        QDoubleSpinBox::keyPressEvent(event);
     }
 };
 

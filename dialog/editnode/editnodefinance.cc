@@ -23,7 +23,7 @@ EditNodeFinance::~EditNodeFinance() { delete ui; }
 void EditNodeFinance::IniDialog(CStringHash& unit_hash)
 {
     ui->lineName->setFocus();
-    ui->lineName->setValidator(&LineEdit::GetInputValidator());
+    ui->lineName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
 

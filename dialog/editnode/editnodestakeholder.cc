@@ -25,7 +25,7 @@ EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int amount_decimal)
 {
     ui->lineEditName->setFocus();
-    ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
+    ui->lineEditName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
 

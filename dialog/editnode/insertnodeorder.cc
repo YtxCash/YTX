@@ -135,7 +135,7 @@ void InsertNodeOrder::IniDialog()
     IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
-    ui->comboParty->lineEdit()->setValidator(&LineEdit::GetInputValidator());
+    ui->comboParty->lineEdit()->setValidator(&LineEdit::kInputValidator);
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);
     ui->dSpinAmount->setRange(DMIN, DMAX);

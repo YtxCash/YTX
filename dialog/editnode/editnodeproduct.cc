@@ -25,7 +25,7 @@ EditNodeProduct::~EditNodeProduct() { delete ui; }
 void EditNodeProduct::IniDialog(CStringHash& unit_hash, int amount_decimal)
 {
     ui->lineEditName->setFocus();
-    ui->lineEditName->setValidator(&LineEdit::GetInputValidator());
+    ui->lineEditName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
 
