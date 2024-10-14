@@ -4,9 +4,9 @@ project(YTX VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools Widgets Sql Gui Concurrent)
-qt_standard_project_setup(REQUIRES 6.5)
+qt_standard_project_setup(REQUIRES 6.8)
 
-add_definitions(-DQT_DISABLE_DEPRECATED_UP_TO=0x060500)
+add_definitions(-DQT_DISABLE_DEPRECATED_UP_TO=0x060800)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

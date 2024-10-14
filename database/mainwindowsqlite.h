@@ -26,9 +26,9 @@ private:
     QString Path(CString& table_name);
 
     QString TransactionFinance();
-    QString TransactionStakeholder();
     QString TransactionTask();
     QString TransactionProduct();
+    QString TransactionStakeholder();
     QString TransactionOrder(CString& table_name);
 
 private:

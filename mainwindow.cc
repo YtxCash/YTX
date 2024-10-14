@@ -1857,7 +1857,8 @@ void MainWindow::ResourceFile()
     path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
 
 #if 0
-    QString command { QDir::homePath() + "/Qt/6.7.3/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o " + path };
+    QString command { QDir::homePath() + "/Qt6.8/6.8.0/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
+        + path };
 
     QProcess process {};
     process.start("zsh", QStringList() << "-c" << command);
