@@ -1454,21 +1454,24 @@ void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& i
     const auto& name_list { model->ChildrenName(parent_id, node_id) };
     const auto& sqlite { data_->sql };
 
-    bool enable_branch { !sqlite->InternalReference(node_id) && !sqlite->ExternalReference(node_id) && !table_hash_->contains(node_id)
-        && model->ChildrenEmpty(node_id) };
+    bool is_not_referenced { !sqlite->InternalReference(node_id) && !sqlite->ExternalReference(node_id) };
+    bool branch_enable { is_not_referenced && model->ChildrenEmpty(node_id) && !table_hash_->contains(node_id) };
+    bool unit_enable { is_not_referenced };
 
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(tmp_node, unit_hash, parent_path, name_list, enable_branch, this);
+        dialog = new EditNodeFinance(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, this);
         break;
     case Section::kTask:
-        dialog = new EditNodeFinance(tmp_node, unit_hash, parent_path, name_list, enable_branch, this);
+        dialog = new EditNodeFinance(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, this);
         break;
     case Section::kStakeholder:
-        dialog = new EditNodeStakeholder(tmp_node, unit_hash, parent_path, name_list, enable_branch, settings_->amount_decimal, model, this);
+        unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
+        dialog = new EditNodeStakeholder(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, model, this);
         break;
     case Section::kProduct:
-        dialog = new EditNodeProduct(tmp_node, unit_hash, parent_path, name_list, enable_branch, settings_->amount_decimal, this);
+        unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
+        dialog = new EditNodeProduct(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(tmp_node);
@@ -1492,16 +1495,16 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* tree_model, Node* no
 
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, this);
+        dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, true, this);
         break;
     case Section::kTask:
-        dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, this);
+        dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, true, this);
         break;
     case Section::kStakeholder:
-        dialog = new EditNodeStakeholder(node, info.unit_hash, parent_path, name_list, true, settings_->common_decimal, tree_model, this);
+        dialog = new EditNodeStakeholder(node, info.unit_hash, parent_path, name_list, true, true, settings_->common_decimal, tree_model, this);
         break;
     case Section::kProduct:
-        dialog = new EditNodeProduct(node, info.unit_hash, parent_path, name_list, true, settings_->common_decimal, this);
+        dialog = new EditNodeProduct(node, info.unit_hash, parent_path, name_list, true, true, settings_->common_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(node);

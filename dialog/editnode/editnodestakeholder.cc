@@ -4,7 +4,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_editnodestakeholder.h"
 
-EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch,
+EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
     int amount_decimal, TreeModel* stakeholder_tree, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
@@ -17,7 +17,7 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CSt
 
     IniDialog(unit_hash, stakeholder_tree, amount_decimal);
     IniConnect();
-    Data(node, enable_branch);
+    Data(node, branch_enable, unit_enable);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
@@ -60,10 +60,11 @@ void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
 
 void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::RNameEdited); }
 
-void EditNodeStakeholder::Data(Node* node, bool enable_branch)
+void EditNodeStakeholder::Data(Node* node, bool branch_enable, bool unit_enable)
 {
     int unit_index { ui->comboUnit->findData(node_->unit) };
     ui->comboUnit->setCurrentIndex(unit_index);
+    ui->comboUnit->setEnabled(unit_enable);
 
     ui->rBtnMonthly->setChecked(node->rule);
     ui->rBtnCash->setChecked(!node->rule);
@@ -85,7 +86,7 @@ void EditNodeStakeholder::Data(Node* node, bool enable_branch)
     ui->spinDeadline->setValue(node->party);
 
     ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(enable_branch);
+    ui->chkBoxBranch->setEnabled(branch_enable);
 }
 
 void EditNodeStakeholder::RNameEdited(const QString& arg1)

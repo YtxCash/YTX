@@ -3,7 +3,8 @@
 #include "dialog/signalblocker.h"
 #include "ui_editnodefinance.h"
 
-EditNodeFinance::EditNodeFinance(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, QWidget* parent)
+EditNodeFinance::EditNodeFinance(
+    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
     , node_ { node }
@@ -15,7 +16,7 @@ EditNodeFinance::EditNodeFinance(Node* node, CStringHash& unit_hash, CString& pa
 
     IniDialog(unit_hash);
     IniConnect();
-    Data(node, enable_branch);
+    Data(node, branch_enable, unit_enable);
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }
@@ -35,10 +36,11 @@ void EditNodeFinance::IniDialog(CStringHash& unit_hash)
 
 void EditNodeFinance::IniConnect() { connect(ui->lineName, &QLineEdit::textEdited, this, &EditNodeFinance::RNameEdited); }
 
-void EditNodeFinance::Data(Node* node, bool enable_branch)
+void EditNodeFinance::Data(Node* node, bool branch_enable, bool unit_enable)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);
+    ui->comboUnit->setEnabled(unit_enable);
 
     ui->rBtnDDCI->setChecked(node->rule);
     ui->rBtnDICD->setChecked(!node->rule);
@@ -52,7 +54,7 @@ void EditNodeFinance::Data(Node* node, bool enable_branch)
     ui->plainNote->setPlainText(node->note);
 
     ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(enable_branch);
+    ui->chkBoxBranch->setEnabled(branch_enable);
 }
 
 void EditNodeFinance::RNameEdited(const QString& arg1)

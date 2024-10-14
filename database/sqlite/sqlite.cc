@@ -99,11 +99,11 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
 
 bool Sqlite::RUpdateProductReference(int old_node_id, int new_node_id)
 {
-    QSqlQuery query(*db_);
     CString& string { RUpdateProductReferenceQS() };
     if (string.isEmpty())
         return false;
 
+    QSqlQuery query(*db_);
     query.prepare(string);
     query.bindValue(":old_node_id", old_node_id);
     query.bindValue(":new_node_id", new_node_id);
@@ -119,11 +119,11 @@ bool Sqlite::RUpdateProductReference(int old_node_id, int new_node_id)
 
 bool Sqlite::RUpdateStakeholderReference(int old_node_id, int new_node_id)
 {
-    QSqlQuery query(*db_);
     CString& string { RUpdateStakeholderReferenceQS() };
     if (string.isEmpty())
         return false;
 
+    QSqlQuery query(*db_);
     query.prepare(string);
     query.bindValue(":old_node_id", old_node_id);
     query.bindValue(":new_node_id", new_node_id);
@@ -138,10 +138,12 @@ bool Sqlite::RUpdateStakeholderReference(int old_node_id, int new_node_id)
 
 bool Sqlite::ReadNode(NodeHash& node_hash)
 {
+    CString& string { ReadNodeQS() };
+    if (string.isEmpty())
+        return false;
+
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
-
-    CString& string { ReadNodeQS() };
     query.prepare(string);
 
     if (!query.exec()) {
@@ -163,12 +165,11 @@ bool Sqlite::ReadNode(NodeHash& node_hash)
 bool Sqlite::WriteNode(int parent_id, Node* node)
 {
     // root_'s id is -1
-    if (!node || node->id == -1)
+    CString& string { WriteNodeQS() };
+    if (string.isEmpty() || !node || node->id == -1)
         return false;
 
     QSqlQuery query(*db_);
-    CString& string { WriteNodeQS() };
-
     if (!DBTransaction([&]() {
             // 插入节点记录
             query.prepare(string);
@@ -210,18 +211,16 @@ void Sqlite::CalculateLeafTotal(Node* node, QSqlQuery& query)
 
 bool Sqlite::LeafTotal(Node* node)
 {
-    if (!node || node->id <= 0 || node->branch)
+    CString& string { LeafTotalQS() };
+
+    if (string.isEmpty() || !node || node->id <= 0 || node->branch)
         return false;
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
-
-    CString& string { LeafTotalQS() };
-    if (string.isEmpty())
-        return false;
-
     query.prepare(string);
     query.bindValue(":node_id", node->id);
+
     if (!query.exec()) {
         qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in LeafTotal" << query.lastError().text();
         return false;
@@ -409,12 +408,12 @@ bool Sqlite::DragNode(int destination_node_id, int node_id)
 
 bool Sqlite::InternalReference(int node_id) const
 {
-    QSqlQuery query(*db_);
-    query.setForwardOnly(true);
-
     CString& string { InternalReferenceQS() };
     if (string.isEmpty() || node_id <= 0)
         return false;
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
 
     query.prepare(string);
     query.bindValue(":node_id", node_id);
@@ -430,12 +429,12 @@ bool Sqlite::InternalReference(int node_id) const
 
 bool Sqlite::ExternalReference(int node_id) const
 {
-    QSqlQuery query(*db_);
-    query.setForwardOnly(true);
-
     CString& string { ExternalReferenceQS() };
     if (string.isEmpty() || node_id <= 0)
         return false;
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
 
     query.prepare(string);
     query.bindValue(":node_id", node_id);

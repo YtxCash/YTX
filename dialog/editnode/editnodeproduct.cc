@@ -5,7 +5,7 @@
 #include "ui_editnodeproduct.h"
 
 EditNodeProduct::EditNodeProduct(
-    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool enable_branch, int amount_decimal, QWidget* parent)
+    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, int amount_decimal, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeProduct)
     , node_ { node }
@@ -17,7 +17,7 @@ EditNodeProduct::EditNodeProduct(
 
     IniDialog(unit_hash, amount_decimal);
     IniConnect();
-    Data(node, enable_branch);
+    Data(node, branch_enable, unit_enable);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }
@@ -42,10 +42,11 @@ void EditNodeProduct::IniDialog(CStringHash& unit_hash, int amount_decimal)
 
 void EditNodeProduct::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeProduct::RNameEdited); }
 
-void EditNodeProduct::Data(Node* node, bool enable_branch)
+void EditNodeProduct::Data(Node* node, bool branch_enable, bool unit_enable)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);
+    ui->comboUnit->setEnabled(unit_enable);
 
     ui->rBtnDDCI->setChecked(node->rule);
     ui->rBtnDICD->setChecked(!node->rule);
@@ -61,7 +62,7 @@ void EditNodeProduct::Data(Node* node, bool enable_branch)
     ui->dSpinBoxCommission->setValue(node->second);
 
     ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(enable_branch);
+    ui->chkBoxBranch->setEnabled(branch_enable);
 }
 
 void EditNodeProduct::RNameEdited(const QString& arg1)

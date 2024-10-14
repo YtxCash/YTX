@@ -39,7 +39,7 @@ signals:
     void SUpdateName(const Node* node);
     void SUpdateDSpinBox();
 
-    // send to EditNodeOrder and TableWidgetOrder
+    // send to InsertNodeOrder and TableWidgetOrder
     void SUpdateOrderPartyEmployee();
 
 public slots:
