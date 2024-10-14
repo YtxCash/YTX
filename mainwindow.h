@@ -139,15 +139,15 @@ private:
     void DelegateOrder(QTableView* view, CSettings& settings);
     void SetView(QTableView* view);
 
-    void SetConnectFPT(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data);
-    void SetConnectOrder(const QTableView* view, const TableModel* table, const TreeModel* tree, const TableWidgetOrder* widget);
-    void SetConnectStakeholder(const QTableView* view, const TableModel* table, const TreeModel* tree);
+    void TabConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
+    void TabConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget);
+    void TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model);
 
     void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab);
     void UpdateLastTab();
 
-    void CreateDelegate(QTreeView* view, CInfo* info, CSettings& settings);
+    void SetDelegate(QTreeView* view, CInfo* info, CSettings& settings);
     void DelegateCommon(QTreeView* view, CInfo* info);
     void DelegateFinance(QTreeView* view, CInfo* info, CSettings& settings);
     void DelegateTask(QTreeView* view, CSettings& settings);
@@ -156,18 +156,17 @@ private:
     void DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings);
 
     void SetView(QTreeView* view);
-    void SetConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql);
+    void TreeConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql);
 
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
-    void InsertNodeFPST(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
-    void InsertNodePS(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
+    void InsertNodeFPST(
+        Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
+    void InsertNodePS(Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
 
     void AppendTrans(TableWidget* table_widget);
 
-    void EditNodePS(Section section, int node_id); // Purchase Sales
     void EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash); // Finance Product Stakeholder Task
-
     void SwitchTab(int node_id, int trans_id = 0);
     bool LockFile(CString& absolute_path, CString& complete_base_name);
 

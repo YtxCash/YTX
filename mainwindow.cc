@@ -43,7 +43,6 @@
 #include "dialog/about.h"
 #include "dialog/editdocument.h"
 #include "dialog/editnode/editnodefinance.h"
-#include "dialog/editnode/editnodeorder.h"
 #include "dialog/editnode/editnodeproduct.h"
 #include "dialog/editnode/editnodestakeholder.h"
 #include "dialog/editnode/insertnodeorder.h"
@@ -367,10 +366,10 @@ void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& set
     case Section::kFinance:
     case Section::kProduct:
     case Section::kTask:
-        SetConnectFPT(view, model, tree_model, data);
+        TabConnectFPT(view, model, tree_model, data);
         break;
     case Section::kStakeholder:
-        SetConnectStakeholder(view, model, tree_model);
+        TabConnectStakeholder(view, model, tree_model);
         break;
     default:
         break;
@@ -432,51 +431,51 @@ void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& setti
     auto* view { widget->View() };
     SetView(view);
 
-    SetConnectOrder(view, table_model, tree_model, widget);
+    TabConnectOrder(view, table_model, tree_model, widget);
     DelegateOrder(view, settings);
 
     table_hash->insert(node_id, widget);
 }
 
-void MainWindow::SetConnectFPT(const QTableView* view, const TableModel* table, const TreeModel* tree, const Data* data)
+void MainWindow::TabConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
 {
-    connect(table, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
-    connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
-    connect(tree, &TreeModel::SRule, table, &TableModel::RRule);
+    connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
+    connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
+    connect(tree_model, &TreeModel::SRule, table_model, &TableModel::RRule);
 
-    connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
-    connect(table, &TableModel::SUpdateLeafValueOne, tree, &TreeModel::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
-    connect(table, &TableModel::SRemoveOneTrans, &SignalStation::Instance(), &SignalStation::RRemoveOneTrans);
-    connect(table, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
-    connect(table, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
+    connect(table_model, &TableModel::SRemoveOneTrans, &SignalStation::Instance(), &SignalStation::RRemoveOneTrans);
+    connect(table_model, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
+    connect(table_model, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
 
-    connect(data->sql.data(), &Sqlite::SRemoveMultiTrans, table, &TableModel::RRemoveMultiTrans);
-    connect(data->sql.data(), &Sqlite::SMoveMultiTrans, table, &TableModel::RMoveMultiTrans);
+    connect(data->sql.data(), &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
+    connect(data->sql.data(), &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::SetConnectOrder(const QTableView* view, const TableModel* table, const TreeModel* tree, const TableWidgetOrder* widget)
+void MainWindow::TabConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
 {
-    connect(table, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
-    connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
+    connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, widget, &TableWidgetOrder::RUpdateStakeholder);
+    connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
 
-    connect(table, &TableModel::SUpdateLeafValue, tree, &TreeModel::RUpdateLeafValue);
-    connect(table, &TableModel::SUpdateLeafValueOne, tree, &TreeModel::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
-    connect(table, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
-    connect(table, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
-    auto tree_model { static_cast<const TreeModelOrder*>(tree) };
-    connect(tree_model, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
-    connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
+    auto tree_model_order { static_cast<const TreeModelOrder*>(tree_model) };
+    connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
+    connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
 }
 
-void MainWindow::SetConnectStakeholder(const QTableView* view, const TableModel* table, const TreeModel* tree)
+void MainWindow::TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model)
 {
-    connect(table, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
-    connect(table, &TableModel::SSearch, tree, &TreeModel::RSearch);
+    connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
+    connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 }
 
 void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id)
@@ -599,8 +598,8 @@ void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash*
     auto view { widget->View() };
     auto model { tree.model };
 
-    CreateDelegate(view, info, settings);
-    SetConnect(view, widget, model, data->sql.data());
+    SetDelegate(view, info, settings);
+    TreeConnect(view, widget, model, data->sql.data());
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(widget, name), QVariant::fromValue(Tab { info->section, 0 }));
 
@@ -611,7 +610,7 @@ void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash*
     // view->setColumnHidden(1, true);
 }
 
-void MainWindow::CreateDelegate(QTreeView* view, CInfo* info, CSettings& settings)
+void MainWindow::SetDelegate(QTreeView* view, CInfo* info, CSettings& settings)
 {
     DelegateCommon(view, info);
 
@@ -733,7 +732,7 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 
-void MainWindow::SetConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql)
+void MainWindow::TreeConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql)
 {
     connect(view, &QTreeView::doubleClicked, this, &MainWindow::RTreeViewDoubleClicked);
     connect(view, &QTreeView::customContextMenuRequested, this, &MainWindow::RTreeViewCustomContextMenuRequested);
@@ -1416,6 +1415,11 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
 
 void MainWindow::REditNode()
 {
+    const auto& info { data_->info };
+    auto section { info.section };
+    if (section == Section::kSales || section == Section::kPurchase)
+        return;
+
     const auto widget { ui->tabWidget->currentWidget() };
     if (!widget || !IsTreeWidget(widget))
         return;
@@ -1428,83 +1432,9 @@ void MainWindow::REditNode()
     if (!index.isValid())
         return;
 
-    const auto& info { data_->info };
-    auto section { info.section };
-
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
 
-    if (section == Section::kSales || section == Section::kPurchase) {
-        if (auto it { dialog_hash_->constFind(node_id) }; it != dialog_hash_->constEnd()) {
-            auto dialog { *it };
-            dialog->show();
-            dialog->raise();
-            dialog->activateWindow();
-            return;
-        }
-
-        if (table_hash_->contains(node_id)) {
-            SwitchTab(node_id);
-            return;
-        }
-
-        EditNodePS(section, node_id);
-    }
-
-    if (section != Section::kSales && section != Section::kPurchase) {
-        EditNodeFPTS(section, node_id, index, info.unit_hash);
-    }
-}
-
-void MainWindow::EditNodePS(Section section, int node_id)
-{
-    EditNodeOrder* dialog {};
-    auto sql { data_->sql };
-    auto model { tree_->model };
-
-    auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
-    model->SetNodeShadow(node_shadow, node_id);
-    if (!node_shadow->id)
-        return;
-
-    auto table_model { new TableModelOrder(sql, *node_shadow->rule, *node_shadow->id, data_->info, product_tree_.model, this) };
-
-    switch (section) {
-    case Section::kSales:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_CUSTOMER, this);
-        dialog->setWindowTitle(tr(Sales));
-        break;
-    case Section::kPurchase:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_VENDOR, this);
-        dialog->setWindowTitle(tr(Purchase));
-        break;
-    default:
-        return ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
-    }
-
-    connect(dialog, &QDialog::rejected, this, [=, this]() {
-        dialog_hash_->remove(node_id);
-        ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
-    });
-
-    assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
-
-    auto tree_model { static_cast<TreeModelOrder*>(tree_->model) };
-
-    connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &EditNodeOrder::RUpdateStakeholder);
-    connect(tree_model, &TreeModelOrder::SUpdateData, dialog, &EditNodeOrder::RUpdateData);
-    connect(dialog, &EditNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
-    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
-    connect(table_model, &TableModel::SUpdateLeafValue, dialog, &EditNodeOrder::RUpdateLeafValue);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &EditNodeOrder::RUpdateLeafValueOne);
-    connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
-
-    if (!(*node_shadow->branch)) {
-        SetView(dialog->View());
-        DelegateOrder(dialog->View(), *settings_);
-    }
-    dialog_hash_->insert(node_id, dialog);
-    dialog->show();
+    EditNodeFPTS(section, node_id, index, info.unit_hash);
 }
 
 void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash)
@@ -1549,14 +1479,14 @@ void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& i
     ResourcePool<Node>::Instance().Recycle(tmp_node);
 }
 
-void MainWindow::InsertNodeFPST(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int parent_id, int row)
+void MainWindow::InsertNodeFPST(Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int parent_id, int row)
 {
-    auto parent_path { model->GetPath(parent_id) };
+    auto parent_path { tree_model->GetPath(parent_id) };
     if (!parent_path.isEmpty())
         parent_path += interface_.separator;
 
     const auto& info { data_->info };
-    const auto name_list { model->ChildrenName(parent_id, 0) };
+    const auto name_list { tree_model->ChildrenName(parent_id, 0) };
 
     QDialog* dialog {};
 
@@ -1568,7 +1498,7 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* model, Node* node, c
         dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, this);
         break;
     case Section::kStakeholder:
-        dialog = new EditNodeStakeholder(node, info.unit_hash, parent_path, name_list, true, settings_->common_decimal, model, this);
+        dialog = new EditNodeStakeholder(node, info.unit_hash, parent_path, name_list, true, settings_->common_decimal, tree_model, this);
         break;
     case Section::kProduct:
         dialog = new EditNodeProduct(node, info.unit_hash, parent_path, name_list, true, settings_->common_decimal, this);
@@ -1578,8 +1508,8 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* model, Node* node, c
     }
 
     connect(dialog, &QDialog::accepted, this, [=, this]() {
-        if (model->InsertNode(row, parent, node)) {
-            auto index = model->index(row, 0, parent);
+        if (tree_model->InsertNode(row, parent, node)) {
+            auto index = tree_model->index(row, 0, parent);
             tree_->widget->SetCurrentIndex(index);
         }
     });
@@ -1588,13 +1518,13 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* model, Node* node, c
     dialog->exec();
 }
 
-void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, const QModelIndex& parent, int row)
+void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int row)
 {
     InsertNodeOrder* dialog {};
     auto sql { data_->sql };
 
     auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
-    model->SetNodeShadow(node_shadow, node);
+    tree_model->SetNodeShadow(node_shadow, node);
     if (!node_shadow->id)
         return;
 
@@ -1616,8 +1546,8 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
     }
 
     connect(dialog, &QDialog::accepted, this, [=, this]() {
-        if (model->InsertNode(row, parent, node)) {
-            auto index = model->index(row, 0, parent);
+        if (tree_model->InsertNode(row, parent, node)) {
+            auto index = tree_model->index(row, 0, parent);
             tree_->widget->SetCurrentIndex(index);
             dialog_hash_->insert(node->id, dialog);
             dialog_list_->removeOne(dialog);
@@ -1633,18 +1563,21 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
         }
     });
 
-    assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
-    auto tree_model { static_cast<TreeModelOrder*>(model) };
-
     connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &InsertNodeOrder::RUpdateStakeholder);
-    connect(tree_model, &TreeModelOrder::SUpdateData, dialog, &InsertNodeOrder::RUpdateData);
-    connect(dialog, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
-    connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model, &TreeModelOrder::RUpdateLocked);
+    connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
+
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
+
     connect(table_model, &TableModel::SUpdateLeafValue, dialog, &InsertNodeOrder::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &InsertNodeOrder::RUpdateLeafValueOne);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
-    connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
+
+    assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
+    auto tree_model_order { static_cast<TreeModelOrder*>(tree_model) };
+    connect(tree_model_order, &TreeModelOrder::SUpdateData, dialog, &InsertNodeOrder::RUpdateData);
+    connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
+
+    connect(dialog, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
 
     dialog_list_->append(dialog);
 
