@@ -145,7 +145,6 @@ private:
 
     void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab);
-    void SwitchDialog(QList<PDialog>* dialog_list, bool enable);
     void UpdateLastTab();
 
     void CreateDelegate(QTreeView* view, CInfo* info, CSettings& settings);
@@ -232,6 +231,17 @@ private:
             widget->restoreGeometry(geometry);
     }
 
+    template <typename Container> void SwitchDialog(Container* container, bool enable)
+    {
+        if (container) {
+            for (auto dialog : *container) {
+                if (dialog) {
+                    dialog->setVisible(enable);
+                }
+            }
+        }
+    }
+
 private:
     Ui::MainWindow* ui {};
     MainwindowSqlite sql_ {};
@@ -254,42 +264,49 @@ private:
     Tree* tree_ {};
     TableHash* table_hash_ {};
     QList<PDialog>* dialog_list_ {};
+    QHash<int, PDialog>* dialog_hash_ {};
     Settings* settings_ {};
     Data* data_ {};
 
     Tree finance_tree_ {};
     TableHash finance_table_hash_ {};
     QList<PDialog> finance_dialog_list_ {};
+    QHash<int, PDialog> finance_dialog_hash_ {};
     Settings finance_settings_ {};
     Data finance_data_ {};
-
-    Tree sales_tree_ {};
-    TableHash sales_table_hash_ {};
-    QList<PDialog> sales_dialog_list_ {};
-    Settings sales_settings_ {};
-    Data sales_data_ {};
 
     Tree product_tree_ {};
     TableHash product_table_hash_ {};
     QList<PDialog> product_dialog_list_ {};
+    QHash<int, PDialog> product_dialog_hash_ {};
     Settings product_settings_ {};
     Data product_data_ {};
-
-    Tree stakeholder_tree_ {};
-    TableHash stakeholder_table_hash_ {};
-    QList<PDialog> stakeholder_dialog_list_ {};
-    Settings stakeholder_settings_ {};
-    Data stakeholder_data_ {};
 
     Tree task_tree_ {};
     TableHash task_table_hash_ {};
     QList<PDialog> task_dialog_list_ {};
+    QHash<int, PDialog> task_dialog_hash_ {};
     Settings task_settings_ {};
     Data task_data_ {};
+
+    Tree stakeholder_tree_ {};
+    TableHash stakeholder_table_hash_ {};
+    QList<PDialog> stakeholder_dialog_list_ {};
+    QHash<int, PDialog> stakeholder_dialog_hash_ {};
+    Settings stakeholder_settings_ {};
+    Data stakeholder_data_ {};
+
+    Tree sales_tree_ {};
+    TableHash sales_table_hash_ {};
+    QList<PDialog> sales_dialog_list_ {};
+    QHash<int, PDialog> sales_dialog_hash_ {};
+    Settings sales_settings_ {};
+    Data sales_data_ {};
 
     Tree purchase_tree_ {};
     TableHash purchase_table_hash_ {};
     QList<PDialog> purchase_dialog_list_ {};
+    QHash<int, PDialog> purchase_dialog_hash_ {};
     Settings purchase_settings_ {};
     Data purchase_data_ {};
 };

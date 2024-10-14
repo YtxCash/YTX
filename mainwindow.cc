@@ -273,6 +273,14 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
         auto section { data_->info.section };
 
         if (section == Section::kSales || section == Section::kPurchase) {
+            if (auto it { dialog_hash_->constFind(node_id) }; it != dialog_hash_->constEnd()) {
+                auto dialog { *it };
+                dialog->show();
+                dialog->raise();
+                dialog->activateWindow();
+                return;
+            }
+
             const int party_id { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kParty)).data().toInt() };
             if (party_id <= 0)
                 return;
@@ -280,8 +288,9 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             CreateTabPS(data_, tree_->model, *settings_, table_hash_, node_id, party_id);
         }
 
-        if (section != Section::kSales && section != Section::kPurchase)
+        if (section != Section::kSales && section != Section::kPurchase) {
             CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, node_id);
+        }
     }
 
     SwitchTab(node_id);
@@ -1424,8 +1433,22 @@ void MainWindow::REditNode()
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
 
-    if (section == Section::kSales || section == Section::kPurchase)
+    if (section == Section::kSales || section == Section::kPurchase) {
+        if (auto it { dialog_hash_->constFind(node_id) }; it != dialog_hash_->constEnd()) {
+            auto dialog { *it };
+            dialog->show();
+            dialog->raise();
+            dialog->activateWindow();
+            return;
+        }
+
+        if (table_hash_->contains(node_id)) {
+            SwitchTab(node_id);
+            return;
+        }
+
         EditNodePS(section, node_id);
+    }
 
     if (section != Section::kSales && section != Section::kPurchase) {
         EditNodeFPTS(section, node_id, index, info.unit_hash);
@@ -1459,11 +1482,9 @@ void MainWindow::EditNodePS(Section section, int node_id)
     }
 
     connect(dialog, &QDialog::rejected, this, [=, this]() {
-        dialog_list_->removeOne(dialog);
+        dialog_hash_->remove(node_id);
         ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
     });
-
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
 
@@ -1482,7 +1503,7 @@ void MainWindow::EditNodePS(Section section, int node_id)
         SetView(dialog->View());
         DelegateOrder(dialog->View(), *settings_);
     }
-    dialog_list_->append(dialog);
+    dialog_hash_->insert(node_id, dialog);
     dialog->show();
 }
 
@@ -1598,17 +1619,19 @@ void MainWindow::InsertNodePS(Section section, TreeModel* model, Node* node, con
         if (model->InsertNode(row, parent, node)) {
             auto index = model->index(row, 0, parent);
             tree_->widget->SetCurrentIndex(index);
+            dialog_hash_->insert(node->id, dialog);
+            dialog_list_->removeOne(dialog);
         }
     });
     connect(dialog, &QDialog::rejected, this, [=, this]() {
         ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
-        if (node->id == 0)
+        if (node->id == 0) {
             ResourcePool<Node>::Instance().Recycle(node);
-
-        dialog_list_->removeOne(dialog);
+            dialog_list_->removeOne(dialog);
+        } else {
+            dialog_hash_->remove(node->id);
+        }
     });
-
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
     auto tree_model { static_cast<TreeModelOrder*>(model) };
@@ -1650,7 +1673,6 @@ void MainWindow::REditDocument()
     const int trans_id { trans_index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
     auto dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
     if (dialog->exec() == QDialog::Accepted)
         data_->sql->UpdateField(data_->info.transaction, document_pointer->join(SEMICOLON), DOCUMENT, trans_id);
@@ -1917,11 +1939,13 @@ void MainWindow::RSearchTriggered()
         return;
 
     auto dialog { new Search(data_->info, tree_->model, stakeholder_tree_.model, data_->sql, data_->info.rule_hash, *settings_, this) };
+    dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
+
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);
     connect(dialog, &Search::STableLocation, this, &MainWindow::RTableLocation);
     connect(tree_->model, &TreeModel::SSearch, dialog, &Search::RSearch);
-    dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dialog, &QDialog::rejected, this, [=, this]() { dialog_list_->removeOne(dialog); });
+
     dialog_list_->append(dialog);
     dialog->show();
 }
@@ -1973,7 +1997,6 @@ void MainWindow::RAboutTriggered()
     if (!dialog) {
         dialog = new About(this);
         dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
-        dialog->setAttribute(Qt::WA_DeleteOnClose);
         connect(dialog, &QDialog::finished, [=]() { dialog = nullptr; });
     }
 
@@ -2050,15 +2073,7 @@ void MainWindow::SwitchSection(const Tab& last_tab)
     }
 
     SwitchDialog(dialog_list_, true);
-}
-
-void MainWindow::SwitchDialog(QList<PDialog>* dialog_list, bool enable)
-{
-    if (dialog_list) {
-        for (auto& dialog : *dialog_list)
-            if (dialog)
-                dialog->setVisible(enable);
-    }
+    SwitchDialog(dialog_hash_, true);
 }
 
 void MainWindow::UpdateLastTab()
@@ -2080,11 +2095,13 @@ void MainWindow::on_rBtnFinance_toggled(bool checked)
         return;
 
     SwitchDialog(dialog_list_, false);
+    SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_ = &finance_tree_;
     table_hash_ = &finance_table_hash_;
     dialog_list_ = &finance_dialog_list_;
+    dialog_hash_ = &finance_dialog_hash_;
     settings_ = &finance_settings_;
     data_ = &finance_data_;
 
@@ -2102,11 +2119,13 @@ void MainWindow::on_rBtnSales_toggled(bool checked)
         return;
 
     SwitchDialog(dialog_list_, false);
+    SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_ = &sales_tree_;
     table_hash_ = &sales_table_hash_;
     dialog_list_ = &sales_dialog_list_;
+    dialog_hash_ = &sales_dialog_hash_;
     settings_ = &sales_settings_;
     data_ = &sales_data_;
 
@@ -2124,11 +2143,13 @@ void MainWindow::on_rBtnTask_toggled(bool checked)
         return;
 
     SwitchDialog(dialog_list_, false);
+    SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_ = &task_tree_;
     table_hash_ = &task_table_hash_;
     dialog_list_ = &task_dialog_list_;
+    dialog_hash_ = &task_dialog_hash_;
     settings_ = &task_settings_;
     data_ = &task_data_;
 
@@ -2146,11 +2167,13 @@ void MainWindow::on_rBtnStakeholder_toggled(bool checked)
         return;
 
     SwitchDialog(dialog_list_, false);
+    SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_ = &stakeholder_tree_;
     table_hash_ = &stakeholder_table_hash_;
     dialog_list_ = &stakeholder_dialog_list_;
+    dialog_hash_ = &stakeholder_dialog_hash_;
     settings_ = &stakeholder_settings_;
     data_ = &stakeholder_data_;
 
@@ -2168,11 +2191,13 @@ void MainWindow::on_rBtnProduct_toggled(bool checked)
         return;
 
     SwitchDialog(dialog_list_, false);
+    SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_ = &product_tree_;
     table_hash_ = &product_table_hash_;
     dialog_list_ = &product_dialog_list_;
+    dialog_hash_ = &product_dialog_hash_;
     settings_ = &product_settings_;
     data_ = &product_data_;
 
@@ -2190,11 +2215,13 @@ void MainWindow::on_rBtnPurchase_toggled(bool checked)
         return;
 
     SwitchDialog(dialog_list_, false);
+    SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_ = &purchase_tree_;
     table_hash_ = &purchase_table_hash_;
     dialog_list_ = &purchase_dialog_list_;
+    dialog_hash_ = &purchase_dialog_hash_;
     settings_ = &purchase_settings_;
     data_ = &purchase_data_;
 
