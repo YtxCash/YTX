@@ -29,7 +29,7 @@ enum class TableEnumSearch {
     kRhsNode
 };
 
-enum class TableEnumStakeholder { kID, kDateTime, kCode, kUnitPrice, kDescription, kDocument, kState, kInsideProduct };
+enum class TableEnumStakeholder { kID, kDateTime, kCode, kOutsideProduct, kDescription, kUnitPrice, kDocument, kState, kInsideProduct };
 
 enum class TableEnumOrder {
     kID,

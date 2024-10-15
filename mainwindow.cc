@@ -1256,9 +1256,10 @@ void MainWindow::SetHeader()
 
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), "" };
-    stakeholder_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitPrice"), tr("Description"), tr("D"), tr("S"), tr("Inside") };
-    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("Node"), {}, {}, {}, tr("Description"), tr("UnitPrice"), {}, {}, {},
-        tr("D"), tr("S"), {}, {}, {}, tr("InsideProduct") };
+    stakeholder_data_.info.table_header
+        = { tr("ID"), tr("DateTime"), tr("Code"), tr("OutsideProduct"), tr("Description"), tr("UnitPrice"), tr("D"), tr("S"), tr("InsideProduct") };
+    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("OutsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
+        tr("NodeID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("InsideProduct") };
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
@@ -1272,7 +1273,7 @@ void MainWindow::SetHeader()
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled") };
-    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("node_id"), tr("First"),
+    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("NodeID"), tr("First"),
         tr("Second"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled"), tr("OutsideProduct") };
     sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
         tr("NodeID"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };

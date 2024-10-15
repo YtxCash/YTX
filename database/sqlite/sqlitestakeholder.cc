@@ -110,7 +110,7 @@ QString SqliteStakeholder::ExternalReferenceQS() const
 QString SqliteStakeholder::ReadTransQS() const
 {
     return QStringLiteral(R"(
-    SELECT id, date_time, code, node_id, unit_price, description, document, state, inside_product
+    SELECT id, date_time, code, outside_product, node_id, unit_price, description, document, state, inside_product
     FROM stakeholder_transaction
     WHERE node_id = :node_id AND removed = 0
     )");
@@ -120,9 +120,9 @@ QString SqliteStakeholder::WriteTransQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO stakeholder_transaction
-    (date_time, code, node_id, unit_price, description, document, state, inside_product)
+    (date_time, code, outside_product, node_id, unit_price, description, document, state, inside_product)
     VALUES
-    (:date_time, :code, :node_id, :unit_price, :description, :document, :state, :inside_product)
+    (:date_time, :code, :outside_product, :node_id, :unit_price, :description, :document, :state, :inside_product)
     )");
 }
 
@@ -147,7 +147,7 @@ QString SqliteStakeholder::RUpdateProductReferenceQS() const
 QString SqliteStakeholder::SearchTransQS() const
 {
     return QStringLiteral(R"(
-    SELECT  id, date_time, code, node_id, unit_price, description, document, state, inside_product
+    SELECT  id, date_time, code, outside_product, node_id, unit_price, description, document, state, inside_product
     FROM stakeholder_transaction
     WHERE (unit_price = :text OR description LIKE :description) AND removed = 0
     ORDER BY date_time
@@ -179,6 +179,7 @@ void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& que
     query.bindValue(":state", *trans_shadow->state);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
     query.bindValue(":inside_product", *trans_shadow->rhs_node);
+    query.bindValue(":outside_product", *trans_shadow->lhs_node);
 }
 
 void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
@@ -215,7 +216,7 @@ void SqliteStakeholder::ReadTransFunction(TransShadowList& trans_shadow_list, in
 QString SqliteStakeholder::ReadTransRangeQS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, date_time, code, node_id, unit_price, description, document, state, inside_product
+    SELECT id, date_time, code, outside_product, node_id, unit_price, description, document, state, inside_product
     FROM stakeholder_transaction
     WHERE id IN (%1) AND removed = 0
     )")
@@ -242,6 +243,7 @@ void SqliteStakeholder::ReadTransQuery(Trans* trans, const QSqlQuery& query)
 {
     trans->node_id = query.value("node_id").toInt();
     trans->rhs_node = query.value("inside_product").toInt();
+    trans->lhs_node = query.value("outside_product").toInt();
     trans->unit_price = query.value("unit_price").toDouble();
     trans->code = query.value("code").toString();
     trans->description = query.value("description").toString();

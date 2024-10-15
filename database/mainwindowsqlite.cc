@@ -330,16 +330,17 @@ QString MainwindowSqlite::TransactionStakeholder()
 {
     return QStringLiteral(R"(
     CREATE TABLE IF NOT EXISTS stakeholder_transaction (
-        id                INTEGER PRIMARY KEY AUTOINCREMENT,
-        date_time         DATE,
-        code              TEXT,
-        node_id           INTEGER,
-        description       TEXT,
-        unit_price        NUMERIC,
-        document          TEXT,
-        state             BOOLEAN    DEFAULT 0,
-        inside_product    INTEGER,
-        removed           BOOLEAN    DEFAULT 0
+        id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_time          DATE,
+        code               TEXT,
+        outside_product    INTEGER,
+        description        TEXT,
+        unit_price         NUMERIC,
+        node_id            INTEGER,
+        document           TEXT,
+        state              BOOLEAN    DEFAULT 0,
+        inside_product     INTEGER,
+        removed            BOOLEAN    DEFAULT 0
     );
     )");
 }

@@ -57,7 +57,7 @@ void TableModelOrder::RUpdatePartyID(int party_id) { sqlite_stakeholder_->ReadTr
 
 void TableModelOrder::RUpdateLocked(int node_id, bool checked)
 {
-    // 遍历trans_shadow_list，对比update_exclusive_price_，不存在添加，存在更新
+    // 遍历trans_shadow_list，对比update_exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
     // 需要sql 新增构建多条的重载语句
 }
 
