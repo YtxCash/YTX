@@ -2,14 +2,22 @@
 
 #include "global/resourcepool.h"
 
-TableModelOrder::TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, QObject* parent)
+TableModelOrder::TableModelOrder(SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, TreeModel* product_tree, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
-    , product_ { product }
+    , product_tree_ { product_tree }
+    , party_id_ { party_id }
 {
+    if (party_id >= 1)
+        RUpdatePartyID(party_id);
 }
+
+TableModelOrder::~TableModelOrder() { ResourcePool<TransShadow>::Instance().Recycle(stakeholder_trans_shadow_list_); }
 
 void TableModelOrder::RUpdateNodeID(int node_id)
 {
+    if (node_id_ != 0 || node_id <= 0)
+        return;
+
     node_id_ = node_id;
     if (trans_shadow_list_.isEmpty())
         return;
@@ -45,6 +53,14 @@ void TableModelOrder::RUpdateNodeID(int node_id)
     emit SUpdateLeafValue(node_id, first_diff, second_diff, amount_diff, discount_diff, settled_diff);
 }
 
+void TableModelOrder::RUpdatePartyID(int party_id) { sqlite_stakeholder_->ReadTrans(stakeholder_trans_shadow_list_, party_id); }
+
+void TableModelOrder::RUpdateLocked(int node_id, bool checked)
+{
+    // 遍历trans_shadow_list，对比update_exclusive_price_，不存在添加，存在更新
+    // 需要sql 新增构建多条的重载语句
+}
+
 QVariant TableModelOrder::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)
@@ -67,7 +83,7 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
     case TableEnumOrder::kDescription:
         return *trans_shadow->description;
     case TableEnumOrder::kColor:
-        return *trans_shadow->lhs_node == 0 ? QVariant() : product_->Color(*trans_shadow->lhs_node);
+        return *trans_shadow->lhs_node == 0 ? QVariant() : product_tree_->Color(*trans_shadow->lhs_node);
     case TableEnumOrder::kNodeID:
         return *trans_shadow->node_id;
     case TableEnumOrder::kFirst:
@@ -283,8 +299,21 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
 
     *trans_shadow->lhs_node = value;
 
-    // todo:  更新单价，更新客户相应的产品编号
+    SearchExclusivePrice(trans_shadow, value, 0);
 
+    return true;
+}
+
+bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
+{
+    if (*trans_shadow->rhs_node == value)
+        return false;
+
+    *trans_shadow->rhs_node = value;
+
+    SearchExclusivePrice(trans_shadow, 0, value);
+
+    sql_->UpdateField(info_.transaction, value, OUTSIDE_PRODUCT, *trans_shadow->id);
     return true;
 }
 
@@ -306,6 +335,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
 
     sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
+    update_exclusive_price_.insert(*trans_shadow->lhs_node, value);
     return true;
 }
 
@@ -351,4 +381,27 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
 
     sql_->UpdateTransValue(trans_shadow);
     return true;
+}
+
+void TableModelOrder::SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id)
+{
+    if (!trans_shadow || (inside_product_id <= 0 && outside_product_id <= 0))
+        return;
+
+    for (auto* stakeholder_trans_shadow : stakeholder_trans_shadow_list_) {
+        if (*stakeholder_trans_shadow->lhs_node == outside_product_id) {
+            *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
+            *trans_shadow->lhs_node = *stakeholder_trans_shadow->rhs_node;
+            return;
+        }
+
+        if (*stakeholder_trans_shadow->rhs_node == inside_product_id) {
+            *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
+            *trans_shadow->rhs_node = *stakeholder_trans_shadow->lhs_node;
+            return;
+        }
+    }
+
+    // 没有客户产品的exclusive price，调取general price
+    *trans_shadow->unit_price = product_tree_->First(inside_product_id);
 }

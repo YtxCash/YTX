@@ -1,6 +1,7 @@
 #ifndef TABLEMODELORDER_H
 #define TABLEMODELORDER_H
 
+#include "database/sqlite/sqlitestakeholder.h"
 #include "tablemodel.h"
 #include "tree/model/treemodel.h"
 
@@ -8,11 +9,13 @@ class TableModelOrder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelOrder(SPSqlite sql, bool rule, int node_id, CInfo& info, TreeModel* product, QObject* parent = nullptr);
-    ~TableModelOrder() override = default;
+    TableModelOrder(SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, TreeModel* product_tree, QObject* parent = nullptr);
+    ~TableModelOrder() override;
 
 public slots:
     void RUpdateNodeID(int node_id);
+    void RUpdatePartyID(int party_id);
+    void RUpdateLocked(int node_id, bool checked);
 
 public:
     // implemented functions
@@ -49,13 +52,20 @@ private:
     }
 
     bool UpdateInsideProduct(TransShadow* trans_shadow, int value);
+    bool UpdateOutsideProduct(TransShadow* trans_shadow, int value);
 
     bool UpdateUnitPrice(TransShadow* trans_shadow, double value);
     bool UpdateDiscountPrice(TransShadow* trans_shadow, double value);
     bool UpdateSecond(TransShadow* trans_shadow, double value);
 
+    void SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id);
+
 private:
-    TreeModel* product_ {};
+    TreeModel* product_tree_ {};
+    SqliteStakeholder* sqlite_stakeholder_ {};
+    QList<TransShadow*> stakeholder_trans_shadow_list_ {};
+    QHash<int, double> update_exclusive_price_ {}; // inside_product_id, exclusive_price
+    int party_id_ {};
 };
 
 #endif // TABLEMODELORDER_H

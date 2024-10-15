@@ -111,6 +111,7 @@ public:
     bool Rule(int node_id) const { return GetValue(node_id, &Node::rule); }
     double InitialTotal(int node_id) const { return GetValue(node_id, &Node::initial_total); }
     double FinalTotal(int node_id) const { return GetValue(node_id, &Node::final_total); }
+    double First(int node_id) const { return GetValue(node_id, &Node::first); }
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }

@@ -408,7 +408,7 @@ void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& setti
     auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node_id);
 
-    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, info, product_tree_.model, this) };
+    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, party_id, info, product_tree_.model, this) };
     TableWidgetOrder* widget {};
 
     switch (section) {
@@ -1531,7 +1531,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     if (!node_shadow->id)
         return;
 
-    auto table_model { new TableModelOrder(sql, node->rule, 0, data_->info, product_tree_.model, this) };
+    auto table_model { new TableModelOrder(sql, node->rule, 0, 0, data_->info, product_tree_.model, this) };
 
     switch (section) {
     case Section::kSales:
@@ -1856,7 +1856,7 @@ void MainWindow::ResourceFile()
 #elif defined(Q_OS_MACOS)
     path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
 
-#if 0
+#if 1
     QString command { QDir::homePath() + "/Qt6.8/6.8.0/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
         + path };
 
