@@ -333,7 +333,7 @@ QString MainwindowSqlite::TransactionStakeholder()
         id                INTEGER PRIMARY KEY AUTOINCREMENT,
         date_time         DATE,
         code              TEXT,
-        node              INTEGER,
+        node_id           INTEGER,
         description       TEXT,
         unit_price        NUMERIC,
         document          TEXT,
