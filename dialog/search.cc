@@ -125,7 +125,6 @@ void Search::HideTableColumn(QTableView* view, Section section)
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kLhsDebit), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kLhsCredit), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kDiscountPrice), true);
-        view->setColumnHidden(std::to_underlying(TableEnumSearch::kNodeID), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kRhsRatio), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kRhsDebit), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kRhsCredit), true);

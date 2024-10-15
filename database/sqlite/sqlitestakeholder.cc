@@ -178,8 +178,8 @@ void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& que
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":state", *trans_shadow->state);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
-    query.bindValue(":inside_product", *trans_shadow->rhs_node);
-    query.bindValue(":outside_product", *trans_shadow->lhs_node);
+    query.bindValue(":inside_product", *trans_shadow->lhs_node);
+    query.bindValue(":outside_product", *trans_shadow->rhs_node);
 }
 
 void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
@@ -242,8 +242,8 @@ void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query)
 void SqliteStakeholder::ReadTransQuery(Trans* trans, const QSqlQuery& query)
 {
     trans->node_id = query.value("node_id").toInt();
-    trans->rhs_node = query.value("inside_product").toInt();
-    trans->lhs_node = query.value("outside_product").toInt();
+    trans->lhs_node = query.value("inside_product").toInt();
+    trans->rhs_node = query.value("outside_product").toInt();
     trans->unit_price = query.value("unit_price").toDouble();
     trans->code = query.value("code").toString();
     trans->description = query.value("description").toString();

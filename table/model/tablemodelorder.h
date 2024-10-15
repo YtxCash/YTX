@@ -27,6 +27,8 @@ public:
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
     bool removeRows(int row, int, const QModelIndex& parent = QModelIndex()) override;
 
+    int GetNodeRow(int node_id) const override;
+
 private:
     template <typename T>
     bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {})

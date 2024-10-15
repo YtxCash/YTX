@@ -507,25 +507,12 @@ Qt::ItemFlags TableModel::flags(const QModelIndex& index) const
     return flags;
 }
 
-int TableModel::GetRhsNodeRow(int rhs_node_id) const
+int TableModel::GetNodeRow(int rhs_node_id) const
 {
     int row { 0 };
 
     for (const auto* trans_shadow : trans_shadow_list_) {
         if (*trans_shadow->rhs_node == rhs_node_id) {
-            return row;
-        }
-        ++row;
-    }
-    return -1;
-}
-
-int TableModel::GetLhsNodeRow(int lhs_node_id) const
-{
-    int row { 0 };
-
-    for (const auto* trans_shadow : trans_shadow_list_) {
-        if (*trans_shadow->lhs_node == lhs_node_id) {
             return row;
         }
         ++row;

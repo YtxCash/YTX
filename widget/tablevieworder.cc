@@ -22,7 +22,7 @@ void TableViewOrder::keyPressEvent(QKeyEvent* event)
 
     constexpr int ID_ZERO { 0 };
     const int target_row { [model]() {
-        const int empty_row = model->GetLhsNodeRow(ID_ZERO);
+        const int empty_row = model->GetNodeRow(ID_ZERO);
         return empty_row == -1 ? model->rowCount() : empty_row;
     }() };
 

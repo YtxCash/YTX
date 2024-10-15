@@ -27,6 +27,19 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
     return true;
 }
 
+int TableModelStakeholder::GetNodeRow(int node_id) const
+{
+    int row { 0 };
+
+    for (const auto* trans_shadow : trans_shadow_list_) {
+        if (*trans_shadow->lhs_node == node_id) {
+            return row;
+        }
+        ++row;
+    }
+    return -1;
+}
+
 bool TableModelStakeholder::RemoveMultiTrans(const QSet<int>& trans_id_set)
 {
     if (trans_id_set.isEmpty())
@@ -64,6 +77,16 @@ bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& tran
     return true;
 }
 
+bool TableModelStakeholder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
+{
+    if (*trans_shadow->lhs_node == value)
+        return false;
+
+    *trans_shadow->lhs_node = value;
+
+    return true;
+}
+
 QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)
@@ -88,9 +111,9 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
     case TableEnumStakeholder::kState:
         return *trans_shadow->state;
     case TableEnumStakeholder::kInsideProduct:
-        return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
-    case TableEnumStakeholder::kOutsideProduct:
         return *trans_shadow->lhs_node == 0 ? QVariant() : *trans_shadow->lhs_node;
+    case TableEnumStakeholder::kOutsideProduct:
+        return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
     default:
         return QVariant();
     }
@@ -117,7 +140,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnumStakeholder::kOutsideProduct:
-        UpdateField(trans_shadow, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::lhs_node);
+        UpdateField(trans_shadow, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
         break;
     case TableEnumStakeholder::kUnitPrice:
         UpdateField(trans_shadow, value.toDouble(), UNIT_PRICE, &TransShadow::unit_price);
@@ -129,7 +152,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         UpdateField(trans_shadow, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnumStakeholder::kInsideProduct:
-        rhs_changed = UpdateRhsNode(trans_shadow, value.toInt());
+        rhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
         break;
     default:
         return false;

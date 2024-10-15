@@ -370,6 +370,7 @@ void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& set
     case Section::kProduct:
     case Section::kTask:
         TabConnectFPT(view, model, tree_model, data);
+        DelegateCommon(view, tree_model, settings, node_id);
         break;
     case Section::kStakeholder:
         TabConnectStakeholder(view, model, tree_model);
@@ -377,8 +378,6 @@ void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& set
     default:
         break;
     }
-
-    DelegateCommon(view, tree_model, settings, node_id);
 
     switch (section) {
     case Section::kFinance:
@@ -1260,9 +1259,9 @@ void MainWindow::SetHeader()
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), "" };
     stakeholder_data_.info.table_header
-        = { tr("ID"), tr("DateTime"), tr("Code"), tr("OutsideProduct"), tr("Description"), tr("UnitPrice"), tr("D"), tr("S"), tr("InsideProduct") };
-    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("OutsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
-        tr("NodeID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("InsideProduct") };
+        = { tr("ID"), tr("OutsideProduct"), tr("DateTime"), tr("Code"), tr("Description"), tr("D"), tr("S"), tr("InsideProduct"), tr("UnitPrice") };
+    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("InsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
+        tr("NodeID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("OutsideProduct") };
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
@@ -1361,7 +1360,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
         return;
 
     constexpr int ID_ZERO = 0;
-    const int empty_row = model->GetRhsNodeRow(ID_ZERO);
+    const int empty_row = model->GetNodeRow(ID_ZERO);
 
     QModelIndex target_index {};
 

@@ -70,8 +70,7 @@ public:
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
-    int GetRhsNodeRow(int rhs_node_id) const;
-    int GetLhsNodeRow(int lhs_node_id) const;
+    virtual int GetNodeRow(int node_id) const;
 
     QModelIndex GetIndex(int trans_id) const;
     QStringList* GetDocumentPointer(const QModelIndex& index) const;

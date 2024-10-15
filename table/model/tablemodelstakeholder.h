@@ -20,9 +20,14 @@ public:
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
+    int GetNodeRow(int node_id) const override;
+
 protected:
     bool RemoveMultiTrans(const QSet<int>& trans_id_list) override; // just remove trnas_shadow, keep trans
     bool AppendMultiTrans(int node_id, const QList<int>& trans_id_list) override;
+
+private:
+    bool UpdateInsideProduct(TransShadow* trans_shadow, int value);
 };
 
 #endif // TABLEMODELSTAKEHOLDER_H
