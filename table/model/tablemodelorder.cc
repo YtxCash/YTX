@@ -2,9 +2,11 @@
 
 #include "global/resourcepool.h"
 
-TableModelOrder::TableModelOrder(SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, TreeModel* product_tree, QObject* parent)
+TableModelOrder::TableModelOrder(
+    SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, SPSqlite sqlite_stakeholder, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
     , product_tree_ { product_tree }
+    , sqlite_stakeholder_ { sqlite_stakeholder }
     , party_id_ { party_id }
 {
     if (party_id >= 1)
@@ -84,8 +86,6 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
         return *trans_shadow->description;
     case TableEnumOrder::kColor:
         return *trans_shadow->lhs_node == 0 ? QVariant() : product_tree_->Color(*trans_shadow->lhs_node);
-    case TableEnumOrder::kNodeID:
-        return *trans_shadow->node_id;
     case TableEnumOrder::kFirst:
         return *trans_shadow->lhs_debit == 0 ? QVariant() : *trans_shadow->lhs_debit;
     case TableEnumOrder::kAmount:
@@ -245,7 +245,6 @@ Qt::ItemFlags TableModelOrder::flags(const QModelIndex& index) const
 
     switch (kColumn) {
     case TableEnumOrder::kID:
-    case TableEnumOrder::kNodeID:
     case TableEnumOrder::kAmount:
     case TableEnumOrder::kDiscount:
     case TableEnumOrder::kSettled:

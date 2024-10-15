@@ -249,6 +249,9 @@ void MainWindow::RInsertTriggered()
         InsertNode(static_cast<TreeWidget*>(widget));
     }
 
+    if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
+        return;
+
     if (IsTableWidget(widget)) {
         assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
         AppendTrans(static_cast<TableWidget*>(widget));
@@ -408,7 +411,7 @@ void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& setti
     auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node_id);
 
-    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, party_id, info, product_tree_.model, this) };
+    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, party_id, info, product_tree_.model, stakeholder_data_.sql, this) };
     TableWidgetOrder* widget {};
 
     switch (section) {
@@ -1273,8 +1276,8 @@ void MainWindow::SetHeader()
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled") };
-    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("NodeID"), tr("First"),
-        tr("Second"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled"), tr("OutsideProduct") };
+    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("First"), tr("Second"),
+        tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled"), tr("OutsideProduct") };
     sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
         tr("NodeID"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };
     sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
@@ -1532,7 +1535,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     if (!node_shadow->id)
         return;
 
-    auto table_model { new TableModelOrder(sql, node->rule, 0, 0, data_->info, product_tree_.model, this) };
+    auto table_model { new TableModelOrder(sql, node->rule, 0, 0, data_->info, product_tree_.model, stakeholder_data_.sql, this) };
 
     switch (section) {
     case Section::kSales:

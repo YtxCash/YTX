@@ -1,7 +1,6 @@
 #ifndef TABLEMODELORDER_H
 #define TABLEMODELORDER_H
 
-#include "database/sqlite/sqlitestakeholder.h"
 #include "tablemodel.h"
 #include "tree/model/treemodel.h"
 
@@ -9,7 +8,8 @@ class TableModelOrder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelOrder(SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, TreeModel* product_tree, QObject* parent = nullptr);
+    TableModelOrder(
+        SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, SPSqlite sqlite_stakeholder, QObject* parent = nullptr);
     ~TableModelOrder() override;
 
 public slots:
@@ -61,8 +61,8 @@ private:
     void SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id);
 
 private:
-    TreeModel* product_tree_ {};
-    SqliteStakeholder* sqlite_stakeholder_ {};
+    const TreeModel* product_tree_ {};
+    SPSqlite sqlite_stakeholder_ {};
     QList<TransShadow*> stakeholder_trans_shadow_list_ {};
     QHash<int, double> update_exclusive_price_ {}; // inside_product_id, exclusive_price
     int party_id_ {};

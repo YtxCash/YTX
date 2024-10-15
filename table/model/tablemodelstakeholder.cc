@@ -188,12 +188,12 @@ Qt::ItemFlags TableModelStakeholder::flags(const QModelIndex& index) const
         return Qt::NoItemFlags;
 
     auto flags { QAbstractItemModel::flags(index) };
-    const TableEnum kColumn { index.column() };
+    const TableEnumStakeholder kColumn { index.column() };
 
     switch (kColumn) {
-    case TableEnum::kID:
-    case TableEnum::kDocument:
-    case TableEnum::kState:
+    case TableEnumStakeholder::kID:
+    case TableEnumStakeholder::kDocument:
+    case TableEnumStakeholder::kState:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:
@@ -201,4 +201,17 @@ Qt::ItemFlags TableModelStakeholder::flags(const QModelIndex& index) const
     }
 
     return flags;
+}
+
+bool TableModelStakeholder::insertRows(int row, int /*count*/, const QModelIndex& parent)
+{
+    auto trans_shadow { sql_->AllocateTransShadow() };
+
+    *trans_shadow->node_id = node_id_;
+
+    beginInsertRows(parent, row, row);
+    trans_shadow_list_.emplaceBack(trans_shadow);
+    endInsertRows();
+
+    return true;
 }

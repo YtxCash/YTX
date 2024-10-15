@@ -456,7 +456,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QTableView" name="tableViewOrder"/>
+    <widget class="TableViewOrder" name="tableViewOrder"/>
    </item>
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -519,6 +519,11 @@
    <class>DateTimeEdit</class>
    <extends>QDateTimeEdit</extends>
    <header location="global">widget/datetimeedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TableViewOrder</class>
+   <extends>QTableView</extends>
+   <header location="global">widget/tablevieworder.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
