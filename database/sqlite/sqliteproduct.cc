@@ -83,7 +83,7 @@ QString SqliteProduct::LeafTotalQS() const
     )");
 }
 
-void SqliteProduct::WriteNodeBind(Node* node, QSqlQuery& query)
+void SqliteProduct::WriteNodeBind(Node* node, QSqlQuery& query) const
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);
@@ -97,7 +97,7 @@ void SqliteProduct::WriteNodeBind(Node* node, QSqlQuery& query)
     query.bindValue(":unit_price", node->first);
 }
 
-void SqliteProduct::ReadNodeQuery(Node* node, const QSqlQuery& query)
+void SqliteProduct::ReadNodeQuery(Node* node, const QSqlQuery& query) const
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -114,7 +114,7 @@ void SqliteProduct::ReadNodeQuery(Node* node, const QSqlQuery& query)
     node->final_total = query.value("amount").toDouble();
 }
 
-void SqliteProduct::ReadTransQuery(Trans* trans, const QSqlQuery& query)
+void SqliteProduct::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
 {
     trans->lhs_node = query.value("lhs_node").toInt();
     trans->lhs_debit = query.value("lhs_debit").toDouble();
@@ -132,7 +132,7 @@ void SqliteProduct::ReadTransQuery(Trans* trans, const QSqlQuery& query)
     trans->state = query.value("state").toBool();
 }
 
-void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":unit_cost", *trans_shadow->unit_price);
@@ -150,7 +150,7 @@ void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
 }
 
-void SqliteProduct::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteProduct::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
     query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
@@ -179,7 +179,7 @@ QString SqliteProduct::UpdateNodeValueQS() const
     )");
 }
 
-void SqliteProduct::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+void SqliteProduct::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":quantity", node->initial_total);
     query.bindValue(":amount", node->final_total);

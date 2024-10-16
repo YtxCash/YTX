@@ -16,15 +16,15 @@ protected:
     QString ExternalReferenceQS() const override;
     QString LeafTotalQS() const override;
 
-    void WriteNodeBind(Node* node, QSqlQuery& query) override;
-    void ReadNodeQuery(Node* node, const QSqlQuery& query) override;
+    void WriteNodeBind(Node* node, QSqlQuery& query) const override;
+    void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;
 
-    void ReadTransQuery(Trans* trans, const QSqlQuery& query) override;
-    void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) override;
-    void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) override;
+    void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
+    void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const override;
+    void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const override;
 
     QString UpdateNodeValueQS() const override;
-    void UpdateNodeValueBind(const Node* node, QSqlQuery& query) override;
+    void UpdateNodeValueBind(const Node* node, QSqlQuery& query) const override;
 
     QString ReadTransQS() const override;
     QString WriteTransQS() const override;

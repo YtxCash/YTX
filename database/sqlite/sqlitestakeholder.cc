@@ -67,7 +67,7 @@ QString SqliteStakeholder::WriteNodeQS() const
     )");
 }
 
-void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query)
+void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query) const
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);
@@ -189,7 +189,7 @@ QMultiHash<int, int> SqliteStakeholder::ReplaceNodeFunction(int old_node_id, int
     return hash;
 }
 
-void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":code", *trans_shadow->code);
@@ -202,7 +202,7 @@ void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& que
     query.bindValue(":outside_product", *trans_shadow->rhs_node);
 }
 
-void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
+void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
@@ -243,7 +243,7 @@ QString SqliteStakeholder::ReadTransRangeQS(CString& in_list) const
         .arg(in_list);
 }
 
-void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query)
+void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query) const
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -259,7 +259,7 @@ void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query)
     node->second = query.value("tax_rate").toDouble();
 }
 
-void SqliteStakeholder::ReadTransQuery(Trans* trans, const QSqlQuery& query)
+void SqliteStakeholder::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
 {
     trans->node_id = query.value("node_id").toInt();
     trans->lhs_node = query.value("inside_product").toInt();

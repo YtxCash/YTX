@@ -9,7 +9,7 @@ SqliteFinance::SqliteFinance(CInfo& info, QObject* parent)
 {
 }
 
-void SqliteFinance::WriteNodeBind(Node* node, QSqlQuery& query)
+void SqliteFinance::WriteNodeBind(Node* node, QSqlQuery& query) const
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);
@@ -20,7 +20,7 @@ void SqliteFinance::WriteNodeBind(Node* node, QSqlQuery& query)
     query.bindValue(":unit", node->unit);
 }
 
-void SqliteFinance::ReadNodeQuery(Node* node, const QSqlQuery& query)
+void SqliteFinance::ReadNodeQuery(Node* node, const QSqlQuery& query) const
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -34,7 +34,7 @@ void SqliteFinance::ReadNodeQuery(Node* node, const QSqlQuery& query)
     node->final_total = query.value("final_total").toDouble();
 }
 
-void SqliteFinance::ReadTransQuery(Trans* trans, const QSqlQuery& query)
+void SqliteFinance::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
 {
     trans->lhs_node = query.value("lhs_node").toInt();
     trans->lhs_ratio = query.value("lhs_ratio").toDouble();
@@ -53,7 +53,7 @@ void SqliteFinance::ReadTransQuery(Trans* trans, const QSqlQuery& query)
     trans->state = query.value("state").toBool();
 }
 
-void SqliteFinance::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteFinance::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
@@ -70,7 +70,7 @@ void SqliteFinance::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
 }
 
-void SqliteFinance::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteFinance::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
     query.bindValue(":lhs_ratio", *trans_shadow->lhs_ratio);
@@ -204,7 +204,7 @@ QString SqliteFinance::UpdateNodeValueQS() const
     )");
 }
 
-void SqliteFinance::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+void SqliteFinance::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":initial_total", node->initial_total);
     query.bindValue(":final_total", node->final_total);

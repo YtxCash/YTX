@@ -15,8 +15,8 @@ public slots:
 
 protected:
     // tree
-    void ReadNodeQuery(Node* node, const QSqlQuery& query) override;
-    void WriteNodeBind(Node* node, QSqlQuery& query) override;
+    void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;
+    void WriteNodeBind(Node* node, QSqlQuery& query) const override;
 
     QString ReadNodeQS() const override;
     QString WriteNodeQS() const override;
@@ -25,9 +25,9 @@ protected:
     QString ExternalReferenceQS() const override;
 
     // table
-    void ReadTransQuery(Trans* trans, const QSqlQuery& query) override;
-    void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) override;
-    void UpdateProductReference(int old_node_id, int new_node_id) override;
+    void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
+    void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const override;
+    void UpdateProductReference(int old_node_id, int new_node_id) const override;
     void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
     QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const override;
 

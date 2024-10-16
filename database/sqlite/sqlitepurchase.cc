@@ -107,7 +107,7 @@ QString SqlitePurchase::UpdateTransValueQS() const
     )");
 }
 
-void SqlitePurchase::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
+void SqlitePurchase::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":code", *trans_shadow->code);
     query.bindValue(":inside_product", *trans_shadow->lhs_node);
@@ -124,7 +124,7 @@ void SqlitePurchase::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":description", *trans_shadow->description);
 }
 
-void SqlitePurchase::ReadTransQuery(Trans* trans, const QSqlQuery& query)
+void SqlitePurchase::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
 {
     trans->code = query.value("code").toString();
     trans->lhs_node = query.value("inside_product").toInt();
@@ -163,7 +163,7 @@ void SqlitePurchase::ReadTransFunction(TransShadowList& trans_shadow_list, int /
     }
 }
 
-void SqlitePurchase::UpdateProductReference(int old_node_id, int new_node_id)
+void SqlitePurchase::UpdateProductReference(int old_node_id, int new_node_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
@@ -173,7 +173,7 @@ void SqlitePurchase::UpdateProductReference(int old_node_id, int new_node_id)
     }
 }
 
-void SqlitePurchase::UpdateStakeholderReference(int old_node_id, int new_node_id)
+void SqlitePurchase::UpdateStakeholderReference(int old_node_id, int new_node_id) const
 {
     // for party's product reference
     const auto& const_trans_hash { std::as_const(trans_hash_) };
@@ -184,7 +184,7 @@ void SqlitePurchase::UpdateStakeholderReference(int old_node_id, int new_node_id
     }
 }
 
-void SqlitePurchase::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
+void SqlitePurchase::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":second", *trans_shadow->lhs_credit);
     query.bindValue(":amount", *trans_shadow->rhs_credit);
@@ -202,7 +202,7 @@ QString SqlitePurchase::UpdateNodeValueQS() const
     )");
 }
 
-void SqlitePurchase::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+void SqlitePurchase::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":amount", node->initial_total);
     query.bindValue(":second", node->second);
@@ -211,7 +211,7 @@ void SqlitePurchase::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
     query.bindValue(":node_id", node->id);
 }
 
-void SqlitePurchase::ReadNodeQuery(Node* node, const QSqlQuery& query)
+void SqlitePurchase::ReadNodeQuery(Node* node, const QSqlQuery& query) const
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -232,7 +232,7 @@ void SqlitePurchase::ReadNodeQuery(Node* node, const QSqlQuery& query)
     node->final_total = query.value("settled").toDouble();
 }
 
-void SqlitePurchase::WriteNodeBind(Node* node, QSqlQuery& query)
+void SqlitePurchase::WriteNodeBind(Node* node, QSqlQuery& query) const
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);

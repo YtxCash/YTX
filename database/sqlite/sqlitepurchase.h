@@ -11,8 +11,8 @@ public:
 
 protected:
     // tree
-    void ReadNodeQuery(Node* node, const QSqlQuery& query) override;
-    void WriteNodeBind(Node* node, QSqlQuery& query) override;
+    void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;
+    void WriteNodeBind(Node* node, QSqlQuery& query) const override;
 
     QString ReadNodeQS() const override;
     QString WriteNodeQS() const override;
@@ -20,15 +20,15 @@ protected:
     QString InternalReferenceQS() const override;
 
     // table
-    void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) override;
+    void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const override;
     void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
-    void ReadTransQuery(Trans* trans, const QSqlQuery& query) override;
-    void UpdateProductReference(int old_node_id, int new_node_id) override;
-    void UpdateStakeholderReference(int old_node_id, int new_node_id) override;
-    void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) override;
+    void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
+    void UpdateProductReference(int old_node_id, int new_node_id) const override;
+    void UpdateStakeholderReference(int old_node_id, int new_node_id) const override;
+    void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const override;
 
     QString UpdateNodeValueQS() const override;
-    void UpdateNodeValueBind(const Node* node, QSqlQuery& query) override;
+    void UpdateNodeValueBind(const Node* node, QSqlQuery& query) const override;
 
     QString ReadTransQS() const override;
     QString WriteTransQS() const override;

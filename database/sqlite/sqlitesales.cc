@@ -73,7 +73,7 @@ QString SqliteSales::UpdateTransValueQS() const
     )");
 }
 
-void SqliteSales::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteSales::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":second", *trans_shadow->lhs_credit);
     query.bindValue(":amount", *trans_shadow->rhs_credit);
@@ -91,7 +91,7 @@ QString SqliteSales::UpdateNodeValueQS() const
     )");
 }
 
-void SqliteSales::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+void SqliteSales::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":amount", node->initial_total);
     query.bindValue(":second", node->second);
@@ -108,7 +108,7 @@ QString SqliteSales::WriteTransQS() const
     )");
 }
 
-void SqliteSales::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteSales::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":code", *trans_shadow->code);
     query.bindValue(":inside_product", *trans_shadow->lhs_node);
@@ -133,7 +133,7 @@ QString SqliteSales::ReadTransQS() const
     )");
 }
 
-void SqliteSales::ReadTransQuery(Trans* trans, const QSqlQuery& query)
+void SqliteSales::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
 {
     trans->code = query.value("code").toString();
     trans->lhs_node = query.value("inside_product").toInt();
@@ -149,7 +149,7 @@ void SqliteSales::ReadTransQuery(Trans* trans, const QSqlQuery& query)
     trans->description = query.value("description").toString();
 }
 
-void SqliteSales::UpdateProductReference(int old_node_id, int new_node_id)
+void SqliteSales::UpdateProductReference(int old_node_id, int new_node_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
@@ -159,7 +159,7 @@ void SqliteSales::UpdateProductReference(int old_node_id, int new_node_id)
     }
 }
 
-void SqliteSales::UpdateStakeholderReference(int old_node_id, int new_node_id)
+void SqliteSales::UpdateStakeholderReference(int old_node_id, int new_node_id) const
 {
     // for party's product reference
     const auto& const_trans_hash { std::as_const(trans_hash_) };
@@ -201,7 +201,7 @@ QString SqliteSales::ReadNodeQS() const
     )");
 }
 
-void SqliteSales::ReadNodeQuery(Node* node, const QSqlQuery& query)
+void SqliteSales::ReadNodeQuery(Node* node, const QSqlQuery& query) const
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -230,7 +230,7 @@ QString SqliteSales::WriteNodeQS() const
     )");
 }
 
-void SqliteSales::WriteNodeBind(Node* node, QSqlQuery& query)
+void SqliteSales::WriteNodeBind(Node* node, QSqlQuery& query) const
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);

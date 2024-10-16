@@ -174,7 +174,7 @@ bool Sqlite::ReadNode(NodeHash& node_hash)
     return true;
 }
 
-bool Sqlite::WriteNode(int parent_id, Node* node)
+bool Sqlite::WriteNode(int parent_id, Node* node) const
 {
     // root_'s id is -1
     CString& string { WriteNodeQS() };
@@ -206,7 +206,7 @@ bool Sqlite::WriteNode(int parent_id, Node* node)
     return true;
 }
 
-void Sqlite::CalculateLeafTotal(Node* node, QSqlQuery& query)
+void Sqlite::CalculateLeafTotal(Node* node, QSqlQuery& query) const
 {
     // finance, product, task
     bool rule { node->rule };
@@ -221,7 +221,7 @@ void Sqlite::CalculateLeafTotal(Node* node, QSqlQuery& query)
     }
 }
 
-bool Sqlite::LeafTotal(Node* node)
+bool Sqlite::LeafTotal(Node* node) const
 {
     CString& string { LeafTotalQS() };
 
@@ -242,7 +242,7 @@ bool Sqlite::LeafTotal(Node* node)
     return true;
 }
 
-QList<int> Sqlite::SearchNodeName(CString& text)
+QList<int> Sqlite::SearchNodeName(CString& text) const
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -274,7 +274,7 @@ QList<int> Sqlite::SearchNodeName(CString& text)
     return node_list;
 }
 
-bool Sqlite::RemoveNode(int node_id, bool branch)
+bool Sqlite::RemoveNode(int node_id, bool branch) const
 {
     QSqlQuery query(*db_);
 
@@ -381,7 +381,7 @@ QString Sqlite::DragNodeSecondQS() const
         .arg(info_.path);
 }
 
-bool Sqlite::DragNode(int destination_node_id, int node_id)
+bool Sqlite::DragNode(int destination_node_id, int node_id) const
 {
     QSqlQuery query(*db_);
 
@@ -520,7 +520,7 @@ bool Sqlite::WriteTrans(TransShadow* trans_shadow)
     return true;
 }
 
-bool Sqlite::WriteTransRange(const QList<TransShadow*>& list)
+bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) const
 {
     if (list.isEmpty())
         return false;
@@ -645,7 +645,7 @@ bool Sqlite::RemoveTrans(int trans_id)
     return true;
 }
 
-bool Sqlite::UpdateNodeValue(const Node* node)
+bool Sqlite::UpdateNodeValue(const Node* node) const
 {
     if (node->branch)
         return false;
@@ -667,7 +667,7 @@ bool Sqlite::UpdateNodeValue(const Node* node)
     return true;
 }
 
-bool Sqlite::UpdateTransValue(const TransShadow* trans_shadow)
+bool Sqlite::UpdateTransValue(const TransShadow* trans_shadow) const
 {
     CString& string { UpdateTransValueQS() };
     if (string.isEmpty())
@@ -686,7 +686,7 @@ bool Sqlite::UpdateTransValue(const TransShadow* trans_shadow)
     return true;
 }
 
-bool Sqlite::UpdateField(CString& table, CVariant& value, CString& field, int id)
+bool Sqlite::UpdateField(CString& table, CVariant& value, CString& field, int id) const
 {
     QSqlQuery query(*db_);
 
@@ -709,7 +709,7 @@ bool Sqlite::UpdateField(CString& table, CVariant& value, CString& field, int id
     return true;
 }
 
-bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state)
+bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state) const
 {
     QSqlQuery query(*db_);
 
@@ -735,7 +735,7 @@ bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state)
     return true;
 }
 
-bool Sqlite::SearchTrans(TransList& trans_list, CString& text)
+bool Sqlite::SearchTrans(TransList& trans_list, CString& text) const
 {
     if (text.isEmpty())
         return false;
@@ -822,7 +822,7 @@ TransShadow* Sqlite::AllocateTransShadow()
     return trans_shadow;
 }
 
-bool Sqlite::DBTransaction(std::function<bool()> function)
+bool Sqlite::DBTransaction(std::function<bool()> function) const
 {
     if (db_->transaction() && function() && db_->commit()) {
         return true;
@@ -833,7 +833,7 @@ bool Sqlite::DBTransaction(std::function<bool()> function)
     }
 }
 
-bool Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query)
+bool Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query) const
 {
     auto part = QString(R"(
     SELECT ancestor, descendant
@@ -867,7 +867,7 @@ bool Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query)
     return true;
 }
 
-bool Sqlite::WriteRelationship(int node_id, int parent_id, QSqlQuery& query)
+bool Sqlite::WriteRelationship(int node_id, int parent_id, QSqlQuery& query) const
 {
     auto part = QString(R"(
     INSERT INTO %1 (ancestor, descendant, distance)

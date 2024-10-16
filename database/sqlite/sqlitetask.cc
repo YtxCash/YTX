@@ -81,7 +81,7 @@ QString SqliteTask::ReadTransQS() const
     )");
 }
 
-void SqliteTask::ReadTransQuery(Trans* trans, const QSqlQuery& query)
+void SqliteTask::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
 {
     trans->lhs_node = query.value("lhs_node").toInt();
     trans->lhs_debit = query.value("lhs_debit").toDouble();
@@ -139,7 +139,7 @@ QString SqliteTask::UpdateTransValueQS() const
     )");
 }
 
-void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":date_time", *trans_shadow->date_time);
     query.bindValue(":unit_cost", *trans_shadow->unit_price);
@@ -157,7 +157,7 @@ void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
     query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
 }
 
-void SqliteTask::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query)
+void SqliteTask::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
     query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
@@ -168,7 +168,7 @@ void SqliteTask::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery
     query.bindValue(":trans_id", *trans_shadow->id);
 }
 
-void SqliteTask::WriteNodeBind(Node* node, QSqlQuery& query)
+void SqliteTask::WriteNodeBind(Node* node, QSqlQuery& query) const
 {
     query.bindValue(":name", node->name);
     query.bindValue(":code", node->code);
@@ -181,7 +181,7 @@ void SqliteTask::WriteNodeBind(Node* node, QSqlQuery& query)
     query.bindValue(":unit_cost", node->first);
 }
 
-void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query)
+void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query) const
 {
     node->id = query.value("id").toInt();
     node->name = query.value("name").toString();
@@ -206,7 +206,7 @@ QString SqliteTask::UpdateNodeValueQS() const
     )");
 }
 
-void SqliteTask::UpdateNodeValueBind(const Node* node, QSqlQuery& query)
+void SqliteTask::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":quantity", node->initial_total);
     query.bindValue(":amount", node->final_total);

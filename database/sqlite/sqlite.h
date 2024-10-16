@@ -44,29 +44,29 @@ public slots:
 public:
     // tree
     bool ReadNode(NodeHash& node_hash);
-    bool WriteNode(int parent_id, Node* node);
-    bool RemoveNode(int node_id, bool branch);
-    bool DragNode(int destination_node_id, int node_id);
+    bool WriteNode(int parent_id, Node* node) const;
+    bool RemoveNode(int node_id, bool branch) const;
+    bool DragNode(int destination_node_id, int node_id) const;
     bool InternalReference(int node_id) const;
     bool ExternalReference(int node_id) const;
-    bool LeafTotal(Node* node);
-    bool UpdateNodeValue(const Node* node);
-    QList<int> SearchNodeName(CString& text);
+    bool LeafTotal(Node* node) const;
+    bool UpdateNodeValue(const Node* node) const;
+    QList<int> SearchNodeName(CString& text) const;
 
     // table
     bool ReadTrans(TransShadowList& trans_shadow_list, int node_id);
     bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
     bool WriteTrans(TransShadow* trans_shadow);
-    bool WriteTransRange(const QList<TransShadow*>& list);
-    bool UpdateTransValue(const TransShadow* trans_shadow);
+    bool WriteTransRange(const QList<TransShadow*>& list) const;
+    bool UpdateTransValue(const TransShadow* trans_shadow) const;
     TransShadow* AllocateTransShadow();
 
     bool RemoveTrans(int trans_id);
-    bool UpdateCheckState(CString& column, CVariant& value, Check state);
-    bool SearchTrans(TransList& trans_list, CString& text);
+    bool UpdateCheckState(CString& column, CVariant& value, Check state) const;
+    bool SearchTrans(TransList& trans_list, CString& text) const;
 
     // common
-    bool UpdateField(CString& table, CVariant& value, CString& field, int id);
+    bool UpdateField(CString& table, CVariant& value, CString& field, int id) const;
 
 protected:
     // QS means QueryString
@@ -81,10 +81,10 @@ protected:
     virtual QString LeafTotalQS() const { return {}; }
     virtual QString UpdateNodeValueQS() const { return {}; }
 
-    virtual void ReadNodeQuery(Node* node, const QSqlQuery& query) = 0;
-    virtual void WriteNodeBind(Node* node, QSqlQuery& query) = 0;
+    virtual void ReadNodeQuery(Node* node, const QSqlQuery& query) const = 0;
+    virtual void WriteNodeBind(Node* node, QSqlQuery& query) const = 0;
 
-    virtual void UpdateNodeValueBind(const Node* /*node*/, QSqlQuery& /*query*/) { };
+    virtual void UpdateNodeValueBind(const Node* /*node*/, QSqlQuery& /*query*/) const { };
 
     //
     QString RemoveNodeFirstQS() const;
@@ -94,10 +94,10 @@ protected:
     QString DragNodeSecondQS() const;
 
     //
-    void CalculateLeafTotal(Node* node, QSqlQuery& query);
-    bool DBTransaction(std::function<bool()> function);
-    bool ReadRelationship(const NodeHash& node_hash, QSqlQuery& query);
-    bool WriteRelationship(int node_id, int parent_id, QSqlQuery& query);
+    void CalculateLeafTotal(Node* node, QSqlQuery& query) const;
+    bool DBTransaction(std::function<bool()> function) const;
+    bool ReadRelationship(const NodeHash& node_hash, QSqlQuery& query) const;
+    bool WriteRelationship(int node_id, int parent_id, QSqlQuery& query) const;
 
     // table
     virtual QString ReadTransQS() const = 0;
@@ -106,11 +106,11 @@ protected:
     virtual QString RUpdateProductReferenceQS() const { return {}; }
     virtual QString RUpdateStakeholderReferenceQS() const { return {}; }
 
-    virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query) = 0;
-    virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) = 0;
-    virtual void UpdateTransValueBind(const TransShadow* /*trans_shadow*/, QSqlQuery& /*query*/) { };
-    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/) { }
-    virtual void UpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/) { }
+    virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query) const = 0;
+    virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const = 0;
+    virtual void UpdateTransValueBind(const TransShadow* /*trans_shadow*/, QSqlQuery& /*query*/) const { };
+    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/) const { }
+    virtual void UpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/) const { }
 
     //
     virtual QString RReplaceNodeQS() const { return {}; }
