@@ -37,7 +37,7 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->date_time, COLOR, &Node::date_time);
 }
 
-bool TreeModelProduct::IsReferenced(int node_id, CString& message)
+bool TreeModelProduct::IsReferenced(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
         ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);

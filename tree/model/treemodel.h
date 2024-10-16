@@ -138,14 +138,14 @@ protected:
     virtual bool UpdateRule(Node* node, bool value);
     virtual bool UpdateUnit(Node* node, int value);
     virtual bool UpdateName(Node* node, CString& value);
-    virtual bool IsReferenced(int node_id, CString& message);
+    virtual bool IsReferenced(int node_id, CString& message) const;
     virtual void UpdateAncestorValue(
         Node* node, double initial_diff, double final_diff, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
 
     // member functions
 
     bool IsDescendant(Node* lhs, Node* rhs) const;
-    void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare);
+    void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare) const;
 
     Node* GetNodeByID(int node_id) const;
     Node* GetNodeByIndex(const QModelIndex& index) const;
@@ -157,9 +157,9 @@ protected:
     bool UpdateBranch(Node* node, bool new_value);
 
     void InitializeRoot(int default_unit);
-    void ShowTemporaryTooltip(CString& message, int duration = 3000);
-    bool HasChildren(Node* node, CString& message);
-    bool IsOpened(int node_id, CString& message);
+    void ShowTemporaryTooltip(CString& message, int duration = 3000) const;
+    bool HasChildren(Node* node, CString& message) const;
+    bool IsOpened(int node_id, CString& message) const;
 
 protected:
     template <typename T> const T& GetValue(int node_id, T Node::* member) const
@@ -177,7 +177,7 @@ protected:
         return empty;
     }
 
-    template <typename T> bool UpdateField(Node* node, const T& value, CString& field, T Node::* member)
+    template <typename T> bool UpdateField(Node* node, const T& value, CString& field, T Node::* member) const
     {
         if constexpr (std::is_floating_point_v<T>) {
             if (std::abs(node->*member - value) < TOLERANCE)

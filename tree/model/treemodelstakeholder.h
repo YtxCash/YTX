@@ -23,7 +23,7 @@ public:
 
 protected:
     bool UpdateRule(Node* node, bool value) override; // Cash = 0, Monthly = 1
-    bool IsReferenced(int node_id, CString& message) override;
+    bool IsReferenced(int node_id, CString& message) const override;
     void ConstructTree() override;
     bool UpdateUnit(Node* node, int value) override;
 

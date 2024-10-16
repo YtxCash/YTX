@@ -48,7 +48,7 @@ bool TreeModelStakeholder::UpdateDeadline(Node* node, int value, CString& field)
 
 bool TreeModelStakeholder::UpdateRule(Node* node, bool value) { return UpdateField(node, value, RULE, &Node::rule); }
 
-bool TreeModelStakeholder::IsReferenced(int node_id, CString& message)
+bool TreeModelStakeholder::IsReferenced(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
         ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);

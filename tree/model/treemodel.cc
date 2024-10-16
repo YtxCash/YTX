@@ -612,7 +612,7 @@ void TreeModel::UpdatePath(const Node* node)
     }
 }
 
-void TreeModel::SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare)
+void TreeModel::SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare) const
 {
     if (!node)
         return;
@@ -848,7 +848,7 @@ void TreeModel::InitializeRoot(int default_unit)
     assert(root_ != nullptr && "Root node should not be null after initialization");
 }
 
-void TreeModel::ShowTemporaryTooltip(CString& message, int duration)
+void TreeModel::ShowTemporaryTooltip(CString& message, int duration) const
 {
     auto label { new TemporaryLabel(message) };
     label->setWindowFlags(Qt::ToolTip);
@@ -878,7 +878,7 @@ void TreeModel::ShowTemporaryTooltip(CString& message, int duration)
     connect(label, &QLabel::destroyed, this, [timer]() { timer->stop(); });
 }
 
-bool TreeModel::HasChildren(Node* node, CString& message)
+bool TreeModel::HasChildren(Node* node, CString& message) const
 {
     if (!node->children.isEmpty()) {
         ShowTemporaryTooltip(tr("%1 it has children nodes.").arg(message), 3000);
@@ -888,7 +888,7 @@ bool TreeModel::HasChildren(Node* node, CString& message)
     return false;
 }
 
-bool TreeModel::IsOpened(int node_id, CString& message)
+bool TreeModel::IsOpened(int node_id, CString& message) const
 {
     if (table_hash_.contains(node_id)) {
         ShowTemporaryTooltip(tr("%1 it is opened.").arg(message), 3000);
@@ -898,7 +898,7 @@ bool TreeModel::IsOpened(int node_id, CString& message)
     return false;
 }
 
-bool TreeModel::IsReferenced(int node_id, CString& message)
+bool TreeModel::IsReferenced(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
         ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);

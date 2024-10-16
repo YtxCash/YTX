@@ -19,7 +19,7 @@ public:
     void UpdateNode(const Node* tmp_node) override;
 
 protected:
-    bool IsReferenced(int node_id, CString& message) override;
+    bool IsReferenced(int node_id, CString& message) const override;
     bool UpdateUnit(Node* node, int value) override;
 };
 
