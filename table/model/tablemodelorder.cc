@@ -59,8 +59,25 @@ void TableModelOrder::RUpdatePartyID(int party_id) { sqlite_stakeholder_->ReadTr
 
 void TableModelOrder::RUpdateLocked(int node_id, bool checked)
 {
-    // 遍历trans_shadow_list，对比update_exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
+    if (node_id != node_id_ || !checked)
+        return;
+
+    // 遍历trans_shadow_list，对比exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
     // 需要sql 新增构建多条的重载语句
+
+    for (auto it = exclusive_price_.cbegin(); it != exclusive_price_.cend(); ++it) {
+        int trans_id = it.key();
+        double new_price = it.value();
+
+        // 在 QList<TransShadow*> 中查找与 trans_id 匹配的 TransShadow
+        for (auto* trans_shadow : stakeholder_trans_shadow_list_) {
+            if (trans_shadow && *trans_shadow->lhs_node == trans_id) {
+                *trans_shadow->unit_price = new_price; // 更新价格
+                sqlite_stakeholder_->UpdateField("stakeholder_transaction", new_price, UNIT_PRICE, *trans_shadow->id);
+                break; // 找到匹配的 trans 后可以跳出循环
+            }
+        }
+    }
 }
 
 QVariant TableModelOrder::data(const QModelIndex& index, int role) const
@@ -311,7 +328,7 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value) 
 
     *trans_shadow->lhs_node = value;
 
-    SearchExclusivePrice(trans_shadow, value, 0);
+    SearchPriceByInside(trans_shadow, value, 0);
 
     return true;
 }
@@ -323,7 +340,7 @@ bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
 
     *trans_shadow->rhs_node = value;
 
-    SearchExclusivePrice(trans_shadow, 0, value);
+    SearchPriceByInside(trans_shadow, 0, value);
 
     sql_->UpdateField(info_.transaction, value, OUTSIDE_PRODUCT, *trans_shadow->id);
     return true;
@@ -347,7 +364,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
 
     sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
-    update_exclusive_price_.insert(*trans_shadow->lhs_node, value);
+    exclusive_price_.insert(*trans_shadow->lhs_node, value);
     return true;
 }
 
@@ -395,25 +412,44 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     return true;
 }
 
-void TableModelOrder::SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id) const
+void TableModelOrder::SearchPriceByInside(TransShadow* trans_shadow, int inside_product_id, int outside_product_id) const
 {
-    if (!trans_shadow || (inside_product_id <= 0 && outside_product_id <= 0))
+    if (!trans_shadow || !sqlite_stakeholder_ || (inside_product_id <= 0 && outside_product_id <= 0))
         return;
 
     for (auto* stakeholder_trans_shadow : stakeholder_trans_shadow_list_) {
-        if (*stakeholder_trans_shadow->lhs_node == outside_product_id) {
+        if (*stakeholder_trans_shadow->rhs_node == outside_product_id) {
             *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
-            *trans_shadow->lhs_node = *stakeholder_trans_shadow->rhs_node;
+            *trans_shadow->lhs_node = *stakeholder_trans_shadow->lhs_node;
             return;
         }
 
-        if (*stakeholder_trans_shadow->rhs_node == inside_product_id) {
+        if (*stakeholder_trans_shadow->lhs_node == inside_product_id) {
             *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
-            *trans_shadow->rhs_node = *stakeholder_trans_shadow->lhs_node;
+            *trans_shadow->rhs_node = *stakeholder_trans_shadow->rhs_node;
             return;
         }
     }
 
     // 没有客户产品的exclusive price，调取general price
     *trans_shadow->unit_price = product_tree_->First(inside_product_id);
+    *trans_shadow->rhs_node = 0;
+}
+
+void TableModelOrder::SearchPriceByOutside(TransShadow* trans_shadow, int outside_product_id) const
+{
+    if (!trans_shadow || !sqlite_stakeholder_ || outside_product_id <= 0)
+        return;
+
+    for (auto* stakeholder_trans_shadow : stakeholder_trans_shadow_list_) {
+        if (*stakeholder_trans_shadow->rhs_node == outside_product_id) {
+            *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
+            *trans_shadow->lhs_node = *stakeholder_trans_shadow->lhs_node;
+            return;
+        }
+    }
+
+    // 没有客户产品的exclusive price，调取general price
+    *trans_shadow->unit_price = 0.0;
+    *trans_shadow->rhs_node = 0;
 }

@@ -471,10 +471,14 @@ void MainWindow::TabConnectOrder(const QTableView* view, const TableModel* table
     connect(table_model, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
 
-    assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
+    assert(dynamic_cast<const TreeModelOrder*>(tree_model) && "Tree Model is not TreeModelOrder");
+    assert(dynamic_cast<const TableModelOrder*>(table_model) && "Table Model is not TableModelOrder");
+
     auto tree_model_order { static_cast<const TreeModelOrder*>(tree_model) };
+    auto table_model_order { static_cast<const TableModelOrder*>(table_model) };
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
+    connect(widget, &TableWidgetOrder::SUpdateLocked, table_model_order, &TableModelOrder::RUpdateLocked);
 }
 
 void MainWindow::TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
@@ -1590,7 +1594,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     auto tree_model_order { static_cast<TreeModelOrder*>(tree_model) };
     connect(tree_model_order, &TreeModelOrder::SUpdateData, dialog, &InsertNodeOrder::RUpdateData);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
-
+    connect(dialog, &InsertNodeOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
     connect(dialog, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
 
     dialog_list_->append(dialog);

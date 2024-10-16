@@ -60,13 +60,14 @@ private:
     bool UpdateDiscountPrice(TransShadow* trans_shadow, double value);
     bool UpdateSecond(TransShadow* trans_shadow, double value);
 
-    void SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id) const;
+    void SearchPriceByInside(TransShadow* trans_shadow, int inside_product_id, int outside_product_id) const;
+    void SearchPriceByOutside(TransShadow* trans_shadow, int outside_product_id) const;
 
 private:
     const TreeModel* product_tree_ {};
     SPSqlite sqlite_stakeholder_ {};
     QList<TransShadow*> stakeholder_trans_shadow_list_ {};
-    QHash<int, double> update_exclusive_price_ {}; // inside_product_id, exclusive_price
+    QHash<int, double> exclusive_price_ {}; // inside_product_id, exclusive_price
     int party_id_ {};
 };
 
