@@ -121,8 +121,7 @@ public:
     void SetNodeShadow(NodeShadow* node_shadow, int node_id) const;
     void SetNodeShadow(NodeShadow* node_shadow, Node* node) const;
 
-    void LeafPathIncludeUnitOnly(QComboBox* combo, int specific_unit) const;
-    void LeafPathExcludeUnitOnly(QComboBox* combo, int exclude_unit) const;
+    void LeafPathSpecificUnit(QComboBox* combo, int unit, UnitFilterMode unit_filter_mode) const;
     void LeafPathExcludeID(QComboBox* combo, int exclude_id) const;
     void LeafPathBranchPath(QComboBox* combo) const;
 

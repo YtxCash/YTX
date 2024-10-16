@@ -397,38 +397,32 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     return true;
 }
 
-void TreeModel::LeafPathIncludeUnitOnly(QComboBox* combo, int specific_unit) const
+void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int unit, UnitFilterMode unit_filter_mode) const
 {
     if (!combo)
         return;
 
     combo->clear();
-    combo->blockSignals(true);
+    QSignalBlocker blocker(combo);
+
+    auto should_add = [unit, unit_filter_mode](const Node* node) {
+        switch (unit_filter_mode) {
+        case UnitFilterMode::kIncludeUnitOnly:
+            return node->unit == unit;
+        case UnitFilterMode::kExcludeUnitOnly:
+            return node->unit != unit;
+        default:
+            return true;
+        }
+    };
 
     for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        auto it { node_hash_.constFind(id) };
-        if (it != node_hash_.constEnd() && it.value()->unit == specific_unit)
-            combo->addItem(path, id);
+        if (auto it = node_hash_.constFind(id); it != node_hash_.constEnd()) {
+            if (should_add(it.value())) {
+                combo->addItem(path, id);
+            }
+        }
     }
-
-    combo->blockSignals(false);
-}
-
-void TreeModel::LeafPathExcludeUnitOnly(QComboBox* combo, int exclude_unit) const
-{
-    if (!combo)
-        return;
-
-    combo->clear();
-    combo->blockSignals(true);
-
-    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        auto it { node_hash_.constFind(id) };
-        if (it != node_hash_.constEnd() && it.value()->unit != exclude_unit)
-            combo->addItem(path, id);
-    }
-
-    combo->blockSignals(false);
 }
 
 void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
@@ -437,14 +431,12 @@ void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
         return;
 
     combo->clear();
-    combo->blockSignals(true);
+    QSignalBlocker blocker(combo);
 
     for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
         if (id != exclude_id)
             combo->addItem(path, id);
     }
-
-    combo->blockSignals(false);
 }
 
 void TreeModel::LeafPathBranchPath(QComboBox* combo) const
@@ -453,15 +445,13 @@ void TreeModel::LeafPathBranchPath(QComboBox* combo) const
         return;
 
     combo->clear();
-    combo->blockSignals(true);
+    QSignalBlocker blocker(combo);
 
     for (const auto& [id, path] : leaf_path_.asKeyValueRange())
         combo->addItem(path, id);
 
     for (const auto& [id, path] : branch_path_.asKeyValueRange())
         combo->addItem(path, id);
-
-    combo->blockSignals(false);
 }
 
 QStringList TreeModel::ChildrenName(int node_id, int exclude_child) const

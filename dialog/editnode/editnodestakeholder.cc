@@ -51,7 +51,7 @@ void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
 {
     ui->comboEmployee->clear();
 
-    stakeholder_tree->LeafPathIncludeUnitOnly(ui->comboEmployee, UNIT_EMPLOYEE);
+    stakeholder_tree->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnly);
 
     ui->comboEmployee->insertItem(0, QString(), 0);
     ui->comboEmployee->setCurrentIndex(0);

@@ -4,8 +4,6 @@
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-enum class UnitFilterMode { kIncludeUnitOnly, kExcludeUnitOnly };
-
 class SpecificUnit : public StyledItemDelegate {
 public:
     SpecificUnit(const TreeModel* tree_model, int unit, UnitFilterMode unit_filter_mode, QObject* parent = nullptr);

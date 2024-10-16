@@ -17,18 +17,7 @@ QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem&
     Q_UNUSED(option);
 
     auto* editor { new ComboBox(parent) };
-
-    switch (unit_filter_mode_) {
-    case UnitFilterMode::kIncludeUnitOnly:
-        tree_model_->LeafPathIncludeUnitOnly(editor, unit_);
-        break;
-    case UnitFilterMode::kExcludeUnitOnly:
-        tree_model_->LeafPathExcludeUnitOnly(editor, unit_);
-        break;
-    default:
-        break;
-    }
-
+    tree_model_->LeafPathSpecificUnit(editor, unit_, unit_filter_mode_);
     editor->model()->sort(0);
 
     int height = option.rect.height();
