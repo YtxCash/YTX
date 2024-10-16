@@ -290,6 +290,10 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
         }
 
         if (section != Section::kSales && section != Section::kPurchase) {
+            const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
+            if (section == Section::kStakeholder && unit == UNIT_PRODUCT)
+                return;
+
             CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, node_id);
         }
     }
