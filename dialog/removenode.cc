@@ -75,12 +75,7 @@ void RemoveNode::IniDialog()
     ui->pBtnCancel->setDefault(true);
     this->setWindowTitle(tr("Remove %1").arg(model_->GetPath(node_id_)));
 
-    model_->LeafPathSpecificUnit(ui->comboBox, unit_, UnitFilterMode::kIncludeUnitOnly);
-
-    auto index { ui->comboBox->findData(node_id_) };
-    if (index)
-        ui->comboBox->removeItem(index);
-
+    model_->LeafPathExcludeID(ui->comboBox, node_id_);
     ui->comboBox->model()->sort(0);
 }
 
