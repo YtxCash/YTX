@@ -12,8 +12,8 @@ SqliteSales::SqliteSales(CInfo& info, QObject* parent)
 QString SqliteSales::RemoveNodeSecondQS() const
 {
     return QStringLiteral(R"(
-    UPDATE sales_transaction
-    SET removed = 1
+    UPDATE sales_transaction SET
+        removed = 1
     WHERE node_id = :node_id
     )");
 }
@@ -29,8 +29,8 @@ QString SqliteSales::InternalReferenceQS() const
 QString SqliteSales::RUpdateProductReferenceQS() const
 {
     return QStringLiteral(R"(
-    UPDATE sales_transaction
-    SET inside_product = :new_node_id
+    UPDATE sales_transaction SET
+        inside_product = :new_node_id
     WHERE inside_product = :old_node_id
     )");
 }
@@ -41,13 +41,13 @@ QString SqliteSales::RUpdateStakeholderReferenceQS() const
     BEGIN TRANSACTION;
 
     -- Update the outside_product in sales_transaction table
-    UPDATE sales_transaction
-    SET outside_product = :new_node_id
+    UPDATE sales_transaction SET
+        outside_product = :new_node_id
     WHERE outside_product = :old_node_id;
 
     -- Update the party and employee in sales table
-    UPDATE sales
-    SET party = CASE WHEN party = :old_node_id THEN :new_node_id ELSE party END,
+    UPDATE sales SET
+        party = CASE WHEN party = :old_node_id THEN :new_node_id ELSE party END,
         employee = CASE WHEN employee = :old_node_id THEN :new_node_id ELSE employee END
     WHERE party = :old_node_id OR employee = :old_node_id;
 
@@ -68,7 +68,7 @@ QString SqliteSales::UpdateTransValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE sales_transaction SET
-    second = :second, amount = :amount, discount = :discount, settled = :settled
+        second = :second, amount = :amount, discount = :discount, settled = :settled
     WHERE id = :trans_id
     )");
 }
@@ -86,7 +86,7 @@ QString SqliteSales::UpdateNodeValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE sales SET
-    amount = :amount, settled = :settled, second = :second, discount = :discount
+        amount = :amount, settled = :settled, second = :second, discount = :discount
     WHERE id = :node_id
     )");
 }

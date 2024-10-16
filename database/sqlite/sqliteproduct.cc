@@ -29,8 +29,8 @@ QString SqliteProduct::WriteNodeQS() const
 QString SqliteProduct::RemoveNodeSecondQS() const
 {
     return QStringLiteral(R"(
-    UPDATE product_transaction
-    SET removed = 1
+    UPDATE product_transaction SET
+        removed = 1
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
 }
@@ -174,7 +174,7 @@ QString SqliteProduct::UpdateNodeValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE product SET
-    quantity = :quantity, amount = :amount
+        quantity = :quantity, amount = :amount
     WHERE id = :node_id
     )");
 }
@@ -210,14 +210,8 @@ QString SqliteProduct::RReplaceNodeQS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET
-    lhs_node = CASE
-        WHEN lhs_node = :old_node_id AND rhs_node != :new_node_id THEN :new_node_id
-        ELSE lhs_node
-    END,
-    rhs_node = CASE
-        WHEN rhs_node = :old_node_id AND lhs_node != :new_node_id THEN :new_node_id
-        ELSE rhs_node
-    END
+        lhs_node = CASE WHEN lhs_node = :old_node_id AND rhs_node != :new_node_id THEN :new_node_id ELSE lhs_node END,
+        rhs_node = CASE WHEN rhs_node = :old_node_id AND lhs_node != :new_node_id THEN :new_node_id ELSE rhs_node END
     WHERE lhs_node = :old_node_id OR rhs_node = :old_node_id;
     )");
 }
@@ -226,8 +220,8 @@ QString SqliteProduct::UpdateTransValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET
-    lhs_node = :lhs_node, lhs_debit = :lhs_debit, lhs_credit = :lhs_credit,
-    rhs_node = :rhs_node, rhs_debit = :rhs_debit, rhs_credit = :rhs_credit
+        lhs_node = :lhs_node, lhs_debit = :lhs_debit, lhs_credit = :lhs_credit,
+        rhs_node = :rhs_node, rhs_debit = :rhs_debit, rhs_credit = :rhs_credit
     WHERE id = :trans_id
     )");
 }

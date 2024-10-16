@@ -29,8 +29,8 @@ QString SqlitePurchase::WriteNodeQS() const
 QString SqlitePurchase::RemoveNodeSecondQS() const
 {
     return QStringLiteral(R"(
-    UPDATE purchase_transaction
-    SET removed = 1
+    UPDATE purchase_transaction SET
+        removed = 1
     WHERE node_id = :node_id
     )");
 }
@@ -63,8 +63,8 @@ QString SqlitePurchase::WriteTransQS() const
 QString SqlitePurchase::RUpdateProductReferenceQS() const
 {
     return QStringLiteral(R"(
-    UPDATE purchase_transaction
-    SET inside_product = :new_node_id
+    UPDATE purchase_transaction SET
+        inside_product = :new_node_id
     WHERE inside_product = :old_node_id
     )");
 }
@@ -75,13 +75,13 @@ QString SqlitePurchase::RUpdateStakeholderReferenceQS() const
     BEGIN TRANSACTION;
 
     -- Update the outside_product in purchase_transaction table
-    UPDATE purchase_transaction
-    SET outside_product = :new_node_id
+    UPDATE purchase_transaction SET
+        outside_product = :new_node_id
     WHERE outside_product = :old_node_id;
 
     -- Update the party and employee in purchase table
-    UPDATE purchase
-    SET party = CASE WHEN party = :old_node_id THEN :new_node_id ELSE party END,
+    UPDATE purchase SET
+        party = CASE WHEN party = :old_node_id THEN :new_node_id ELSE party END,
         employee = CASE WHEN employee = :old_node_id THEN :new_node_id ELSE employee END
     WHERE party = :old_node_id OR employee = :old_node_id;
 
@@ -102,7 +102,7 @@ QString SqlitePurchase::UpdateTransValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE purchase_transaction SET
-    second = :second, amount = :amount, discount = :discount, settled = :settled
+        second = :second, amount = :amount, discount = :discount, settled = :settled
     WHERE id = :trans_id
     )");
 }
@@ -197,7 +197,7 @@ QString SqlitePurchase::UpdateNodeValueQS() const
 {
     return QStringLiteral(R"(
     UPDATE purchase SET
-    amount = :amount, settled = :settled, second = :second, discount = :discount
+        amount = :amount, settled = :settled, second = :second, discount = :discount
     WHERE id = :node_id
     )");
 }
