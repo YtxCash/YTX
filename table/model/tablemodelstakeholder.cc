@@ -128,7 +128,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     const int kRow { index.row() };
 
     auto trans_shadow { trans_shadow_list_.at(kRow) };
-    int old_rhs_node { *trans_shadow->rhs_node };
+    int old_lhs_node { *trans_shadow->lhs_node };
 
     bool rhs_changed { false };
 
@@ -159,7 +159,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     }
 
     if (rhs_changed) {
-        if (old_rhs_node == 0)
+        if (old_lhs_node == 0)
             sql_->WriteTrans(trans_shadow);
         else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
