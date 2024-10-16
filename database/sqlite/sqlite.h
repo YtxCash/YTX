@@ -120,7 +120,8 @@ protected:
 
     //
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
-    QMultiHash<int, int> RemoveNodeFunction(int node_id);
+    QMultiHash<int, int> RemoveNodeFunction(int node_id) const;
+    bool FreeView(int old_node_id, int new_node_id) const;
 
 protected:
     QHash<int, Trans*> trans_hash_ {};
