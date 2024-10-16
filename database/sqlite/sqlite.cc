@@ -17,7 +17,7 @@ Sqlite::~Sqlite() { qDeleteAll(trans_hash_); }
 
 void Sqlite::RRemoveNode(int node_id)
 {
-    QMultiHash<int, int> node_trans { DialogRemoveNode(node_id) };
+    QMultiHash<int, int> node_trans { RemoveNodeFunction(node_id) };
 
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
@@ -33,7 +33,7 @@ void Sqlite::RRemoveNode(int node_id)
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
 }
 
-QMultiHash<int, int> Sqlite::DialogRemoveNode(int node_id)
+QMultiHash<int, int> Sqlite::RemoveNodeFunction(int node_id)
 {
     // finance, product, task
     const auto& const_trans_hash { std::as_const(trans_hash_) };
@@ -58,7 +58,7 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
         return false;
 
     // begin deal with trans hash
-    auto node_trans { DialogReplaceNode(old_node_id, new_node_id) };
+    auto node_trans { ReplaceNodeFunction(old_node_id, new_node_id) };
     // end deal with trans hash
 
     bool free { !node_trans.contains(new_node_id) };
@@ -904,7 +904,7 @@ void Sqlite::ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, 
     }
 }
 
-QMultiHash<int, int> Sqlite::DialogReplaceNode(int old_node_id, int new_node_id)
+QMultiHash<int, int> Sqlite::ReplaceNodeFunction(int old_node_id, int new_node_id)
 {
     // finance, product, task
     const auto& const_trans_hash { std::as_const(trans_hash_) };

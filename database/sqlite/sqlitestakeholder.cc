@@ -14,7 +14,7 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
 {
     // begin deal with trans hash
-    auto trans_id_list { DialogReplaceNode(old_node_id, new_node_id) };
+    auto trans_id_list { ReplaceNodeFunction(old_node_id, new_node_id).values() };
     // end deal with trans hash
 
     // begin deal with database
@@ -30,7 +30,9 @@ bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
     }
     // end deal with database
 
-    emit SMoveMultiTrans(0, new_node_id, trans_id_list);
+    if (!trans_id_list.isEmpty())
+        emit SMoveMultiTrans(0, new_node_id, trans_id_list);
+
     emit SUpdateStakeholderReference(old_node_id, new_node_id);
 
     // SFreeView will mark all referenced transactions for removal. This must occur after SMoveMultiTrans()
@@ -44,6 +46,7 @@ void SqliteStakeholder::RRemoveNode(int node_id)
 {
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
+    ReplaceNodeFunctionStakeholder(node_id, 0);
 }
 
 QString SqliteStakeholder::ReadNodeQS() const
@@ -156,19 +159,34 @@ QString SqliteStakeholder::SearchTransQS() const
     )");
 }
 
-QList<int> SqliteStakeholder::DialogReplaceNode(int old_node_id, int new_node_id)
+void SqliteStakeholder::ReplaceNodeFunctionStakeholder(int old_node_id, int new_node_id)
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
-    QList<int> list {};
+
+    for (auto* trans : const_trans_hash) {
+        if (trans->rhs_node == old_node_id)
+            trans->rhs_node = new_node_id;
+    }
+}
+
+QMultiHash<int, int> SqliteStakeholder::ReplaceNodeFunction(int old_node_id, int new_node_id)
+{
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
+
+    QMultiHash<int, int> hash {};
 
     for (auto* trans : const_trans_hash) {
         if (trans->node_id == old_node_id) {
-            list.emplaceBack(trans->id);
+            hash.emplace(old_node_id, trans->id);
             trans->node_id = new_node_id;
+        }
+
+        if (trans->rhs_node == old_node_id) {
+            trans->rhs_node = new_node_id;
         }
     }
 
-    return list;
+    return {};
 }
 
 void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)
@@ -189,8 +207,8 @@ void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id)
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash)
-        if (trans->rhs_node == old_node_id)
-            trans->rhs_node = new_node_id;
+        if (trans->lhs_node == old_node_id)
+            trans->lhs_node = new_node_id;
 }
 
 void SqliteStakeholder::ReadTransFunction(TransShadowList& trans_shadow_list, int /*node_id*/, QSqlQuery& query)
