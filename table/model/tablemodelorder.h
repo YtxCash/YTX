@@ -31,7 +31,7 @@ public:
 
 private:
     template <typename T>
-    bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {})
+    bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {}) const
     {
         if (trans_shadow == nullptr || trans_shadow->*member == nullptr || *(trans_shadow->*member) == value)
             return false;
@@ -53,14 +53,14 @@ private:
         return true;
     }
 
-    bool UpdateInsideProduct(TransShadow* trans_shadow, int value);
-    bool UpdateOutsideProduct(TransShadow* trans_shadow, int value);
+    bool UpdateInsideProduct(TransShadow* trans_shadow, int value) const;
+    bool UpdateOutsideProduct(TransShadow* trans_shadow, int value) const;
 
     bool UpdateUnitPrice(TransShadow* trans_shadow, double value);
     bool UpdateDiscountPrice(TransShadow* trans_shadow, double value);
     bool UpdateSecond(TransShadow* trans_shadow, double value);
 
-    void SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id);
+    void SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id) const;
 
 private:
     const TreeModel* product_tree_ {};

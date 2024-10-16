@@ -87,15 +87,15 @@ protected:
     virtual bool AppendMultiTrans(int node_id, const QList<int>& trans_id_list);
 
     // member functions
-    double Balance(bool rule, double debit, double credit) { return (rule ? 1 : -1) * (credit - debit); }
+    double Balance(bool rule, double debit, double credit) const { return (rule ? 1 : -1) * (credit - debit); }
 
-    bool UpdateRhsNode(TransShadow* trans_shadow, int value);
+    bool UpdateRhsNode(TransShadow* trans_shadow, int value) const;
 
-    void RunAccumulateSubtotal(int row, bool rule) { QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule); }
+    void RunAccumulateSubtotal(int row, bool rule) const { QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule); }
 
 protected:
     template <typename T>
-    bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {})
+    bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {}) const
     {
         if (trans_shadow == nullptr || trans_shadow->*member == nullptr || *(trans_shadow->*member) == value)
             return false;
@@ -119,7 +119,7 @@ protected:
     }
 
 private:
-    void AccumulateSubtotal(int start, bool rule);
+    void AccumulateSubtotal(int start, bool rule) const;
 
 protected:
     SPSqlite sql_ {};

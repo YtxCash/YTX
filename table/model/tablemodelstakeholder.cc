@@ -53,7 +53,7 @@ bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& tran
     return true;
 }
 
-bool TableModelStakeholder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
+bool TableModelStakeholder::UpdateInsideProduct(TransShadow* trans_shadow, int value) const
 {
     if (*trans_shadow->lhs_node == value)
         return false;

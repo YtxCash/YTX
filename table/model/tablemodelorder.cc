@@ -304,7 +304,7 @@ int TableModelOrder::GetNodeRow(int node_id) const
     return -1;
 }
 
-bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
+bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value) const
 {
     if (*trans_shadow->lhs_node == value)
         return false;
@@ -316,7 +316,7 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
     return true;
 }
 
-bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
+bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value) const
 {
     if (*trans_shadow->rhs_node == value)
         return false;
@@ -395,7 +395,7 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     return true;
 }
 
-void TableModelOrder::SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id)
+void TableModelOrder::SearchExclusivePrice(TransShadow* trans_shadow, int inside_product_id, int outside_product_id) const
 {
     if (!trans_shadow || (inside_product_id <= 0 && outside_product_id <= 0))
         return;

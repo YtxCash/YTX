@@ -565,7 +565,7 @@ bool TableModel::insertRows(int row, int /*count*/, const QModelIndex& parent)
     return true;
 }
 
-void TableModel::AccumulateSubtotal(int start, bool rule)
+void TableModel::AccumulateSubtotal(int start, bool rule) const
 {
     if (start <= -1 || start >= trans_shadow_list_.size() || trans_shadow_list_.isEmpty())
         return;
@@ -578,7 +578,7 @@ void TableModel::AccumulateSubtotal(int start, bool rule)
     });
 }
 
-bool TableModel::UpdateRhsNode(TransShadow* trans_shadow, int value)
+bool TableModel::UpdateRhsNode(TransShadow* trans_shadow, int value) const
 {
     if (*trans_shadow->rhs_node == value)
         return false;
