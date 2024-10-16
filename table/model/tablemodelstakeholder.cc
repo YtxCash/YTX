@@ -40,30 +40,6 @@ int TableModelStakeholder::GetNodeRow(int node_id) const
     return -1;
 }
 
-bool TableModelStakeholder::RemoveMultiTrans(const QSet<int>& trans_id_set)
-{
-    if (trans_id_set.isEmpty())
-        return false;
-
-    int min_row { -1 };
-    int trans_id {};
-
-    for (int i = trans_shadow_list_.size() - 1; i >= 0; --i) {
-        trans_id = *trans_shadow_list_.at(i)->id;
-
-        if (trans_id_set.contains(trans_id)) {
-            if (min_row == -1 || i < min_row)
-                min_row = i;
-
-            beginRemoveRows(QModelIndex(), i, i);
-            ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
-            endRemoveRows();
-        }
-    }
-
-    return true;
-}
-
 bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
 {
     auto row { trans_shadow_list_.size() };

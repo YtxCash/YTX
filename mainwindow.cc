@@ -376,7 +376,7 @@ void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& set
         DelegateCommon(view, tree_model, settings, node_id);
         break;
     case Section::kStakeholder:
-        TabConnectStakeholder(view, model, tree_model);
+        TabConnectStakeholder(view, model, tree_model, data);
         break;
     default:
         break;
@@ -477,10 +477,12 @@ void MainWindow::TabConnectOrder(const QTableView* view, const TableModel* table
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
 }
 
-void MainWindow::TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model)
+void MainWindow::TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
 {
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
+
+    connect(data->sql.data(), &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
 void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id)

@@ -478,7 +478,7 @@ bool Sqlite::ReadTrans(TransShadowList& trans_shadow_list, int node_id)
     return true;
 }
 
-void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left)
+void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) const
 {
     trans_shadow->id = &trans->id;
     trans_shadow->state = &trans->state;
@@ -916,7 +916,7 @@ void Sqlite::ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, 
     }
 }
 
-QMultiHash<int, int> Sqlite::ReplaceNodeFunction(int old_node_id, int new_node_id)
+QMultiHash<int, int> Sqlite::ReplaceNodeFunction(int old_node_id, int new_node_id) const
 {
     // finance, product, task
     const auto& const_trans_hash { std::as_const(trans_hash_) };

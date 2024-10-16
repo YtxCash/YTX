@@ -141,7 +141,7 @@ private:
 
     void TabConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
     void TabConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget);
-    void TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model);
+    void TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
 
     void CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab);

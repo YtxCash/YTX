@@ -23,7 +23,6 @@ public:
     int GetNodeRow(int node_id) const override;
 
 protected:
-    bool RemoveMultiTrans(const QSet<int>& trans_id_list) override; // just remove trnas_shadow, keep trans
     bool AppendMultiTrans(int node_id, const QList<int>& trans_id_list) override;
 
 private:

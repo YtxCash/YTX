@@ -14,7 +14,8 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
 {
     // begin deal with trans hash
-    auto trans_id_list { ReplaceNodeFunction(old_node_id, new_node_id).values() };
+    auto node_trans { ReplaceNodeFunction(old_node_id, new_node_id) };
+    auto trans_id_list { node_trans.values(old_node_id) };
     // end deal with trans hash
 
     // begin deal with database
@@ -134,9 +135,9 @@ QString SqliteStakeholder::RReplaceNodeQS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
-        node_id = CASE WHEN node_id = :node_id THEN :new_node_id ELSE node_id END,
-        outside_product = CASE WHEN outside_product = :node_id THEN :new_node_id ELSE outside_product END
-    WHERE node_id = :node_id OR outside_product = :node_id;
+        node_id = CASE WHEN node_id = :old_node_id THEN :new_node_id ELSE node_id END,
+        outside_product = CASE WHEN outside_product = :old_node_id THEN :new_node_id ELSE outside_product END
+    WHERE node_id = :old_node_id OR outside_product = :old_node_id;
     )");
 }
 
@@ -169,10 +170,9 @@ void SqliteStakeholder::ReplaceNodeFunctionStakeholder(int old_node_id, int new_
     }
 }
 
-QMultiHash<int, int> SqliteStakeholder::ReplaceNodeFunction(int old_node_id, int new_node_id)
+QMultiHash<int, int> SqliteStakeholder::ReplaceNodeFunction(int old_node_id, int new_node_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
-
     QMultiHash<int, int> hash {};
 
     for (auto* trans : const_trans_hash) {
@@ -186,7 +186,7 @@ QMultiHash<int, int> SqliteStakeholder::ReplaceNodeFunction(int old_node_id, int
         }
     }
 
-    return {};
+    return hash;
 }
 
 void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query)

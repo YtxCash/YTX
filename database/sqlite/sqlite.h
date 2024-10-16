@@ -116,10 +116,10 @@ protected:
     virtual QString RReplaceNodeQS() const { return {}; }
     virtual QString ReadTransRangeQS(CString& /*in_list*/) const { return {}; }
     virtual void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
-    virtual QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id);
+    virtual QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const;
 
     //
-    void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left);
+    void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) const;
     QMultiHash<int, int> RemoveNodeFunction(int node_id) const;
     bool FreeView(int old_node_id, int new_node_id) const;
 

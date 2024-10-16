@@ -29,7 +29,7 @@ protected:
     void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) override;
     void UpdateProductReference(int old_node_id, int new_node_id) override;
     void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
-    QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) override;
+    QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const override;
 
     QString ReadTransRangeQS(CString& in_list) const override;
     QString ReadTransQS() const override;
