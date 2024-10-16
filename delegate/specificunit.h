@@ -4,9 +4,11 @@
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
+enum class UnitFilterMode { kIncludeUnitOnly, kExcludeUnitOnly };
+
 class SpecificUnit : public StyledItemDelegate {
 public:
-    SpecificUnit(const TreeModel* tree_model, int specific_unit, QObject* parent = nullptr);
+    SpecificUnit(const TreeModel* tree_model, int unit, UnitFilterMode unit_filter_mode, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -14,11 +16,9 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    QString GetPath(const QModelIndex& index) const;
-
-private:
     const TreeModel* tree_model_ {};
-    int specific_unit_ {};
+    const UnitFilterMode unit_filter_mode_ {};
+    const int unit_ {};
 };
 
 #endif // SPECIFICUNIT_H

@@ -397,7 +397,7 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     return true;
 }
 
-void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int specific_unit) const
+void TreeModel::LeafPathIncludeUnitOnly(QComboBox* combo, int specific_unit) const
 {
     if (!combo)
         return;
@@ -414,7 +414,7 @@ void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int specific_unit) const
     combo->blockSignals(false);
 }
 
-void TreeModel::LeafPathExcludeUnit(QComboBox* combo, int exclude_unit) const
+void TreeModel::LeafPathExcludeUnitOnly(QComboBox* combo, int exclude_unit) const
 {
     if (!combo)
         return;

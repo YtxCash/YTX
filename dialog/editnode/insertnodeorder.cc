@@ -51,8 +51,8 @@ void InsertNodeOrder::RUpdateStakeholder()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_tree_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE);
-    stakeholder_tree_->LeafPathSpecificUnit(ui->comboParty, party_unit_);
+    stakeholder_tree_->LeafPathIncludeUnitOnly(ui->comboEmployee, UNIT_EMPLOYEE);
+    stakeholder_tree_->LeafPathIncludeUnitOnly(ui->comboParty, party_unit_);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -157,7 +157,7 @@ void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
     if (!combo)
         return;
 
-    stakeholder_tree_->LeafPathSpecificUnit(combo, unit);
+    stakeholder_tree_->LeafPathIncludeUnitOnly(combo, unit);
     combo->model()->sort(0);
     combo->setCurrentIndex(-1);
 }

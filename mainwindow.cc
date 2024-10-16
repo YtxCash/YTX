@@ -24,7 +24,6 @@
 #include "delegate/line.h"
 #include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
-#include "delegate/table/insideproduct.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespin.h"
@@ -541,7 +540,7 @@ void MainWindow::DelegateProduct(QTableView* view, CSettings& settings)
 
 void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new InsideProduct(product_tree_.model, UNIT_POSITION, view) };
+    auto inside_product { new SpecificUnit(product_tree_.model, UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
     auto unit_price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
@@ -560,14 +559,17 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
 
     auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
+
+    auto outside_product { new SpecificUnit(stakeholder_tree_.model, UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
 }
 
 void MainWindow::DelegateOrder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new InsideProduct(product_tree_.model, UNIT_POSITION, view) };
+    auto inside_product { new SpecificUnit(product_tree_.model, UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_.model, UNIT_PRODUCT, view) };
+    auto outside_product { new SpecificUnit(stakeholder_tree_.model, UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
 
     auto color { new ColorR(view) };
@@ -720,11 +722,11 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
-    auto employee { new SpecificUnit(stakeholder_tree_.model, UNIT_EMPLOYEE, view) };
+    auto employee { new SpecificUnit(stakeholder_tree_.model, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
 
     auto unit_party { info->section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-    auto party { new SpecificUnit(stakeholder_tree_.model, unit_party, view) };
+    auto party { new SpecificUnit(stakeholder_tree_.model, unit_party, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
 
     auto date_time { new OrderDateTime(view) };
