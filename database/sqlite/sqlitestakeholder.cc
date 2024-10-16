@@ -81,9 +81,10 @@ void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query)
 QString SqliteStakeholder::RemoveNodeSecondQS() const
 {
     return QStringLiteral(R"(
-    UPDATE stakeholder_transaction
-    SET removed = 1
-    WHERE node = :node_id
+    UPDATE stakeholder_transaction SET
+        removed = CASE WHEN node_id = :node_id THEN 1 ELSE removed END,
+        outside_product = CASE WHEN outside_product = :node_id THEN 0 ELSE outside_product END
+    WHERE node_id = :node_id OR outside_product = :node_id;
     )");
 }
 
@@ -91,7 +92,7 @@ QString SqliteStakeholder::InternalReferenceQS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM stakeholder_transaction
-    WHERE node_id = :node_id AND removed = 0
+    WHERE (node_id = :node_id OR outside_product = :node_id) AND removed = 0
     )");
 }
 
@@ -129,17 +130,18 @@ QString SqliteStakeholder::WriteTransQS() const
 QString SqliteStakeholder::RReplaceNodeQS() const
 {
     return QStringLiteral(R"(
-    UPDATE stakeholder_transaction
-    SET node_id = :new_node_id
-    WHERE node_id = :old_node_id
+    UPDATE stakeholder_transaction SET
+        node_id = CASE WHEN node_id = :node_id THEN :new_node_id ELSE node_id END,
+        outside_product = CASE WHEN outside_product = :node_id THEN :new_node_id ELSE outside_product END
+    WHERE node_id = :node_id OR outside_product = :node_id;
     )");
 }
 
 QString SqliteStakeholder::RUpdateProductReferenceQS() const
 {
     return QStringLiteral(R"(
-    UPDATE stakeholder_transaction
-    SET inside_product = :new_node_id
+    UPDATE stakeholder_transaction SET
+        inside_product = :new_node_id
     WHERE inside_product = :old_node_id
     )");
 }
@@ -160,9 +162,9 @@ QList<int> SqliteStakeholder::DialogReplaceNode(int old_node_id, int new_node_id
     QList<int> list {};
 
     for (auto* trans : const_trans_hash) {
-        if (trans->lhs_node == old_node_id) {
+        if (trans->node_id == old_node_id) {
             list.emplaceBack(trans->id);
-            trans->lhs_node = new_node_id;
+            trans->node_id = new_node_id;
         }
     }
 
