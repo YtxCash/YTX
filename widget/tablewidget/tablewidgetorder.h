@@ -22,6 +22,7 @@ public:
 
 signals:
     void SUpdateLocked(int node_id, bool checked);
+    void SUpdatePartyID(int party_id);
 
 public slots:
     void RUpdateStakeholder();

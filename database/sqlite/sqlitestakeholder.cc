@@ -50,15 +50,21 @@ void SqliteStakeholder::RRemoveNode(int node_id)
     ReplaceNodeFunctionStakeholder(node_id, 0);
 }
 
-bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int product_id, bool is_inside) const
+bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const
 {
-    for (const auto* trans : trans_hash_)
-        if ((is_inside && trans->lhs_node == product_id) || (!is_inside && trans->rhs_node == product_id)) {
+    for (const auto* trans : trans_hash_) {
+        if (is_inside && trans->node_id == party_id && trans->lhs_node == product_id) {
             *order_trans_shadow->unit_price = trans->unit_price;
-            *order_trans_shadow->lhs_node = trans->lhs_node;
             *order_trans_shadow->rhs_node = trans->rhs_node;
             return true;
         }
+
+        if (!is_inside && trans->node_id == party_id && trans->rhs_node == product_id) {
+            *order_trans_shadow->unit_price = trans->unit_price;
+            *order_trans_shadow->lhs_node = trans->lhs_node;
+            return true;
+        }
+    }
 
     return false;
 }
@@ -72,7 +78,7 @@ bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double 
         if (trans->node_id == party_id && trans->lhs_node == inside_product_id) {
             trans->unit_price = value;
             UpdateField(info_.transaction, value, UNIT_PRICE, trans->id);
-            break;
+            return true;
         }
 
     // append unit_price in TableModelStakeholder

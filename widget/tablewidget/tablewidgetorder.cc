@@ -273,6 +273,7 @@ void TableWidgetOrder::on_comboParty_currentIndexChanged(int /*index*/)
         return;
 
     *node_shadow_->party = party_id;
+    emit SUpdatePartyID(party_id);
     sql_->UpdateField(info_node_, party_id, PARTY, node_id_);
 
     if (ui->comboEmployee->currentIndex() != -1)

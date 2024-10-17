@@ -13,7 +13,11 @@ TableModelOrder::TableModelOrder(
         RUpdatePartyID(party_id);
 }
 
-void TableModelOrder::RUpdatePartyID(int party_id) { sqlite_stakeholder_->ReadTrans(party_id); }
+void TableModelOrder::RUpdatePartyID(int party_id)
+{
+    party_id_ = party_id;
+    sqlite_stakeholder_->ReadTrans(party_id);
+}
 
 void TableModelOrder::RUpdateNodeID(int node_id)
 {
@@ -413,7 +417,7 @@ void TableModelOrder::SearchPrice(TransShadow* trans_shadow, int product_id, boo
     if (!trans_shadow || !sqlite_stakeholder_ || product_id <= 0)
         return;
 
-    if (sqlite_stakeholder_->SearchPrice(trans_shadow, product_id, is_inside))
+    if (sqlite_stakeholder_->SearchPrice(trans_shadow, party_id_, product_id, is_inside))
         return;
 
     *trans_shadow->unit_price = is_inside ? product_tree_->First(product_id) : 0.0;
