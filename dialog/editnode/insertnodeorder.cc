@@ -15,7 +15,6 @@ InsertNodeOrder::InsertNodeOrder(
     , node_shadow_ { node_shadow }
     , sql_ { sql }
     , party_unit_ { party_unit }
-    , order_table_ { order_table }
     , stakeholder_tree_ { stakeholder_model }
     , settings_ { settings }
     , info_node_ { party_unit == UNIT_CUSTOMER ? SALES : PURCHASE }

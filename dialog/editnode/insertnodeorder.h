@@ -64,7 +64,6 @@ private:
     NodeShadow* node_shadow_ {};
     Sqlite* sql_ {};
     int party_unit_ {};
-    TableModel* order_table_ {};
     TreeModel* stakeholder_tree_ {};
     CSettings& settings_;
 
