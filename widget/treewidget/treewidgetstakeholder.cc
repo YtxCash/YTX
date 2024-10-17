@@ -15,6 +15,4 @@ TreeWidgetStakeholder::TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSet
 
 TreeWidgetStakeholder::~TreeWidgetStakeholder() { delete ui; }
 
-void TreeWidgetStakeholder::SetCurrentIndex(const QModelIndex& index) { ui->treeViewStakeholder->setCurrentIndex(index); }
-
 QTreeView* TreeWidgetStakeholder::View() { return ui->treeViewStakeholder; }

@@ -19,8 +19,6 @@ TreeWidgetCommon::TreeWidgetCommon(TreeModel* model, CInfo& info, CSettings& set
 
 TreeWidgetCommon::~TreeWidgetCommon() { delete ui; }
 
-void TreeWidgetCommon::SetCurrentIndex(const QModelIndex& index) { ui->treeViewCommon->setCurrentIndex(index); }
-
 void TreeWidgetCommon::SetStatus()
 {
     ui->dspin_box_static_->setDecimals(settings_.amount_decimal);

@@ -1525,7 +1525,7 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* tree_model, Node* no
     connect(dialog, &QDialog::accepted, this, [=, this]() {
         if (tree_model->InsertNode(row, parent, node)) {
             auto index = tree_model->index(row, 0, parent);
-            tree_widget_->SetCurrentIndex(index);
+            tree_widget_->View()->setCurrentIndex(index);
         }
     });
 
@@ -1563,7 +1563,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     connect(dialog, &QDialog::accepted, this, [=, this]() {
         if (tree_model->InsertNode(row, parent, node)) {
             auto index = tree_model->index(row, 0, parent);
-            tree_widget_->SetCurrentIndex(index);
+            tree_widget_->View()->setCurrentIndex(index);
             dialog_hash_->insert(node->id, dialog);
             dialog_list_->removeOne(dialog);
         }
@@ -1907,7 +1907,7 @@ void MainWindow::RTreeLocation(int node_id)
 
     auto index { tree_widget_->Model()->GetIndex(node_id) };
     widget->activateWindow();
-    widget->SetCurrentIndex(index);
+    widget->View()->setCurrentIndex(index);
 }
 
 void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)

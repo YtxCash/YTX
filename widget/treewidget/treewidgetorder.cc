@@ -17,8 +17,6 @@ TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSettings& setti
 
 TreeWidgetOrder::~TreeWidgetOrder() { delete ui; }
 
-void TreeWidgetOrder::SetCurrentIndex(const QModelIndex& index) { ui->treeViewOrder->setCurrentIndex(index); }
-
 QTreeView* TreeWidgetOrder::View() { return ui->treeViewOrder; }
 
 void TreeWidgetOrder::on_dateEditStart_dateChanged(const QDate& date) { }
