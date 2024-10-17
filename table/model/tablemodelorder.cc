@@ -165,7 +165,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         dis_changed = UpdateDiscountPrice(trans_shadow, value.toDouble());
         break;
     case TableEnumOrder::kOutsideProduct:
-        UpdateField(trans_shadow, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
+        UpdateOutsideProduct(trans_shadow, value.toInt());
         break;
     default:
         return false;
@@ -328,7 +328,7 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value) 
 
     *trans_shadow->lhs_node = value;
 
-    SearchPriceByInside(trans_shadow, value, 0);
+    SearchPrice(trans_shadow, value, true);
 
     return true;
 }
@@ -340,7 +340,7 @@ bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
 
     *trans_shadow->rhs_node = value;
 
-    SearchPriceByInside(trans_shadow, 0, value);
+    SearchPrice(trans_shadow, value, false);
 
     sql_->UpdateField(info_.transaction, value, OUTSIDE_PRODUCT, *trans_shadow->id);
     return true;
@@ -412,44 +412,20 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     return true;
 }
 
-void TableModelOrder::SearchPriceByInside(TransShadow* trans_shadow, int inside_product_id, int outside_product_id) const
+void TableModelOrder::SearchPrice(TransShadow* trans_shadow, int product_id, bool is_inside) const
 {
-    if (!trans_shadow || !sqlite_stakeholder_ || (inside_product_id <= 0 && outside_product_id <= 0))
+    if (!trans_shadow || !sqlite_stakeholder_ || product_id <= 0)
         return;
 
     for (auto* stakeholder_trans_shadow : stakeholder_trans_shadow_list_) {
-        if (*stakeholder_trans_shadow->rhs_node == outside_product_id) {
+        if ((is_inside && *stakeholder_trans_shadow->lhs_node == product_id) || (!is_inside && *stakeholder_trans_shadow->rhs_node == product_id)) {
             *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
             *trans_shadow->lhs_node = *stakeholder_trans_shadow->lhs_node;
-            return;
-        }
-
-        if (*stakeholder_trans_shadow->lhs_node == inside_product_id) {
-            *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
             *trans_shadow->rhs_node = *stakeholder_trans_shadow->rhs_node;
             return;
         }
     }
 
-    // 没有客户产品的exclusive price，调取general price
-    *trans_shadow->unit_price = product_tree_->First(inside_product_id);
-    *trans_shadow->rhs_node = 0;
-}
-
-void TableModelOrder::SearchPriceByOutside(TransShadow* trans_shadow, int outside_product_id) const
-{
-    if (!trans_shadow || !sqlite_stakeholder_ || outside_product_id <= 0)
-        return;
-
-    for (auto* stakeholder_trans_shadow : stakeholder_trans_shadow_list_) {
-        if (*stakeholder_trans_shadow->rhs_node == outside_product_id) {
-            *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
-            *trans_shadow->lhs_node = *stakeholder_trans_shadow->lhs_node;
-            return;
-        }
-    }
-
-    // 没有客户产品的exclusive price，调取general price
-    *trans_shadow->unit_price = 0.0;
-    *trans_shadow->rhs_node = 0;
+    *trans_shadow->unit_price = is_inside ? product_tree_->First(product_id) : 0.0;
+    is_inside ? * trans_shadow->rhs_node = 0 : * trans_shadow->lhs_node = 0;
 }
