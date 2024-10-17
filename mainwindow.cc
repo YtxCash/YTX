@@ -105,45 +105,45 @@ MainWindow::~MainWindow()
     SaveGeometry(this, shared_interface_, WINDOW, MAINWINDOW_GEOMETRY);
     shared_interface_->setValue(START_SECTION, std::to_underlying(start_));
 
-    if (finance_tree_.widget) {
+    if (finance_tree_) {
         SaveTab(finance_table_hash_, finance_data_.info.node, VIEW);
-        SaveState(finance_tree_.widget->Header(), exclusive_interface_, finance_data_.info.node, HEADER_STATE);
+        SaveState(finance_tree_->Header(), exclusive_interface_, finance_data_.info.node, HEADER_STATE);
 
         finance_dialog_list_.clear();
     }
 
-    if (product_tree_.widget) {
+    if (product_tree_) {
         SaveTab(product_table_hash_, product_data_.info.node, VIEW);
-        SaveState(product_tree_.widget->Header(), exclusive_interface_, product_data_.info.node, HEADER_STATE);
+        SaveState(product_tree_->Header(), exclusive_interface_, product_data_.info.node, HEADER_STATE);
 
         product_dialog_list_.clear();
     }
 
-    if (stakeholder_tree_.widget) {
+    if (stakeholder_tree_) {
         // 默认恢复的Tab，无法接收order中价格的同步，暂时不知道如何解决、先禁用了
         // SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, VIEW);
-        SaveState(stakeholder_tree_.widget->Header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
+        SaveState(stakeholder_tree_->Header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
 
         stakeholder_dialog_list_.clear();
     }
 
-    if (task_tree_.widget) {
+    if (task_tree_) {
         SaveTab(task_table_hash_, task_data_.info.node, VIEW);
-        SaveState(task_tree_.widget->Header(), exclusive_interface_, task_data_.info.node, HEADER_STATE);
+        SaveState(task_tree_->Header(), exclusive_interface_, task_data_.info.node, HEADER_STATE);
 
         task_dialog_list_.clear();
     }
 
-    if (sales_tree_.widget) {
+    if (sales_tree_) {
         // SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
-        SaveState(sales_tree_.widget->Header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
+        SaveState(sales_tree_->Header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
 
         sales_dialog_list_.clear();
     }
 
-    if (purchase_tree_.widget) {
+    if (purchase_tree_) {
         // SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
-        SaveState(purchase_tree_.widget->Header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
+        SaveState(purchase_tree_->Header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
 
         purchase_dialog_list_.clear();
     }
@@ -287,7 +287,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             if (party_id <= 0)
                 return;
 
-            CreateTabPS(data_, tree_->model, *settings_, table_hash_, node_id, party_id);
+            CreateTabPS(data_, tree_widget_->Model(), *settings_, table_hash_, node_id, party_id);
         }
 
         if (section != Section::kSales && section != Section::kPurchase) {
@@ -295,7 +295,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             if (section == Section::kStakeholder && unit == UNIT_PRODUCT)
                 return;
 
-            CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, node_id);
+            CreateTabFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, node_id);
         }
     }
 
@@ -406,7 +406,7 @@ void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& set
 
 void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id)
 {
-    CString& name { stakeholder_tree_.model->Name(party_id) };
+    CString& name { stakeholder_tree_->Model()->Name(party_id) };
     auto sql { data->sql };
     const auto& info { data->info };
     auto section { info.section };
@@ -414,15 +414,15 @@ void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& setti
     auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node_id);
 
-    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, party_id, info, product_tree_.model, stakeholder_data_.sql, this) };
+    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, party_id, info, product_tree_->Model(), stakeholder_data_.sql, this) };
     TableWidgetOrder* widget {};
 
     switch (section) {
     case Section::kSales:
-        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_.model, settings, UNIT_CUSTOMER, this);
+        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), settings, UNIT_CUSTOMER, this);
         break;
     case Section::kPurchase:
-        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_.model, settings, UNIT_VENDOR, this);
+        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), settings, UNIT_VENDOR, this);
         break;
     default:
         break;
@@ -432,7 +432,7 @@ void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& setti
     auto tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
-    tab_bar->setTabToolTip(tab_index, stakeholder_tree_.model->GetPath(party_id));
+    tab_bar->setTabToolTip(tab_index, stakeholder_tree_->Model()->GetPath(party_id));
 
     auto* view { widget->View() };
     SetView(view);
@@ -463,7 +463,7 @@ void MainWindow::TabConnectFPT(const QTableView* view, const TableModel* table_m
 void MainWindow::TabConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
 {
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
-    connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, widget, &TableWidgetOrder::RUpdateStakeholder);
+    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateOrderPartyEmployee, widget, &TableWidgetOrder::RUpdateStakeholder);
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
 
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
@@ -552,7 +552,7 @@ void MainWindow::DelegateProduct(QTableView* view, CSettings& settings)
 
 void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new SpecificUnit(product_tree_.model, UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
+    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
     auto unit_price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
@@ -572,16 +572,16 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
     auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_.model, UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
 }
 
 void MainWindow::DelegateOrder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new SpecificUnit(product_tree_.model, UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
+    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_.model, UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
 
     auto color { new ColorR(view) };
@@ -605,19 +605,18 @@ void MainWindow::DelegateOrder(QTableView* view, CSettings& settings)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
 }
 
-void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash* table_hash, CSettings& settings)
+void MainWindow::CreateSection(TreeWidget* tree_widget, CString& name, Data* data, TableHash* table_hash, CSettings& settings)
 {
     const auto* info { &data->info };
     auto tab_widget { ui->tabWidget };
 
-    auto widget { tree.widget };
-    auto view { widget->View() };
-    auto model { tree.model };
+    auto view { tree_widget->View() };
+    auto model { tree_widget->Model() };
 
     SetDelegate(view, info, settings);
-    TreeConnect(view, widget, model, data->sql);
+    TreeConnect(view, tree_widget, model, data->sql);
 
-    tab_widget->tabBar()->setTabData(tab_widget->addTab(widget, name), QVariant::fromValue(Tab { info->section, 0 }));
+    tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info->section, 0 }));
 
     RestoreState(view->header(), exclusive_interface_, info->node, HEADER_STATE);
     RestoreTab(data, model, settings, table_hash, VIEW);
@@ -734,11 +733,11 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
-    auto employee { new SpecificUnit(stakeholder_tree_.model, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
 
     auto unit_party { info->section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-    auto party { new SpecificUnit(stakeholder_tree_.model, unit_party, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto party { new SpecificUnit(stakeholder_tree_->Model(), unit_party, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
 
     auto date_time { new OrderDateTime(view) };
@@ -748,14 +747,14 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 
-void MainWindow::TreeConnect(const QTreeView* view, const TreeWidget* widget, const TreeModel* model, const Sqlite* table_sql)
+void MainWindow::TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* table_sql)
 {
     connect(view, &QTreeView::doubleClicked, this, &MainWindow::RTreeViewDoubleClicked);
     connect(view, &QTreeView::customContextMenuRequested, this, &MainWindow::RTreeViewCustomContextMenuRequested);
 
     connect(model, &TreeModel::SUpdateName, this, &MainWindow::RUpdateName);
 
-    connect(model, &TreeModel::SUpdateDSpinBox, widget, &TreeWidget::RUpdateDSpinBox);
+    connect(model, &TreeModel::SUpdateDSpinBox, tree_widget, &TreeWidget::RUpdateDSpinBox);
 
     connect(model, &TreeModel::SResizeColumnToContents, view, &QTreeView::resizeColumnToContents);
 
@@ -779,7 +778,7 @@ void MainWindow::InsertNode(TreeWidget* tree_widget)
 
 void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, int row)
 {
-    auto model { tree_->model };
+    auto model { tree_widget_->Model() };
 
     auto node { ResourcePool<Node>::Instance().Allocate() };
     node->rule = model->Rule(parent_id);
@@ -802,7 +801,7 @@ void MainWindow::RRemoveTriggered()
         return;
 
     if (IsTreeWidget(current_widget))
-        RemoveNode(tree_->widget->View(), tree_->model);
+        RemoveNode(tree_widget_->View(), tree_widget_->Model());
 
     if (IsTableWidget(current_widget))
         RemoveTrans(current_widget);
@@ -1075,7 +1074,6 @@ void MainWindow::SetFinanceData()
     auto section { Section::kFinance };
     auto& info { finance_data_.info };
     auto& sql { finance_data_.sql };
-    auto& model { finance_tree_.model };
 
     info.section = section;
     info.node = FINANCE;
@@ -1097,8 +1095,8 @@ void MainWindow::SetFinanceData()
 
     sql = new SqliteFinance(info, this);
 
-    model = new TreeModelFinance(sql, info, finance_settings_.default_unit, finance_table_hash_, interface_.separator, this);
-    finance_tree_.widget = new TreeWidgetCommon(model, info, finance_settings_, this);
+    auto* model { new TreeModelFinance(sql, info, finance_settings_.default_unit, finance_table_hash_, interface_.separator, this) };
+    finance_tree_ = new TreeWidgetCommon(model, info, finance_settings_, this);
 }
 
 void MainWindow::SetProductData()
@@ -1106,7 +1104,6 @@ void MainWindow::SetProductData()
     auto section { Section::kProduct };
     auto& info { product_data_.info };
     auto& sql { product_data_.sql };
-    auto& model { product_tree_.model };
 
     info.section = section;
     info.node = PRODUCT;
@@ -1123,8 +1120,8 @@ void MainWindow::SetProductData()
 
     sql = new SqliteProduct(info, this);
 
-    model = new TreeModelProduct(sql, info, product_settings_.default_unit, product_table_hash_, interface_.separator, this);
-    product_tree_.widget = new TreeWidgetCommon(model, info, product_settings_, this);
+    auto* model { new TreeModelProduct(sql, info, product_settings_.default_unit, product_table_hash_, interface_.separator, this) };
+    product_tree_ = new TreeWidgetCommon(model, info, product_settings_, this);
 }
 
 void MainWindow::SetStakeholderData()
@@ -1132,7 +1129,6 @@ void MainWindow::SetStakeholderData()
     auto section { Section::kStakeholder };
     auto& info { stakeholder_data_.info };
     auto& sql { stakeholder_data_.sql };
-    auto& model { stakeholder_tree_.model };
 
     info.section = section;
     info.node = STAKEHOLDER;
@@ -1152,8 +1148,8 @@ void MainWindow::SetStakeholderData()
 
     sql = new SqliteStakeholder(info, this);
 
-    stakeholder_tree_.model = new TreeModelStakeholder(sql, info, stakeholder_settings_.default_unit, stakeholder_table_hash_, interface_.separator, this);
-    stakeholder_tree_.widget = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
+    auto* model { new TreeModelStakeholder(sql, info, stakeholder_settings_.default_unit, stakeholder_table_hash_, interface_.separator, this) };
+    stakeholder_tree_ = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
 
     connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
     connect(static_cast<SqliteStakeholder*>(sql), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
@@ -1164,7 +1160,6 @@ void MainWindow::SetTaskData()
     auto section { Section::kTask };
     auto& info { task_data_.info };
     auto& sql { task_data_.sql };
-    auto& model { task_tree_.model };
 
     info.section = section;
     info.node = TASK;
@@ -1181,8 +1176,8 @@ void MainWindow::SetTaskData()
 
     sql = new SqliteTask(info, this);
 
-    model = new TreeModelTask(sql, info, task_settings_.default_unit, task_table_hash_, interface_.separator, this);
-    task_tree_.widget = new TreeWidgetCommon(model, info, task_settings_, this);
+    auto* model { new TreeModelTask(sql, info, task_settings_.default_unit, task_table_hash_, interface_.separator, this) };
+    task_tree_ = new TreeWidgetCommon(model, info, task_settings_, this);
 }
 
 void MainWindow::SetSalesData()
@@ -1190,7 +1185,6 @@ void MainWindow::SetSalesData()
     auto section { Section::kSales };
     auto& info { sales_data_.info };
     auto& sql { sales_data_.sql };
-    auto& model { sales_tree_.model };
 
     info.section = section;
     info.node = SALES;
@@ -1210,8 +1204,8 @@ void MainWindow::SetSalesData()
 
     sql = new SqliteSales(info, this);
 
-    model = new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this);
-    sales_tree_.widget = new TreeWidgetOrder(model, info, sales_settings_, this);
+    auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this) };
+    sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
 
     connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
     connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
@@ -1222,7 +1216,6 @@ void MainWindow::SetPurchaseData()
     auto section { Section::kPurchase };
     auto& info { purchase_data_.info };
     auto& sql { purchase_data_.sql };
-    auto& model { purchase_tree_.model };
 
     info.section = section;
     info.node = PURCHASE;
@@ -1243,8 +1236,8 @@ void MainWindow::SetPurchaseData()
 
     sql = new SqlitePurchase(info, this);
 
-    model = new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this);
-    purchase_tree_.widget = new TreeWidgetOrder(model, info, purchase_settings_, this);
+    auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this) };
+    purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
 
     connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
     connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
@@ -1349,7 +1342,7 @@ void MainWindow::RAppendNodeTriggered()
     if (!current_widget || !IsTreeWidget(current_widget))
         return;
 
-    auto view { tree_->widget->View() };
+    auto view { tree_widget_->View() };
     if (!HasSelection(view))
         return;
 
@@ -1413,7 +1406,7 @@ void MainWindow::RJumpTriggered()
         return;
 
     if (!table_hash_->contains(rhs_node_id))
-        CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, rhs_node_id);
+        CreateTabFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, rhs_node_id);
 
     const int trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
     SwitchTab(rhs_node_id, trans_id);
@@ -1443,7 +1436,7 @@ void MainWindow::REditNode()
     if (!widget || !IsTreeWidget(widget))
         return;
 
-    const auto view { tree_->widget->View() };
+    const auto* view { tree_widget_->View() };
     if (!HasSelection(view))
         return;
 
@@ -1459,7 +1452,7 @@ void MainWindow::REditNode()
 void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash)
 {
     QDialog* dialog {};
-    auto model { tree_->model };
+    auto model { tree_widget_->Model() };
 
     auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
     model->CopyNode(tmp_node, node_id);
@@ -1532,7 +1525,7 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* tree_model, Node* no
     connect(dialog, &QDialog::accepted, this, [=, this]() {
         if (tree_model->InsertNode(row, parent, node)) {
             auto index = tree_model->index(row, 0, parent);
-            tree_->widget->SetCurrentIndex(index);
+            tree_widget_->SetCurrentIndex(index);
         }
     });
 
@@ -1550,15 +1543,15 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     if (!node_shadow->id)
         return;
 
-    auto table_model { new TableModelOrder(sql, node->rule, 0, 0, data_->info, product_tree_.model, stakeholder_data_.sql, this) };
+    auto table_model { new TableModelOrder(sql, node->rule, 0, 0, data_->info, product_tree_->Model(), stakeholder_data_.sql, this) };
 
     switch (section) {
     case Section::kSales:
-        dialog = new InsertNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_CUSTOMER, this);
+        dialog = new InsertNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_CUSTOMER, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new InsertNodeOrder(node_shadow, sql, table_model, stakeholder_tree_.model, *settings_, UNIT_VENDOR, this);
+        dialog = new InsertNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_VENDOR, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -1570,7 +1563,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     connect(dialog, &QDialog::accepted, this, [=, this]() {
         if (tree_model->InsertNode(row, parent, node)) {
             auto index = tree_model->index(row, 0, parent);
-            tree_->widget->SetCurrentIndex(index);
+            tree_widget_->SetCurrentIndex(index);
             dialog_hash_->insert(node->id, dialog);
             dialog_list_->removeOne(dialog);
         }
@@ -1585,7 +1578,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
         }
     });
 
-    connect(stakeholder_tree_.model, &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &InsertNodeOrder::RUpdateStakeholder);
+    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &InsertNodeOrder::RUpdateStakeholder);
     connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
 
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
@@ -1594,7 +1587,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     connect(table_model, &TableModel::SUpdateLeafValue, dialog, &InsertNodeOrder::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &InsertNodeOrder::RUpdateLeafValueOne);
 
-    assert(dynamic_cast<TreeModelOrder*>(tree_->model) && "Model is not TreeModelOrder");
+    assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model()) && "Model is not TreeModelOrder");
     auto tree_model_order { static_cast<TreeModelOrder*>(tree_model) };
     connect(tree_model_order, &TreeModelOrder::SUpdateData, dialog, &InsertNodeOrder::RUpdateData);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
@@ -1636,7 +1629,7 @@ void MainWindow::REditDocument()
 
 void MainWindow::RUpdateName(const Node* node)
 {
-    auto model { tree_->model };
+    auto model { tree_widget_->Model() };
     int node_id { node->id };
     auto tab_bar { ui->tabWidget->tabBar() };
     int count { ui->tabWidget->count() };
@@ -1697,9 +1690,9 @@ void MainWindow::RUpdateSettings(CSettings& settings, const Interface& interface
         *settings_ = settings;
 
         if (update_default_unit)
-            tree_->model->UpdateBaseUnit(settings.default_unit);
+            tree_widget_->Model()->UpdateBaseUnit(settings.default_unit);
 
-        tree_->widget->SetStatus();
+        tree_widget_->SetStatus();
         sql_.UpdateSettings(settings, data_->info.section);
 
         if (resize_column) {
@@ -1707,7 +1700,7 @@ void MainWindow::RUpdateSettings(CSettings& settings, const Interface& interface
             if (IsTableWidget(current_widget))
                 ResizeColumn(GetQTableView(current_widget)->horizontalHeader(), true);
             if (IsTreeWidget(current_widget))
-                ResizeColumn(tree_->widget->Header(), false);
+                ResizeColumn(tree_widget_->Header(), false);
         }
     }
 }
@@ -1741,12 +1734,12 @@ void MainWindow::UpdateInterface(const Interface& interface)
     auto old_separator { interface_.separator };
 
     if (old_separator != new_separator) {
-        finance_tree_.model->UpdateSeparator(old_separator, new_separator);
-        stakeholder_tree_.model->UpdateSeparator(old_separator, new_separator);
-        product_tree_.model->UpdateSeparator(old_separator, new_separator);
-        task_tree_.model->UpdateSeparator(old_separator, new_separator);
-        sales_tree_.model->UpdateSeparator(old_separator, new_separator);
-        purchase_tree_.model->UpdateSeparator(old_separator, new_separator);
+        finance_tree_->Model()->UpdateSeparator(old_separator, new_separator);
+        stakeholder_tree_->Model()->UpdateSeparator(old_separator, new_separator);
+        product_tree_->Model()->UpdateSeparator(old_separator, new_separator);
+        task_tree_->Model()->UpdateSeparator(old_separator, new_separator);
+        sales_tree_->Model()->UpdateSeparator(old_separator, new_separator);
+        purchase_tree_->Model()->UpdateSeparator(old_separator, new_separator);
 
         auto widget { ui->tabWidget };
         int count { ui->tabWidget->count() };
@@ -1895,12 +1888,12 @@ void MainWindow::RSearchTriggered()
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    auto dialog { new Search(data_->info, tree_->model, stakeholder_tree_.model, data_->sql, data_->info.rule_hash, *settings_, this) };
+    auto dialog { new Search(data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), data_->sql, data_->info.rule_hash, *settings_, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);
     connect(dialog, &Search::STableLocation, this, &MainWindow::RTableLocation);
-    connect(tree_->model, &TreeModel::SSearch, dialog, &Search::RSearch);
+    connect(tree_widget_->Model(), &TreeModel::SSearch, dialog, &Search::RSearch);
     connect(dialog, &QDialog::rejected, this, [=, this]() { dialog_list_->removeOne(dialog); });
 
     dialog_list_->append(dialog);
@@ -1909,10 +1902,10 @@ void MainWindow::RSearchTriggered()
 
 void MainWindow::RTreeLocation(int node_id)
 {
-    auto widget { tree_->widget };
+    auto widget { tree_widget_ };
     ui->tabWidget->setCurrentWidget(widget);
 
-    auto index { tree_->model->GetIndex(node_id) };
+    auto index { tree_widget_->Model()->GetIndex(node_id) };
     widget->activateWindow();
     widget->SetCurrentIndex(index);
 }
@@ -1930,7 +1923,7 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     };
 
     if (!Contains(lhs_node_id) && !Contains(rhs_node_id))
-        CreateTabFPTS(data_, tree_->model, *settings_, table_hash_, id);
+        CreateTabFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, id);
 
     SwitchTab(id, trans_id);
 }
@@ -1940,7 +1933,7 @@ void MainWindow::RPreferencesTriggered()
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    auto model { tree_->model };
+    auto model { tree_widget_->Model() };
 
     auto preference { new Preferences(data_->info, model, date_format_list_, interface_, *settings_, this) };
     connect(preference, &Preferences::SUpdateSettings, this, &MainWindow::RUpdateSettings);
@@ -2055,7 +2048,7 @@ void MainWindow::on_rBtnFinance_toggled(bool checked)
     SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
-    tree_ = &finance_tree_;
+    tree_widget_ = finance_tree_;
     table_hash_ = &finance_table_hash_;
     dialog_list_ = &finance_dialog_list_;
     dialog_hash_ = &finance_dialog_hash_;
@@ -2079,7 +2072,7 @@ void MainWindow::on_rBtnSales_toggled(bool checked)
     SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
-    tree_ = &sales_tree_;
+    tree_widget_ = sales_tree_;
     table_hash_ = &sales_table_hash_;
     dialog_list_ = &sales_dialog_list_;
     dialog_hash_ = &sales_dialog_hash_;
@@ -2103,7 +2096,7 @@ void MainWindow::on_rBtnTask_toggled(bool checked)
     SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
-    tree_ = &task_tree_;
+    tree_widget_ = task_tree_;
     table_hash_ = &task_table_hash_;
     dialog_list_ = &task_dialog_list_;
     dialog_hash_ = &task_dialog_hash_;
@@ -2127,7 +2120,7 @@ void MainWindow::on_rBtnStakeholder_toggled(bool checked)
     SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
-    tree_ = &stakeholder_tree_;
+    tree_widget_ = stakeholder_tree_;
     table_hash_ = &stakeholder_table_hash_;
     dialog_list_ = &stakeholder_dialog_list_;
     dialog_hash_ = &stakeholder_dialog_hash_;
@@ -2151,7 +2144,7 @@ void MainWindow::on_rBtnProduct_toggled(bool checked)
     SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
-    tree_ = &product_tree_;
+    tree_widget_ = product_tree_;
     table_hash_ = &product_table_hash_;
     dialog_list_ = &product_dialog_list_;
     dialog_hash_ = &product_dialog_hash_;
@@ -2175,7 +2168,7 @@ void MainWindow::on_rBtnPurchase_toggled(bool checked)
     SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
-    tree_ = &purchase_tree_;
+    tree_widget_ = purchase_tree_;
     table_hash_ = &purchase_table_hash_;
     dialog_list_ = &purchase_dialog_list_;
     dialog_hash_ = &purchase_dialog_hash_;

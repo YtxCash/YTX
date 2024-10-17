@@ -3,7 +3,6 @@
 
 #include "component/info.h"
 #include "component/settings.h"
-#include "tree/model/treemodel.h"
 #include "treewidget.h"
 
 namespace Ui {
@@ -24,6 +23,7 @@ public:
     ~TreeWidgetOrder() override;
 
     QTreeView* View() override;
+    TreeModel* Model() override { return model_; };
     QHeaderView* Header() override;
     void SetCurrentIndex(const QModelIndex& index) override;
 
