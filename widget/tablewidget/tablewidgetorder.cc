@@ -7,7 +7,7 @@
 #include "ui_tablewidgetorder.h"
 
 TableWidgetOrder::TableWidgetOrder(
-    NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings& settings, int party_unit, QWidget* parent)
+    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings& settings, int party_unit, QWidget* parent)
     : TableWidget(parent)
     , ui(new Ui::TableWidgetOrder)
     , node_shadow_ { node_shadow }

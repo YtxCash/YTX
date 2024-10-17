@@ -7,7 +7,7 @@ class TreeModelFinance : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelFinance(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+    TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelFinance() = default;
 };
 

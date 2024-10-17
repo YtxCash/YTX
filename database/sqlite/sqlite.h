@@ -131,6 +131,4 @@ protected:
     CInfo& info_;
 };
 
-using SPSqlite = QSharedPointer<Sqlite>;
-
 #endif // SQLITE_H

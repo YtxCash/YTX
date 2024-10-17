@@ -19,7 +19,7 @@ public:
     virtual ~TableModel();
 
 protected:
-    TableModel(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
+    TableModel(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
 
 signals:
     // send to tree model
@@ -122,7 +122,7 @@ private:
     void AccumulateSubtotal(int start, bool rule) const;
 
 protected:
-    SPSqlite sql_ {};
+    Sqlite* sql_ {};
     bool rule_ {};
 
     CInfo& info_;

@@ -5,7 +5,7 @@
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 
-TableModel::TableModel(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent)
+TableModel::TableModel(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : QAbstractItemModel(parent)
     , sql_ { sql }
     , rule_ { rule }

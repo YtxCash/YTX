@@ -10,7 +10,7 @@
 class SearchNodeModel final : public QAbstractItemModel {
     Q_OBJECT
 public:
-    SearchNodeModel(CInfo& info, const TreeModel* tree_model, SPSqlite sql, QObject* parent = nullptr);
+    SearchNodeModel(CInfo& info, const TreeModel* tree_model, Sqlite* sql, QObject* parent = nullptr);
     ~SearchNodeModel() = default;
 
 public:
@@ -29,7 +29,7 @@ public:
     void Query(CString& text);
 
 private:
-    SPSqlite sql_ {};
+    Sqlite* sql_ {};
 
     CInfo& info_;
     const TreeModel* tree_model_;

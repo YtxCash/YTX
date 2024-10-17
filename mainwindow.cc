@@ -456,8 +456,8 @@ void MainWindow::TabConnectFPT(const QTableView* view, const TableModel* table_m
     connect(table_model, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
     connect(table_model, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
 
-    connect(data->sql.data(), &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
-    connect(data->sql.data(), &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
+    connect(data->sql, &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
+    connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
 void MainWindow::TabConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
@@ -488,7 +488,7 @@ void MainWindow::TabConnectStakeholder(const QTableView* view, const TableModel*
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 
-    connect(data->sql.data(), &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
+    connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
 void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id)
@@ -615,7 +615,7 @@ void MainWindow::CreateSection(Tree& tree, CString& name, Data* data, TableHash*
     auto model { tree.model };
 
     SetDelegate(view, info, settings);
-    TreeConnect(view, widget, model, data->sql.data());
+    TreeConnect(view, widget, model, data->sql);
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(widget, name), QVariant::fromValue(Tab { info->section, 0 }));
 
@@ -841,8 +841,8 @@ void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kUnit)).data().toInt() };
 
     auto dialog { new class RemoveNode(model, node_id, unit, exteral_reference, this) };
-    connect(dialog, &RemoveNode::SRemoveNode, sql.data(), &Sqlite::RRemoveNode);
-    connect(dialog, &RemoveNode::SReplaceNode, sql.data(), &Sqlite::RReplaceNode);
+    connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
+    connect(dialog, &RemoveNode::SReplaceNode, sql, &Sqlite::RReplaceNode);
     dialog->exec();
 }
 
@@ -1095,7 +1095,7 @@ void MainWindow::SetFinanceData()
 
     sql_.QuerySettings(finance_settings_, section);
 
-    sql = QSharedPointer<SqliteFinance>::create(info);
+    sql = new SqliteFinance(info, this);
 
     model = new TreeModelFinance(sql, info, finance_settings_.default_unit, finance_table_hash_, interface_.separator, this);
     finance_tree_.widget = new TreeWidgetCommon(model, info, finance_settings_, this);
@@ -1121,7 +1121,7 @@ void MainWindow::SetProductData()
 
     sql_.QuerySettings(product_settings_, section);
 
-    sql = QSharedPointer<SqliteProduct>::create(info);
+    sql = new SqliteProduct(info, this);
 
     model = new TreeModelProduct(sql, info, product_settings_.default_unit, product_table_hash_, interface_.separator, this);
     product_tree_.widget = new TreeWidgetCommon(model, info, product_settings_, this);
@@ -1150,13 +1150,13 @@ void MainWindow::SetStakeholderData()
 
     sql_.QuerySettings(stakeholder_settings_, section);
 
-    sql = QSharedPointer<SqliteStakeholder>::create(info);
+    sql = new SqliteStakeholder(info, this);
 
     stakeholder_tree_.model = new TreeModelStakeholder(sql, info, stakeholder_settings_.default_unit, stakeholder_table_hash_, interface_.separator, this);
     stakeholder_tree_.widget = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
 
-    connect(product_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
-    connect(static_cast<SqliteStakeholder*>(sql.data()), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
+    connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
+    connect(static_cast<SqliteStakeholder*>(sql), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
 }
 
 void MainWindow::SetTaskData()
@@ -1179,7 +1179,7 @@ void MainWindow::SetTaskData()
 
     sql_.QuerySettings(task_settings_, section);
 
-    sql = QSharedPointer<SqliteTask>::create(info);
+    sql = new SqliteTask(info, this);
 
     model = new TreeModelTask(sql, info, task_settings_.default_unit, task_table_hash_, interface_.separator, this);
     task_tree_.widget = new TreeWidgetCommon(model, info, task_settings_, this);
@@ -1208,13 +1208,13 @@ void MainWindow::SetSalesData()
 
     sql_.QuerySettings(sales_settings_, section);
 
-    sql = QSharedPointer<SqliteSales>::create(info);
+    sql = new SqliteSales(info, this);
 
     model = new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this);
     sales_tree_.widget = new TreeWidgetOrder(model, info, sales_settings_, this);
 
-    connect(product_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
-    connect(stakeholder_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
+    connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
+    connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
 }
 
 void MainWindow::SetPurchaseData()
@@ -1241,13 +1241,13 @@ void MainWindow::SetPurchaseData()
 
     sql_.QuerySettings(purchase_settings_, section);
 
-    sql = QSharedPointer<SqlitePurchase>::create(info);
+    sql = new SqlitePurchase(info, this);
 
     model = new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this);
     purchase_tree_.widget = new TreeWidgetOrder(model, info, purchase_settings_, this);
 
-    connect(product_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
-    connect(stakeholder_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
+    connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
+    connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
 }
 
 void MainWindow::SetDateFormat() { date_format_list_.emplaceBack(DATE_TIME_FST); }
@@ -1876,7 +1876,7 @@ void MainWindow::ResourceFile()
 #elif defined(Q_OS_MACOS)
     path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
 
-#if 1
+#if 0
     QString command { QDir::homePath() + "/Qt6.8/6.8.0/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
         + path };
 

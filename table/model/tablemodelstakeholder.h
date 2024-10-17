@@ -7,7 +7,7 @@ class TableModelStakeholder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelStakeholder(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
+    TableModelStakeholder(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
     ~TableModelStakeholder() override = default;
 
 public slots:

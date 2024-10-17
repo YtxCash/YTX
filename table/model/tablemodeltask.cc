@@ -3,7 +3,7 @@
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 
-TableModelTask::TableModelTask(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent)
+TableModelTask::TableModelTask(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
 {
 }

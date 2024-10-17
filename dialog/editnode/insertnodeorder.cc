@@ -9,7 +9,7 @@
 #include "ui_insertnodeorder.h"
 
 InsertNodeOrder::InsertNodeOrder(
-    NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit, QWidget* parent)
+    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::InsertNodeOrder)
     , node_shadow_ { node_shadow }

@@ -8,7 +8,7 @@
 #include "global/resourcepool.h"
 #include "widget/temporarylabel.h"
 
-TreeModel::TreeModel(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
+TreeModel::TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : QAbstractItemModel(parent)
     , sql_ { sql }
     , info_ { info }

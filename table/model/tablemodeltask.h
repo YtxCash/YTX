@@ -7,7 +7,7 @@ class TableModelTask final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelTask(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
+    TableModelTask(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
     ~TableModelTask() override = default;
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

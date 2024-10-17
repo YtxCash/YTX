@@ -15,7 +15,7 @@ class InsertNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    InsertNodeOrder(NodeShadow* node_shadow, SPSqlite sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit,
+    InsertNodeOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit,
         QWidget* parent = nullptr);
     ~InsertNodeOrder();
 
@@ -62,7 +62,7 @@ private:
     Ui::InsertNodeOrder* ui;
 
     NodeShadow* node_shadow_ {};
-    SPSqlite sql_ {};
+    Sqlite* sql_ {};
     int party_unit_ {};
     TableModel* order_table_ {};
     TreeModel* stakeholder_tree_ {};

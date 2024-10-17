@@ -14,8 +14,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
-Search::Search(
-    CInfo& info, const TreeModel* tree, const TreeModel* stakeholder_tree, SPSqlite sql, CStringHash& rule_hash, CSettings& settings, QWidget* parent)
+Search::Search(CInfo& info, const TreeModel* tree, const TreeModel* stakeholder_tree, Sqlite* sql, CStringHash& rule_hash, CSettings& settings, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Search)
     , sql_ { sql }

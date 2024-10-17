@@ -7,7 +7,7 @@ class TreeModelProduct final : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelProduct(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+    TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelProduct() override = default;
 
 public:

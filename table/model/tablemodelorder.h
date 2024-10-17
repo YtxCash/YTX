@@ -10,7 +10,7 @@ class TableModelOrder final : public TableModel {
 
 public:
     TableModelOrder(
-        SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, SPSqlite sqlite_stakeholder, QObject* parent = nullptr);
+        Sqlite* sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, Sqlite* sqlite_stakeholder, QObject* parent = nullptr);
     ~TableModelOrder() override = default;
 
 public slots:

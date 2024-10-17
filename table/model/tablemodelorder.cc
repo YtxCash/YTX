@@ -3,10 +3,10 @@
 #include "global/resourcepool.h"
 
 TableModelOrder::TableModelOrder(
-    SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, SPSqlite sqlite_stakeholder, QObject* parent)
+    Sqlite* sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, Sqlite* sqlite_stakeholder, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
     , product_tree_ { product_tree }
-    , sqlite_stakeholder_ { static_cast<SqliteStakeholder*>(sqlite_stakeholder.data()) }
+    , sqlite_stakeholder_ { static_cast<SqliteStakeholder*>(sqlite_stakeholder) }
     , party_id_ { party_id }
 {
     if (party_id >= 1)

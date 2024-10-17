@@ -1,7 +1,6 @@
 #ifndef TRANS_H
 #define TRANS_H
 
-#include <QSharedPointer>
 #include <QStringList>
 
 struct Trans {

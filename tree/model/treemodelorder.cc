@@ -7,7 +7,7 @@
 #include "component/enumclass.h"
 #include "global/resourcepool.h"
 
-TreeModelOrder::TreeModelOrder(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
+TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel { sql, info, default_unit, table_hash, separator, parent }
 {
     TreeModelOrder::ConstructTree();

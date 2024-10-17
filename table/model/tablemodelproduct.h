@@ -7,7 +7,7 @@ class TableModelProduct final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelProduct(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
+    TableModelProduct(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
     ~TableModelProduct() override = default;
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

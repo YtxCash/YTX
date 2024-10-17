@@ -25,7 +25,7 @@ struct Tree {
 struct Data {
     Tab tab {};
     Info info {};
-    QSharedPointer<Sqlite> sql {};
+    Sqlite* sql {};
 };
 
 using PDialog = QPointer<QDialog>;

@@ -3,7 +3,7 @@
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 
-TableModelStakeholder::TableModelStakeholder(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent)
+TableModelStakeholder::TableModelStakeholder(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
 {
 }

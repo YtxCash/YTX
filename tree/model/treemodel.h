@@ -17,7 +17,7 @@ public:
     virtual ~TreeModel();
 
 protected:
-    TreeModel(SPSqlite sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+    TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
 
     TreeModel() = delete;
     TreeModel(const TreeModel&) = delete;
@@ -193,7 +193,7 @@ protected:
     }
 
 protected:
-    SPSqlite sql_ {};
+    Sqlite* sql_ {};
     Node* root_ {};
 
     NodeHash node_hash_ {};
