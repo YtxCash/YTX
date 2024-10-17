@@ -9,6 +9,10 @@ class SqliteStakeholder final : public Sqlite {
 public:
     SqliteStakeholder(CInfo& info, QObject* parent = nullptr);
 
+signals:
+    // send to signal station
+    void SAppendPrice(Section section, TransShadow* trans_shadow);
+
 public slots:
     bool RReplaceNode(int old_node_id, int new_node_id) override;
     void RRemoveNode(int node_id) override;

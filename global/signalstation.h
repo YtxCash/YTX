@@ -18,10 +18,14 @@ signals:
     void SRemoveOneTrans(int node_id, int trans_id);
     void SUpdateBalance(int node_id, int trans_id);
 
+    void SAppendPrice(TransShadow* trans_shadow);
+
 public slots:
     void RAppendOneTrans(Section section, const TransShadow* trans_shadow);
     void RRemoveOneTrans(Section section, int node_id, int trans_id);
     void RUpdateBalance(Section section, int node_id, int trans_id);
+
+    void RAppendPrice(Section section, TransShadow* trans_shadow);
 
 private:
     SignalStation() = default;

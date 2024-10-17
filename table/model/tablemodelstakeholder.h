@@ -10,6 +10,9 @@ public:
     TableModelStakeholder(SPSqlite sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
     ~TableModelStakeholder() override = default;
 
+public slots:
+    void RAppendPrice(TransShadow* trans_shadow);
+
 public:
     // implemented functions
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

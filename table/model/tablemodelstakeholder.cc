@@ -8,19 +8,27 @@ TableModelStakeholder::TableModelStakeholder(SPSqlite sql, bool rule, int node_i
 {
 }
 
+void TableModelStakeholder::RAppendPrice(TransShadow* trans_shadow)
+{
+    auto row { trans_shadow_list_.size() };
+    beginInsertRows(QModelIndex(), row, row);
+    trans_shadow_list_.append(trans_shadow);
+    endInsertRows();
+}
+
 bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex& parent)
 {
     if (row <= -1)
         return false;
 
     auto trans_shadow { trans_shadow_list_.at(row) };
-    int rhs_node_id { *trans_shadow->rhs_node };
+    int lhs_node_id { *trans_shadow->lhs_node };
 
     beginRemoveRows(parent, row, row);
     trans_shadow_list_.removeAt(row);
     endRemoveRows();
 
-    if (rhs_node_id != 0)
+    if (lhs_node_id != 0)
         sql_->RemoveTrans(*trans_shadow->id);
 
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);

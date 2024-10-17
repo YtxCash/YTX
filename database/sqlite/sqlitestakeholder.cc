@@ -65,26 +65,32 @@ bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int product
 
 bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double value)
 {
+    // update unit_price
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash)
         if (trans->node_id == party_id && trans->lhs_node == inside_product_id) {
             trans->unit_price = value;
             UpdateField(info_.transaction, value, UNIT_PRICE, trans->id);
-            return true;
+            break;
         }
 
-    // 执行添加，todo
-
+    // append unit_price in TableModelStakeholder
     auto* trans { ResourcePool<Trans>::Instance().Allocate() };
+    auto* trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
+
     trans->node_id = party_id;
     trans->lhs_node = inside_product_id;
     trans->unit_price = value;
 
-    if (WriteTrans(trans))
+    if (WriteTrans(trans)) {
+        ConvertTrans(trans, trans_shadow, true);
+        emit SAppendPrice(info_.section, trans_shadow);
         return true;
+    }
 
     ResourcePool<Trans>::Instance().Recycle(trans);
+    ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
     return false;
 }
 

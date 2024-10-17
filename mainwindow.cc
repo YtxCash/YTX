@@ -1153,6 +1153,7 @@ void MainWindow::SetStakeholderData()
     stakeholder_tree_.widget = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
 
     connect(product_data_.sql.data(), &Sqlite::SUpdateProductReference, sql.data(), &Sqlite::RUpdateProductReference);
+    connect(static_cast<SqliteStakeholder*>(sql.data()), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
 }
 
 void MainWindow::SetTaskData()
