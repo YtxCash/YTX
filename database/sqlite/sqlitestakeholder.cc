@@ -63,9 +63,11 @@ bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int product
     return false;
 }
 
-bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double value) const
+bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double value)
 {
-    for (auto* trans : trans_hash_)
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
+
+    for (auto* trans : const_trans_hash)
         if (trans->node_id == party_id && trans->lhs_node == inside_product_id) {
             trans->unit_price = value;
             UpdateField(info_.transaction, value, UNIT_PRICE, trans->id);
@@ -74,6 +76,15 @@ bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double 
 
     // 执行添加，todo
 
+    auto* trans { ResourcePool<Trans>::Instance().Allocate() };
+    trans->node_id = party_id;
+    trans->lhs_node = inside_product_id;
+    trans->unit_price = value;
+
+    if (WriteTrans(trans))
+        return true;
+
+    ResourcePool<Trans>::Instance().Recycle(trans);
     return false;
 }
 
@@ -220,6 +231,37 @@ void SqliteStakeholder::ReadTransFunction(QSqlQuery& query)
         ReadTransQuery(trans, query);
         trans_hash_.insert(id, trans);
     }
+}
+
+bool SqliteStakeholder::WriteTrans(Trans* trans)
+{
+    QSqlQuery query(*db_);
+    CString& string { WriteTransQS() };
+
+    query.prepare(string);
+    WriteTransBind(trans, query);
+
+    if (!query.exec()) {
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in WriteTrans" << query.lastError().text();
+        return false;
+    }
+
+    trans->id = query.lastInsertId().toInt();
+    trans_hash_.insert(trans->id, trans);
+    return true;
+}
+
+void SqliteStakeholder::WriteTransBind(Trans* trans, QSqlQuery& query) const
+{
+    query.bindValue(":date_time", trans->date_time);
+    query.bindValue(":code", trans->code);
+    query.bindValue(":node_id", trans->node_id);
+    query.bindValue(":unit_price", trans->unit_price);
+    query.bindValue(":description", trans->description);
+    query.bindValue(":state", trans->state);
+    query.bindValue(":document", trans->document.join(SEMICOLON));
+    query.bindValue(":inside_product", trans->lhs_node);
+    query.bindValue(":outside_product", trans->rhs_node);
 }
 
 void SqliteStakeholder::ReplaceNodeFunctionStakeholder(int old_node_id, int new_node_id)

@@ -15,7 +15,7 @@ public slots:
 
 public:
     bool SearchPrice(TransShadow* order_trans_shadow, int product_id, bool is_inside) const;
-    bool UpdatePrice(int party_id, int inside_product_id, double value) const;
+    bool UpdatePrice(int party_id, int inside_product_id, double value);
     bool ReadTrans(int node_id);
 
 protected:
@@ -45,6 +45,8 @@ protected:
 
 private:
     void ReadTransFunction(QSqlQuery& query);
+    bool WriteTrans(Trans* trans);
+    void WriteTransBind(Trans* trans, QSqlQuery& query) const;
 
 private:
     void ReplaceNodeFunctionStakeholder(int old_node_id, int new_node_id);
