@@ -60,8 +60,17 @@ void TableModelOrder::RUpdateLocked(int node_id, bool checked)
     if (node_id != node_id_ || !checked)
         return;
 
-    // 遍历trans_shadow_list，对比exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
+    TransShadow* trans_shadow {};
+    for (auto i { trans_shadow_list_.size() - 1 }; i >= 0; --i) {
+        trans_shadow = trans_shadow_list_.at(i);
+        if (*trans_shadow->lhs_node == 0) {
+            beginRemoveRows(QModelIndex(), i, i);
+            ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
+            endRemoveRows();
+        }
+    }
 
+    // 遍历trans_shadow_list，对比exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
     for (auto it = update_price_.cbegin(); it != update_price_.cend(); ++it) {
         sqlite_stakeholder_->UpdatePrice(party_id_, it.key(), it.value());
     }
