@@ -120,8 +120,7 @@ MainWindow::~MainWindow()
     }
 
     if (stakeholder_tree_) {
-        // 默认恢复的Tab，无法接收order中价格的同步，暂时不知道如何解决、先禁用了
-        // SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, VIEW);
+        SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, VIEW);
         SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
 
         stakeholder_dialog_list_.clear();
@@ -913,9 +912,9 @@ void MainWindow::SaveTab(const TableHash& table_hash, CString& section_name, CSt
 
 void MainWindow::RestoreTab(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property)
 {
-    // order不恢复；stakeholder恢复后无法自动同步order生成的新单价、暂时禁用
+    // order不恢复
     Section section { data->info.section };
-    if (section == Section::kSales || section == Section::kPurchase || section == Section::kStakeholder)
+    if (section == Section::kSales || section == Section::kPurchase)
         return;
 
     auto variant { exclusive_interface_->value(QString("%1/%2").arg(data->info.node, property)) };

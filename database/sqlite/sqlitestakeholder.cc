@@ -236,8 +236,10 @@ void SqliteStakeholder::ReadTransFunction(QSqlQuery& query)
     while (query.next()) {
         id = query.value("id").toInt();
 
-        trans = ResourcePool<Trans>::Instance().Allocate();
+        if (trans_hash_.contains(id))
+            continue;
 
+        trans = ResourcePool<Trans>::Instance().Allocate();
         trans->id = id;
 
         ReadTransQuery(trans, query);
