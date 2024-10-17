@@ -413,7 +413,7 @@ void MainWindow::CreateTablePS(Data* data, TreeModel* tree_model, CSettings& set
     auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node_id);
 
-    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, party_id, info, product_tree_->Model(), stakeholder_data_.sql, this) };
+    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
     TableWidgetOrder* widget {};
 
     switch (section) {
@@ -479,7 +479,7 @@ void MainWindow::TableConnectOrder(const QTableView* view, const TableModel* tab
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
     connect(widget, &TableWidgetOrder::SUpdateLocked, table_model_order, &TableModelOrder::RUpdateLocked);
-    connect(widget, &TableWidgetOrder::SUpdatePartyID, table_model_order, &TableModelOrder::RUpdatePartyID);
+    connect(widget, &TableWidgetOrder::SUpdateParty, table_model_order, &TableModelOrder::RUpdateParty);
 }
 
 void MainWindow::TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
@@ -1542,7 +1542,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     if (!node_shadow->id)
         return;
 
-    auto table_model { new TableModelOrder(sql, node->rule, 0, 0, data_->info, product_tree_->Model(), stakeholder_data_.sql, this) };
+    auto table_model { new TableModelOrder(sql, node->rule, 0, data_->info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
 
     switch (section) {
     case Section::kSales:
@@ -1592,7 +1592,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
     connect(dialog, &InsertNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
-    connect(dialog, &InsertNodeOrder::SUpdatePartyID, table_model, &TableModelOrder::RUpdatePartyID);
+    connect(dialog, &InsertNodeOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 
     dialog_list_->append(dialog);
 

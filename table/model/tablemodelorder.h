@@ -9,14 +9,14 @@ class TableModelOrder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelOrder(
-        Sqlite* sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, Sqlite* sqlite_stakeholder, QObject* parent = nullptr);
+    TableModelOrder(Sqlite* sql, bool rule, int node_id, CInfo& info, const NodeShadow* node_shadow, const TreeModel* product_tree, Sqlite* sqlite_stakeholder,
+        QObject* parent = nullptr);
     ~TableModelOrder() override = default;
 
 public slots:
     void RUpdateNodeID(int node_id);
     void RUpdateLocked(int node_id, bool checked);
-    void RUpdatePartyID(int party_id);
+    void RUpdateParty();
 
 public:
     // implemented functions
@@ -67,7 +67,7 @@ private:
     const TreeModel* product_tree_ {};
     SqliteStakeholder* sqlite_stakeholder_ {};
     QHash<int, double> update_price_ {}; // inside_product_id, exclusive_price
-    int party_id_ {};
+    const NodeShadow* node_shadow_ {};
 };
 
 #endif // TABLEMODELORDER_H

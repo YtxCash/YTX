@@ -3,21 +3,17 @@
 #include "global/resourcepool.h"
 
 TableModelOrder::TableModelOrder(
-    Sqlite* sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, Sqlite* sqlite_stakeholder, QObject* parent)
+    Sqlite* sql, bool rule, int node_id, CInfo& info, const NodeShadow* node_shadow, const TreeModel* product_tree, Sqlite* sqlite_stakeholder, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
     , product_tree_ { product_tree }
     , sqlite_stakeholder_ { static_cast<SqliteStakeholder*>(sqlite_stakeholder) }
-    , party_id_ { party_id }
+    , node_shadow_ { node_shadow }
 {
-    if (party_id >= 1)
-        RUpdatePartyID(party_id);
+    if (*node_shadow->party >= 1)
+        RUpdateParty();
 }
 
-void TableModelOrder::RUpdatePartyID(int party_id)
-{
-    party_id_ = party_id;
-    sqlite_stakeholder_->ReadTrans(party_id);
-}
+void TableModelOrder::RUpdateParty() { sqlite_stakeholder_->ReadTrans(*node_shadow_->party); }
 
 void TableModelOrder::RUpdateNodeID(int node_id)
 {
@@ -76,7 +72,7 @@ void TableModelOrder::RUpdateLocked(int node_id, bool checked)
 
     // 遍历trans_shadow_list，对比exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
     for (auto it = update_price_.cbegin(); it != update_price_.cend(); ++it) {
-        sqlite_stakeholder_->UpdatePrice(party_id_, it.key(), it.value());
+        sqlite_stakeholder_->UpdatePrice(*node_shadow_->party, it.key(), it.value());
     }
 }
 
@@ -417,7 +413,7 @@ void TableModelOrder::SearchPrice(TransShadow* trans_shadow, int product_id, boo
     if (!trans_shadow || !sqlite_stakeholder_ || product_id <= 0)
         return;
 
-    if (sqlite_stakeholder_->SearchPrice(trans_shadow, party_id_, product_id, is_inside))
+    if (sqlite_stakeholder_->SearchPrice(trans_shadow, *node_shadow_->party, product_id, is_inside))
         return;
 
     *trans_shadow->unit_price = is_inside ? product_tree_->First(product_id) : 0.0;

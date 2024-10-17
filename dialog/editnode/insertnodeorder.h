@@ -22,7 +22,7 @@ public:
 signals:
     void SUpdateNodeID(int node_id);
     void SUpdateLocked(int node_id, bool checked);
-    void SUpdatePartyID(int party_id);
+    void SUpdateParty();
 
 public slots:
     void accept() override;
