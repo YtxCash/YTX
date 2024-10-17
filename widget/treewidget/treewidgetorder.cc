@@ -1,7 +1,5 @@
 #include "treewidgetorder.h"
 
-#include <QApplication>
-
 #include "ui_treewidgetorder.h"
 
 TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent)
@@ -22,8 +20,6 @@ TreeWidgetOrder::~TreeWidgetOrder() { delete ui; }
 void TreeWidgetOrder::SetCurrentIndex(const QModelIndex& index) { ui->treeViewOrder->setCurrentIndex(index); }
 
 QTreeView* TreeWidgetOrder::View() { return ui->treeViewOrder; }
-
-QHeaderView* TreeWidgetOrder::Header() { return ui->treeViewOrder->header(); }
 
 void TreeWidgetOrder::on_dateEditStart_dateChanged(const QDate& date) { }
 

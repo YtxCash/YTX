@@ -24,7 +24,6 @@ public:
 
     QTreeView* View() override;
     TreeModel* Model() override { return model_; };
-    QHeaderView* Header() override;
     void SetCurrentIndex(const QModelIndex& index) override;
 
     void SetStatus() override { };

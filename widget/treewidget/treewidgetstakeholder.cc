@@ -1,7 +1,5 @@
 #include "treewidgetstakeholder.h"
 
-#include <QApplication>
-
 #include "ui_treewidgetstakeholder.h"
 
 TreeWidgetStakeholder::TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent)
@@ -20,5 +18,3 @@ TreeWidgetStakeholder::~TreeWidgetStakeholder() { delete ui; }
 void TreeWidgetStakeholder::SetCurrentIndex(const QModelIndex& index) { ui->treeViewStakeholder->setCurrentIndex(index); }
 
 QTreeView* TreeWidgetStakeholder::View() { return ui->treeViewStakeholder; }
-
-QHeaderView* TreeWidgetStakeholder::Header() { return ui->treeViewStakeholder->header(); }

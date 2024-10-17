@@ -19,7 +19,6 @@ public:
     virtual void SetStatus() = 0;
     virtual QTreeView* View() = 0;
     virtual TreeModel* Model() = 0;
-    virtual QHeaderView* Header() = 0;
 
 protected:
     TreeWidget(QWidget* parent = nullptr)

@@ -1,7 +1,5 @@
 #include "treewidgetcommon.h"
 
-#include <QApplication>
-
 #include "component/constvalue.h"
 #include "ui_treewidgetcommon.h"
 
@@ -52,8 +50,6 @@ void TreeWidgetCommon::SetStatus()
 }
 
 QTreeView* TreeWidgetCommon::View() { return ui->treeViewCommon; }
-
-QHeaderView* TreeWidgetCommon::Header() { return ui->treeViewCommon->header(); }
 
 void TreeWidgetCommon::RUpdateDSpinBox()
 {

@@ -107,14 +107,14 @@ MainWindow::~MainWindow()
 
     if (finance_tree_) {
         SaveTab(finance_table_hash_, finance_data_.info.node, VIEW);
-        SaveState(finance_tree_->Header(), exclusive_interface_, finance_data_.info.node, HEADER_STATE);
+        SaveState(finance_tree_->View()->header(), exclusive_interface_, finance_data_.info.node, HEADER_STATE);
 
         finance_dialog_list_.clear();
     }
 
     if (product_tree_) {
         SaveTab(product_table_hash_, product_data_.info.node, VIEW);
-        SaveState(product_tree_->Header(), exclusive_interface_, product_data_.info.node, HEADER_STATE);
+        SaveState(product_tree_->View()->header(), exclusive_interface_, product_data_.info.node, HEADER_STATE);
 
         product_dialog_list_.clear();
     }
@@ -122,28 +122,28 @@ MainWindow::~MainWindow()
     if (stakeholder_tree_) {
         // 默认恢复的Tab，无法接收order中价格的同步，暂时不知道如何解决、先禁用了
         // SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, VIEW);
-        SaveState(stakeholder_tree_->Header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
+        SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
 
         stakeholder_dialog_list_.clear();
     }
 
     if (task_tree_) {
         SaveTab(task_table_hash_, task_data_.info.node, VIEW);
-        SaveState(task_tree_->Header(), exclusive_interface_, task_data_.info.node, HEADER_STATE);
+        SaveState(task_tree_->View()->header(), exclusive_interface_, task_data_.info.node, HEADER_STATE);
 
         task_dialog_list_.clear();
     }
 
     if (sales_tree_) {
         // SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
-        SaveState(sales_tree_->Header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
+        SaveState(sales_tree_->View()->header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
 
         sales_dialog_list_.clear();
     }
 
     if (purchase_tree_) {
         // SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
-        SaveState(purchase_tree_->Header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
+        SaveState(purchase_tree_->View()->header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
 
         purchase_dialog_list_.clear();
     }
@@ -1700,7 +1700,7 @@ void MainWindow::RUpdateSettings(CSettings& settings, const Interface& interface
             if (IsTableWidget(current_widget))
                 ResizeColumn(GetQTableView(current_widget)->horizontalHeader(), true);
             if (IsTreeWidget(current_widget))
-                ResizeColumn(tree_widget_->Header(), false);
+                ResizeColumn(tree_widget_->View()->header(), false);
         }
     }
 }
