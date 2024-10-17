@@ -124,8 +124,8 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
-    void CreateTabPS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
+    void CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
+    void CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
     void DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id);
     void DelegateFinance(QTableView* view, CSettings& settings);
     void DelegateTask(QTableView* view, CSettings& settings);
@@ -134,9 +134,9 @@ private:
     void DelegateOrder(QTableView* view, CSettings& settings);
     void SetView(QTableView* view);
 
-    void TabConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
-    void TabConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget);
-    void TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
+    void TableConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
+    void TableConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget);
+    void TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
 
     void CreateSection(TreeWidget* tree_widget, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab);

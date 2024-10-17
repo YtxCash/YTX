@@ -287,7 +287,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             if (party_id <= 0)
                 return;
 
-            CreateTabPS(data_, tree_widget_->Model(), *settings_, table_hash_, node_id, party_id);
+            CreateTablePS(data_, tree_widget_->Model(), *settings_, table_hash_, node_id, party_id);
         }
 
         if (section != Section::kSales && section != Section::kPurchase) {
@@ -295,7 +295,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             if (section == Section::kStakeholder && unit == UNIT_PRODUCT)
                 return;
 
-            CreateTabFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, node_id);
+            CreateTableFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, node_id);
         }
     }
 
@@ -331,7 +331,7 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name)
     return true;
 }
 
-void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id)
+void MainWindow::CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id)
 {
     CString& name { tree_model->Name(node_id) };
     auto sql { data->sql };
@@ -373,11 +373,11 @@ void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& set
     case Section::kFinance:
     case Section::kProduct:
     case Section::kTask:
-        TabConnectFPT(view, model, tree_model, data);
+        TableConnectFPT(view, model, tree_model, data);
         DelegateCommon(view, tree_model, settings, node_id);
         break;
     case Section::kStakeholder:
-        TabConnectStakeholder(view, model, tree_model, data);
+        TableConnectStakeholder(view, model, tree_model, data);
         break;
     default:
         break;
@@ -404,7 +404,7 @@ void MainWindow::CreateTabFPTS(Data* data, TreeModel* tree_model, CSettings& set
     SignalStation::Instance().RegisterModel(section, node_id, model);
 }
 
-void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id)
+void MainWindow::CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id)
 {
     CString& name { stakeholder_tree_->Model()->Name(party_id) };
     auto sql { data->sql };
@@ -437,13 +437,13 @@ void MainWindow::CreateTabPS(Data* data, TreeModel* tree_model, CSettings& setti
     auto* view { widget->View() };
     SetView(view);
 
-    TabConnectOrder(view, table_model, tree_model, widget);
+    TableConnectOrder(view, table_model, tree_model, widget);
     DelegateOrder(view, settings);
 
     table_hash->insert(node_id, widget);
 }
 
-void MainWindow::TabConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
+void MainWindow::TableConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
 {
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
@@ -460,7 +460,7 @@ void MainWindow::TabConnectFPT(const QTableView* view, const TableModel* table_m
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::TabConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
+void MainWindow::TableConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
 {
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateOrderPartyEmployee, widget, &TableWidgetOrder::RUpdateStakeholder);
@@ -483,7 +483,7 @@ void MainWindow::TabConnectOrder(const QTableView* view, const TableModel* table
     connect(widget, &TableWidgetOrder::SUpdatePartyID, table_model_order, &TableModelOrder::RUpdatePartyID);
 }
 
-void MainWindow::TabConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
+void MainWindow::TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
 {
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
@@ -930,7 +930,7 @@ void MainWindow::RestoreTab(Data* data, TreeModel* tree_model, CSettings& settin
 
     for (int node_id : list) {
         if (tree_model->Contains(node_id) && !tree_model->Branch(node_id) && node_id >= 1)
-            CreateTabFPTS(data, tree_model, settings, table_hash, node_id);
+            CreateTableFPTS(data, tree_model, settings, table_hash, node_id);
     }
 }
 
@@ -1406,7 +1406,7 @@ void MainWindow::RJumpTriggered()
         return;
 
     if (!table_hash_->contains(rhs_node_id))
-        CreateTabFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, rhs_node_id);
+        CreateTableFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, rhs_node_id);
 
     const int trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
     SwitchTab(rhs_node_id, trans_id);
@@ -1923,7 +1923,7 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     };
 
     if (!Contains(lhs_node_id) && !Contains(rhs_node_id))
-        CreateTabFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, id);
+        CreateTableFPTS(data_, tree_widget_->Model(), *settings_, table_hash_, id);
 
     SwitchTab(id, trans_id);
 }
