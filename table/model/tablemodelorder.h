@@ -1,6 +1,7 @@
 #ifndef TABLEMODELORDER_H
 #define TABLEMODELORDER_H
 
+#include "database/sqlite/sqlitestakeholder.h"
 #include "tablemodel.h"
 #include "tree/model/treemodel.h"
 
@@ -10,12 +11,12 @@ class TableModelOrder final : public TableModel {
 public:
     TableModelOrder(
         SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, SPSqlite sqlite_stakeholder, QObject* parent = nullptr);
-    ~TableModelOrder() override;
+    ~TableModelOrder() override = default;
 
 public slots:
     void RUpdateNodeID(int node_id);
-    void RUpdatePartyID(int party_id);
     void RUpdateLocked(int node_id, bool checked);
+    void RUpdatePartyID(int party_id);
 
 public:
     // implemented functions
@@ -64,9 +65,8 @@ private:
 
 private:
     const TreeModel* product_tree_ {};
-    SPSqlite sqlite_stakeholder_ {};
-    QList<TransShadow*> stakeholder_trans_shadow_list_ {};
-    QHash<int, double> exclusive_price_ {}; // inside_product_id, exclusive_price
+    SqliteStakeholder* sqlite_stakeholder_ {};
+    QHash<int, double> update_price_ {}; // inside_product_id, exclusive_price
     int party_id_ {};
 };
 

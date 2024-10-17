@@ -50,6 +50,51 @@ void SqliteStakeholder::RRemoveNode(int node_id)
     ReplaceNodeFunctionStakeholder(node_id, 0);
 }
 
+bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int product_id, bool is_inside) const
+{
+    for (const auto* trans : trans_hash_)
+        if ((is_inside && trans->lhs_node == product_id) || (!is_inside && trans->rhs_node == product_id)) {
+            *order_trans_shadow->unit_price = trans->unit_price;
+            *order_trans_shadow->lhs_node = trans->lhs_node;
+            *order_trans_shadow->rhs_node = trans->rhs_node;
+            return true;
+        }
+
+    return false;
+}
+
+bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double value) const
+{
+    for (auto* trans : trans_hash_)
+        if (trans->node_id == party_id && trans->lhs_node == inside_product_id) {
+            trans->unit_price = value;
+            UpdateField(info_.transaction, value, UNIT_PRICE, trans->id);
+            return true;
+        }
+
+    // 执行添加，todo
+
+    return false;
+}
+
+bool SqliteStakeholder::ReadTrans(int node_id)
+{
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    CString& string { ReadTransQS() };
+    query.prepare(string);
+    query.bindValue(":node_id", node_id);
+
+    if (!query.exec()) {
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTrans" << query.lastError().text();
+        return false;
+    }
+
+    ReadTransFunction(query);
+    return true;
+}
+
 QString SqliteStakeholder::ReadNodeQS() const
 {
     return QStringLiteral(R"(
@@ -158,6 +203,23 @@ QString SqliteStakeholder::SearchTransQS() const
     WHERE (unit_price = :text OR description LIKE :description) AND removed = 0
     ORDER BY date_time
     )");
+}
+
+void SqliteStakeholder::ReadTransFunction(QSqlQuery& query)
+{
+    Trans* trans {};
+    int id {};
+
+    while (query.next()) {
+        id = query.value("id").toInt();
+
+        trans = ResourcePool<Trans>::Instance().Allocate();
+
+        trans->id = id;
+
+        ReadTransQuery(trans, query);
+        trans_hash_.insert(id, trans);
+    }
 }
 
 void SqliteStakeholder::ReplaceNodeFunctionStakeholder(int old_node_id, int new_node_id)

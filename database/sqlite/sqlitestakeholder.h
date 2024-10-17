@@ -13,6 +13,11 @@ public slots:
     bool RReplaceNode(int old_node_id, int new_node_id) override;
     void RRemoveNode(int node_id) override;
 
+public:
+    bool SearchPrice(TransShadow* order_trans_shadow, int product_id, bool is_inside) const;
+    bool UpdatePrice(int party_id, int inside_product_id, double value) const;
+    bool ReadTrans(int node_id);
+
 protected:
     // tree
     void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;
@@ -37,6 +42,9 @@ protected:
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override;
     QString SearchTransQS() const override;
+
+private:
+    void ReadTransFunction(QSqlQuery& query);
 
 private:
     void ReplaceNodeFunctionStakeholder(int old_node_id, int new_node_id);

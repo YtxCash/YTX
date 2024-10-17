@@ -6,14 +6,14 @@ TableModelOrder::TableModelOrder(
     SPSqlite sql, bool rule, int node_id, int party_id, CInfo& info, const TreeModel* product_tree, SPSqlite sqlite_stakeholder, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
     , product_tree_ { product_tree }
-    , sqlite_stakeholder_ { sqlite_stakeholder }
+    , sqlite_stakeholder_ { static_cast<SqliteStakeholder*>(sqlite_stakeholder.data()) }
     , party_id_ { party_id }
 {
     if (party_id >= 1)
         RUpdatePartyID(party_id);
 }
 
-TableModelOrder::~TableModelOrder() { ResourcePool<TransShadow>::Instance().Recycle(stakeholder_trans_shadow_list_); }
+void TableModelOrder::RUpdatePartyID(int party_id) { sqlite_stakeholder_->ReadTrans(party_id); }
 
 void TableModelOrder::RUpdateNodeID(int node_id)
 {
@@ -55,28 +55,15 @@ void TableModelOrder::RUpdateNodeID(int node_id)
     emit SUpdateLeafValue(node_id, first_diff, second_diff, amount_diff, discount_diff, settled_diff);
 }
 
-void TableModelOrder::RUpdatePartyID(int party_id) { sqlite_stakeholder_->ReadTrans(stakeholder_trans_shadow_list_, party_id); }
-
 void TableModelOrder::RUpdateLocked(int node_id, bool checked)
 {
     if (node_id != node_id_ || !checked)
         return;
 
     // 遍历trans_shadow_list，对比exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
-    // 需要sql 新增构建多条的重载语句
 
-    for (auto it = exclusive_price_.cbegin(); it != exclusive_price_.cend(); ++it) {
-        int trans_id = it.key();
-        double new_price = it.value();
-
-        // 在 QList<TransShadow*> 中查找与 trans_id 匹配的 TransShadow
-        for (auto* trans_shadow : stakeholder_trans_shadow_list_) {
-            if (trans_shadow && *trans_shadow->lhs_node == trans_id) {
-                *trans_shadow->unit_price = new_price; // 更新价格
-                sqlite_stakeholder_->UpdateField("stakeholder_transaction", new_price, UNIT_PRICE, *trans_shadow->id);
-                break; // 找到匹配的 trans 后可以跳出循环
-            }
-        }
+    for (auto it = update_price_.cbegin(); it != update_price_.cend(); ++it) {
+        sqlite_stakeholder_->UpdatePrice(party_id_, it.key(), it.value());
     }
 }
 
@@ -364,7 +351,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
 
     sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
-    exclusive_price_.insert(*trans_shadow->lhs_node, value);
+    update_price_.insert(*trans_shadow->lhs_node, value);
     return true;
 }
 
@@ -417,14 +404,8 @@ void TableModelOrder::SearchPrice(TransShadow* trans_shadow, int product_id, boo
     if (!trans_shadow || !sqlite_stakeholder_ || product_id <= 0)
         return;
 
-    for (auto* stakeholder_trans_shadow : stakeholder_trans_shadow_list_) {
-        if ((is_inside && *stakeholder_trans_shadow->lhs_node == product_id) || (!is_inside && *stakeholder_trans_shadow->rhs_node == product_id)) {
-            *trans_shadow->unit_price = *stakeholder_trans_shadow->unit_price;
-            *trans_shadow->lhs_node = *stakeholder_trans_shadow->lhs_node;
-            *trans_shadow->rhs_node = *stakeholder_trans_shadow->rhs_node;
-            return;
-        }
-    }
+    if (sqlite_stakeholder_->SearchPrice(trans_shadow, product_id, is_inside))
+        return;
 
     *trans_shadow->unit_price = is_inside ? product_tree_->First(product_id) : 0.0;
     is_inside ? * trans_shadow->rhs_node = 0 : * trans_shadow->lhs_node = 0;
