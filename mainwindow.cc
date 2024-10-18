@@ -1562,6 +1562,8 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
         return;
     }
 
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
     connect(dialog, &QDialog::accepted, this, [=, this]() {
         if (tree_model->InsertNode(row, parent, node)) {
             auto index = tree_model->index(row, 0, parent);

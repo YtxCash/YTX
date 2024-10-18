@@ -367,7 +367,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
     case TreeEnumOrder::kLocked:
-        return node->locked;
+        return node->locked ? node->locked : QVariant();
     case TreeEnumOrder::kAmount:
         return node->initial_total;
     case TreeEnumOrder::kSettled:
