@@ -18,7 +18,7 @@ class Preferences final : public QDialog {
     Q_OBJECT
 
 public:
-    Preferences(CInfo& info, const TreeModel* model, CStringList& date_format_list, Interface interface, Settings settings, QWidget* parent = nullptr);
+    Preferences(CInfo& info, const TreeModel* model, Interface interface, Settings settings, QWidget* parent = nullptr);
     ~Preferences();
 
 signals:
@@ -68,6 +68,7 @@ private:
     QStringList language_list_ {};
     QStringList separator_list_ {};
     QStringList operation_list_ {};
+    QStringList date_format_list_ {};
 
     Interface interface_ {};
     Settings settings_ {};

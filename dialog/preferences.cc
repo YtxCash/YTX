@@ -8,7 +8,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_preferences.h"
 
-Preferences::Preferences(CInfo& info, const TreeModel* model, CStringList& date_format_list, Interface interface, Settings settings, QWidget* parent)
+Preferences::Preferences(CInfo& info, const TreeModel* model, Interface interface, Settings settings, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Preferences)
     , interface_ { interface }
@@ -20,7 +20,7 @@ Preferences::Preferences(CInfo& info, const TreeModel* model, CStringList& date_
     SignalBlocker blocker(this);
 
     IniStringList();
-    IniDialog(info.unit_hash, date_format_list);
+    IniDialog(info.unit_hash, date_format_list_);
     IniConnect();
 
     Data();
@@ -134,6 +134,9 @@ void Preferences::IniStringList()
 
     operation_list_.emplaceBack(PLUS);
     operation_list_.emplaceBack(MINUS);
+
+    date_format_list_.emplaceBack(DATE_TIME_FST);
+    date_format_list_.emplaceBack(DATE_TIME_SND);
 }
 
 void Preferences::on_pBtnApply_clicked() { emit SUpdateSettings(settings_, interface_); }

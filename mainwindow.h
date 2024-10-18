@@ -112,7 +112,6 @@ private:
 private:
     void SetTabWidget();
     void SetConnect();
-    void SetDateFormat();
     void SetHeader();
     void SetAction();
     void SetClearMenuAction();
@@ -126,7 +125,7 @@ private:
 
     void CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
     void CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
-    void DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id);
+    void DelegateCommon(QTableView* view, const TreeModel* tree_model, int node_id);
     void DelegateFinance(QTableView* view, CSettings& settings);
     void DelegateTask(QTableView* view, CSettings& settings);
     void DelegateProduct(QTableView* view, CSettings& settings);
@@ -252,8 +251,6 @@ private:
     QSettings* exclusive_interface_ {};
 
     Interface interface_ {};
-
-    QStringList date_format_list_ {};
 
     TreeWidget* tree_widget_ {};
     TableHash* table_hash_ {};

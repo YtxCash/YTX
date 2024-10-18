@@ -78,7 +78,6 @@ MainWindow::MainWindow(CString& dir_path, QWidget* parent)
     ui->setupUi(this);
     SetTabWidget();
     SetConnect();
-    SetDateFormat();
     SetHeader();
     SetAction();
 
@@ -373,7 +372,7 @@ void MainWindow::CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& s
     case Section::kProduct:
     case Section::kTask:
         TableConnectFPT(view, model, tree_model, data);
-        DelegateCommon(view, tree_model, settings, node_id);
+        DelegateCommon(view, tree_model, node_id);
         break;
     case Section::kStakeholder:
         TableConnectStakeholder(view, model, tree_model, data);
@@ -490,7 +489,7 @@ void MainWindow::TableConnectStakeholder(const QTableView* view, const TableMode
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, CSettings& settings, int node_id)
+void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, int node_id)
 {
     auto node { new TableCombo(tree_model, node_id, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
@@ -1245,12 +1244,6 @@ void MainWindow::SetPurchaseData()
     connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
 }
 
-void MainWindow::SetDateFormat()
-{
-    date_format_list_.emplaceBack(DATE_TIME_FST);
-    date_format_list_.emplaceBack(DATE_TIME_SND);
-}
-
 void MainWindow::SetHeader()
 {
     finance_data_.info.tree_header
@@ -1947,7 +1940,7 @@ void MainWindow::RPreferencesTriggered()
 
     auto model { tree_widget_->Model() };
 
-    auto preference { new Preferences(data_->info, model, date_format_list_, interface_, *settings_, this) };
+    auto preference { new Preferences(data_->info, model, interface_, *settings_, this) };
     connect(preference, &Preferences::SUpdateSettings, this, &MainWindow::RUpdateSettings);
     preference->exec();
 }
