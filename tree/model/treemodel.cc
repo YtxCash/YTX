@@ -1,6 +1,7 @@
 #include "treemodel.h"
 
 #include <QApplication>
+#include <QFutureWatcher>
 #include <QQueue>
 #include <QTimer>
 
@@ -405,33 +406,43 @@ void TreeModel::LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, 
     if (!combo_model)
         return;
 
-    QVector<std::pair<QString, int>> items;
-    items.reserve(leaf_path_.size());
+    auto future = QtConcurrent::run([this, unit, unit_filter_mode]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path_.size());
 
-    auto should_add = [unit, unit_filter_mode](const Node* node) {
-        switch (unit_filter_mode) {
-        case UnitFilterMode::kIncludeUnitOnlyWithEmpty:
-        case UnitFilterMode::kIncludeUnitOnly:
-            return node->unit == unit;
-        case UnitFilterMode::kExcludeUnitOnly:
-            return node->unit != unit;
-        default:
-            return true;
+        auto should_add = [unit, unit_filter_mode](const Node* node) {
+            switch (unit_filter_mode) {
+            case UnitFilterMode::kIncludeUnitOnlyWithEmpty:
+            case UnitFilterMode::kIncludeUnitOnly:
+                return node->unit == unit;
+            case UnitFilterMode::kExcludeUnitOnly:
+                return node->unit != unit;
+            default:
+                return true;
+            }
+        };
+
+        if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty) {
+            items.emplaceBack(QString(), 0);
         }
-    };
 
-    if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty) {
-        items.emplaceBack(QString(), 0);
-    }
-
-    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        auto it = node_hash_.constFind(id);
-        if (it != node_hash_.constEnd() && should_add(it.value())) {
-            items.emplaceBack(path, id);
+        for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
+            auto it = node_hash_.constFind(id);
+            if (it != node_hash_.constEnd() && should_add(it.value())) {
+                items.emplaceBack(path, id);
+            }
         }
-    }
 
-    UpdateComboModel(combo_model, items);
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, this, [this, watcher, combo_model]() {
+        UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
 }
 
 void TreeModel::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const
@@ -439,15 +450,25 @@ void TreeModel::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_i
     if (!combo_model)
         return;
 
-    QVector<std::pair<QString, int>> items;
-    items.reserve(leaf_path_.size());
+    auto future = QtConcurrent::run([this, exclude_id]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path_.size());
 
-    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        if (id != exclude_id)
-            items.emplaceBack(path, id);
-    }
+        for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
+            if (id != exclude_id)
+                items.emplaceBack(path, id);
+        }
 
-    UpdateComboModel(combo_model, items);
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, this, [this, watcher, combo_model]() {
+        UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
 }
 
 void TreeModel::LeafPathBranchPath(QStandardItemModel* combo_model) const
@@ -455,16 +476,26 @@ void TreeModel::LeafPathBranchPath(QStandardItemModel* combo_model) const
     if (!combo_model)
         return;
 
-    QVector<std::pair<QString, int>> items;
-    items.reserve(leaf_path_.size() + branch_path_.size());
+    auto future = QtConcurrent::run([this]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path_.size() + branch_path_.size());
 
-    for (const auto& [id, path] : leaf_path_.asKeyValueRange())
-        items.emplaceBack(path, id);
+        for (const auto& [id, path] : leaf_path_.asKeyValueRange())
+            items.emplaceBack(path, id);
 
-    for (const auto& [id, path] : branch_path_.asKeyValueRange())
-        items.emplaceBack(path, id);
+        for (const auto& [id, path] : branch_path_.asKeyValueRange())
+            items.emplaceBack(path, id);
 
-    UpdateComboModel(combo_model, items);
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, this, [this, watcher, combo_model]() {
+        UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
 }
 
 void TreeModel::UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items) const
