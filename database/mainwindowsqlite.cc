@@ -17,7 +17,7 @@ void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
     query.setForwardOnly(true);
 
     auto part = R"(
-    SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, default_unit, document_dir, amount_decimal, common_decimal
+    SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, default_unit, document_dir, amount_decimal, common_decimal
     FROM settings
     WHERE id = :section
 )";
@@ -36,7 +36,6 @@ void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
         settings.dynamic_node_lhs = query.value("dynamic_node_lhs").toInt();
         settings.operation = query.value("operation").toString();
         settings.dynamic_node_rhs = query.value("dynamic_node_rhs").toInt();
-        settings.hide_time = query.value("hide_time").toBool();
         settings.default_unit = query.value("default_unit").toInt();
         settings.document_dir = query.value("document_dir").toString();
         settings.amount_decimal = query.value("amount_decimal").toInt();
@@ -47,9 +46,9 @@ void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
 void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
 {
     auto part = R"(
-    UPDATE settings
-    SET static_label = :static_label, static_node = :static_node, dynamic_label = :dynamic_label, dynamic_node_lhs = :dynamic_node_lhs,
-        operation = :operation, dynamic_node_rhs = :dynamic_node_rhs, hide_time = :hide_time, default_unit = :default_unit, document_dir = :document_dir,
+    UPDATE settings SET
+        static_label = :static_label, static_node = :static_node, dynamic_label = :dynamic_label, dynamic_node_lhs = :dynamic_node_lhs,
+        operation = :operation, dynamic_node_rhs = :dynamic_node_rhs, default_unit = :default_unit, document_dir = :document_dir,
         amount_decimal = :amount_decimal, common_decimal = :common_decimal
     WHERE id = :section
 )";
@@ -64,7 +63,6 @@ void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
     query.bindValue(":dynamic_node_lhs", settings.dynamic_node_lhs);
     query.bindValue(":operation", settings.operation);
     query.bindValue(":dynamic_node_rhs", settings.dynamic_node_rhs);
-    query.bindValue(":hide_time", settings.hide_time);
     query.bindValue(":default_unit", settings.default_unit);
     query.bindValue(":document_dir", settings.document_dir);
     query.bindValue(":amount_decimal", settings.amount_decimal);

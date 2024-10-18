@@ -105,8 +105,6 @@ void Preferences::Data()
     ui->comboDynamicRhs->insertItem(0, QString(), 0);
     ui->comboStatic->insertItem(0, QString(), 0);
 
-    ui->checkHideTime->setChecked(settings_.hide_time);
-
     ResizeLine(ui->lineStatic, settings_.static_label);
     ResizeLine(ui->lineDynamic, settings_.dynamic_label);
 }
@@ -189,8 +187,6 @@ void Preferences::DynamicLable(Section section)
         break;
     }
 }
-
-void Preferences::on_checkHideTime_toggled(bool checked) { settings_.hide_time = checked; }
 
 void Preferences::on_comboDefaultUnit_currentIndexChanged(int index)
 {

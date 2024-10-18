@@ -45,7 +45,6 @@ private slots:
     void on_comboLanguage_currentIndexChanged(int index);
     void on_comboDateTime_currentIndexChanged(int index);
     void on_comboSeparator_currentIndexChanged(int index);
-    void on_checkHideTime_toggled(bool checked);
 
 private:
     void IniDialog(CStringHash& unit_hash, CStringList& date_format_list);

@@ -28,7 +28,6 @@ struct Settings {
     int dynamic_node_lhs {};
     QString operation {};
     int dynamic_node_rhs {};
-    bool hide_time {};
     int default_unit {};
     QString document_dir {};
     int amount_decimal {};
@@ -37,10 +36,10 @@ struct Settings {
     // Equality operator overload to compare two Settings structs
     bool operator==(const Settings& other) const noexcept
     {
-        return std::tie(static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, hide_time, default_unit, document_dir,
-                   amount_decimal, common_decimal)
+        return std::tie(static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, default_unit, document_dir, amount_decimal,
+                   common_decimal)
             == std::tie(other.static_label, other.static_node, other.dynamic_label, other.dynamic_node_lhs, other.operation, other.dynamic_node_rhs,
-                other.hide_time, other.default_unit, other.document_dir, other.amount_decimal, other.common_decimal);
+                other.default_unit, other.document_dir, other.amount_decimal, other.common_decimal);
     }
 
     // Inequality operator overload to compare two Settings structs

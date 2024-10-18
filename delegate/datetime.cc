@@ -1,24 +1,23 @@
 #include "datetime.h"
 
 #include "component/constvalue.h"
+#include "component/enumclass.h"
 #include "widget/datetimeedit.h"
 
-DateTime::DateTime(const QString& date_format, const bool& hide_time, QObject* parent)
+DateTime::DateTime(const QString& date_format, bool skip_branch, QObject* parent)
     : StyledItemDelegate { parent }
     , date_format_ { date_format }
-    , hide_time_ { hide_time }
-    , time_pattern_ { R"((\s?\S{2}:\S{2}\s?))" }
+    , skip_branch_ { skip_branch }
 {
 }
 
-QWidget* DateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+QWidget* DateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
-    auto format { date_format_ };
-    if (hide_time_)
-        format.remove(time_pattern_);
+    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
+        return nullptr;
 
     auto* editor { new DateTimeEdit(parent) };
-    editor->setDisplayFormat(format);
+    editor->setDisplayFormat(date_format_);
 
     return editor;
 }
@@ -48,23 +47,11 @@ void DateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
     if (!date_time.isValid())
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintText(Format(date_time), painter, option, index, Qt::AlignCenter);
+    PaintText(date_time.toString(date_format_), painter, option, index, Qt::AlignCenter);
 }
 
 QSize DateTime::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    auto text { Format(index.data().toDateTime()) };
+    auto text { index.data().toDateTime().toString(date_format_) };
     return CalculateTextSize(text, option);
-}
-
-QString DateTime::Format(const QDateTime& date_time) const
-{
-    if (!date_time.isValid())
-        return QString();
-
-    auto format { date_format_ };
-    if (hide_time_)
-        format.remove(time_pattern_);
-
-    return date_time.toString(format);
 }

@@ -30,7 +30,6 @@
 #include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/color.h"
 #include "delegate/tree/finance/financeforeignr.h"
-#include "delegate/tree/order/orderdatetime.h"
 #include "delegate/tree/order/ordertotal.h"
 #include "delegate/tree/stakeholder/deadline.h"
 #include "delegate/tree/stakeholder/paymentperiod.h"
@@ -496,7 +495,7 @@ void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, C
     auto node { new TableCombo(tree_model, node_id, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
 
-    auto date_time { new DateTime(interface_.date_format, settings.hide_time, view) };
+    auto date_time { new DateTime(interface_.date_format, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
 
     auto line { new Line(view) };
@@ -558,7 +557,7 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
     auto unit_price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
-    auto date_time { new DateTime(interface_.date_format, settings.hide_time, view) };
+    auto date_time { new DateTime(interface_.date_format, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
 
     auto line { new Line(view) };
@@ -743,7 +742,7 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     auto party { new SpecificUnit(stakeholder_tree_->Model(), party_unit, true, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
 
-    auto date_time { new OrderDateTime(DATE_TIME_FST, true, view) };
+    auto date_time { new DateTime(interface_.date_format, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
     auto locked { new CheckBox(QEvent::MouseButtonDblClick, view) };
@@ -1246,7 +1245,11 @@ void MainWindow::SetPurchaseData()
     connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
 }
 
-void MainWindow::SetDateFormat() { date_format_list_.emplaceBack(DATE_TIME_FST); }
+void MainWindow::SetDateFormat()
+{
+    date_format_list_.emplaceBack(DATE_TIME_FST);
+    date_format_list_.emplaceBack(DATE_TIME_SND);
+}
 
 void MainWindow::SetHeader()
 {
@@ -1685,13 +1688,16 @@ void MainWindow::RUpdateName(const Node* node)
 
 void MainWindow::RUpdateSettings(CSettings& settings, const Interface& interface)
 {
-    if (interface_ != interface)
+    bool resize_column { false };
+
+    if (interface_ != interface) {
+        resize_column |= interface_.date_format != interface.date_format;
         UpdateInterface(interface);
+    }
 
     if (*settings_ != settings) {
         bool update_default_unit { settings_->default_unit != settings.default_unit };
-        bool resize_column { settings_->amount_decimal != settings.amount_decimal || settings_->common_decimal != settings.common_decimal
-            || settings_->hide_time != settings.hide_time };
+        resize_column |= settings_->amount_decimal != settings.amount_decimal || settings_->common_decimal != settings.common_decimal;
 
         *settings_ = settings;
 
@@ -1700,14 +1706,14 @@ void MainWindow::RUpdateSettings(CSettings& settings, const Interface& interface
 
         tree_widget_->SetStatus();
         sql_.UpdateSettings(settings, data_->info.section);
+    }
 
-        if (resize_column) {
-            auto current_widget { ui->tabWidget->currentWidget() };
-            if (IsTableWidget(current_widget))
-                ResizeColumn(GetQTableView(current_widget)->horizontalHeader(), true);
-            if (IsTreeWidget(current_widget))
-                ResizeColumn(tree_widget_->View()->header(), false);
-        }
+    if (resize_column) {
+        auto current_widget { ui->tabWidget->currentWidget() };
+        if (IsTableWidget(current_widget))
+            ResizeColumn(GetQTableView(current_widget)->horizontalHeader(), true);
+        if (IsTreeWidget(current_widget))
+            ResizeColumn(tree_widget_->View()->header(), false);
     }
 }
 void MainWindow::RFreeView(int node_id)
