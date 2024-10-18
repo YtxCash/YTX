@@ -1,6 +1,8 @@
 #ifndef TREECOMBO_H
 #define TREECOMBO_H
 
+#include <QStandardItemModel>
+
 #include "component/using.h"
 #include "delegate/styleditemdelegate.h"
 
@@ -19,6 +21,7 @@ private:
 private:
     CStringHash& hash_;
     bool skip_branch_ {};
+    QStandardItemModel* model_ {};
 };
 
 #endif // TREECOMBO_H
