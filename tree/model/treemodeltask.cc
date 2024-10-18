@@ -42,7 +42,7 @@ QVariant TreeModelTask::data(const QModelIndex& index, int role) const
     case TreeEnumTask::kRule:
         return node->rule;
     case TreeEnumTask::kBranch:
-        return node->branch;
+        return node->branch ? node->branch : QVariant();
     case TreeEnumTask::kUnit:
         return node->unit;
     case TreeEnumTask::kColor:

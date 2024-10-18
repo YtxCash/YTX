@@ -244,7 +244,7 @@ QVariant TreeModel::data(const QModelIndex& index, int role) const
     case TreeEnum::kRule:
         return node->rule;
     case TreeEnum::kBranch:
-        return node->branch;
+        return node->branch ? node->branch : QVariant();
     case TreeEnum::kUnit:
         return node->unit;
     case TreeEnum::kInitialTotal:

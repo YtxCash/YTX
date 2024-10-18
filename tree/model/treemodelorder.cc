@@ -351,7 +351,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kRule:
         return branch ? -1 : node->rule;
     case TreeEnumOrder::kBranch:
-        return node->branch;
+        return node->branch ? node->branch : QVariant();
     case TreeEnumOrder::kUnit:
         return node->unit;
     case TreeEnumOrder::kParty:

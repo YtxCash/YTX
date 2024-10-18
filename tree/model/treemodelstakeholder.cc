@@ -213,7 +213,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
     case TreeEnumStakeholder::kRule:
         return node->rule;
     case TreeEnumStakeholder::kBranch:
-        return node->branch;
+        return node->branch ? node->branch : QVariant();
     case TreeEnumStakeholder::kUnit:
         return node->unit;
     case TreeEnumStakeholder::kDeadline:

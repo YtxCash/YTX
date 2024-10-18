@@ -8,7 +8,13 @@ CheckBox::CheckBox(QEvent::Type type, QObject* parent)
 {
 }
 
-void CheckBox::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const { PaintCheckBox(painter, option, index); }
+void CheckBox::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    if (!index.data().toBool())
+        return QStyledItemDelegate::paint(painter, option, index);
+
+    PaintCheckBox(painter, option, index);
+}
 
 bool CheckBox::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {

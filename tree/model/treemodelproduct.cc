@@ -142,7 +142,7 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
     case TreeEnumProduct::kRule:
         return node->rule;
     case TreeEnumProduct::kBranch:
-        return node->branch;
+        return node->branch ? node->branch : QVariant();
     case TreeEnumProduct::kUnit:
         return node->unit;
     case TreeEnumProduct::kColor:
