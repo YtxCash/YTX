@@ -22,16 +22,9 @@ public:
     void UpdateBaseUnit(int default_unit) override { root_->unit = default_unit; }
 
 protected:
-    bool UpdateRule(Node* node, bool value) override; // Cash = 0, Monthly = 1
     bool IsReferenced(int node_id, CString& message) const override;
     void ConstructTree() override;
     bool UpdateUnit(Node* node, int value) override;
-
-private:
-    bool UpdatePaymentPeriod(Node* node, double value, CString& field = PAYMENT_PERIOD);
-    bool UpdateTaxRate(Node* node, double value, CString& field = TAX_RATE);
-    bool UpdateDeadline(Node* node, int value, CString& field = DEADLINE);
-    bool UpdateEmployee(Node* node, int value, CString& field = EMPLOYEE);
 };
 
 #endif // TREEMODELSTAKEHOLDER_H

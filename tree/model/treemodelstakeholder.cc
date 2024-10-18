@@ -34,19 +34,11 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
     UpdateField(node, tmp_node->note, NOTE, &Node::note);
     UpdateField(node, tmp_node->first, PAYMENT_PERIOD, &Node::first);
     UpdateField(node, tmp_node->second, TAX_RATE, &Node::second);
-    UpdateField(node, tmp_node->party, DEADLINE, &Node::party);
+    UpdateField(node, tmp_node->date_time, DEADLINE, &Node::date_time);
     UpdateField(node, tmp_node->rule, RULE, &Node::rule);
     UpdateField(node, tmp_node->employee, EMPLOYEE, &Node::employee);
     UpdateField(node, tmp_node->unit, UNIT, &Node::unit);
 }
-
-bool TreeModelStakeholder::UpdateTaxRate(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::second); }
-
-bool TreeModelStakeholder::UpdatePaymentPeriod(Node* node, double value, CString& field) { return UpdateField(node, value, field, &Node::first); }
-
-bool TreeModelStakeholder::UpdateDeadline(Node* node, int value, CString& field) { return UpdateField(node, value, field, &Node::party); }
-
-bool TreeModelStakeholder::UpdateRule(Node* node, bool value) { return UpdateField(node, value, RULE, &Node::rule); }
 
 bool TreeModelStakeholder::IsReferenced(int node_id, CString& message) const
 {
@@ -113,8 +105,6 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
     return true;
 }
 
-bool TreeModelStakeholder::UpdateEmployee(Node* node, int value, CString& field) { return UpdateField(node, value, field, &Node::employee); }
-
 void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
 {
     if (column <= -1 || column >= info_.tree_header.size())
@@ -138,7 +128,7 @@ void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
         case TreeEnumStakeholder::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
         case TreeEnumStakeholder::kDeadline:
-            return (order == Qt::AscendingOrder) ? (lhs->party < rhs->party) : (lhs->party > rhs->party);
+            return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
         case TreeEnumStakeholder::kEmployee:
             return (order == Qt::AscendingOrder) ? (lhs->employee < rhs->employee) : (lhs->employee > rhs->employee);
         case TreeEnumStakeholder::kPaymentPeriod:
@@ -207,6 +197,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     const TreeEnumStakeholder kColumn { index.column() };
+    bool skip_deadline { node->branch || node->unit == UNIT_PRODUCT || node->rule == RULE_CASH };
 
     switch (kColumn) {
     case TreeEnumStakeholder::kName:
@@ -226,7 +217,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
     case TreeEnumStakeholder::kUnit:
         return node->unit;
     case TreeEnumStakeholder::kDeadline:
-        return node->party == 0 ? QVariant() : node->party;
+        return node->date_time.isEmpty() || skip_deadline ? QVariant() : node->date_time;
     case TreeEnumStakeholder::kEmployee:
         return node->employee == 0 ? QVariant() : node->employee;
     case TreeEnumStakeholder::kPaymentPeriod:
@@ -260,7 +251,7 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumStakeholder::kRule:
-        UpdateRule(node, value.toBool());
+        UpdateField(node, value.toBool(), RULE, &Node::rule);
         break;
     case TreeEnumStakeholder::kBranch:
         UpdateBranch(node, value.toBool());
@@ -269,16 +260,16 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumStakeholder::kDeadline:
-        UpdateDeadline(node, value.toInt());
+        UpdateField(node, value.toString(), DEADLINE, &Node::date_time);
         break;
     case TreeEnumStakeholder::kEmployee:
-        UpdateEmployee(node, value.toInt());
+        UpdateField(node, value.toInt(), EMPLOYEE, &Node::employee);
         break;
     case TreeEnumStakeholder::kPaymentPeriod:
-        UpdatePaymentPeriod(node, value.toDouble());
+        UpdateField(node, value.toDouble(), PAYMENT_PERIOD, &Node::first);
         break;
     case TreeEnumStakeholder::kTaxRate:
-        UpdateTaxRate(node, value.toDouble());
+        UpdateField(node, value.toDouble(), TAX_RATE, &Node::second);
         break;
     default:
         return false;

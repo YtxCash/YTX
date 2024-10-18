@@ -282,16 +282,6 @@
         </property>
        </spacer>
       </item>
-      <item row="3" column="1">
-       <widget class="SpinBox" name="spinDeadline">
-        <property name="frame">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="labelPaymentPeriod">
         <property name="text">
@@ -339,6 +329,16 @@
         </property>
         <property name="decimals">
          <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="DateTimeEdit" name="deadline">
+        <property name="frame">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -407,19 +407,19 @@
    <header location="global">widget/lineedit.h</header>
   </customwidget>
   <customwidget>
-   <class>PlainTextEdit</class>
-   <extends>QPlainTextEdit</extends>
-   <header location="global">widget/plaintextedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>DoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
    <header location="global">widget/doublespinbox.h</header>
   </customwidget>
   <customwidget>
-   <class>SpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">widget/spinbox.h</header>
+   <class>DateTimeEdit</class>
+   <extends>QDateTimeEdit</extends>
+   <header location="global">widget/datetimeedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">widget/plaintextedit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

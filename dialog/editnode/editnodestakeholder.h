@@ -26,7 +26,6 @@ private slots:
     void on_lineEditName_editingFinished();
     void on_lineEditCode_editingFinished();
     void on_lineEditDescription_editingFinished();
-    void on_spinDeadline_editingFinished();
     void on_dSpinPaymentPeriod_editingFinished();
     void on_dSpinTaxRate_editingFinished();
 
@@ -37,6 +36,7 @@ private slots:
     void on_comboEmployee_currentIndexChanged(int index);
 
     void on_plainTextEdit_textChanged();
+    void on_deadline_editingFinished();
 
 private:
     void IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int common_decimal);

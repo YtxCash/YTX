@@ -189,7 +189,7 @@ QString MainwindowSqlite::NodeStakeholder()
         rule              BOOLEAN    DEFAULT 0,
         branch            BOOLEAN    DEFAULT 0,
         unit              INTEGER,
-        deadline          INTEGER,
+        deadline          DATE,
         employee          INTEGER,
         payment_period    INTEGER,
         tax_rate          NUMERIC,

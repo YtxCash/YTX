@@ -35,6 +35,10 @@ void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakehold
     ui->dSpinPaymentPeriod->setRange(IZERO, IMAX);
     ui->dSpinTaxRate->setRange(0.0, DMAX);
     ui->dSpinTaxRate->setDecimals(amount_decimal);
+
+    ui->deadline->setDateTime(QDateTime::currentDateTime());
+    ui->deadline->setDisplayFormat(DD);
+    ui->deadline->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
 }
 
 void EditNodeStakeholder::IniComboWithStringHash(QComboBox* combo, CStringHash& hash)
@@ -83,7 +87,7 @@ void EditNodeStakeholder::Data(Node* node, bool branch_enable, bool unit_enable)
     ui->plainTextEdit->setPlainText(node->note);
     ui->dSpinPaymentPeriod->setValue(node->first);
     ui->dSpinTaxRate->setValue(node->second * HUNDRED);
-    ui->spinDeadline->setValue(node->party);
+    ui->deadline->setDateTime(QDateTime::fromString(node->date_time, DATE_TIME_FST));
 
     ui->chkBoxBranch->setChecked(node->branch);
     ui->chkBoxBranch->setEnabled(branch_enable);
@@ -114,8 +118,6 @@ void EditNodeStakeholder::on_comboUnit_currentIndexChanged(int index)
 
 void EditNodeStakeholder::on_dSpinPaymentPeriod_editingFinished() { node_->first = ui->dSpinPaymentPeriod->value(); }
 
-void EditNodeStakeholder::on_spinDeadline_editingFinished() { node_->party = ui->spinDeadline->value(); }
-
 void EditNodeStakeholder::on_dSpinTaxRate_editingFinished() { node_->second = ui->dSpinTaxRate->value() / HUNDRED; }
 
 void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
@@ -125,3 +127,5 @@ void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
 }
 
 void EditNodeStakeholder::on_rBtnMonthly_toggled(bool checked) { node_->rule = checked; }
+
+void EditNodeStakeholder::on_deadline_editingFinished() { node_->date_time = ui->deadline->dateTime().toString(DATE_TIME_FST); }

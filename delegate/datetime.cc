@@ -25,7 +25,7 @@ QWidget* DateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*o
 
 void DateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto date_time { index.data().toDateTime() };
+    auto date_time { QDateTime::fromString(index.data().toString(), DATE_TIME_FST) };
     if (!date_time.isValid())
         date_time = last_date_time_.isValid() ? last_date_time_.addSecs(1) : QDateTime::currentDateTime();
 

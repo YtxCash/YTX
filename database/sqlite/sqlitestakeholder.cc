@@ -147,7 +147,7 @@ void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":branch", node->branch);
     query.bindValue(":unit", node->unit);
     query.bindValue(":employee", node->employee);
-    query.bindValue(":deadline", node->party);
+    query.bindValue(":deadline", node->date_time);
     query.bindValue(":payment_period", node->first);
     query.bindValue(":tax_rate", node->second);
 }
@@ -397,7 +397,7 @@ void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->branch = query.value("branch").toBool();
     node->unit = query.value("unit").toInt();
     node->employee = query.value("employee").toInt();
-    node->party = query.value("deadline").toInt();
+    node->date_time = query.value("deadline").toString();
     node->first = query.value("payment_period").toInt();
     node->second = query.value("tax_rate").toDouble();
 }

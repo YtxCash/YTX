@@ -30,6 +30,7 @@ static constexpr char DATE_FORMAT[] = "date_format";
 static constexpr char DATE_FST[] = "yyyy-MM-dd";
 static constexpr char DATE_TIME[] = "date_time";
 static constexpr char DATE_TIME_FST[] = "yyyy-MM-dd hh:mm";
+static constexpr char DD[] = "dd";
 
 static constexpr char FULL_WIDTH_PERIOD[] = u8"。";
 static constexpr char HALF_WIDTH_PERIOD[] = u8".";
