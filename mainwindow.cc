@@ -571,7 +571,7 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
     auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
 }
 
@@ -580,7 +580,7 @@ void MainWindow::DelegateOrder(QTableView* view, CSettings& settings)
     auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
 
     auto color { new ColorR(view) };
@@ -1512,6 +1512,7 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* tree_model, Node* no
         dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, true, this);
         break;
     case Section::kStakeholder:
+        node->unit = settings_->default_unit;
         dialog = new EditNodeStakeholder(node, info.unit_hash, parent_path, name_list, true, true, settings_->common_decimal, tree_model, this);
         break;
     case Section::kProduct:

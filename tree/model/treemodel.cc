@@ -407,6 +407,7 @@ void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int unit, UnitFilterMode 
 
     auto should_add = [unit, unit_filter_mode](const Node* node) {
         switch (unit_filter_mode) {
+        case UnitFilterMode::kIncludeUnitOnlyWithEmpty:
         case UnitFilterMode::kIncludeUnitOnly:
             return node->unit == unit;
         case UnitFilterMode::kExcludeUnitOnly:
@@ -416,13 +417,17 @@ void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int unit, UnitFilterMode 
         }
     };
 
+    if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty)
+        combo->insertItem(0, QString(), 0);
+
     for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        if (auto it = node_hash_.constFind(id); it != node_hash_.constEnd()) {
-            if (should_add(it.value())) {
-                combo->addItem(path, id);
-            }
+        auto it = node_hash_.constFind(id);
+        if (it != node_hash_.constEnd() && should_add(it.value())) {
+            combo->addItem(path, id);
         }
     }
+
+    combo->setCurrentIndex(-1);
 }
 
 void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
@@ -437,6 +442,8 @@ void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
         if (id != exclude_id)
             combo->addItem(path, id);
     }
+
+    combo->setCurrentIndex(-1);
 }
 
 void TreeModel::LeafPathBranchPath(QComboBox* combo) const
@@ -452,6 +459,8 @@ void TreeModel::LeafPathBranchPath(QComboBox* combo) const
 
     for (const auto& [id, path] : branch_path_.asKeyValueRange())
         combo->addItem(path, id);
+
+    combo->setCurrentIndex(-1);
 }
 
 QStringList TreeModel::ChildrenName(int node_id, int exclude_child) const

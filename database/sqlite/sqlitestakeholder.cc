@@ -69,7 +69,7 @@ bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int party_i
     return false;
 }
 
-bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double value)
+bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, CString& date_time, double value)
 {
     // update unit_price
     const auto& const_trans_hash { std::as_const(trans_hash_) };
@@ -77,7 +77,8 @@ bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double 
     for (auto* trans : const_trans_hash)
         if (trans->node_id == party_id && trans->lhs_node == inside_product_id) {
             trans->unit_price = value;
-            UpdateField(info_.transaction, value, UNIT_PRICE, trans->id);
+            trans->date_time = date_time;
+            UpdateDateTimePrice(date_time, value, trans->id);
             return true;
         }
 
@@ -88,6 +89,7 @@ bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, double 
     trans->node_id = party_id;
     trans->lhs_node = inside_product_id;
     trans->unit_price = value;
+    trans->date_time = date_time;
 
     if (WriteTrans(trans)) {
         ConvertTrans(trans, trans_shadow, true);
@@ -262,6 +264,29 @@ bool SqliteStakeholder::WriteTrans(Trans* trans)
 
     trans->id = query.lastInsertId().toInt();
     trans_hash_.insert(trans->id, trans);
+    return true;
+}
+
+bool SqliteStakeholder::UpdateDateTimePrice(CString& date_time, double unit_price, int trans_id)
+{
+    QSqlQuery query(*db_);
+
+    auto part = QStringLiteral(R"(
+    UPDATE stakeholder_transaction SET
+        date_time = :date_time, unit_price = :unit_price
+    WHERE id = :trans_id
+    )");
+
+    query.prepare(part);
+    query.bindValue(":trans_id", trans_id);
+    query.bindValue(":date_time", date_time);
+    query.bindValue(":unit_price", unit_price);
+
+    if (!query.exec()) {
+        qWarning() << "Failed in UpdateDatePrice" << query.lastError().text();
+        return false;
+    }
+
     return true;
 }
 

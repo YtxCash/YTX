@@ -72,8 +72,10 @@ void TableModelOrder::RUpdateLocked(int node_id, bool checked)
 
     // 遍历trans_shadow_list，对比exclusive_price_，检测是否存在inside_product_id, 不存在添加，存在更新
     for (auto it = update_price_.cbegin(); it != update_price_.cend(); ++it) {
-        sqlite_stakeholder_->UpdatePrice(*node_shadow_->party, it.key(), it.value());
+        sqlite_stakeholder_->UpdatePrice(*node_shadow_->party, it.key(), *node_shadow_->date_time, it.value());
     }
+
+    update_price_.clear();
 }
 
 QVariant TableModelOrder::data(const QModelIndex& index, int role) const
@@ -354,13 +356,13 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
 
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kAmount));
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kSettled));
+    update_price_.insert(*trans_shadow->lhs_node, value);
 
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
         return false;
 
     sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
-    update_price_.insert(*trans_shadow->lhs_node, value);
     return true;
 }
 

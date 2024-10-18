@@ -134,6 +134,7 @@ void InsertNodeOrder::IniDialog()
     IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
+    ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
     ui->comboParty->lineEdit()->setValidator(&LineEdit::kInputValidator);
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);
@@ -376,8 +377,7 @@ void InsertNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time
 
 void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 {
-    if (node_id_ == 0)
-        return;
+    accept();
 
     *node_shadow_->locked = checked;
 

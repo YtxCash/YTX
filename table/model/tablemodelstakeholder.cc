@@ -215,6 +215,7 @@ bool TableModelStakeholder::insertRows(int row, int /*count*/, const QModelIndex
     auto trans_shadow { sql_->AllocateTransShadow() };
 
     *trans_shadow->node_id = node_id_;
+    *trans_shadow->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);
 
     beginInsertRows(parent, row, row);
     trans_shadow_list_.emplaceBack(trans_shadow);
