@@ -93,7 +93,7 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
     case TableEnumStakeholder::kDocument:
         return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
     case TableEnumStakeholder::kState:
-        return *trans_shadow->state;
+        return *trans_shadow->state ? *trans_shadow->state : QVariant();
     case TableEnumStakeholder::kInsideProduct:
         return *trans_shadow->lhs_node == 0 ? QVariant() : *trans_shadow->lhs_node;
     case TableEnumStakeholder::kOutsideProduct:
