@@ -11,6 +11,8 @@ SpecificUnit::SpecificUnit(const TreeModel* tree_model, int unit, bool skip_bran
     , unit_ { unit }
     , skip_branch_ { skip_branch }
 {
+    combo_model_ = new QStandardItemModel(this);
+    RUpdateComboModel();
 }
 
 QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -21,8 +23,7 @@ QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem&
         return nullptr;
 
     auto* editor { new ComboBox(parent) };
-    tree_model_->LeafPathSpecificUnit(editor, unit_, unit_filter_mode_);
-    editor->model()->sort(0);
+    editor->setModel(combo_model_);
 
     int height = option.rect.height();
     int width = option.rect.width();
@@ -66,3 +67,5 @@ QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& option, const QModelInd
     const QString& text = tree_model_->GetPath(index.data().toInt());
     return CalculateTextSize(text, option);
 }
+
+void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnit(combo_model_, unit_, unit_filter_mode_); }

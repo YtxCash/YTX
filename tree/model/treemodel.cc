@@ -119,6 +119,7 @@ bool TreeModel::RemoveNode(int row, const QModelIndex& parent)
 
     emit SSearch();
     emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SUpdateComboModel();
 
     ResourcePool<Node>::Instance().Recycle(node);
     node_hash_.remove(node_id);
@@ -145,6 +146,7 @@ bool TreeModel::InsertNode(int row, const QModelIndex& parent, Node* node)
 
     emit SSearch();
     emit SUpdateOrderPartyEmployee();
+    emit SUpdateComboModel();
     return true;
 }
 
@@ -168,6 +170,7 @@ void TreeModel::UpdateNode(const Node* tmp_node)
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
         emit SUpdateName(node);
+        emit SUpdateComboModel();
     }
 
     UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
@@ -393,6 +396,7 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     UpdatePath(node);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
     emit SUpdateName(node);
+    emit SUpdateComboModel();
 
     return true;
 }
@@ -439,6 +443,40 @@ void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int unit, UnitFilterMode 
     }
 }
 
+void TreeModel::LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
+{
+    if (!combo_model)
+        return;
+
+    QVector<std::pair<QString, int>> items;
+    items.reserve(leaf_path_.size());
+
+    auto should_add = [unit, unit_filter_mode](const Node* node) {
+        switch (unit_filter_mode) {
+        case UnitFilterMode::kIncludeUnitOnlyWithEmpty:
+        case UnitFilterMode::kIncludeUnitOnly:
+            return node->unit == unit;
+        case UnitFilterMode::kExcludeUnitOnly:
+            return node->unit != unit;
+        default:
+            return true;
+        }
+    };
+
+    if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty) {
+        items.emplaceBack(QString(), 0);
+    }
+
+    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
+        auto it = node_hash_.constFind(id);
+        if (it != node_hash_.constEnd() && should_add(it.value())) {
+            items.emplaceBack(path, id);
+        }
+    }
+
+    UpdateComboModel(combo_model, items);
+}
+
 void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
 {
     if (!combo)
@@ -461,6 +499,22 @@ void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
     for (const auto& item : items) {
         combo->addItem(item.first, item.second);
     }
+}
+
+void TreeModel::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const
+{
+    if (!combo_model)
+        return;
+
+    QVector<std::pair<QString, int>> items;
+    items.reserve(leaf_path_.size());
+
+    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
+        if (id != exclude_id)
+            items.emplaceBack(path, id);
+    }
+
+    UpdateComboModel(combo_model, items);
 }
 
 void TreeModel::LeafPathBranchPath(QComboBox* combo) const
@@ -486,6 +540,40 @@ void TreeModel::LeafPathBranchPath(QComboBox* combo) const
     for (const auto& item : items) {
         combo->addItem(item.first, item.second);
     }
+}
+
+void TreeModel::LeafPathBranchPath(QStandardItemModel* combo_model) const
+{
+    if (!combo_model)
+        return;
+
+    QVector<std::pair<QString, int>> items;
+    items.reserve(leaf_path_.size() + branch_path_.size());
+
+    for (const auto& [id, path] : leaf_path_.asKeyValueRange())
+        items.emplaceBack(path, id);
+
+    for (const auto& [id, path] : branch_path_.asKeyValueRange())
+        items.emplaceBack(path, id);
+
+    UpdateComboModel(combo_model, items);
+}
+
+void TreeModel::UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items) const
+{
+    if (!combo_model || items.isEmpty())
+        return;
+
+    combo_model->clear();
+    QSignalBlocker blocker(combo_model);
+
+    for (const auto& item : items) {
+        auto standard_item = new QStandardItem(item.first);
+        standard_item->setData(item.second, Qt::UserRole);
+        combo_model->appendRow(standard_item);
+    }
+
+    combo_model->sort(0);
 }
 
 QStringList TreeModel::ChildrenName(int node_id, int exclude_child) const

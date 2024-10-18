@@ -2,18 +2,19 @@
 
 #include "widget/combobox.h"
 
-TableCombo::TableCombo(const TreeModel* model, int exclude_id, QObject* parent)
+TableCombo::TableCombo(const TreeModel* tree_model, int exclude_id, QObject* parent)
     : StyledItemDelegate { parent }
     , exclude_id_ { exclude_id }
-    , model_ { model }
+    , tree_model_ { tree_model }
 {
+    combo_model_ = new QStandardItemModel(this);
+    RUpdateComboModel();
 }
 
 QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     auto editor { new ComboBox(parent) };
-    model_->LeafPathExcludeID(editor, exclude_id_);
-    editor->model()->sort(0);
+    editor->setModel(combo_model_);
 
     int height = option.rect.height();
     int width = option.rect.width();
@@ -45,7 +46,7 @@ void TableCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const 
 
 void TableCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QString path { model_->GetPath(index.data().toInt()) };
+    const QString path { tree_model_->GetPath(index.data().toInt()) };
     if (path.isEmpty())
         return QStyledItemDelegate::paint(painter, option, index);
 
@@ -59,6 +60,8 @@ void TableCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, co
 
 QSize TableCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QString text = model_->GetPath(index.data().toInt());
+    const QString text = tree_model_->GetPath(index.data().toInt());
     return CalculateTextSize(text, option);
 }
+
+void TableCombo::RUpdateComboModel() { tree_model_->LeafPathExcludeID(combo_model_, exclude_id_); }

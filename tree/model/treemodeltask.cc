@@ -186,6 +186,7 @@ void TreeModelTask::UpdateNode(const Node* tmp_node)
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
         emit SUpdateName(node);
+        emit SUpdateComboModel();
     }
 
     UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);

@@ -493,6 +493,7 @@ void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, i
 {
     auto node { new TableCombo(tree_model, node_id, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
+    connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
     auto date_time { new DateTime(interface_.date_format, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
@@ -550,8 +551,10 @@ void MainWindow::DelegateProduct(QTableView* view, CSettings& settings)
 
 void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
+    auto* product_tree_model { product_tree_->Model() };
+    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
+    connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
     auto unit_price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
@@ -570,17 +573,23 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
     auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
+    auto* stakeholder_tree_model { stakeholder_tree_->Model() };
+    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
+    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 }
 
 void MainWindow::DelegateOrder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
+    auto* product_tree_model { product_tree_->Model() };
+    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
+    connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
+    auto* stakeholder_tree_model { stakeholder_tree_->Model() };
+    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
+    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 
     auto color { new ColorR(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);
@@ -734,12 +743,16 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
-    auto employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto* stakeholder_tree_model { stakeholder_tree_->Model() };
+
+    auto employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
+    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
     auto party_unit { info->section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-    auto party { new SpecificUnit(stakeholder_tree_->Model(), party_unit, true, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto party { new SpecificUnit(stakeholder_tree_model, party_unit, true, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
+    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, party, &SpecificUnit::RUpdateComboModel);
 
     auto date_time { new DateTime(interface_.date_format, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);

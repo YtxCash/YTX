@@ -1,6 +1,8 @@
 #ifndef SPECIFICUNIT_H
 #define SPECIFICUNIT_H
 
+#include <QStandardItemModel>
+
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
@@ -13,11 +15,16 @@ public:
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
+public slots:
+    void RUpdateComboModel();
+
 private:
     const TreeModel* tree_model_ {};
     const UnitFilterMode unit_filter_mode_ {};
     const int unit_ {};
     const bool skip_branch_ {};
+
+    QStandardItemModel* combo_model_ {};
 };
 
 #endif // SPECIFICUNIT_H

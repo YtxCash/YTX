@@ -27,6 +27,7 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
         emit SUpdateName(node);
+        emit SUpdateComboModel();
     }
 
     UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
@@ -180,6 +181,7 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
     emit SSearch();
     emit SUpdateOrderPartyEmployee();
     emit SResizeColumnToContents(std::to_underlying(TreeEnumStakeholder::kName));
+    emit SUpdateComboModel();
 
     ResourcePool<Node>::Instance().Recycle(node);
     node_hash_.remove(node_id);
