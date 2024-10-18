@@ -1,6 +1,7 @@
 #ifndef COMBOBOX_H
 #define COMBOBOX_H
 
+#include <QApplication>
 #include <QComboBox>
 #include <QCompleter>
 
@@ -20,6 +21,16 @@ public:
         completer->setCaseSensitivity(Qt::CaseInsensitive);
         setCompleter(completer);
         setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    }
+
+    QSize sizeHint() const override
+    {
+        QSize sz = QComboBox::sizeHint();
+
+        int scroll_bar_width = QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+        sz.setWidth(sz.width() + scroll_bar_width);
+
+        return sz;
     }
 };
 
