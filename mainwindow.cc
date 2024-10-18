@@ -33,6 +33,7 @@
 #include "delegate/tree/order/orderdatetime.h"
 #include "delegate/tree/order/ordertotal.h"
 #include "delegate/tree/stakeholder/deadline.h"
+#include "delegate/tree/stakeholder/paymentperiod.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedoublespin.h"
 #include "delegate/tree/treedoublespinpercent.h"
@@ -712,7 +713,7 @@ void MainWindow::DelegateProduct(QTreeView* view, CSettings& settings)
 
 void MainWindow::DelegateStakeholder(QTreeView* view, CSettings& settings)
 {
-    auto payment_period { new TreeSpin(IZERO, IMAX, view) };
+    auto payment_period { new PaymentPeriod(IZERO, IMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
     auto tax_rate { new TreeDoubleSpinPercent(settings.amount_decimal, DZERO, DMAX, view) };

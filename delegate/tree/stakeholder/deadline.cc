@@ -12,7 +12,7 @@ DeadLine::DeadLine(const QString& date_format, QObject* parent)
 
 QWidget* DeadLine::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
-    if (SkipDeadline(index))
+    if (Skip(index))
         return nullptr;
 
     auto* editor { new DateTimeEdit(parent) };
@@ -45,7 +45,7 @@ void DeadLine::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
 
 QSize DeadLine::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const { return CalculateTextSize(DD, option); }
 
-bool DeadLine::SkipDeadline(const QModelIndex& index) const
+bool DeadLine::Skip(const QModelIndex& index) const
 {
     if (index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool()
         || index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() == UNIT_PRODUCT

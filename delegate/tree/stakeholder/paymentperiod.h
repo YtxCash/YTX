@@ -1,13 +1,11 @@
-#ifndef DEADLINE_H
-#define DEADLINE_H
-
-#include <QDateTimeEdit>
+#ifndef PAYMENTPERIOD_H
+#define PAYMENTPERIOD_H
 
 #include "delegate/styleditemdelegate.h"
 
-class DeadLine final : public StyledItemDelegate {
+class PaymentPeriod final : public StyledItemDelegate {
 public:
-    DeadLine(const QString& date_format, QObject* parent = nullptr);
+    PaymentPeriod(int min, int max, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -18,7 +16,8 @@ private:
     bool Skip(const QModelIndex& index) const;
 
 private:
-    QString date_format_;
+    int max_ {};
+    int min_ {};
 };
 
-#endif // DEADLINE_H
+#endif // PAYMENTPERIOD_H

@@ -197,7 +197,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     const TreeEnumStakeholder kColumn { index.column() };
-    bool skip_deadline { node->branch || node->unit == UNIT_PRODUCT || node->rule == RULE_CASH };
+    bool skip { node->branch || node->unit == UNIT_PRODUCT || node->rule == RULE_CASH };
 
     switch (kColumn) {
     case TreeEnumStakeholder::kName:
@@ -217,11 +217,11 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
     case TreeEnumStakeholder::kUnit:
         return node->unit;
     case TreeEnumStakeholder::kDeadline:
-        return node->date_time.isEmpty() || skip_deadline ? QVariant() : node->date_time;
+        return node->date_time.isEmpty() || skip ? QVariant() : node->date_time;
     case TreeEnumStakeholder::kEmployee:
         return node->employee == 0 ? QVariant() : node->employee;
     case TreeEnumStakeholder::kPaymentPeriod:
-        return node->first == 0 ? QVariant() : node->first;
+        return node->first == 0 || skip ? QVariant() : node->first;
     case TreeEnumStakeholder::kTaxRate:
         return node->second == 0 ? QVariant() : node->second;
     default:
