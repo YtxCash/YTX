@@ -39,7 +39,7 @@ InsertNodeOrder::InsertNodeOrder(
 
 InsertNodeOrder::~InsertNodeOrder() { delete ui; }
 
-void InsertNodeOrder::RUpdateStakeholder()
+void InsertNodeOrder::RUpdateComboModel()
 {
     if (*node_shadow_->branch)
         return;
@@ -50,8 +50,8 @@ void InsertNodeOrder::RUpdateStakeholder()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_tree_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnly);
-    stakeholder_tree_->LeafPathSpecificUnit(ui->comboParty, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -130,8 +130,15 @@ QTableView* InsertNodeOrder::View() { return ui->tableViewOrder; }
 
 void InsertNodeOrder::IniDialog()
 {
-    IniCombo(ui->comboParty, party_unit_);
-    IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
+    combo_model_party_ = new QStandardItemModel(this);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    ui->comboParty->setModel(combo_model_party_);
+    ui->comboParty->setCurrentIndex(-1);
+
+    combo_model_employee_ = new QStandardItemModel(this);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    ui->comboEmployee->setModel(combo_model_employee_);
+    ui->comboEmployee->setCurrentIndex(-1);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
     ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
@@ -151,16 +158,6 @@ void InsertNodeOrder::IniDialog()
     ui->dSpinFirst->setDecimals(settings_.common_decimal);
 
     ui->comboParty->setFocus();
-}
-
-void InsertNodeOrder::IniCombo(QComboBox* combo, int unit)
-{
-    if (!combo)
-        return;
-
-    stakeholder_tree_->LeafPathSpecificUnit(combo, unit, UnitFilterMode::kIncludeUnitOnly);
-    combo->model()->sort(0);
-    combo->setCurrentIndex(-1);
 }
 
 void InsertNodeOrder::accept()

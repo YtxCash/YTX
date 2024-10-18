@@ -25,7 +25,7 @@ signals:
     void SUpdateParty();
 
 public slots:
-    void RUpdateStakeholder();
+    void RUpdateComboModel();
     void RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value);
 
     void RUpdateLeafValueOne(int node_id, double diff); // first
@@ -54,7 +54,6 @@ private slots:
 private:
     void IniDialog();
     void IniData();
-    void IniCombo(QComboBox* combo, int mark);
     void LockWidgets(bool locked, bool branch);
     void IniUnit(int unit);
 
@@ -66,6 +65,9 @@ private:
     TableModel* order_table_ {};
     TreeModel* stakeholder_tree_ {};
     CSettings& settings_;
+
+    QStandardItemModel* combo_model_employee_ {};
+    QStandardItemModel* combo_model_party_ {};
 
     const QString info_node_ {};
     const int node_id_ {};

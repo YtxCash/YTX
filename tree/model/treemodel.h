@@ -40,10 +40,7 @@ signals:
     void SUpdateName(const Node* node);
     void SUpdateDSpinBox();
 
-    // send to InsertNodeOrder and TableWidgetOrder
-    void SUpdateOrderPartyEmployee();
-
-    // send to specificunit delegate, table combo delegate
+    // send to specificunit delegate, table combo delegate, InsertNodeOrder and TableWidgetOrder
     void SUpdateComboModel();
 
 public slots:
@@ -125,11 +122,8 @@ public:
     void SetNodeShadow(NodeShadow* node_shadow, int node_id) const;
     void SetNodeShadow(NodeShadow* node_shadow, Node* node) const;
 
-    void LeafPathSpecificUnit(QComboBox* combo, int unit, UnitFilterMode unit_filter_mode) const;
     void LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const;
-    void LeafPathExcludeID(QComboBox* combo, int exclude_id) const;
     void LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const;
-    void LeafPathBranchPath(QComboBox* combo) const;
     void LeafPathBranchPath(QStandardItemModel* combo_model) const;
     void UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items) const;
 

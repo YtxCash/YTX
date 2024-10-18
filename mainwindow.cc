@@ -461,7 +461,7 @@ void MainWindow::TableConnectFPT(const QTableView* view, const TableModel* table
 void MainWindow::TableConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
 {
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
-    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateOrderPartyEmployee, widget, &TableWidgetOrder::RUpdateStakeholder);
+    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, widget, &TableWidgetOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
 
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
@@ -1593,7 +1593,7 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
         }
     });
 
-    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateOrderPartyEmployee, dialog, &InsertNodeOrder::RUpdateStakeholder);
+    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, dialog, &InsertNodeOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
 
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);

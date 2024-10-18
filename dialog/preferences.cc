@@ -51,12 +51,12 @@ void Preferences::IniDialog(CStringHash& unit_hash, CStringList& date_format_lis
 
 void Preferences::IniCombo(QComboBox* combo, const TreeModel* model)
 {
-    combo->blockSignals(true);
-
-    model->LeafPathBranchPath(combo);
+    // 不需要接收更新combo model的信号
+    auto* combo_model_ { new QStandardItemModel(this) };
+    model->LeafPathBranchPath(combo_model_);
+    combo->setModel(combo_model_);
 
     combo->model()->sort(0);
-    combo->blockSignals(false);
 }
 
 void Preferences::IniCombo(QComboBox* combo, CStringList& list)
@@ -67,13 +67,10 @@ void Preferences::IniCombo(QComboBox* combo, CStringList& list)
 
 void Preferences::IniCombo(QComboBox* combo, CStringHash& hash)
 {
-    combo->blockSignals(true);
-
     for (auto it = hash.cbegin(); it != hash.cend(); ++it)
         combo->addItem(it.value(), it.key());
 
     combo->model()->sort(0);
-    combo->blockSignals(false);
 }
 
 void Preferences::IniConnect()
@@ -165,24 +162,20 @@ void Preferences::DynamicLable(Section section)
 {
     switch (section) {
     case Section::kFinance:
-        ui->labelDefaultUnit->setText(tr("Default Currency"));
         ui->labelAmountDecimal->setText(tr("Amount Decimal"));
         ui->labelCommonDecimal->setText(tr("FXRate Decimal"));
         break;
     case Section::kStakeholder:
-        ui->labelDefaultUnit->setText(tr("Default Stakeholder"));
         ui->labelAmountDecimal->setText(tr("Amount Decimal"));
         ui->labelCommonDecimal->setText(tr("Placeholder"));
         break;
     case Section::kTask:
     case Section::kProduct:
-        ui->labelDefaultUnit->setText(tr("Default Unit"));
         ui->labelAmountDecimal->setText(tr("Amount Decimal"));
         ui->labelCommonDecimal->setText(tr("Quantity Decimal"));
         break;
     case Section::kSales:
     case Section::kPurchase:
-        ui->labelDefaultUnit->setText(tr("Default Term"));
         ui->labelAmountDecimal->setText(tr("Amount Decimal"));
         ui->labelCommonDecimal->setText(tr("Quantity Decimal"));
         break;

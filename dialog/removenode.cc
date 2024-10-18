@@ -75,8 +75,10 @@ void RemoveNode::IniDialog()
     ui->pBtnCancel->setDefault(true);
     this->setWindowTitle(tr("Remove %1").arg(model_->GetPath(node_id_)));
 
-    model_->LeafPathExcludeID(ui->comboBox, node_id_);
-    ui->comboBox->model()->sort(0);
+    // 不需要接收更新combo model的信号
+    auto* combo_model_ { new QStandardItemModel(this) };
+    model_->LeafPathExcludeID(combo_model_, node_id_);
+    ui->comboBox->setModel(combo_model_);
 }
 
 void RemoveNode::IniConnect()

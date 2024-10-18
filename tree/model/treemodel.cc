@@ -145,7 +145,6 @@ bool TreeModel::InsertNode(int row, const QModelIndex& parent, Node* node)
     (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
 
     emit SSearch();
-    emit SUpdateOrderPartyEmployee();
     emit SUpdateComboModel();
     return true;
 }
@@ -401,48 +400,6 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     return true;
 }
 
-void TreeModel::LeafPathSpecificUnit(QComboBox* combo, int unit, UnitFilterMode unit_filter_mode) const
-{
-    if (!combo)
-        return;
-
-    QVector<std::pair<QString, int>> items;
-    items.reserve(leaf_path_.size());
-
-    auto should_add = [unit, unit_filter_mode](const Node* node) {
-        switch (unit_filter_mode) {
-        case UnitFilterMode::kIncludeUnitOnlyWithEmpty:
-        case UnitFilterMode::kIncludeUnitOnly:
-            return node->unit == unit;
-        case UnitFilterMode::kExcludeUnitOnly:
-            return node->unit != unit;
-        default:
-            return true;
-        }
-    };
-
-    if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty) {
-        items.emplaceBack(QString(), 0);
-    }
-
-    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        auto it = node_hash_.constFind(id);
-        if (it != node_hash_.constEnd() && should_add(it.value())) {
-            items.emplaceBack(path, id);
-        }
-    }
-
-    if (items.isEmpty())
-        return;
-
-    combo->clear();
-    QSignalBlocker blocker(combo);
-
-    for (const auto& item : items) {
-        combo->addItem(item.first, item.second);
-    }
-}
-
 void TreeModel::LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
 {
     if (!combo_model)
@@ -477,30 +434,6 @@ void TreeModel::LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, 
     UpdateComboModel(combo_model, items);
 }
 
-void TreeModel::LeafPathExcludeID(QComboBox* combo, int exclude_id) const
-{
-    if (!combo)
-        return;
-
-    QVector<std::pair<QString, int>> items;
-    items.reserve(leaf_path_.size());
-
-    for (const auto& [id, path] : leaf_path_.asKeyValueRange()) {
-        if (id != exclude_id)
-            items.emplaceBack(path, id);
-    }
-
-    if (items.isEmpty())
-        return;
-
-    combo->clear();
-    QSignalBlocker blocker(combo);
-
-    for (const auto& item : items) {
-        combo->addItem(item.first, item.second);
-    }
-}
-
 void TreeModel::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const
 {
     if (!combo_model)
@@ -515,31 +448,6 @@ void TreeModel::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_i
     }
 
     UpdateComboModel(combo_model, items);
-}
-
-void TreeModel::LeafPathBranchPath(QComboBox* combo) const
-{
-    if (!combo)
-        return;
-
-    QVector<std::pair<QString, int>> items;
-    items.reserve(leaf_path_.size() + branch_path_.size());
-
-    for (const auto& [id, path] : leaf_path_.asKeyValueRange())
-        items.emplaceBack(path, id);
-
-    for (const auto& [id, path] : branch_path_.asKeyValueRange())
-        items.emplaceBack(path, id);
-
-    if (items.isEmpty())
-        return;
-
-    combo->clear();
-    QSignalBlocker blocker(combo);
-
-    for (const auto& item : items) {
-        combo->addItem(item.first, item.second);
-    }
 }
 
 void TreeModel::LeafPathBranchPath(QStandardItemModel* combo_model) const
@@ -954,7 +862,6 @@ bool TreeModel::UpdateName(Node* node, CString& value)
     UpdatePath(node);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
     emit SSearch();
-    emit SUpdateOrderPartyEmployee();
     return true;
 }
 

@@ -179,7 +179,6 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
     }
 
     emit SSearch();
-    emit SUpdateOrderPartyEmployee();
     emit SResizeColumnToContents(std::to_underlying(TreeEnumStakeholder::kName));
     emit SUpdateComboModel();
 

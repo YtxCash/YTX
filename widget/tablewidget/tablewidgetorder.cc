@@ -59,7 +59,7 @@ TableWidgetOrder::~TableWidgetOrder()
 
 QTableView* TableWidgetOrder::View() { return ui->tableViewOrder; }
 
-void TableWidgetOrder::RUpdateStakeholder()
+void TableWidgetOrder::RUpdateComboModel()
 {
     if (*node_shadow_->branch)
         return;
@@ -70,11 +70,8 @@ void TableWidgetOrder::RUpdateStakeholder()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_tree_->LeafPathSpecificUnit(ui->comboEmployee, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnly);
-    stakeholder_tree_->LeafPathSpecificUnit(ui->comboParty, party_unit_, UnitFilterMode::kIncludeUnitOnly);
-
-    ui->comboEmployee->model()->sort(0);
-    ui->comboParty->model()->sort(0);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
 
     auto index_employee { ui->comboEmployee->findData(employee_id) };
     ui->comboEmployee->setCurrentIndex(index_employee);
@@ -148,8 +145,15 @@ void TableWidgetOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, doub
 
 void TableWidgetOrder::IniDialog()
 {
-    IniCombo(ui->comboParty, party_unit_);
-    IniCombo(ui->comboEmployee, UNIT_EMPLOYEE);
+    combo_model_party_ = new QStandardItemModel(this);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    ui->comboParty->setModel(combo_model_party_);
+    ui->comboParty->setCurrentIndex(-1);
+
+    combo_model_employee_ = new QStandardItemModel(this);
+    stakeholder_tree_->LeafPathSpecificUnit(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    ui->comboEmployee->setModel(combo_model_employee_);
+    ui->comboEmployee->setCurrentIndex(-1);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
 
@@ -187,16 +191,6 @@ void TableWidgetOrder::IniData()
     ui->pBtnLockOrder->setChecked(*node_shadow_->locked);
 
     ui->tableViewOrder->setModel(order_table_);
-}
-
-void TableWidgetOrder::IniCombo(QComboBox* combo, int unit)
-{
-    if (!combo)
-        return;
-
-    stakeholder_tree_->LeafPathSpecificUnit(combo, unit, UnitFilterMode::kIncludeUnitOnly);
-    combo->model()->sort(0);
-    combo->setCurrentIndex(-1);
 }
 
 void TableWidgetOrder::LockWidgets(bool locked, bool branch)
