@@ -6,7 +6,7 @@
 
 class TreeCombo final : public StyledItemDelegate {
 public:
-    TreeCombo(CStringHash& hash, QObject* parent = nullptr);
+    TreeCombo(CStringHash& hash, bool skip_branch, QObject* parent);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -18,6 +18,7 @@ private:
 
 private:
     CStringHash& hash_;
+    bool skip_branch_ {};
 };
 
 #endif // TREECOMBO_H

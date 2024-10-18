@@ -2,9 +2,12 @@
 
 #include <widget/combobox.h>
 
-TreeCombo::TreeCombo(CStringHash& hash, QObject* parent)
+#include "component/enumclass.h"
+
+TreeCombo::TreeCombo(CStringHash& hash, bool skip_branch, QObject* parent)
     : StyledItemDelegate { parent }
     , hash_ { hash }
+    , skip_branch_ { skip_branch }
 {
 }
 
@@ -12,6 +15,9 @@ QWidget* TreeCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& op
 {
     Q_UNUSED(option);
     Q_UNUSED(index);
+
+    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
+        return nullptr;
 
     auto editor { new ComboBox(parent) };
 

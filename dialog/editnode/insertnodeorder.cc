@@ -135,6 +135,7 @@ void InsertNodeOrder::IniDialog()
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
     ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
+    *node_shadow_->date_time = ui->dateTimeEdit->dateTime().toString(DATE_TIME_FST);
     ui->comboParty->lineEdit()->setValidator(&LineEdit::kInputValidator);
 
     ui->dSpinDiscount->setRange(DMIN, DMAX);

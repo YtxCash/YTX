@@ -2,12 +2,13 @@
 
 #include <QPainter>
 
-#include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "widget/datetimeedit.h"
 
-OrderDateTime::OrderDateTime(QObject* parent)
+OrderDateTime::OrderDateTime(const QString& date_format, bool skip_branch, QObject* parent)
     : StyledItemDelegate { parent }
+    , skip_branch_ { skip_branch }
+    , date_format_ { date_format }
 {
 }
 
@@ -15,12 +16,11 @@ QWidget* OrderDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem
 {
     Q_UNUSED(option);
 
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool() };
-    if (branch)
+    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool())
         return nullptr;
 
     auto editor { new DateTimeEdit(parent) };
-    editor->setDisplayFormat(DATE_TIME_FST);
+    editor->setDisplayFormat(date_format_);
 
     return editor;
 }
@@ -28,13 +28,15 @@ QWidget* OrderDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem
 void OrderDateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DateTimeEdit*>(editor) };
-    cast_editor->setDateTime(index.data().toDateTime());
+    auto date_time { QDateTime::fromString(index.data().toString(), date_format_) };
+
+    cast_editor->setDateTime(date_time);
 }
 
 void OrderDateTime::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DateTimeEdit*>(editor) };
-    auto string { cast_editor->dateTime().toString(DATE_TIME_FST) };
+    auto string { cast_editor->dateTime().toString(date_format_) };
     model->setData(index, string);
 }
 

@@ -4,17 +4,21 @@
 
 #include "widget/combobox.h"
 
-SpecificUnit::SpecificUnit(const TreeModel* tree_model, int unit, UnitFilterMode unit_filter_mode, QObject* parent)
+SpecificUnit::SpecificUnit(const TreeModel* tree_model, int unit, bool skip_branch, UnitFilterMode unit_filter_mode, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
     , unit_filter_mode_ { unit_filter_mode }
     , unit_ { unit }
+    , skip_branch_ { skip_branch }
 {
 }
 
-QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     Q_UNUSED(option);
+
+    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
+        return nullptr;
 
     auto* editor { new ComboBox(parent) };
     tree_model_->LeafPathSpecificUnit(editor, unit_, unit_filter_mode_);

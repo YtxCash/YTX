@@ -335,7 +335,6 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     const TreeEnumOrder kColumn { index.column() };
-    const bool branch { node->branch };
 
     switch (kColumn) {
     case TreeEnumOrder::kName:
@@ -349,17 +348,17 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kNote:
         return node->note;
     case TreeEnumOrder::kRule:
-        return branch ? -1 : node->rule;
+        return node->branch ? -1 : node->rule;
     case TreeEnumOrder::kBranch:
         return node->branch ? node->branch : QVariant();
     case TreeEnumOrder::kUnit:
         return node->unit;
     case TreeEnumOrder::kParty:
-        return branch || node->party == 0 ? QVariant() : node->party;
+        return node->party == 0 ? QVariant() : node->party;
     case TreeEnumOrder::kEmployee:
-        return branch || node->employee == 0 ? QVariant() : node->employee;
+        return node->employee == 0 ? QVariant() : node->employee;
     case TreeEnumOrder::kDateTime:
-        return branch ? QVariant() : node->date_time;
+        return node->date_time.isEmpty() ? QVariant() : node->date_time;
     case TreeEnumOrder::kFirst:
         return node->first == 0 ? QVariant() : node->first;
     case TreeEnumOrder::kSecond:
@@ -387,39 +386,31 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         return false;
 
     const TreeEnumOrder kColumn { index.column() };
-    const bool unlocked { !node->locked };
-    const bool editable { !node->branch && unlocked };
 
     switch (kColumn) {
     case TreeEnumOrder::kCode:
         UpdateField(node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumOrder::kDescription:
-        if (unlocked)
-            UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
+        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumOrder::kNote:
         UpdateField(node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumOrder::kRule:
-        if (editable)
-            UpdateRule(node, value.toBool());
+        UpdateRule(node, value.toBool());
         break;
     case TreeEnumOrder::kUnit:
-        if (editable)
-            UpdateUnit(node, value.toInt());
+        UpdateUnit(node, value.toInt());
         break;
     case TreeEnumOrder::kParty:
-        if (editable)
-            UpdateField(node, value.toInt(), PARTY, &Node::party);
+        UpdateField(node, value.toInt(), PARTY, &Node::party);
         break;
     case TreeEnumOrder::kEmployee:
-        if (editable)
-            UpdateField(node, value.toInt(), EMPLOYEE, &Node::employee);
+        UpdateField(node, value.toInt(), EMPLOYEE, &Node::employee);
         break;
     case TreeEnumOrder::kDateTime:
-        if (editable)
-            UpdateField(node, value.toString(), DATE_TIME, &Node::date_time);
+        UpdateField(node, value.toString(), DATE_TIME, &Node::date_time);
         break;
     case TreeEnumOrder::kLocked:
         UpdateLocked(node, value.toBool());
@@ -429,8 +420,7 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
     }
 
     emit SResizeColumnToContents(index.column());
-    if (unlocked)
-        emit SUpdateData(node->id, kColumn, value);
+    emit SUpdateData(node->id, kColumn, value);
     return true;
 }
 
@@ -441,6 +431,10 @@ Qt::ItemFlags TreeModelOrder::flags(const QModelIndex& index) const
 
     auto flags { QAbstractItemModel::flags(index) };
     const TreeEnumOrder kColumn { index.column() };
+
+    const bool locked { index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kLocked)).data().toBool() };
+    if (!locked)
+        flags |= Qt::ItemIsEditable;
 
     switch (kColumn) {
     case TreeEnumOrder::kName:
@@ -457,7 +451,6 @@ Qt::ItemFlags TreeModelOrder::flags(const QModelIndex& index) const
         flags &= ~Qt::ItemIsEditable;
         break;
     default:
-        flags |= Qt::ItemIsEditable;
         break;
     }
 

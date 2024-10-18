@@ -40,7 +40,6 @@
 #include "delegate/tree/treedoublespinr.h"
 #include "delegate/tree/treedoublespinunitr.h"
 #include "delegate/tree/treeplaintext.h"
-#include "delegate/tree/treespin.h"
 #include "dialog/about.h"
 #include "dialog/editdocument.h"
 #include "dialog/editnode/editnodefinance.h"
@@ -553,7 +552,7 @@ void MainWindow::DelegateProduct(QTableView* view, CSettings& settings)
 
 void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
+    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
     auto unit_price { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
@@ -573,16 +572,16 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings)
     auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
+    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
 }
 
 void MainWindow::DelegateOrder(QTableView* view, CSettings& settings)
 {
-    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, UnitFilterMode::kExcludeUnitOnly, view) };
+    auto inside_product { new SpecificUnit(product_tree_->Model(), UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
 
-    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
+    auto outside_product { new SpecificUnit(stakeholder_tree_->Model(), UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
 
     auto color { new ColorR(view) };
@@ -661,13 +660,13 @@ void MainWindow::DelegateCommon(QTreeView* view, CInfo* info)
     auto plain_text { new TreePlainText(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kNote), plain_text);
 
-    auto rule { new TreeCombo(info->rule_hash, view) };
+    auto rule { new TreeCombo(info->rule_hash, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
 
     auto branch { new CheckBox(QEvent::MouseButtonDblClick, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kBranch), branch);
 
-    auto unit { new TreeCombo(info->unit_hash, view) };
+    auto unit { new TreeCombo(info->unit_hash, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
 }
 
@@ -725,6 +724,9 @@ void MainWindow::DelegateStakeholder(QTreeView* view, CSettings& settings)
 
 void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings)
 {
+    auto rule { new TreeCombo(info->rule_hash, true, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
+
     auto amount { new OrderTotalR(settings.amount_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
@@ -734,14 +736,14 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
-    auto employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
 
-    auto unit_party { info->section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-    auto party { new SpecificUnit(stakeholder_tree_->Model(), unit_party, UnitFilterMode::kIncludeUnitOnly, view) };
+    auto party_unit { info->section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
+    auto party { new SpecificUnit(stakeholder_tree_->Model(), party_unit, true, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
 
-    auto date_time { new OrderDateTime(view) };
+    auto date_time { new OrderDateTime(DATE_TIME_FST, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
     auto locked { new CheckBox(QEvent::MouseButtonDblClick, view) };
