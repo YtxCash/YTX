@@ -207,4 +207,6 @@ protected:
     CString& separator_;
 };
 
+using PTreeModel = QPointer<TreeModel>;
+
 #endif // TREEMODEL_H

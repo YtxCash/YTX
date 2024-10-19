@@ -131,4 +131,6 @@ protected:
     QList<TransShadow*> trans_shadow_list_ {};
 };
 
+using PTableModel = QPointer<TableModel>;
+
 #endif // TABLEMODEL_H

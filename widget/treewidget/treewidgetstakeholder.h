@@ -16,8 +16,8 @@ public:
     TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent = nullptr);
     ~TreeWidgetStakeholder() override;
 
-    QPointer<QTreeView> View() override;
-    QPointer<TreeModel> Model() override { return model_; };
+    QPointer<QTreeView> View() const override;
+    QPointer<TreeModel> Model() const override { return model_; };
 
 private:
     Ui::TreeWidgetStakeholder* ui;

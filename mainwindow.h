@@ -93,15 +93,15 @@ private slots:
 private:
     inline bool IsTreeWidget(const QWidget* widget) const { return widget && widget->inherits("TreeWidget"); }
     inline bool IsTableWidget(const QWidget* widget) const { return widget && widget->inherits("TableWidget"); }
-    inline TableModel* GetTableModel(QTableView* view) const
+    inline PTableModel GetTableModel(QWidget* widget) const
     {
-        if (!view)
+        if (!widget)
             return nullptr;
 
-        assert(dynamic_cast<TableModel*>(view->model()) && "Model is not TableModel");
-        return static_cast<TableModel*>(view->model());
+        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
+        return static_cast<TableWidget*>(widget)->Model();
     }
-    inline QTableView* GetQTableView(QWidget* widget) const
+    inline PQTableView GetQTableView(QWidget* widget) const
     {
         if (!widget)
             return nullptr;
@@ -125,51 +125,51 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
-    void CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
-    void DelegateCommon(QTableView* view, const TreeModel* tree_model, int node_id) const;
-    void DelegateFinance(QTableView* view, CSettings& settings) const;
-    void DelegateTask(QTableView* view, CSettings& settings) const;
-    void DelegateProduct(QTableView* view, CSettings& settings) const;
-    void DelegateStakeholder(QTableView* view, CSettings& settings) const;
-    void DelegateOrder(QTableView* view, CSettings& settings) const;
-    void SetView(QTableView* view) const;
+    void CreateTableFPTS(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, int node_id);
+    void CreateTablePS(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
+    void DelegateCommon(PQTableView view, PTreeModel tree_model, int node_id) const;
+    void DelegateFinance(PQTableView view, CSettings& settings) const;
+    void DelegateTask(PQTableView view, CSettings& settings) const;
+    void DelegateProduct(PQTableView view, CSettings& settings) const;
+    void DelegateStakeholder(PQTableView view, CSettings& settings) const;
+    void DelegateOrder(PQTableView view, CSettings& settings) const;
+    void SetView(PQTableView view) const;
 
-    void TableConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data) const;
-    void TableConnectOrder(const QTableView* view, const TableModelOrder* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget) const;
-    void TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data) const;
+    void TableConnectFPT(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const;
+    void TableConnectOrder(PQTableView view, TableModelOrder* table_model, PTreeModel tree_model, const TableWidgetOrder* widget) const;
+    void TableConnectStakeholder(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const;
 
     void CreateSection(TreeWidget* tree_widget, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab) const;
     void UpdateLastTab() const;
 
-    void SetDelegate(QTreeView* view, CInfo* info, CSettings& settings) const;
-    void DelegateCommon(QTreeView* view, CInfo* info) const;
-    void DelegateFinance(QTreeView* view, CInfo* info, CSettings& settings) const;
-    void DelegateTask(QTreeView* view, CSettings& settings) const;
-    void DelegateProduct(QTreeView* view, CSettings& settings) const;
-    void DelegateStakeholder(QTreeView* view, CSettings& settings) const;
-    void DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings) const;
+    void SetDelegate(PQTreeView view, CInfo* info, CSettings& settings) const;
+    void DelegateCommon(PQTreeView view, CInfo* info) const;
+    void DelegateFinance(PQTreeView view, CInfo* info, CSettings& settings) const;
+    void DelegateTask(PQTreeView view, CSettings& settings) const;
+    void DelegateProduct(PQTreeView view, CSettings& settings) const;
+    void DelegateStakeholder(PQTreeView view, CSettings& settings) const;
+    void DelegateOrder(PQTreeView view, CInfo* info, CSettings& settings) const;
 
-    void SetView(QTreeView* view) const;
-    void TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* sql) const;
+    void SetView(PQTreeView view) const;
+    void TreeConnect(const TreeWidget* tree_widget, const Sqlite* sql) const;
 
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
     void InsertNodeFPST(
-        Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
-    void InsertNodePS(Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
+        Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
+    void InsertNodePS(Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
 
-    void AppendTrans(TableWidget* table_widget);
+    void AppendTrans(QWidget* table_widget);
 
     void EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash); // Finance Product Stakeholder Task
     void SwitchTab(int node_id, int trans_id = 0) const;
     bool LockFile(CString& absolute_path, CString& complete_base_name) const;
 
     void RemoveTrans(QWidget* widget);
-    void RemoveNode(QTreeView* view, TreeModel* model);
-    void RemoveView(TreeModel* model, const QModelIndex& index, int node_id);
-    void RemoveBranch(TreeModel* model, const QModelIndex& index, int node_id);
+    void RemoveNode(PQTreeView view, PTreeModel model);
+    void RemoveView(PTreeModel model, const QModelIndex& index, int node_id);
+    void RemoveBranch(PTreeModel model, const QModelIndex& index, int node_id);
 
     void UpdateInterface(const Interface& interface);
     void UpdateTranslate() const;
@@ -184,9 +184,9 @@ private:
     void Recent();
 
     void SaveTab(const TableHash& table_hash, CString& section_name, CString& property) const;
-    void RestoreTab(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property);
+    void RestoreTab(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, CString& property);
 
-    template <InheritQAbstractItemView T> bool HasSelection(const T* view) const
+    template <InheritQAbstractItemView T> bool HasSelection(QPointer<T> view) const
     {
         return view && view->selectionModel() && view->selectionModel()->hasSelection();
     }

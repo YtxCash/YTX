@@ -13,8 +13,8 @@ class TableWidget : public QWidget {
 public:
     virtual ~TableWidget() = default;
 
-    virtual QPointer<TableModel> Model() = 0;
-    virtual QPointer<QTableView> View() = 0;
+    virtual QPointer<TableModel> Model() const = 0;
+    virtual QPointer<QTableView> View() const = 0;
 
 protected:
     explicit TableWidget(QWidget* parent = nullptr)
@@ -25,5 +25,6 @@ protected:
 
 using TableHash = QHash<int, TableWidget*>;
 using CTableHash = const QHash<int, TableWidget*>;
+using PQTableView = QPointer<QTableView>;
 
 #endif // TABLEWIDGET_H

@@ -250,8 +250,7 @@ void MainWindow::RInsertTriggered()
         return;
 
     if (IsTableWidget(widget)) {
-        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-        AppendTrans(static_cast<TableWidget*>(widget));
+        AppendTrans(widget);
     }
 }
 
@@ -312,7 +311,7 @@ void MainWindow::SwitchTab(int node_id, int trans_id) const
         return;
 
     auto view { widget->View() };
-    auto index { GetTableModel(view)->GetIndex(trans_id) };
+    auto index { GetTableModel(widget)->GetIndex(trans_id) };
     view->setCurrentIndex(index);
     view->scrollTo(index.siblingAtColumn(std::to_underlying(TableEnum::kDateTime)), QAbstractItemView::PositionAtCenter);
 }
@@ -328,7 +327,7 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name) c
     return true;
 }
 
-void MainWindow::CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id)
+void MainWindow::CreateTableFPTS(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, int node_id)
 {
     CString& name { tree_model->Name(node_id) };
     auto sql { data->sql };
@@ -401,7 +400,7 @@ void MainWindow::CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& s
     SignalStation::Instance().RegisterModel(section, node_id, model);
 }
 
-void MainWindow::CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id)
+void MainWindow::CreateTablePS(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id)
 {
     CString& name { stakeholder_tree_->Model()->Name(party_id) };
     auto sql { data->sql };
@@ -431,7 +430,7 @@ void MainWindow::CreateTablePS(Data* data, TreeModel* tree_model, CSettings& set
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
     tab_bar->setTabToolTip(tab_index, stakeholder_tree_->Model()->GetPath(party_id));
 
-    auto* view { widget->View() };
+    auto view { widget->View() };
     SetView(view);
 
     TableConnectOrder(view, table_model, tree_model, widget);
@@ -440,7 +439,7 @@ void MainWindow::CreateTablePS(Data* data, TreeModel* tree_model, CSettings& set
     table_hash->insert(node_id, widget);
 }
 
-void MainWindow::TableConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data) const
+void MainWindow::TableConnectFPT(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
 {
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
@@ -457,8 +456,7 @@ void MainWindow::TableConnectFPT(const QTableView* view, const TableModel* table
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::TableConnectOrder(
-    const QTableView* view, const TableModelOrder* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget) const
+void MainWindow::TableConnectOrder(PQTableView view, TableModelOrder* table_model, PTreeModel tree_model, const TableWidgetOrder* widget) const
 {
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, widget, &TableWidgetOrder::RUpdateComboModel);
@@ -470,8 +468,8 @@ void MainWindow::TableConnectOrder(
     connect(table_model, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
 
-    assert(dynamic_cast<const TreeModelOrder*>(tree_model) && "Tree Model is not TreeModelOrder");
-    auto tree_model_order { static_cast<const TreeModelOrder*>(tree_model) };
+    assert(dynamic_cast<TreeModelOrder*>(tree_model.data()) && "Tree Model is not TreeModelOrder");
+    auto tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
 
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
@@ -479,7 +477,7 @@ void MainWindow::TableConnectOrder(
     connect(widget, &TableWidgetOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 }
 
-void MainWindow::TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data) const
+void MainWindow::TableConnectStakeholder(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
 {
     connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
@@ -487,7 +485,7 @@ void MainWindow::TableConnectStakeholder(const QTableView* view, const TableMode
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, int node_id) const
+void MainWindow::DelegateCommon(PQTableView view, PTreeModel tree_model, int node_id) const
 {
     auto node { new TableCombo(tree_model, node_id, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
@@ -508,7 +506,7 @@ void MainWindow::DelegateCommon(QTableView* view, const TreeModel* tree_model, i
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 }
 
-void MainWindow::DelegateFinance(QTableView* view, CSettings& settings) const
+void MainWindow::DelegateFinance(PQTableView view, CSettings& settings) const
 {
     auto amount { new TableDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), amount);
@@ -521,7 +519,7 @@ void MainWindow::DelegateFinance(QTableView* view, CSettings& settings) const
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateTask(QTableView* view, CSettings& settings) const
+void MainWindow::DelegateTask(PQTableView view, CSettings& settings) const
 {
     auto quantity { new TableDoubleSpin(settings.common_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
@@ -534,7 +532,7 @@ void MainWindow::DelegateTask(QTableView* view, CSettings& settings) const
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateProduct(QTableView* view, CSettings& settings) const
+void MainWindow::DelegateProduct(PQTableView view, CSettings& settings) const
 {
     auto quantity { new TableDoubleSpin(settings.common_decimal, DMIN, DMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
@@ -547,9 +545,9 @@ void MainWindow::DelegateProduct(QTableView* view, CSettings& settings) const
     view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings) const
+void MainWindow::DelegateStakeholder(PQTableView view, CSettings& settings) const
 {
-    auto* product_tree_model { product_tree_->Model() };
+    auto product_tree_model { product_tree_->Model() };
     auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
@@ -571,20 +569,20 @@ void MainWindow::DelegateStakeholder(QTableView* view, CSettings& settings) cons
     auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto* stakeholder_tree_model { stakeholder_tree_->Model() };
+    auto stakeholder_tree_model { stakeholder_tree_->Model() };
     auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 }
 
-void MainWindow::DelegateOrder(QTableView* view, CSettings& settings) const
+void MainWindow::DelegateOrder(PQTableView view, CSettings& settings) const
 {
-    auto* product_tree_model { product_tree_->Model() };
+    auto product_tree_model { product_tree_->Model() };
     auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
-    auto* stakeholder_tree_model { stakeholder_tree_->Model() };
+    auto stakeholder_tree_model { stakeholder_tree_->Model() };
     auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
@@ -619,7 +617,7 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, CString& name, Data* dat
     auto model { tree_widget->Model() };
 
     SetDelegate(view, info, settings);
-    TreeConnect(view, tree_widget, model, data->sql);
+    TreeConnect(tree_widget, data->sql);
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info->section, 0 }));
 
@@ -630,7 +628,7 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, CString& name, Data* dat
     // view->setColumnHidden(1, true);
 }
 
-void MainWindow::SetDelegate(QTreeView* view, CInfo* info, CSettings& settings) const
+void MainWindow::SetDelegate(PQTreeView view, CInfo* info, CSettings& settings) const
 {
     DelegateCommon(view, info);
 
@@ -656,7 +654,7 @@ void MainWindow::SetDelegate(QTreeView* view, CInfo* info, CSettings& settings) 
     }
 }
 
-void MainWindow::DelegateCommon(QTreeView* view, CInfo* info) const
+void MainWindow::DelegateCommon(PQTreeView view, CInfo* info) const
 {
     auto line { new Line(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kCode), line);
@@ -675,7 +673,7 @@ void MainWindow::DelegateCommon(QTreeView* view, CInfo* info) const
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
 }
 
-void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSettings& settings) const
+void MainWindow::DelegateFinance(PQTreeView view, CInfo* info, CSettings& settings) const
 {
     auto final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info->unit_symbol_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kFinalTotal), final_total);
@@ -684,7 +682,7 @@ void MainWindow::DelegateFinance(QTreeView* view, CInfo* info, CSettings& settin
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
 }
 
-void MainWindow::DelegateTask(QTreeView* view, CSettings& settings) const
+void MainWindow::DelegateTask(PQTreeView view, CSettings& settings) const
 {
     auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
@@ -699,7 +697,7 @@ void MainWindow::DelegateTask(QTreeView* view, CSettings& settings) const
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
 }
 
-void MainWindow::DelegateProduct(QTreeView* view, CSettings& settings) const
+void MainWindow::DelegateProduct(PQTreeView view, CSettings& settings) const
 {
     auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
@@ -715,7 +713,7 @@ void MainWindow::DelegateProduct(QTreeView* view, CSettings& settings) const
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
 }
 
-void MainWindow::DelegateStakeholder(QTreeView* view, CSettings& settings) const
+void MainWindow::DelegateStakeholder(PQTreeView view, CSettings& settings) const
 {
     auto payment_period { new PaymentPeriod(IZERO, IMAX, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
@@ -727,7 +725,7 @@ void MainWindow::DelegateStakeholder(QTreeView* view, CSettings& settings) const
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 }
 
-void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings) const
+void MainWindow::DelegateOrder(PQTreeView view, CInfo* info, CSettings& settings) const
 {
     auto rule { new TreeCombo(info->rule_hash, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
@@ -741,7 +739,7 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
-    auto* stakeholder_tree_model { stakeholder_tree_->Model() };
+    auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
     auto employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
@@ -759,8 +757,11 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 
-void MainWindow::TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* sql) const
+void MainWindow::TreeConnect(const TreeWidget* tree_widget, const Sqlite* sql) const
 {
+    auto view { tree_widget->View() };
+    auto model { tree_widget->Model() };
+
     connect(view, &QTreeView::doubleClicked, this, &MainWindow::RTreeViewDoubleClicked);
     connect(view, &QTreeView::customContextMenuRequested, this, &MainWindow::RTreeViewCustomContextMenuRequested);
 
@@ -819,7 +820,7 @@ void MainWindow::RRemoveTriggered()
         RemoveTrans(current_widget);
 }
 
-void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
+void MainWindow::RemoveNode(PQTreeView view, PTreeModel model)
 {
     if (!HasSelection(view))
         return;
@@ -860,15 +861,19 @@ void MainWindow::RemoveNode(QTreeView* view, TreeModel* model)
 void MainWindow::RemoveTrans(QWidget* widget)
 {
     // 1. 获取视图和检查选择
-    auto* view { GetQTableView(widget) };
+    auto view { GetQTableView(widget) };
     if (!view || !HasSelection(view)) {
         return;
     }
 
-    // 2. 获取模型和当前索引
-    auto* model { GetTableModel(view) };
     QModelIndex current_index { view->currentIndex() };
-    if (!model || !current_index.isValid()) {
+    if (!current_index.isValid()) {
+        return;
+    }
+
+    // 2. 获取模型和当前索引
+    auto model { GetTableModel(widget) };
+    if (!model) {
         return;
     }
 
@@ -900,7 +905,7 @@ void MainWindow::RemoveTrans(QWidget* widget)
         view->setCurrentIndex(new_index);
 }
 
-void MainWindow::RemoveView(TreeModel* model, const QModelIndex& index, int node_id)
+void MainWindow::RemoveView(PTreeModel model, const QModelIndex& index, int node_id)
 {
     model->RemoveNode(index.row(), index.parent());
     auto widget { table_hash_->value(node_id) };
@@ -923,7 +928,7 @@ void MainWindow::SaveTab(const TableHash& table_hash, CString& section_name, CSt
     exclusive_interface_->setValue(QString("%1/%2").arg(section_name, property), list);
 }
 
-void MainWindow::RestoreTab(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property)
+void MainWindow::RestoreTab(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, CString& property)
 {
     // order不恢复
     Section section { data->info.section };
@@ -969,7 +974,7 @@ void MainWindow::Recent()
     SetClearMenuAction();
 }
 
-void MainWindow::RemoveBranch(TreeModel* model, const QModelIndex& index, int node_id)
+void MainWindow::RemoveBranch(PTreeModel model, const QModelIndex& index, int node_id)
 {
     QMessageBox msg {};
     msg.setIcon(QMessageBox::Question);
@@ -1034,7 +1039,7 @@ void MainWindow::SetTabWidget()
     }
 }
 
-void MainWindow::SetView(QTableView* view) const
+void MainWindow::SetView(PQTableView view) const
 {
     view->setSortingEnabled(true);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -1329,7 +1334,7 @@ void MainWindow::SetAction() const
     ui->actionCheckReverse->setProperty(CHECK, std::to_underlying(Check::kReverse));
 }
 
-void MainWindow::SetView(QTreeView* view) const
+void MainWindow::SetView(PQTreeView view) const
 {
     view->setSelectionMode(QAbstractItemView::SingleSelection);
     view->setDragDropMode(QAbstractItemView::InternalMove);
@@ -1368,13 +1373,12 @@ void MainWindow::RAppendNodeTriggered()
     InsertNodeFunction(parent_index, parent_id, 0);
 }
 
-void MainWindow::AppendTrans(TableWidget* table_widget)
+void MainWindow::AppendTrans(QWidget* table_widget)
 {
     if (!table_widget)
         return;
 
-    auto view { GetQTableView(table_widget) };
-    auto model { GetTableModel(view) };
+    auto model { GetTableModel(table_widget) };
     if (!model)
         return;
 
@@ -1393,7 +1397,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
         target_index = model->index(empty_row, std::to_underlying(TableEnum::kRhsNode));
     }
 
-    view->setCurrentIndex(target_index);
+    GetQTableView(table_widget)->setCurrentIndex(target_index);
 }
 
 void MainWindow::RJumpTriggered()
@@ -1446,7 +1450,7 @@ void MainWindow::REditNode()
     if (!widget || !IsTreeWidget(widget))
         return;
 
-    const auto* view { tree_widget_->View() };
+    const auto view { tree_widget_->View() };
     if (!HasSelection(view))
         return;
 
@@ -1504,7 +1508,7 @@ void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& i
     ResourcePool<Node>::Instance().Recycle(tmp_node);
 }
 
-void MainWindow::InsertNodeFPST(Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int parent_id, int row)
+void MainWindow::InsertNodeFPST(Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int parent_id, int row)
 {
     auto parent_path { tree_model->GetPath(parent_id) };
     if (!parent_path.isEmpty())
@@ -1544,7 +1548,7 @@ void MainWindow::InsertNodeFPST(Section section, TreeModel* tree_model, Node* no
     dialog->exec();
 }
 
-void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node, const QModelIndex& parent, int row)
+void MainWindow::InsertNodePS(Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int row)
 {
     InsertNodeOrder* dialog {};
     auto sql { data_->sql };
@@ -1600,8 +1604,8 @@ void MainWindow::InsertNodePS(Section section, TreeModel* tree_model, Node* node
     connect(table_model, &TableModel::SUpdateLeafValue, dialog, &InsertNodeOrder::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &InsertNodeOrder::RUpdateLeafValueOne);
 
-    assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model()) && "Model is not TreeModelOrder");
-    auto tree_model_order { static_cast<TreeModelOrder*>(tree_model) };
+    assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model().data()) && "Model is not TreeModelOrder");
+    auto tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
     connect(tree_model_order, &TreeModelOrder::SUpdateData, dialog, &InsertNodeOrder::RUpdateData);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
@@ -1630,7 +1634,7 @@ void MainWindow::REditDocument()
         return;
 
     auto document_dir { settings_->document_dir };
-    auto model { GetTableModel(view) };
+    auto model { GetTableModel(current_widget) };
     auto document_pointer { model->GetDocumentPointer(trans_index) };
     const int trans_id { trans_index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
@@ -2020,7 +2024,8 @@ void MainWindow::RUpdateState()
     if (!current_widget || !IsTableWidget(current_widget))
         return;
 
-    GetTableModel(GetQTableView(current_widget))->UpdateAllState(Check { QObject::sender()->property(CHECK).toInt() });
+    auto table_model { GetTableModel(current_widget) };
+    table_model->UpdateAllState(Check { QObject::sender()->property(CHECK).toInt() });
 }
 
 void MainWindow::SwitchSection(const Tab& last_tab) const

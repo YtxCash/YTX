@@ -17,8 +17,8 @@ public:
     virtual ~TreeWidget() = default;
 
     virtual void SetStatus() { };
-    virtual QPointer<QTreeView> View() = 0;
-    virtual QPointer<TreeModel> Model() = 0;
+    virtual QPointer<QTreeView> View() const = 0;
+    virtual QPointer<TreeModel> Model() const = 0;
 
 protected:
     TreeWidget(QWidget* parent = nullptr)
@@ -26,5 +26,7 @@ protected:
     {
     }
 };
+
+using PQTreeView = QPointer<QTreeView>;
 
 #endif // TREEWIDGET_H

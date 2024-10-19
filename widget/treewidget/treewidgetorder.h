@@ -20,8 +20,8 @@ public:
     TreeWidgetOrder(TreeModel* model, CInfo& info, const Settings& settings, QWidget* parent = nullptr);
     ~TreeWidgetOrder() override;
 
-    QPointer<QTreeView> View() override;
-    QPointer<TreeModel> Model() override { return model_; };
+    QPointer<QTreeView> View() const override;
+    QPointer<TreeModel> Model() const override { return model_; };
 
 private:
     Ui::TreeWidgetOrder* ui;
