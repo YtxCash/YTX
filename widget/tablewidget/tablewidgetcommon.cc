@@ -13,4 +13,4 @@ TableWidgetCommon::TableWidgetCommon(TableModel* model, QWidget* parent)
 
 TableWidgetCommon::~TableWidgetCommon() { delete ui; }
 
-QTableView* TableWidgetCommon::View() { return ui->tableView; }
+QPointer<QTableView> TableWidgetCommon::View() { return ui->tableView; }

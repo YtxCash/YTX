@@ -32,8 +32,8 @@ public slots:
     void RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
 
 public:
-    TableModel* Model() override { return order_table_; }
-    QTableView* View() override;
+    QPointer<TableModel> Model() override { return order_table_; }
+    QPointer<QTableView> View() override;
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);

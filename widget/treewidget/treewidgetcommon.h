@@ -19,8 +19,8 @@ public:
     TreeWidgetCommon(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent = nullptr);
     ~TreeWidgetCommon() override;
 
-    QTreeView* View() override;
-    TreeModel* Model() override { return model_; };
+    QPointer<QTreeView> View() override;
+    QPointer<TreeModel> Model() override { return model_; };
     void SetStatus() override;
 
 private:

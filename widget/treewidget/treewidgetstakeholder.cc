@@ -15,4 +15,4 @@ TreeWidgetStakeholder::TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSet
 
 TreeWidgetStakeholder::~TreeWidgetStakeholder() { delete ui; }
 
-QTreeView* TreeWidgetStakeholder::View() { return ui->treeViewStakeholder; }
+QPointer<QTreeView> TreeWidgetStakeholder::View() { return ui->treeViewStakeholder; }

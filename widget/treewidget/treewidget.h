@@ -1,6 +1,7 @@
 #ifndef TREEWIDGET_H
 #define TREEWIDGET_H
 
+#include <QPointer>
 #include <QTreeView>
 #include <QWidget>
 
@@ -16,8 +17,8 @@ public:
     virtual ~TreeWidget() = default;
 
     virtual void SetStatus() { };
-    virtual QTreeView* View() = 0;
-    virtual TreeModel* Model() = 0;
+    virtual QPointer<QTreeView> View() = 0;
+    virtual QPointer<TreeModel> Model() = 0;
 
 protected:
     TreeWidget(QWidget* parent = nullptr)

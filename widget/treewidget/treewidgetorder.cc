@@ -17,7 +17,7 @@ TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSettings& setti
 
 TreeWidgetOrder::~TreeWidgetOrder() { delete ui; }
 
-QTreeView* TreeWidgetOrder::View() { return ui->treeViewOrder; }
+QPointer<QTreeView> TreeWidgetOrder::View() { return ui->treeViewOrder; }
 
 void TreeWidgetOrder::on_dateEditStart_dateChanged(const QDate& date) { }
 

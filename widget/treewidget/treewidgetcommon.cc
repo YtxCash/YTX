@@ -47,7 +47,7 @@ void TreeWidgetCommon::SetStatus()
     }
 }
 
-QTreeView* TreeWidgetCommon::View() { return ui->treeViewCommon; }
+QPointer<QTreeView> TreeWidgetCommon::View() { return ui->treeViewCommon; }
 
 void TreeWidgetCommon::RUpdateDSpinBox()
 {

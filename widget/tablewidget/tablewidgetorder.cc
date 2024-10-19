@@ -57,7 +57,7 @@ TableWidgetOrder::~TableWidgetOrder()
     delete ui;
 }
 
-QTableView* TableWidgetOrder::View() { return ui->tableViewOrder; }
+QPointer<QTableView> TableWidgetOrder::View() { return ui->tableViewOrder; }
 
 void TableWidgetOrder::RUpdateComboModel()
 {

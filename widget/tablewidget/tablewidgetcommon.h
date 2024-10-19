@@ -17,8 +17,8 @@ public:
     explicit TableWidgetCommon(TableModel* model, QWidget* parent = nullptr);
     ~TableWidgetCommon();
 
-    TableModel* Model() override { return model_; }
-    QTableView* View() override;
+    QPointer<TableModel> Model() override { return model_; }
+    QPointer<QTableView> View() override;
 
 private:
     Ui::TableWidgetCommon* ui;

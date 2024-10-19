@@ -1,6 +1,7 @@
 #ifndef TABLEWIDGET_H
 #define TABLEWIDGET_H
 
+#include <QPointer>
 #include <QTableView>
 #include <QWidget>
 
@@ -12,8 +13,8 @@ class TableWidget : public QWidget {
 public:
     virtual ~TableWidget() = default;
 
-    virtual TableModel* Model() = 0;
-    virtual QTableView* View() = 0;
+    virtual QPointer<TableModel> Model() = 0;
+    virtual QPointer<QTableView> View() = 0;
 
 protected:
     explicit TableWidget(QWidget* parent = nullptr)
