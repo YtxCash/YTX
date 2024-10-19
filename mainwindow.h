@@ -12,6 +12,7 @@
 #include "component/using.h"
 #include "database/mainwindowsqlite.h"
 #include "table/model/tablemodel.h"
+#include "table/model/tablemodelorder.h"
 #include "tree/model/treemodel.h"
 #include "ui_mainwindow.h"
 #include "widget/tablewidget/tablewidgetorder.h"
@@ -134,7 +135,7 @@ private:
     void SetView(QTableView* view);
 
     void TableConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
-    void TableConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget);
+    void TableConnectOrder(const QTableView* view, const TableModelOrder* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget);
     void TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
 
     void CreateSection(TreeWidget* tree_widget, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
@@ -150,7 +151,7 @@ private:
     void DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings);
 
     void SetView(QTreeView* view);
-    void TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* table_sql);
+    void TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* sql);
 
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);

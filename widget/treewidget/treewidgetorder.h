@@ -13,8 +13,6 @@ class TreeWidgetOrder final : public TreeWidget {
     Q_OBJECT
 
 public slots:
-    void RUpdateDSpinBox() override { };
-
     void on_dateEditStart_dateChanged(const QDate& date);
     void on_dateEditEnd_dateChanged(const QDate& date);
 
@@ -24,7 +22,6 @@ public:
 
     QTreeView* View() override;
     TreeModel* Model() override { return model_; };
-    void SetStatus() override { };
 
 private:
     Ui::TreeWidgetOrder* ui;

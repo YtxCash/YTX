@@ -52,7 +52,6 @@
 #include "global/signalstation.h"
 #include "global/sqlconnection.h"
 #include "table/model/tablemodelfinance.h"
-#include "table/model/tablemodelorder.h"
 #include "table/model/tablemodelproduct.h"
 #include "table/model/tablemodelstakeholder.h"
 #include "table/model/tablemodeltask.h"
@@ -458,7 +457,7 @@ void MainWindow::TableConnectFPT(const QTableView* view, const TableModel* table
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::TableConnectOrder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
+void MainWindow::TableConnectOrder(const QTableView* view, const TableModelOrder* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget)
 {
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, widget, &TableWidgetOrder::RUpdateComboModel);
@@ -471,14 +470,12 @@ void MainWindow::TableConnectOrder(const QTableView* view, const TableModel* tab
     connect(table_model, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
 
     assert(dynamic_cast<const TreeModelOrder*>(tree_model) && "Tree Model is not TreeModelOrder");
-    assert(dynamic_cast<const TableModelOrder*>(table_model) && "Table Model is not TableModelOrder");
-
     auto tree_model_order { static_cast<const TreeModelOrder*>(tree_model) };
-    auto table_model_order { static_cast<const TableModelOrder*>(table_model) };
+
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
-    connect(widget, &TableWidgetOrder::SUpdateLocked, table_model_order, &TableModelOrder::RUpdateLocked);
-    connect(widget, &TableWidgetOrder::SUpdateParty, table_model_order, &TableModelOrder::RUpdateParty);
+    connect(widget, &TableWidgetOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
+    connect(widget, &TableWidgetOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 }
 
 void MainWindow::TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data)
@@ -761,7 +758,7 @@ void MainWindow::DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 
-void MainWindow::TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* table_sql)
+void MainWindow::TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* sql)
 {
     connect(view, &QTreeView::doubleClicked, this, &MainWindow::RTreeViewDoubleClicked);
     connect(view, &QTreeView::customContextMenuRequested, this, &MainWindow::RTreeViewCustomContextMenuRequested);
@@ -772,10 +769,10 @@ void MainWindow::TreeConnect(const QTreeView* view, const TreeWidget* tree_widge
 
     connect(model, &TreeModel::SResizeColumnToContents, view, &QTreeView::resizeColumnToContents);
 
-    connect(table_sql, &Sqlite::SRemoveNode, model, &TreeModel::RRemoveNode);
-    connect(table_sql, &Sqlite::SUpdateMultiLeafTotal, model, &TreeModel::RUpdateMultiLeafTotal);
+    connect(sql, &Sqlite::SRemoveNode, model, &TreeModel::RRemoveNode);
+    connect(sql, &Sqlite::SUpdateMultiLeafTotal, model, &TreeModel::RUpdateMultiLeafTotal);
 
-    connect(table_sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
+    connect(sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }
 
 void MainWindow::InsertNode(TreeWidget* tree_widget)

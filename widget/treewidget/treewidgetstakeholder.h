@@ -12,16 +12,12 @@ class TreeWidgetStakeholder;
 class TreeWidgetStakeholder final : public TreeWidget {
     Q_OBJECT
 
-public slots:
-    void RUpdateDSpinBox() override { };
-
 public:
     TreeWidgetStakeholder(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent = nullptr);
     ~TreeWidgetStakeholder() override;
 
     QTreeView* View() override;
     TreeModel* Model() override { return model_; };
-    void SetStatus() override { };
 
 private:
     Ui::TreeWidgetStakeholder* ui;
