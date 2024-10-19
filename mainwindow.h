@@ -91,9 +91,9 @@ private slots:
     void on_rBtnPurchase_toggled(bool checked);
 
 private:
-    inline bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
-    inline bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
-    inline TableModel* GetTableModel(QTableView* view)
+    inline bool IsTreeWidget(const QWidget* widget) const { return widget && widget->inherits("TreeWidget"); }
+    inline bool IsTableWidget(const QWidget* widget) const { return widget && widget->inherits("TableWidget"); }
+    inline TableModel* GetTableModel(QTableView* view) const
     {
         if (!view)
             return nullptr;
@@ -101,7 +101,7 @@ private:
         assert(dynamic_cast<TableModel*>(view->model()) && "Model is not TableModel");
         return static_cast<TableModel*>(view->model());
     }
-    inline QTableView* GetQTableView(QWidget* widget)
+    inline QTableView* GetQTableView(QWidget* widget) const
     {
         if (!widget)
             return nullptr;
@@ -111,11 +111,12 @@ private:
     }
 
 private:
-    void SetTabWidget();
-    void SetConnect();
     void SetHeader();
-    void SetAction();
+    void SetTabWidget();
     void SetClearMenuAction();
+
+    void SetConnect() const;
+    void SetAction() const;
 
     void SetFinanceData();
     void SetProductData();
@@ -126,32 +127,32 @@ private:
 
     void CreateTableFPTS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id);
     void CreateTablePS(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
-    void DelegateCommon(QTableView* view, const TreeModel* tree_model, int node_id);
-    void DelegateFinance(QTableView* view, CSettings& settings);
-    void DelegateTask(QTableView* view, CSettings& settings);
-    void DelegateProduct(QTableView* view, CSettings& settings);
-    void DelegateStakeholder(QTableView* view, CSettings& settings);
-    void DelegateOrder(QTableView* view, CSettings& settings);
-    void SetView(QTableView* view);
+    void DelegateCommon(QTableView* view, const TreeModel* tree_model, int node_id) const;
+    void DelegateFinance(QTableView* view, CSettings& settings) const;
+    void DelegateTask(QTableView* view, CSettings& settings) const;
+    void DelegateProduct(QTableView* view, CSettings& settings) const;
+    void DelegateStakeholder(QTableView* view, CSettings& settings) const;
+    void DelegateOrder(QTableView* view, CSettings& settings) const;
+    void SetView(QTableView* view) const;
 
-    void TableConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
-    void TableConnectOrder(const QTableView* view, const TableModelOrder* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget);
-    void TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data);
+    void TableConnectFPT(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data) const;
+    void TableConnectOrder(const QTableView* view, const TableModelOrder* table_model, const TreeModel* tree_model, const TableWidgetOrder* widget) const;
+    void TableConnectStakeholder(const QTableView* view, const TableModel* table_model, const TreeModel* tree_model, const Data* data) const;
 
     void CreateSection(TreeWidget* tree_widget, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
-    void SwitchSection(const Tab& last_tab);
-    void UpdateLastTab();
+    void SwitchSection(const Tab& last_tab) const;
+    void UpdateLastTab() const;
 
-    void SetDelegate(QTreeView* view, CInfo* info, CSettings& settings);
-    void DelegateCommon(QTreeView* view, CInfo* info);
-    void DelegateFinance(QTreeView* view, CInfo* info, CSettings& settings);
-    void DelegateTask(QTreeView* view, CSettings& settings);
-    void DelegateProduct(QTreeView* view, CSettings& settings);
-    void DelegateStakeholder(QTreeView* view, CSettings& settings);
-    void DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings);
+    void SetDelegate(QTreeView* view, CInfo* info, CSettings& settings) const;
+    void DelegateCommon(QTreeView* view, CInfo* info) const;
+    void DelegateFinance(QTreeView* view, CInfo* info, CSettings& settings) const;
+    void DelegateTask(QTreeView* view, CSettings& settings) const;
+    void DelegateProduct(QTreeView* view, CSettings& settings) const;
+    void DelegateStakeholder(QTreeView* view, CSettings& settings) const;
+    void DelegateOrder(QTreeView* view, CInfo* info, CSettings& settings) const;
 
-    void SetView(QTreeView* view);
-    void TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* sql);
+    void SetView(QTreeView* view) const;
+    void TreeConnect(const QTreeView* view, const TreeWidget* tree_widget, const TreeModel* model, const Sqlite* sql) const;
 
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
@@ -162,8 +163,8 @@ private:
     void AppendTrans(TableWidget* table_widget);
 
     void EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash); // Finance Product Stakeholder Task
-    void SwitchTab(int node_id, int trans_id = 0);
-    bool LockFile(CString& absolute_path, CString& complete_base_name);
+    void SwitchTab(int node_id, int trans_id = 0) const;
+    bool LockFile(CString& absolute_path, CString& complete_base_name) const;
 
     void RemoveTrans(QWidget* widget);
     void RemoveNode(QTreeView* view, TreeModel* model);
@@ -171,21 +172,24 @@ private:
     void RemoveBranch(TreeModel* model, const QModelIndex& index, int node_id);
 
     void UpdateInterface(const Interface& interface);
-    void UpdateTranslate();
-    void UpdateRecent();
+    void UpdateTranslate() const;
+    void UpdateRecent() const;
 
     void LoadAndInstallTranslator(CString& language);
-    void ResizeColumn(QHeaderView* header, bool table_view = true);
+    void ResizeColumn(QHeaderView* header, bool table_view = true) const;
 
     void SharedInterface(CString& dir_path);
     void ExclusiveInterface(CString& dir_path, CString& base_name);
-    void ResourceFile();
+    void ResourceFile() const;
     void Recent();
 
-    void SaveTab(const TableHash& table_hash, CString& section_name, CString& property);
+    void SaveTab(const TableHash& table_hash, CString& section_name, CString& property) const;
     void RestoreTab(Data* data, TreeModel* tree_model, CSettings& settings, TableHash* table_hash, CString& property);
 
-    template <InheritQAbstractItemView T> bool HasSelection(const T* view) { return view && view->selectionModel() && view->selectionModel()->hasSelection(); }
+    template <InheritQAbstractItemView T> bool HasSelection(const T* view) const
+    {
+        return view && view->selectionModel() && view->selectionModel()->hasSelection();
+    }
 
     template <InheritQWidget T> void FreeWidget(T*& widget)
     {
@@ -198,13 +202,13 @@ private:
         }
     }
 
-    template <InheritQWidget T> void SaveState(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> void SaveState(T* widget, QSettings* interface, CString& section_name, CString& property) const
     {
         auto state { widget->saveState() };
         interface->setValue(QString("%1/%2").arg(section_name, property), state);
     }
 
-    template <InheritQWidget T> void RestoreState(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> void RestoreState(T* widget, QSettings* interface, CString& section_name, CString& property) const
     {
         auto state { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
 
@@ -212,20 +216,20 @@ private:
             widget->restoreState(state);
     }
 
-    template <InheritQWidget T> void SaveGeometry(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> void SaveGeometry(T* widget, QSettings* interface, CString& section_name, CString& property) const
     {
         auto geometry { widget->saveGeometry() };
         interface->setValue(QString("%1/%2").arg(section_name, property), geometry);
     }
 
-    template <InheritQWidget T> void RestoreGeometry(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> void RestoreGeometry(T* widget, QSettings* interface, CString& section_name, CString& property) const
     {
         auto geometry { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
         if (!geometry.isEmpty())
             widget->restoreGeometry(geometry);
     }
 
-    template <typename Container> void SwitchDialog(Container* container, bool enable)
+    template <typename Container> void SwitchDialog(Container* container, bool enable) const
     {
         if (container) {
             for (auto dialog : *container) {
