@@ -25,6 +25,7 @@ struct Data {
 };
 
 using PDialog = QPointer<QDialog>;
+using CData = const Data;
 
 template <typename T>
 concept InheritQAbstractItemView = std::is_base_of_v<QAbstractItemView, T>;
@@ -125,31 +126,31 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTableFPTS(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, int node_id);
-    void CreateTablePS(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, int node_id, int party_id);
+    void CreateTableFPTS(CData* data, PTreeModel tree_model, CSettings* settings, TableHash* table_hash, int node_id);
+    void CreateTablePS(CData* data, PTreeModel tree_model, CSettings* settings, TableHash* table_hash, int node_id, int party_id);
     void DelegateCommon(PQTableView view, PTreeModel tree_model, int node_id) const;
-    void DelegateFinance(PQTableView view, CSettings& settings) const;
-    void DelegateTask(PQTableView view, CSettings& settings) const;
-    void DelegateProduct(PQTableView view, CSettings& settings) const;
-    void DelegateStakeholder(PQTableView view, CSettings& settings) const;
-    void DelegateOrder(PQTableView view, CSettings& settings) const;
+    void DelegateFinance(PQTableView view, CSettings* settings) const;
+    void DelegateTask(PQTableView view, CSettings* settings) const;
+    void DelegateProduct(PQTableView view, CSettings* settings) const;
+    void DelegateStakeholder(PQTableView view, CSettings* settings) const;
+    void DelegateOrder(PQTableView view, CSettings* settings) const;
     void SetView(PQTableView view) const;
 
-    void TableConnectFPT(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const;
+    void TableConnectFPT(PQTableView view, PTableModel table_model, PTreeModel tree_model, CData* data) const;
     void TableConnectOrder(PQTableView view, TableModelOrder* table_model, PTreeModel tree_model, const TableWidgetOrder* widget) const;
-    void TableConnectStakeholder(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const;
+    void TableConnectStakeholder(PQTableView view, PTableModel table_model, PTreeModel tree_model, CData* data) const;
 
-    void CreateSection(TreeWidget* tree_widget, CString& name, Data* data, TableHash* table_hash, CSettings& settings);
+    void CreateSection(TreeWidget* tree_widget, CString& name, CData& data, TableHash& table_hash, CSettings& settings);
     void SwitchSection(const Tab& last_tab) const;
     void UpdateLastTab() const;
 
-    void SetDelegate(PQTreeView view, CInfo* info, CSettings& settings) const;
-    void DelegateCommon(PQTreeView view, CInfo* info) const;
-    void DelegateFinance(PQTreeView view, CInfo* info, CSettings& settings) const;
+    void SetDelegate(PQTreeView view, CInfo& info, CSettings& settings) const;
+    void DelegateCommon(PQTreeView view, CInfo& info) const;
+    void DelegateFinance(PQTreeView view, CInfo& info, CSettings& settings) const;
     void DelegateTask(PQTreeView view, CSettings& settings) const;
     void DelegateProduct(PQTreeView view, CSettings& settings) const;
     void DelegateStakeholder(PQTreeView view, CSettings& settings) const;
-    void DelegateOrder(PQTreeView view, CInfo* info, CSettings& settings) const;
+    void DelegateOrder(PQTreeView view, CInfo& info, CSettings& settings) const;
 
     void SetView(PQTreeView view) const;
     void TreeConnect(const TreeWidget* tree_widget, const Sqlite* sql) const;
@@ -184,7 +185,7 @@ private:
     void Recent();
 
     void SaveTab(const TableHash& table_hash, CString& section_name, CString& property) const;
-    void RestoreTab(Data* data, PTreeModel tree_model, CSettings& settings, TableHash* table_hash, CString& property);
+    void RestoreTab(CData& data, PTreeModel tree_model, CSettings& settings, TableHash& table_hash, CString& property);
 
     template <InheritQAbstractItemView T> bool HasSelection(QPointer<T> view) const
     {

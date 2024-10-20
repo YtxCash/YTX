@@ -7,7 +7,7 @@
 #include "ui_tablewidgetorder.h"
 
 TableWidgetOrder::TableWidgetOrder(
-    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings& settings, int party_unit, QWidget* parent)
+    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, int party_unit, QWidget* parent)
     : TableWidget(parent)
     , ui(new Ui::TableWidgetOrder)
     , node_shadow_ { node_shadow }
@@ -163,11 +163,11 @@ void TableWidgetOrder::IniDialog()
     ui->dSpinSecond->setRange(DMIN, DMAX);
     ui->dSpinFirst->setRange(DMIN, DMAX);
 
-    ui->dSpinDiscount->setDecimals(settings_.amount_decimal);
-    ui->dSpinAmount->setDecimals(settings_.amount_decimal);
-    ui->dSpinSettled->setDecimals(settings_.amount_decimal);
-    ui->dSpinSecond->setDecimals(settings_.common_decimal);
-    ui->dSpinFirst->setDecimals(settings_.common_decimal);
+    ui->dSpinDiscount->setDecimals(settings_->amount_decimal);
+    ui->dSpinAmount->setDecimals(settings_->amount_decimal);
+    ui->dSpinSettled->setDecimals(settings_->amount_decimal);
+    ui->dSpinSecond->setDecimals(settings_->common_decimal);
+    ui->dSpinFirst->setDecimals(settings_->common_decimal);
 }
 
 void TableWidgetOrder::IniData()

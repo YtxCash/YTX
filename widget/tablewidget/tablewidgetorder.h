@@ -16,7 +16,7 @@ class TableWidgetOrder final : public TableWidget {
     Q_OBJECT
 
 public:
-    TableWidgetOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings& settings, int party_unit,
+    TableWidgetOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, int party_unit,
         QWidget* parent = nullptr);
     ~TableWidgetOrder();
 
@@ -64,7 +64,7 @@ private:
     int party_unit_ {};
     TableModel* order_table_ {};
     TreeModel* stakeholder_tree_ {};
-    CSettings& settings_;
+    CSettings* settings_ {};
 
     QStandardItemModel* combo_model_employee_ {};
     QStandardItemModel* combo_model_party_ {};
