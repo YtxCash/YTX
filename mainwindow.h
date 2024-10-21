@@ -171,7 +171,7 @@ private:
     void RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id);
     void RemoveBranch(PTreeModel tree_model, const QModelIndex& index, int node_id);
 
-    void UpdateInterface(const Interface& interface);
+    void UpdateInterface(CInterface& interface);
     void UpdateTranslate() const;
     void UpdateRecent() const;
 
@@ -183,8 +183,8 @@ private:
     void ResourceFile() const;
     void Recent();
 
-    void SaveTab(const TableHash& table_hash, CString& section_name, CString& property) const;
-    void RestoreTab(CData& data, PTreeModel tree_model, CSettings& settings, TableHash& table_hash, CString& property);
+    void SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const;
+    void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
 
     template <InheritQAbstractItemView T> bool HasSelection(QPointer<T> view) const
     {

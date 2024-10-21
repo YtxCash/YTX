@@ -623,7 +623,7 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info.section, 0 }));
 
     RestoreState(view->header(), exclusive_interface_, info.node, HEADER_STATE);
-    RestoreTab(data, model, settings, table_hash, VIEW);
+    RestoreTab(model, table_hash, data, settings, VIEW);
 
     SetView(view);
     // view->setColumnHidden(1, true);
@@ -927,7 +927,7 @@ void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int
     }
 }
 
-void MainWindow::SaveTab(const TableHash& table_hash, CString& section_name, CString& property) const
+void MainWindow::SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const
 {
     auto keys { table_hash.keys() };
     QStringList list {};
@@ -938,7 +938,7 @@ void MainWindow::SaveTab(const TableHash& table_hash, CString& section_name, CSt
     exclusive_interface_->setValue(QString("%1/%2").arg(section_name, property), list);
 }
 
-void MainWindow::RestoreTab(CData& data, PTreeModel tree_model, CSettings& settings, TableHash& table_hash, CString& property)
+void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property)
 {
     // order不恢复
     Section section { data.info.section };
@@ -1407,7 +1407,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
         target_index = model->index(empty_row, std::to_underlying(TableEnum::kRhsNode));
     }
 
-    GetQTableView(table_widget)->setCurrentIndex(target_index);
+    table_widget->View()->setCurrentIndex(target_index);
 }
 
 void MainWindow::RJumpTriggered()
@@ -1752,7 +1752,7 @@ void MainWindow::RFreeView(int node_id)
     }
 }
 
-void MainWindow::UpdateInterface(const Interface& interface)
+void MainWindow::UpdateInterface(CInterface& interface)
 {
     auto new_language { interface.language };
     if (interface_.language != new_language) {
