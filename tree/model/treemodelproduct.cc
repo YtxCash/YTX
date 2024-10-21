@@ -16,7 +16,7 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     if (!tmp_node)
         return;
 
-    auto node { const_cast<Node*>(GetNodeByID(tmp_node->id)) };
+    auto* node { const_cast<Node*>(GetNodeByID(tmp_node->id)) };
     if (*node == *tmp_node)
         return;
 
@@ -123,7 +123,7 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto node { GetNodeByIndex(index) };
+    auto* node { GetNodeByIndex(index) };
     if (node->id == -1)
         return QVariant();
 
@@ -166,7 +166,7 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
     if (!index.isValid() || role != Qt::EditRole)
         return false;
 
-    auto node { GetNodeByIndex(index) };
+    auto* node { GetNodeByIndex(index) };
     if (node->id == -1)
         return false;
 

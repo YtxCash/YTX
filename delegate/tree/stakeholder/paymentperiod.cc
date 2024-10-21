@@ -16,7 +16,7 @@ QWidget* PaymentPeriod::createEditor(QWidget* parent, const QStyleOptionViewItem
     if (Skip(index))
         return nullptr;
 
-    auto editor { new SpinBox(parent) };
+    auto* editor { new SpinBox(parent) };
     editor->setMinimum(min_);
     editor->setMaximum(max_);
     editor->setAlignment(Qt::AlignCenter);
@@ -54,9 +54,9 @@ QSize PaymentPeriod::sizeHint(const QStyleOptionViewItem& option, const QModelIn
 
 bool PaymentPeriod::Skip(const QModelIndex& index) const
 {
-    const auto branch { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool() };
-    const auto unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
-    const auto rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool() };
+    const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
+    const bool rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
 
     return branch || unit == UNIT_PRODUCT || rule == RULE_CASH;
 }

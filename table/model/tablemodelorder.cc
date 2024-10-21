@@ -83,7 +83,7 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto trans_shadow { trans_shadow_list_.at(index.row()) };
+    auto* trans_shadow { trans_shadow_list_.at(index.row()) };
     const TableEnumOrder kColumn { index.column() };
 
     switch (kColumn) {
@@ -276,7 +276,7 @@ Qt::ItemFlags TableModelOrder::flags(const QModelIndex& index) const
 
 bool TableModelOrder::insertRows(int row, int /*count*/, const QModelIndex& parent)
 {
-    auto trans_shadow { sql_->AllocateTransShadow() };
+    auto* trans_shadow { sql_->AllocateTransShadow() };
 
     *trans_shadow->node_id = node_id_;
 
@@ -292,7 +292,7 @@ bool TableModelOrder::removeRows(int row, int /*count*/, const QModelIndex& pare
     if (row <= -1)
         return false;
 
-    auto trans_shadow { trans_shadow_list_.at(row) };
+    auto* trans_shadow { trans_shadow_list_.at(row) };
     int node_id { *trans_shadow->node_id };
 
     beginRemoveRows(parent, row, row);
@@ -349,7 +349,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
     if (std::abs(*trans_shadow->unit_price - value) < TOLERANCE)
         return false;
 
-    auto diff { *trans_shadow->lhs_credit * (value - *trans_shadow->unit_price) };
+    double diff { *trans_shadow->lhs_credit * (value - *trans_shadow->unit_price) };
     *trans_shadow->rhs_credit += diff;
     *trans_shadow->settled += diff;
     *trans_shadow->unit_price = value;
@@ -371,7 +371,7 @@ bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double valu
     if (std::abs(*trans_shadow->discount_price - value) < TOLERANCE)
         return false;
 
-    auto diff { *trans_shadow->lhs_credit * (value - *trans_shadow->discount_price) };
+    double diff { *trans_shadow->lhs_credit * (value - *trans_shadow->discount_price) };
     *trans_shadow->rhs_debit += diff;
     *trans_shadow->settled -= diff;
     *trans_shadow->discount_price = value;
@@ -392,7 +392,7 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     if (std::abs(*trans_shadow->lhs_credit - value) < TOLERANCE)
         return false;
 
-    auto diff { value - *trans_shadow->lhs_credit };
+    double diff { value - *trans_shadow->lhs_credit };
     *trans_shadow->rhs_credit += *trans_shadow->unit_price * diff;
     *trans_shadow->rhs_debit += *trans_shadow->discount_price * diff;
     *trans_shadow->settled += (*trans_shadow->unit_price - *trans_shadow->discount_price) * diff;

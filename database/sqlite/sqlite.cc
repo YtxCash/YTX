@@ -816,7 +816,7 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
 TransShadow* Sqlite::AllocateTransShadow()
 {
     last_trans_ = ResourcePool<Trans>::Instance().Allocate();
-    auto trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
+    auto* trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
 
     ConvertTrans(last_trans_, trans_shadow, true);
     return trans_shadow;

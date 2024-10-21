@@ -145,34 +145,34 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
 {
     view->setModel(model);
 
-    auto unit { new TreeComboR(info_.unit_hash, view) };
+    auto* unit { new TreeComboR(info_.unit_hash, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kUnit), unit);
 
-    auto rule { new TreeComboR(rule_hash_, view) };
+    auto* rule { new TreeComboR(rule_hash_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kRule), rule);
 
-    auto total { new TreeDoubleSpinR(settings_.amount_decimal, view) };
+    auto* total { new TreeDoubleSpinR(settings_.amount_decimal, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), total);
 
-    auto check { new CheckBoxR(view) };
+    auto* check { new CheckBoxR(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kBranch), check);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), check);
 
-    auto name { new SearchComboR(tree_, view) };
+    auto* name { new SearchComboR(tree_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
 
     if (info_.section == Section::kProduct || info_.section == Section::kTask) {
-        auto color { new ColorR(view) };
+        auto* color { new ColorR(view) };
         view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), color);
     }
 
-    auto party { new SearchComboR(stakeholder_tree_, view) };
+    auto* party { new SearchComboR(stakeholder_tree_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), party);
 
-    auto value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
+    auto* value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), value);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), value);
 
@@ -183,43 +183,43 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
 {
     view->setModel(model);
 
-    auto value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
+    auto* value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kSettled), value);
 
-    auto ratio { new TableDoubleSpinR(settings_.common_decimal, false, view) };
+    auto* ratio { new TableDoubleSpinR(settings_.common_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDiscountPrice), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kUnitPrice), ratio);
 
     if (info_.section == Section::kFinance || info_.section == Section::kTask || info_.section == Section::kProduct) {
-        auto node_name { new SearchComboR(tree_, view) };
+        auto* node_name { new SearchComboR(tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
     }
 
     if (info_.section == Section::kStakeholder) {
-        auto lhs_node_name { new SearchComboR(tree_, view) };
+        auto* lhs_node_name { new SearchComboR(tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), lhs_node_name);
 
-        auto rhs_node_name { new SearchComboR(stakeholder_tree_, view) };
+        auto* rhs_node_name { new SearchComboR(stakeholder_tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), rhs_node_name);
     }
 
     if (info_.section == Section::kSales || info_.section == Section::kPurchase) {
-        auto node_name { new SearchComboR(stakeholder_tree_, view) };
+        auto* node_name { new SearchComboR(stakeholder_tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), node_name);
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
     }
 
-    auto state { new CheckBox(QEvent::MouseButtonDblClick, view) };
+    auto* state { new CheckBox(QEvent::MouseButtonDblClick, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kState), state);
 
-    auto document { new TableDbClick(view) };
+    auto* document { new TableDbClick(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDocument), document);
 
     // view->setColumnHidden(std::to_underlying(TableEnumSearch::kID), true);

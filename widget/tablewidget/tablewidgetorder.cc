@@ -73,10 +73,10 @@ void TableWidgetOrder::RUpdateComboModel()
     stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
     stakeholder_tree_->LeafPathSpecificUnit(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
 
-    auto index_employee { ui->comboEmployee->findData(employee_id) };
+    int index_employee { ui->comboEmployee->findData(employee_id) };
     ui->comboEmployee->setCurrentIndex(index_employee);
 
-    auto index_party { ui->comboParty->findData(party_id) };
+    int index_party { ui->comboParty->findData(party_id) };
     ui->comboParty->setCurrentIndex(index_party);
 
     ui->comboParty->blockSignals(false);
@@ -101,12 +101,12 @@ void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVar
         IniUnit(value.toInt());
         break;
     case TreeEnumOrder::kParty: {
-        auto party_index { ui->comboParty->findData(value.toInt()) };
+        int party_index { ui->comboParty->findData(value.toInt()) };
         ui->comboParty->setCurrentIndex(party_index);
         break;
     }
     case TreeEnumOrder::kEmployee: {
-        auto employee_index { ui->comboEmployee->findData(value.toInt()) };
+        int employee_index { ui->comboEmployee->findData(value.toInt()) };
         ui->comboEmployee->setCurrentIndex(employee_index);
         break;
     }
@@ -172,10 +172,10 @@ void TableWidgetOrder::IniDialog()
 
 void TableWidgetOrder::IniData()
 {
-    auto party_index { ui->comboParty->findData(*node_shadow_->party) };
+    int party_index { ui->comboParty->findData(*node_shadow_->party) };
     ui->comboParty->setCurrentIndex(party_index);
 
-    auto employee_index { ui->comboEmployee->findData(*node_shadow_->employee) };
+    int employee_index { ui->comboEmployee->findData(*node_shadow_->employee) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
     ui->dSpinSettled->setValue(*node_shadow_->final_total);
@@ -262,7 +262,7 @@ void TableWidgetOrder::on_comboParty_currentIndexChanged(int /*index*/)
     if (*node_shadow_->branch)
         return;
 
-    auto party_id { ui->comboParty->currentData().toInt() };
+    int party_id { ui->comboParty->currentData().toInt() };
     if (party_id <= 0)
         return;
 
@@ -273,7 +273,7 @@ void TableWidgetOrder::on_comboParty_currentIndexChanged(int /*index*/)
     if (ui->comboEmployee->currentIndex() != -1)
         return;
 
-    auto employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
+    int employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
     ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == RULE_CASH);
@@ -336,11 +336,11 @@ void TableWidgetOrder::on_rBtnPending_toggled(bool checked)
 
 void TableWidgetOrder::on_pBtnInsertParty_clicked()
 {
-    auto name { ui->comboParty->currentText() };
+    const auto& name { ui->comboParty->currentText() };
     if (*node_shadow_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
         return;
 
-    auto node { ResourcePool<Node>::Instance().Allocate() };
+    auto* node { ResourcePool<Node>::Instance().Allocate() };
     node->rule = stakeholder_tree_->Rule(-1);
     stakeholder_tree_->SetParent(node, -1);
     node->name = name;

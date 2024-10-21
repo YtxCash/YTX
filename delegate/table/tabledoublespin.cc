@@ -15,7 +15,7 @@ QWidget* TableDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewIt
     Q_UNUSED(option);
     Q_UNUSED(index);
 
-    auto editor { new DoubleSpinBox(parent) };
+    auto* editor { new DoubleSpinBox(parent) };
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);
     editor->setMaximum(max_);

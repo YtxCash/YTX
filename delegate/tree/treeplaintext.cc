@@ -15,7 +15,7 @@ QWidget* TreePlainText::createEditor(QWidget* parent, const QStyleOptionViewItem
     Q_UNUSED(option);
     Q_UNUSED(index);
 
-    auto editor { new PlainTextEdit(parent) };
+    auto* editor { new PlainTextEdit(parent) };
     return editor;
 }
 

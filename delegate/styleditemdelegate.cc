@@ -19,7 +19,7 @@ const QStyle* StyledItemDelegate::GetStyle(const QStyleOptionViewItem& opt) { re
 
 QSize StyledItemDelegate::CalculateTextSize(CString& text, const QStyleOptionViewItem& option)
 {
-    const auto style { GetStyle(option) };
+    const auto* style { GetStyle(option) };
     const int text_margin { style->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, option.widget) + 2 };
 
     const QFontMetrics fm(option.font);
@@ -39,7 +39,7 @@ void StyledItemDelegate::PaintText(
 
     opt.text = text;
 
-    auto style { GetStyle(opt) };
+    auto* style { GetStyle(opt) };
     style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
 }
 
@@ -48,7 +48,7 @@ void StyledItemDelegate::PaintCheckBox(QPainter* painter, const QStyleOptionView
     QStyleOptionViewItem opt { option };
     initStyleOption(&opt, index);
 
-    auto style { GetStyle(opt) };
+    auto* style { GetStyle(opt) };
     style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget);
 
     QStyleOptionButton check_box {};

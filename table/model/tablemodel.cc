@@ -23,7 +23,7 @@ void TableModel::RRemoveMultiTrans(const QMultiHash<int, int>& node_trans)
     if (!node_trans.contains(node_id_))
         return;
 
-    auto trans_id_list { node_trans.values(node_id_) };
+    const auto& trans_id_list { node_trans.values(node_id_) };
     RemoveMultiTrans(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
 }
 
@@ -52,7 +52,7 @@ void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
     if (node_id_ != *trans_shadow->rhs_node)
         return;
 
-    auto new_trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
+    auto* new_trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
     new_trans_shadow->date_time = trans_shadow->date_time;
     new_trans_shadow->id = trans_shadow->id;
     new_trans_shadow->description = trans_shadow->description;
@@ -116,7 +116,7 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
     if (row <= -1)
         return false;
 
-    auto trans_shadow { trans_shadow_list_.at(row) };
+    auto* trans_shadow { trans_shadow_list_.at(row) };
     int rhs_node_id { *trans_shadow->rhs_node };
 
     beginRemoveRows(parent, row, row);
@@ -204,12 +204,12 @@ bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
-    auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
+    double lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    double lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
     emit SUpdateLeafValue(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
-    auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
-    auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
+    double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
+    double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
     emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
@@ -238,12 +238,12 @@ bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
-    auto lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
+    double lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    double lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
     emit SUpdateLeafValue(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
-    auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
-    auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
+    double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
+    double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
     emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
@@ -256,8 +256,8 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
     if (std::abs(lhs_ratio - value) < TOLERANCE || value <= 0)
         return false;
 
-    auto diff { value - lhs_ratio };
-    auto proportion { value / *trans_shadow->lhs_ratio };
+    double diff { value - lhs_ratio };
+    double proportion { value / *trans_shadow->lhs_ratio };
 
     *trans_shadow->lhs_ratio = value;
 
@@ -273,8 +273,8 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
 
     emit SUpdateLeafValue(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
 
-    auto rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
-    auto rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
+    double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
+    double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
     emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
@@ -319,7 +319,7 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto trans_shadow { trans_shadow_list_.at(index.row()) };
+    auto* trans_shadow { trans_shadow_list_.at(index.row()) };
     const TableEnum kColumn { index.column() };
 
     switch (kColumn) {
@@ -358,7 +358,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     const TableEnum kColumn { index.column() };
     const int kRow { index.row() };
 
-    auto trans_shadow { trans_shadow_list_.at(kRow) };
+    auto* trans_shadow { trans_shadow_list_.at(kRow) };
     int old_rhs_node { *trans_shadow->rhs_node };
 
     bool rhs_changed { false };
@@ -403,9 +403,9 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
 
-            auto ratio { *trans_shadow->lhs_ratio };
-            auto debit { *trans_shadow->lhs_debit };
-            auto credit { *trans_shadow->lhs_credit };
+            double ratio { *trans_shadow->lhs_ratio };
+            double debit { *trans_shadow->lhs_debit };
+            double credit { *trans_shadow->lhs_credit };
             emit SUpdateLeafValue(node_id_, debit, credit, ratio * debit, ratio * credit);
 
             ratio = *trans_shadow->rhs_ratio;
@@ -434,9 +434,9 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
         emit SRemoveOneTrans(info_.section, old_rhs_node, *trans_shadow->id);
         emit SAppendOneTrans(info_.section, trans_shadow);
 
-        auto ratio { *trans_shadow->rhs_ratio };
-        auto debit { *trans_shadow->rhs_debit };
-        auto credit { *trans_shadow->rhs_credit };
+        double ratio { *trans_shadow->rhs_ratio };
+        double debit { *trans_shadow->rhs_debit };
+        double credit { *trans_shadow->rhs_credit };
         emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
         emit SUpdateLeafValue(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
     }
@@ -540,7 +540,7 @@ QStringList* TableModel::GetDocumentPointer(const QModelIndex& index) const
         return nullptr;
     }
 
-    auto trans_shadow { trans_shadow_list_[index.row()] };
+    auto* trans_shadow { trans_shadow_list_[index.row()] };
 
     if (!trans_shadow || !trans_shadow->document) {
         qWarning() << "Null pointer encountered in trans_list_ or document.";
@@ -554,7 +554,7 @@ bool TableModel::insertRows(int row, int /*count*/, const QModelIndex& parent)
 {
     // just register trans_shadow in this function
     // while set rhs node in setData function, register trans to sql_'s trans_hash_
-    auto trans_shadow { sql_->AllocateTransShadow() };
+    auto* trans_shadow { sql_->AllocateTransShadow() };
 
     *trans_shadow->lhs_node = node_id_;
 

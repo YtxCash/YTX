@@ -160,7 +160,7 @@ void MainWindow::ROpenFile(CString& file_path)
 
     if (SqlConnection::Instance().SetDatabaseName(file_path)) {
         QFileInfo file_info(file_path);
-        auto complete_base_name { file_info.completeBaseName() };
+        const auto& complete_base_name { file_info.completeBaseName() };
 
         this->setWindowTitle(complete_base_name);
         ExclusiveInterface(dir_path_, complete_base_name);
@@ -207,8 +207,8 @@ void MainWindow::ROpenFile(CString& file_path)
         QString path { QDir::toNativeSeparators(file_path) };
 
         if (!recent_list_.contains(path)) {
-            auto menu { ui->menuRecent };
-            auto action { new QAction(path, menu) };
+            auto* menu { ui->menuRecent };
+            auto* action { new QAction(path, menu) };
 
             if (menu->isEmpty()) {
                 menu->addAction(action);
@@ -301,7 +301,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
 
 void MainWindow::SwitchTab(int node_id, int trans_id) const
 {
-    auto widget { table_hash_->value(node_id, nullptr) };
+    auto* widget { table_hash_->value(node_id, nullptr) };
     if (!widget)
         return;
 
@@ -331,7 +331,7 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name) c
 void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
 {
     CString& name { tree_model->Name(node_id) };
-    auto sql { data->sql };
+    auto* sql { data->sql };
     const auto& info { data->info };
     auto section { info.section };
     auto rule { tree_model->Rule(node_id) };
@@ -358,7 +358,7 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
     TableWidgetCommon* widget { new TableWidgetCommon(model, this) };
 
     int tab_index { ui->tabWidget->addTab(widget, name) };
-    auto tab_bar { ui->tabWidget->tabBar() };
+    auto* tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
     tab_bar->setTabToolTip(tab_index, tree_model->GetPath(node_id));
@@ -404,11 +404,11 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
 void MainWindow::CreateTablePS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id)
 {
     CString& name { stakeholder_tree_->Model()->Name(party_id) };
-    auto sql { data->sql };
+    auto* sql { data->sql };
     const auto& info { data->info };
     auto section { info.section };
 
-    auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
+    auto* node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node_id);
 
     TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
@@ -426,7 +426,7 @@ void MainWindow::CreateTablePS(PTreeModel tree_model, TableHash* table_hash, CDa
     }
 
     int tab_index { ui->tabWidget->addTab(widget, name) };
-    auto tab_bar { ui->tabWidget->tabBar() };
+    auto* tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
     tab_bar->setTabToolTip(tab_index, stakeholder_tree_->Model()->GetPath(party_id));
@@ -470,7 +470,7 @@ void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* tabl
     connect(table_model, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_model.data()) && "Tree Model is not TreeModelOrder");
-    auto tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
+    auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
 
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
@@ -488,90 +488,90 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
 
 void MainWindow::DelegateCommon(PQTableView table_view, PTreeModel tree_model, int node_id) const
 {
-    auto node { new TableCombo(tree_model, node_id, table_view) };
+    auto* node { new TableCombo(tree_model, node_id, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
-    auto date_time { new DateTime(interface_.date_format, false, table_view) };
+    auto* date_time { new DateTime(interface_.date_format, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
 
-    auto line { new Line(table_view) };
+    auto* line { new Line(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
 
-    auto state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
+    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
 
-    auto document { new TableDbClick(table_view) };
+    auto* document { new TableDbClick(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 }
 
 void MainWindow::DelegateFinance(PQTableView table_view, CSettings* settings) const
 {
-    auto amount { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* amount { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), amount);
 
-    auto fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), fx_rate);
 
-    auto subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
+    auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
 void MainWindow::DelegateTask(PQTableView table_view, CSettings* settings) const
 {
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_cost);
 
-    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
+    auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
 void MainWindow::DelegateProduct(PQTableView table_view, CSettings* settings) const
 {
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_price);
 
-    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
+    auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
 void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings) const
 {
     auto product_tree_model { product_tree_->Model() };
-    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
-    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
-    auto date_time { new DateTime(interface_.date_format, false, table_view) };
+    auto* date_time { new DateTime(interface_.date_format, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
 
-    auto line { new Line(table_view) };
+    auto* line { new Line(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kCode), line);
 
-    auto document { new TableDbClick(table_view) };
+    auto* document { new TableDbClick(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
+    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 }
@@ -579,31 +579,31 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings
 void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
 {
     auto product_tree_model { product_tree_->Model() };
-    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 
-    auto color { new ColorR(table_view) };
+    auto* color { new ColorR(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);
 
-    auto line { new Line(table_view) };
+    auto* line { new Line(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
 
-    auto price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
 
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
 
-    auto amount { new TableDoubleSpinR(settings->amount_decimal, false, table_view) };
+    auto* amount { new TableDoubleSpinR(settings->amount_decimal, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kAmount), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscount), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
@@ -612,7 +612,7 @@ void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) cons
 void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, CData& data, CSettings& settings, CString& name)
 {
     const auto& info { data.info };
-    auto tab_widget { ui->tabWidget };
+    auto* tab_widget { ui->tabWidget };
 
     auto view { tree_widget->View() };
     auto model { tree_widget->Model() };
@@ -657,104 +657,104 @@ void MainWindow::SetDelegate(PQTreeView tree_view, CInfo& info, CSettings& setti
 
 void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
 {
-    auto line { new Line(tree_view) };
+    auto* line { new Line(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kCode), line);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kDescription), line);
 
-    auto plain_text { new TreePlainText(tree_view) };
+    auto* plain_text { new TreePlainText(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kNote), plain_text);
 
-    auto rule { new TreeCombo(info.rule_hash, false, tree_view) };
+    auto* rule { new TreeCombo(info.rule_hash, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
 
-    auto branch { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    auto* branch { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kBranch), branch);
 
-    auto unit { new TreeCombo(info.unit_hash, false, tree_view) };
+    auto* unit { new TreeCombo(info.unit_hash, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
 }
 
 void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
+    auto* final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kFinalTotal), final_total);
 
-    auto initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
+    auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
 }
 
 void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 {
-    auto quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
 
-    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
-    auto unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
+    auto* unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
 
-    auto color { new Color(tree_view) };
+    auto* color { new Color(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
 }
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
 {
-    auto quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
 
-    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
 
-    auto price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
+    auto* price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
 
-    auto color { new Color(tree_view) };
+    auto* color { new Color(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
 }
 
 void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const
 {
-    auto payment_period { new PaymentPeriod(IZERO, IMAX, tree_view) };
+    auto* payment_period { new PaymentPeriod(IZERO, IMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
-    auto tax_rate { new TreeDoubleSpinPercent(settings.amount_decimal, DZERO, DMAX, tree_view) };
+    auto* tax_rate { new TreeDoubleSpinPercent(settings.amount_decimal, DZERO, DMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
-    auto deadline { new DeadLine(DD, tree_view) };
+    auto* deadline { new DeadLine(DD, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 }
 
 void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto rule { new TreeCombo(info.rule_hash, true, tree_view) };
+    auto* rule { new TreeCombo(info.rule_hash, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
 
-    auto amount { new OrderTotalR(settings.amount_decimal, tree_view) };
+    auto* amount { new OrderTotalR(settings.amount_decimal, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), amount);
 
-    auto quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
-    auto employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
     auto party_unit { info.section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-    auto party { new SpecificUnit(stakeholder_tree_model, party_unit, true, UnitFilterMode::kIncludeUnitOnly, tree_view) };
+    auto* party { new SpecificUnit(stakeholder_tree_model, party_unit, true, UnitFilterMode::kIncludeUnitOnly, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, party, &SpecificUnit::RUpdateComboModel);
 
-    auto date_time { new DateTime(interface_.date_format, true, tree_view) };
+    auto* date_time { new DateTime(interface_.date_format, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
-    auto locked { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    auto* locked { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 
@@ -794,7 +794,7 @@ void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, in
 {
     auto model { tree_widget_->Model() };
 
-    auto node { ResourcePool<Node>::Instance().Allocate() };
+    auto* node { ResourcePool<Node>::Instance().Allocate() };
     node->rule = model->Rule(parent_id);
     node->unit = model->Unit(parent_id);
     model->SetParent(node, parent_id);
@@ -918,7 +918,7 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
 void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id)
 {
     tree_model->RemoveNode(index.row(), index.parent());
-    auto widget { table_hash_->value(node_id) };
+    auto* widget { table_hash_->value(node_id) };
 
     if (widget) {
         FreeWidget(widget);
@@ -965,12 +965,12 @@ void MainWindow::Recent()
 {
     recent_list_ = shared_interface_->value(RECENT_FILE).toStringList();
 
-    auto recent_menu { ui->menuRecent };
+    auto* recent_menu { ui->menuRecent };
     QStringList valid_list {};
 
     for (CString& file : recent_list_) {
         if (QFile::exists(file)) {
-            auto action { recent_menu->addAction(file) };
+            auto* action { recent_menu->addAction(file) };
             connect(action, &QAction::triggered, this, [file, this]() { ROpenFile(file); });
             valid_list.emplaceBack(file);
         }
@@ -1002,7 +1002,7 @@ void MainWindow::RTabCloseRequested(int index)
         return;
 
     int node_id { ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id };
-    auto widget { table_hash_->value(node_id) };
+    auto* widget { table_hash_->value(node_id) };
 
     FreeWidget(widget);
     table_hash_->remove(node_id);
@@ -1012,8 +1012,8 @@ void MainWindow::RTabCloseRequested(int index)
 
 void MainWindow::SetTabWidget()
 {
-    auto tab_widget { ui->tabWidget };
-    auto tab_bar { tab_widget->tabBar() };
+    auto* tab_widget { ui->tabWidget };
+    auto* tab_bar { tab_widget->tabBar() };
 
     tab_bar->setDocumentMode(true);
     tab_bar->setExpanding(false);
@@ -1058,11 +1058,11 @@ void MainWindow::SetView(PQTableView view) const
     view->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::CurrentChanged);
     view->setColumnHidden(std::to_underlying(TableEnum::kID), false);
 
-    auto h_header { view->horizontalHeader() };
+    auto* h_header { view->horizontalHeader() };
     h_header->setSectionResizeMode(QHeaderView::ResizeToContents);
     h_header->setSectionResizeMode(std::to_underlying(TableEnum::kDescription), QHeaderView::Stretch);
 
-    auto v_header { view->verticalHeader() };
+    auto* v_header { view->verticalHeader() };
     v_header->setDefaultSectionSize(ROW_HEIGHT);
     v_header->setSectionResizeMode(QHeaderView::Fixed);
     v_header->setHidden(true);
@@ -1354,7 +1354,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
     tree_view->setContextMenuPolicy(Qt::CustomContextMenu);
     tree_view->setExpandsOnDoubleClick(true);
 
-    auto header { tree_view->header() };
+    auto* header { tree_view->header() };
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
     header->setSectionResizeMode(std::to_underlying(TreeEnumCommon::kDescription), QHeaderView::Stretch);
     header->setStretchLastSection(true);
@@ -1363,7 +1363,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
 
 void MainWindow::RAppendNodeTriggered()
 {
-    auto current_widget { ui->tabWidget->currentWidget() };
+    auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !IsTreeWidget(current_widget))
         return;
 
@@ -1412,7 +1412,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
 
 void MainWindow::RJumpTriggered()
 {
-    auto current_widget { ui->tabWidget->currentWidget() };
+    auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !IsTableWidget(current_widget))
         return;
 
@@ -1463,7 +1463,7 @@ void MainWindow::REditNode()
     if (!HasSelection(view))
         return;
 
-    const auto& index { view->currentIndex() };
+    const auto index { view->currentIndex() };
     if (!index.isValid())
         return;
 
@@ -1529,7 +1529,7 @@ void MainWindow::InsertNodeFPST(Node* node, const QModelIndex& parent, int paren
         parent_path += interface_.separator;
 
     const auto& info { data_->info };
-    const auto name_list { tree_model->ChildrenName(parent_id, 0) };
+    const auto& name_list { tree_model->ChildrenName(parent_id, 0) };
 
     QDialog* dialog {};
 
@@ -1566,7 +1566,7 @@ void MainWindow::InsertNodePS(Node* node, const QModelIndex& parent, int row)
 {
     auto tree_model { tree_widget_->Model() };
 
-    auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
+    auto* node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node);
     if (!node_shadow->id)
         return;
@@ -1575,7 +1575,7 @@ void MainWindow::InsertNodePS(Node* node, const QModelIndex& parent, int row)
     auto section { data_->info.section };
     auto* sql { data_->sql };
 
-    auto table_model { new TableModelOrder(sql, node->rule, 0, data_->info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
+    auto* table_model { new TableModelOrder(sql, node->rule, 0, data_->info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
 
     switch (section) {
     case Section::kSales:
@@ -1622,7 +1622,7 @@ void MainWindow::InsertNodePS(Node* node, const QModelIndex& parent, int row)
     connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &InsertNodeOrder::RUpdateLeafValueOne);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model().data()) && "Model is not TreeModelOrder");
-    auto tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
+    auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
     connect(tree_model_order, &TreeModelOrder::SUpdateData, dialog, &InsertNodeOrder::RUpdateData);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
     connect(dialog, &InsertNodeOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
@@ -1638,7 +1638,7 @@ void MainWindow::InsertNodePS(Node* node, const QModelIndex& parent, int row)
 
 void MainWindow::REditDocument()
 {
-    auto current_widget { ui->tabWidget->currentWidget() };
+    auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !IsTableWidget(current_widget))
         return;
 
@@ -1652,10 +1652,10 @@ void MainWindow::REditDocument()
 
     auto document_dir { settings_->document_dir };
     auto model { GetTableModel(current_widget) };
-    auto document_pointer { model->GetDocumentPointer(trans_index) };
+    auto* document_pointer { model->GetDocumentPointer(trans_index) };
     const int trans_id { trans_index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
-    auto dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
+    auto* dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
 
     if (dialog->exec() == QDialog::Accepted)
         data_->sql->UpdateField(data_->info.transaction, document_pointer->join(SEMICOLON), DOCUMENT, trans_id);
@@ -1665,7 +1665,7 @@ void MainWindow::RUpdateName(const Node* node)
 {
     auto model { tree_widget_->Model() };
     int node_id { node->id };
-    auto tab_bar { ui->tabWidget->tabBar() };
+    auto* tab_bar { ui->tabWidget->tabBar() };
     int count { ui->tabWidget->count() };
 
     if (!node->branch) {
@@ -1688,7 +1688,7 @@ void MainWindow::RUpdateName(const Node* node)
 
         QList<int> list {};
         while (!queue.isEmpty()) {
-            auto queue_node = queue.dequeue();
+            auto* queue_node = queue.dequeue();
 
             if (queue_node->branch)
                 for (const auto* child : queue_node->children)
@@ -1734,7 +1734,7 @@ void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
     }
 
     if (resize_column) {
-        auto current_widget { ui->tabWidget->currentWidget() };
+        auto* current_widget { ui->tabWidget->currentWidget() };
         if (IsTableWidget(current_widget))
             ResizeColumn(GetQTableView(current_widget)->horizontalHeader(), true);
         if (IsTreeWidget(current_widget))
@@ -1743,7 +1743,7 @@ void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
 }
 void MainWindow::RFreeView(int node_id)
 {
-    auto view { table_hash_->value(node_id) };
+    auto* view { table_hash_->value(node_id) };
 
     if (view) {
         FreeWidget(view);
@@ -1778,7 +1778,7 @@ void MainWindow::UpdateInterface(CInterface& interface)
         sales_tree_->Model()->UpdateSeparator(old_separator, new_separator);
         purchase_tree_->Model()->UpdateSeparator(old_separator, new_separator);
 
-        auto widget { ui->tabWidget };
+        auto* widget { ui->tabWidget };
         int count { ui->tabWidget->count() };
 
         for (int index = 0; index != count; ++index)
@@ -1798,8 +1798,8 @@ void MainWindow::UpdateTranslate() const
 {
     QWidget* widget {};
     Tab tab_id {};
-    auto tab_widget { ui->tabWidget };
-    auto tab_bar { tab_widget->tabBar() };
+    auto* tab_widget { ui->tabWidget };
+    auto* tab_bar { tab_widget->tabBar() };
     int count { tab_widget->count() };
 
     for (int index = 0; index != count; ++index) {
@@ -1925,7 +1925,7 @@ void MainWindow::RSearchTriggered()
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    auto dialog { new Search(data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), data_->sql, data_->info.rule_hash, *settings_, this) };
+    auto* dialog { new Search(data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), data_->sql, data_->info.rule_hash, *settings_, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);
@@ -1939,7 +1939,7 @@ void MainWindow::RSearchTriggered()
 
 void MainWindow::RTreeLocation(int node_id)
 {
-    auto widget { tree_widget_ };
+    auto* widget { tree_widget_ };
     ui->tabWidget->setCurrentWidget(widget);
 
     auto index { tree_widget_->Model()->GetIndex(node_id) };
@@ -1972,7 +1972,7 @@ void MainWindow::RPreferencesTriggered()
 
     auto model { tree_widget_->Model() };
 
-    auto preference { new Preferences(data_->info, model, interface_, *settings_, this) };
+    auto* preference { new Preferences(data_->info, model, interface_, *settings_, this) };
     connect(preference, &Preferences::SUpdateSettings, this, &MainWindow::RUpdateSettings);
     preference->exec();
 }
@@ -2015,10 +2015,10 @@ void MainWindow::ROpenTriggered()
 
 void MainWindow::SetClearMenuAction()
 {
-    auto menu { ui->menuRecent };
+    auto* menu { ui->menuRecent };
 
     if (!menu->isEmpty()) {
-        auto separator { ui->actionSeparator };
+        auto* separator { ui->actionSeparator };
         menu->addAction(separator);
         separator->setSeparator(true);
 
@@ -2037,7 +2037,7 @@ void MainWindow::RTabBarDoubleClicked(int index) { RTreeLocation(ui->tabWidget->
 
 void MainWindow::RUpdateState()
 {
-    auto current_widget { ui->tabWidget->currentWidget() };
+    auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !IsTableWidget(current_widget))
         return;
 
@@ -2047,8 +2047,8 @@ void MainWindow::RUpdateState()
 
 void MainWindow::SwitchSection(CTab& last_tab) const
 {
-    auto tab_widget { ui->tabWidget };
-    auto tab_bar { tab_widget->tabBar() };
+    auto* tab_widget { ui->tabWidget };
+    auto* tab_bar { tab_widget->tabBar() };
     int count { tab_widget->count() };
     Tab tab {};
 

@@ -77,7 +77,7 @@ void TreeModelOrder::RUpdateLocked(int node_id, bool checked)
     if (it == node_hash_.constEnd())
         return;
 
-    auto node { it.value() };
+    auto* node { it.value() };
 
     int coefficient = checked ? 1 : -1;
     UpdateAncestorValue(node, coefficient * node->first, coefficient * node->second, coefficient * node->initial_total, coefficient * node->discount,
@@ -272,7 +272,7 @@ bool TreeModelOrder::InsertNode(int row, const QModelIndex& parent, Node* node)
     if (row <= -1)
         return false;
 
-    auto parent_node { GetNodeByIndex(parent) };
+    auto* parent_node { GetNodeByIndex(parent) };
 
     beginInsertRows(parent, row, row);
     parent_node->children.insert(row, node);
@@ -292,8 +292,8 @@ bool TreeModelOrder::RemoveNode(int row, const QModelIndex& parent)
     if (row <= -1 || row >= rowCount(parent))
         return false;
 
-    auto parent_node { GetNodeByIndex(parent) };
-    auto node { parent_node->children.at(row) };
+    auto* parent_node { GetNodeByIndex(parent) };
+    auto* node { parent_node->children.at(row) };
 
     int node_id { node->id };
     bool branch { node->branch };
@@ -330,7 +330,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto node { GetNodeByIndex(index) };
+    auto* node { GetNodeByIndex(index) };
     if (node->id == -1)
         return QVariant();
 
@@ -381,7 +381,7 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
     if (!index.isValid() || role != Qt::EditRole)
         return false;
 
-    auto node { GetNodeByIndex(index) };
+    auto* node { GetNodeByIndex(index) };
     if (node->id == -1)
         return false;
 
@@ -462,7 +462,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     if (!canDropMimeData(data, action, row, column, parent))
         return false;
 
-    auto destination_parent { GetNodeByIndex(parent) };
+    auto* destination_parent { GetNodeByIndex(parent) };
     if (!destination_parent->branch)
         return false;
 
@@ -471,7 +471,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
-    auto node { GetNodeByID(node_id) };
+    auto* node { GetNodeByID(node_id) };
     if (!node || node->parent == destination_parent || IsDescendant(destination_parent, node))
         return false;
 

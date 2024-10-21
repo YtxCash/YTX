@@ -59,7 +59,7 @@ void EditNodeFinance::Data(Node* node, bool branch_enable, bool unit_enable)
 
 void EditNodeFinance::RNameEdited(const QString& arg1)
 {
-    auto simplified { arg1.simplified() };
+    const auto& simplified { arg1.simplified() };
     this->setWindowTitle(parent_path_ + simplified);
     ui->pBtnOk->setEnabled(!simplified.isEmpty() && !name_list_.contains(simplified));
 }

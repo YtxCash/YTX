@@ -13,7 +13,7 @@ QVariant TableModelProduct::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto trans_shadow { trans_shadow_list_.at(index.row()) };
+    auto* trans_shadow { trans_shadow_list_.at(index.row()) };
     const TableEnum kColumn { index.column() };
 
     switch (kColumn) {
@@ -88,7 +88,7 @@ bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& pa
     if (row <= -1)
         return false;
 
-    auto trans_shadow { trans_shadow_list_.at(row) };
+    auto* trans_shadow { trans_shadow_list_.at(row) };
     int rhs_node_id { *trans_shadow->rhs_node };
 
     beginRemoveRows(parent, row, row);
@@ -96,9 +96,9 @@ bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& pa
     endRemoveRows();
 
     if (rhs_node_id != 0) {
-        auto unit_cost { *trans_shadow->unit_price };
-        auto debit { *trans_shadow->lhs_debit };
-        auto credit { *trans_shadow->lhs_credit };
+        double unit_cost { *trans_shadow->unit_price };
+        double debit { *trans_shadow->lhs_debit };
+        double credit { *trans_shadow->lhs_credit };
         emit SUpdateLeafValue(node_id_, -debit, -credit, -unit_cost * debit, -unit_cost * credit);
 
         debit = *trans_shadow->rhs_debit;
@@ -134,11 +134,11 @@ bool TableModelProduct::UpdateDebit(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto unit_cost { *trans_shadow->unit_price };
-    auto quantity_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
-    auto quantity_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    auto amount_debit_diff { quantity_debit_diff * unit_cost };
-    auto amount_credit_diff { quantity_credit_diff * unit_cost };
+    double unit_cost { *trans_shadow->unit_price };
+    double quantity_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    double quantity_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
+    double amount_debit_diff { quantity_debit_diff * unit_cost };
+    double amount_credit_diff { quantity_credit_diff * unit_cost };
 
     emit SUpdateLeafValue(*trans_shadow->lhs_node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
     emit SUpdateLeafValue(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
@@ -164,11 +164,11 @@ bool TableModelProduct::UpdateCredit(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    auto unit_cost { *trans_shadow->unit_price };
-    auto quantity_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
-    auto quantity_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    auto amount_debit_diff { quantity_debit_diff * unit_cost };
-    auto amount_credit_diff { quantity_credit_diff * unit_cost };
+    double unit_cost { *trans_shadow->unit_price };
+    double quantity_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
+    double quantity_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
+    double amount_debit_diff { quantity_debit_diff * unit_cost };
+    double amount_credit_diff { quantity_credit_diff * unit_cost };
 
     emit SUpdateLeafValue(*trans_shadow->lhs_node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
     emit SUpdateLeafValue(*trans_shadow->rhs_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
@@ -182,7 +182,7 @@ bool TableModelProduct::UpdateRatio(TransShadow* trans_shadow, double value)
     if (std::abs(unit_cost - value) < TOLERANCE || value < 0)
         return false;
 
-    auto diff { value - unit_cost };
+    double diff { value - unit_cost };
     *trans_shadow->unit_price = value;
 
     if (*trans_shadow->rhs_node == 0)

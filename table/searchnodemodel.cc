@@ -41,7 +41,7 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto node { node_list_.at(index.row()) };
+    auto* node { node_list_.at(index.row()) };
     const TreeEnumOrder kColumn { index.column() };
 
     switch (kColumn) {

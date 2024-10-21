@@ -54,7 +54,7 @@ bool TreeModel::RUpdateMultiLeafTotal(const QList<int>& node_list)
 bool TreeModel::RRemoveNode(int node_id)
 {
     auto index { GetIndex(node_id) };
-    auto row { index.row() };
+    int row { index.row() };
     auto parent_index { index.parent() };
     RemoveNode(row, parent_index);
 
@@ -64,17 +64,17 @@ bool TreeModel::RRemoveNode(int node_id)
 void TreeModel::RUpdateLeafValue(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
-    auto node { GetNodeByID(node_id) };
+    auto* node { GetNodeByID(node_id) };
     if (!node || node == root_ || node->branch)
         return;
 
     if (initial_credit_diff == 0 && initial_debit_diff == 0 && final_debit_diff == 0 && final_credit_diff == 0)
         return;
 
-    auto rule { node->rule };
+    bool rule { node->rule };
 
-    auto initial_diff { (rule ? 1 : -1) * (initial_credit_diff - initial_debit_diff) };
-    auto final_diff { (rule ? 1 : -1) * (final_credit_diff - final_debit_diff) };
+    double initial_diff { (rule ? 1 : -1) * (initial_credit_diff - initial_debit_diff) };
+    double final_diff { (rule ? 1 : -1) * (final_credit_diff - final_debit_diff) };
 
     node->initial_total += initial_diff;
     node->final_total += final_diff;
@@ -89,8 +89,8 @@ bool TreeModel::RemoveNode(int row, const QModelIndex& parent)
     if (row <= -1 || row >= rowCount(parent))
         return false;
 
-    auto parent_node { GetNodeByIndex(parent) };
-    auto node { parent_node->children.at(row) };
+    auto* parent_node { GetNodeByIndex(parent) };
+    auto* node { parent_node->children.at(row) };
 
     int node_id { node->id };
     bool branch { node->branch };
@@ -133,7 +133,7 @@ bool TreeModel::InsertNode(int row, const QModelIndex& parent, Node* node)
     if (row <= -1)
         return false;
 
-    auto parent_node { GetNodeByIndex(parent) };
+    auto* parent_node { GetNodeByIndex(parent) };
 
     beginInsertRows(parent, row, row);
     parent_node->children.insert(row, node);
@@ -159,7 +159,7 @@ void TreeModel::UpdateNode(const Node* tmp_node)
     if (it == node_hash_.constEnd())
         return;
 
-    auto node { it.value() };
+    auto* node { it.value() };
     if (*node == *tmp_node)
         return;
 
@@ -197,8 +197,8 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent) con
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    auto parent_node { GetNodeByIndex(parent) };
-    auto node { parent_node->children.at(row) };
+    auto* parent_node { GetNodeByIndex(parent) };
+    auto* node { parent_node->children.at(row) };
 
     return node ? createIndex(row, column, node) : QModelIndex();
 }
@@ -209,11 +209,11 @@ QModelIndex TreeModel::parent(const QModelIndex& index) const
     if (!index.isValid())
         return QModelIndex();
 
-    auto node { GetNodeByIndex(index) };
+    auto* node { GetNodeByIndex(index) };
     if (node == root_)
         return QModelIndex();
 
-    auto parent_node { node->parent };
+    auto* parent_node { node->parent };
     if (parent_node == root_)
         return QModelIndex();
 
@@ -227,7 +227,7 @@ QVariant TreeModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto node { GetNodeByIndex(index) };
+    auto* node { GetNodeByIndex(index) };
     if (node->id == -1)
         return QVariant();
 
@@ -264,7 +264,7 @@ bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int rol
     if (!index.isValid() || role != Qt::EditRole)
         return false;
 
-    auto node { GetNodeByIndex(index) };
+    auto* node { GetNodeByIndex(index) };
     if (node->id == -1)
         return false;
 
@@ -364,7 +364,7 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     if (!canDropMimeData(data, action, row, column, parent))
         return false;
 
-    auto destination_parent { GetNodeByIndex(parent) };
+    auto* destination_parent { GetNodeByIndex(parent) };
     if (!destination_parent->branch)
         return false;
 
@@ -373,7 +373,7 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
-    auto node { GetNodeByID(node_id) };
+    auto* node { GetNodeByID(node_id) };
     if (!node || node->parent == destination_parent || IsDescendant(destination_parent, node))
         return false;
 
@@ -507,7 +507,7 @@ void TreeModel::UpdateComboModel(QStandardItemModel* combo_model, const QVector<
     QSignalBlocker blocker(combo_model);
 
     for (const auto& item : items) {
-        auto standard_item = new QStandardItem(item.first);
+        auto* standard_item = new QStandardItem(item.first);
         standard_item->setData(item.second, Qt::UserRole);
         combo_model->appendRow(standard_item);
     }
@@ -521,7 +521,7 @@ QStringList TreeModel::ChildrenName(int node_id, int exclude_child) const
     if (it == node_hash_.constEnd())
         return {};
 
-    auto node { it.value() };
+    auto* node { it.value() };
     QStringList list { node->children.size() };
 
     for (const auto* child : node->children) {
@@ -843,7 +843,7 @@ bool TreeModel::UpdateUnit(Node* node, int value)
 
 QMimeData* TreeModel::mimeData(const QModelIndexList& indexes) const
 {
-    auto mime_data { new QMimeData() };
+    auto* mime_data { new QMimeData() };
     if (indexes.isEmpty())
         return mime_data;
 
@@ -910,7 +910,7 @@ void TreeModel::InitializeRoot(int default_unit)
 
 void TreeModel::ShowTemporaryTooltip(CString& message, int duration) const
 {
-    auto label { new TemporaryLabel(message) };
+    auto* label { new TemporaryLabel(message) };
     label->setWindowFlags(Qt::ToolTip);
     label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     label->setWordWrap(true);

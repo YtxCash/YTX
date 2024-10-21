@@ -13,7 +13,7 @@ TableCombo::TableCombo(const TreeModel* tree_model, int exclude_id, QObject* par
 
 QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
-    auto editor { new ComboBox(parent) };
+    auto* editor { new ComboBox(parent) };
     editor->setModel(combo_model_);
 
     int height = option.rect.height();
@@ -25,7 +25,7 @@ QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& o
 
 void TableCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto cast_editor { static_cast<ComboBox*>(editor) };
+    auto* cast_editor { static_cast<ComboBox*>(editor) };
 
     int key { index.data().toInt() };
     if (key == 0)
@@ -37,7 +37,7 @@ void TableCombo::setEditorData(QWidget* editor, const QModelIndex& index) const
 
 void TableCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    auto cast_editor { static_cast<ComboBox*>(editor) };
+    auto* cast_editor { static_cast<ComboBox*>(editor) };
 
     int key { cast_editor->currentData().toInt() };
     last_insert_ = key;

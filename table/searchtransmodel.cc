@@ -42,7 +42,7 @@ QVariant SearchTransModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto trans { trans_list_.at(index.row()) };
+    auto* trans { trans_list_.at(index.row()) };
     const TableEnumSearch kColumn { index.column() };
 
     switch (kColumn) {

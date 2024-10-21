@@ -11,7 +11,7 @@ TreeCombo::TreeCombo(CStringHash& hash, bool skip_branch, QObject* parent)
 {
     model_ = new QStandardItemModel(this);
     for (auto it = hash_.cbegin(); it != hash_.cend(); ++it) {
-        auto item { new QStandardItem(it.value()) };
+        auto* item { new QStandardItem(it.value()) };
         item->setData(it.key(), Qt::UserRole);
         model_->appendRow(item);
     }
@@ -27,7 +27,7 @@ QWidget* TreeCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& op
     if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
         return nullptr;
 
-    auto editor { new ComboBox(parent) };
+    auto* editor { new ComboBox(parent) };
     editor->setModel(model_);
 
     int height = option.rect.height();

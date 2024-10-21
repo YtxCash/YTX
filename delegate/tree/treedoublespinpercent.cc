@@ -16,7 +16,7 @@ QWidget* TreeDoubleSpinPercent::createEditor(QWidget* parent, const QStyleOption
     Q_UNUSED(option);
     Q_UNUSED(index);
 
-    auto editor { new DoubleSpinBox(parent) };
+    auto* editor { new DoubleSpinBox(parent) };
     editor->setSuffix(SFX_PERCENT);
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);

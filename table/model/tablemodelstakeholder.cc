@@ -21,7 +21,7 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
     if (row <= -1)
         return false;
 
-    auto trans_shadow { trans_shadow_list_.at(row) };
+    auto* trans_shadow { trans_shadow_list_.at(row) };
     int lhs_node_id { *trans_shadow->lhs_node };
 
     beginRemoveRows(parent, row, row);
@@ -76,7 +76,7 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
 
-    auto trans_shadow { trans_shadow_list_.at(index.row()) };
+    auto* trans_shadow { trans_shadow_list_.at(index.row()) };
     const TableEnumStakeholder kColumn { index.column() };
 
     switch (kColumn) {
@@ -111,7 +111,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     const TableEnumStakeholder kColumn { index.column() };
     const int kRow { index.row() };
 
-    auto trans_shadow { trans_shadow_list_.at(kRow) };
+    auto* trans_shadow { trans_shadow_list_.at(kRow) };
     int old_lhs_node { *trans_shadow->lhs_node };
 
     bool rhs_changed { false };
@@ -212,7 +212,7 @@ Qt::ItemFlags TableModelStakeholder::flags(const QModelIndex& index) const
 
 bool TableModelStakeholder::insertRows(int row, int /*count*/, const QModelIndex& parent)
 {
-    auto trans_shadow { sql_->AllocateTransShadow() };
+    auto* trans_shadow { sql_->AllocateTransShadow() };
 
     *trans_shadow->node_id = node_id_;
     *trans_shadow->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);

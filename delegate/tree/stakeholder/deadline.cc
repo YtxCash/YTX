@@ -47,9 +47,9 @@ QSize DeadLine::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& 
 
 bool DeadLine::Skip(const QModelIndex& index) const
 {
-    const auto branch { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool() };
-    const auto unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
-    const auto rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool() };
+    const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
+    const bool rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
 
     return branch || unit == UNIT_PRODUCT || rule == RULE_CASH;
 }

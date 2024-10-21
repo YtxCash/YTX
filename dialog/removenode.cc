@@ -37,7 +37,7 @@ void RemoveNode::RCustomAccept()
     msg.setIcon(QMessageBox::Question);
     msg.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 
-    auto path { model_->GetPath(node_id_) };
+    const auto& path { model_->GetPath(node_id_) };
     QString text {};
     QString informative_text {};
 

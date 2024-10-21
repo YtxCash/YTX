@@ -16,7 +16,7 @@ public:
         setEditable(true);
         setInsertPolicy(QComboBox::NoInsert);
 
-        auto completer { new QCompleter(model(), this) };
+        auto* completer { new QCompleter(model(), this) };
         completer->setFilterMode(Qt::MatchContains);
         completer->setCaseSensitivity(Qt::CaseInsensitive);
         setCompleter(completer);

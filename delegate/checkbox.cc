@@ -21,7 +21,7 @@ bool CheckBox::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyl
     if (event->type() != type_)
         return false;
 
-    auto mouse_event { static_cast<QMouseEvent*>(event) };
+    auto* mouse_event { static_cast<QMouseEvent*>(event) };
     if (mouse_event->button() != Qt::LeftButton || !option.rect.contains(mouse_event->pos()))
         return false;
 

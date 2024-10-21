@@ -56,10 +56,10 @@ void InsertNodeOrder::RUpdateComboModel()
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
 
-    auto index_employee { ui->comboEmployee->findData(employee_id) };
+    int index_employee { ui->comboEmployee->findData(employee_id) };
     ui->comboEmployee->setCurrentIndex(index_employee);
 
-    auto index_party { ui->comboParty->findData(party_id) };
+    int index_party { ui->comboParty->findData(party_id) };
     ui->comboParty->setCurrentIndex(index_party);
 
     ui->comboParty->blockSignals(false);
@@ -84,12 +84,12 @@ void InsertNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVari
         IniUnit(value.toInt());
         break;
     case TreeEnumOrder::kParty: {
-        auto party_index { ui->comboParty->findData(value.toInt()) };
+        int party_index { ui->comboParty->findData(value.toInt()) };
         ui->comboParty->setCurrentIndex(party_index);
         break;
     }
     case TreeEnumOrder::kEmployee: {
-        auto employee_index { ui->comboEmployee->findData(value.toInt()) };
+        int employee_index { ui->comboEmployee->findData(value.toInt()) };
         ui->comboEmployee->setCurrentIndex(employee_index);
         break;
     }
@@ -162,7 +162,7 @@ void InsertNodeOrder::IniDialog()
 
 void InsertNodeOrder::accept()
 {
-    if (auto focus_widget { this->focusWidget() })
+    if (auto* focus_widget { this->focusWidget() })
         focus_widget->clearFocus();
 
     if (node_id_ == 0) {
@@ -253,7 +253,7 @@ void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     if (*node_shadow_->branch)
         return;
 
-    auto party_id { ui->comboParty->currentData().toInt() };
+    int party_id { ui->comboParty->currentData().toInt() };
     if (party_id <= 0)
         return;
 
@@ -271,7 +271,7 @@ void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     if (ui->comboEmployee->currentIndex() != -1)
         return;
 
-    auto employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
+    int employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
     ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == RULE_CASH);
@@ -348,11 +348,11 @@ void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
 
 void InsertNodeOrder::on_pBtnInsertParty_clicked()
 {
-    auto name { ui->comboParty->currentText() };
+    const auto& name { ui->comboParty->currentText() };
     if (*node_shadow_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
         return;
 
-    auto node { ResourcePool<Node>::Instance().Allocate() };
+    auto* node { ResourcePool<Node>::Instance().Allocate() };
     node->rule = stakeholder_tree_->Rule(-1);
     stakeholder_tree_->SetParent(node, -1);
     node->name = name;
