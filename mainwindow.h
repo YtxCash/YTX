@@ -71,7 +71,7 @@ private slots:
     void REditNode();
     void REditDocument();
 
-    void RUpdateSettings(CSettings& settings, const Interface& interface);
+    void RUpdateSettings(CSettings& settings, CInterface& interface);
     void RUpdateName(const Node* node);
 
     void RTabCloseRequested(int index);
@@ -126,34 +126,34 @@ private:
     void SetSalesData();
     void SetPurchaseData();
 
-    void CreateTableFPTS(CData* data, PTreeModel tree_model, CSettings* settings, TableHash* table_hash, int node_id);
-    void CreateTablePS(CData* data, PTreeModel tree_model, CSettings* settings, TableHash* table_hash, int node_id, int party_id);
-    void DelegateCommon(PQTableView view, PTreeModel tree_model, int node_id) const;
-    void DelegateFinance(PQTableView view, CSettings* settings) const;
-    void DelegateTask(PQTableView view, CSettings* settings) const;
-    void DelegateProduct(PQTableView view, CSettings* settings) const;
-    void DelegateStakeholder(PQTableView view, CSettings* settings) const;
-    void DelegateOrder(PQTableView view, CSettings* settings) const;
-    void SetView(PQTableView view) const;
+    void CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id);
+    void CreateTablePS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id);
+    void DelegateCommon(PQTableView table_view, PTreeModel tree_model, int node_id) const;
+    void DelegateFinance(PQTableView table_view, CSettings* settings) const;
+    void DelegateTask(PQTableView table_view, CSettings* settings) const;
+    void DelegateProduct(PQTableView table_view, CSettings* settings) const;
+    void DelegateStakeholder(PQTableView table_view, CSettings* settings) const;
+    void DelegateOrder(PQTableView table_view, CSettings* settings) const;
+    void SetView(PQTableView table_view) const;
 
-    void TableConnectFPT(PQTableView view, PTableModel table_model, PTreeModel tree_model, CData* data) const;
-    void TableConnectOrder(PQTableView view, TableModelOrder* table_model, PTreeModel tree_model, const TableWidgetOrder* widget) const;
-    void TableConnectStakeholder(PQTableView view, PTableModel table_model, PTreeModel tree_model, CData* data) const;
+    void TableConnectFPT(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, CData* data) const;
+    void TableConnectOrder(PQTableView table_view, TableModelOrder* table_model, PTreeModel tree_model, TableWidgetOrder* widget) const;
+    void TableConnectStakeholder(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, CData* data) const;
 
-    void CreateSection(TreeWidget* tree_widget, CString& name, CData& data, TableHash& table_hash, CSettings& settings);
-    void SwitchSection(const Tab& last_tab) const;
+    void CreateSection(TreeWidget* tree_widget, TableHash& table_hash, CData& data, CSettings& settings, CString& name);
+    void SwitchSection(CTab& last_tab) const;
     void UpdateLastTab() const;
 
-    void SetDelegate(PQTreeView view, CInfo& info, CSettings& settings) const;
-    void DelegateCommon(PQTreeView view, CInfo& info) const;
-    void DelegateFinance(PQTreeView view, CInfo& info, CSettings& settings) const;
-    void DelegateTask(PQTreeView view, CSettings& settings) const;
-    void DelegateProduct(PQTreeView view, CSettings& settings) const;
-    void DelegateStakeholder(PQTreeView view, CSettings& settings) const;
-    void DelegateOrder(PQTreeView view, CInfo& info, CSettings& settings) const;
+    void SetDelegate(PQTreeView tree_view, CInfo& info, CSettings& settings) const;
+    void DelegateCommon(PQTreeView tree_view, CInfo& info) const;
+    void DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const;
+    void DelegateTask(PQTreeView tree_view, CSettings& settings) const;
+    void DelegateProduct(PQTreeView tree_view, CSettings& settings) const;
+    void DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const;
+    void DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const;
 
-    void SetView(PQTreeView view) const;
-    void TreeConnect(const TreeWidget* tree_widget, const Sqlite* sql) const;
+    void SetView(PQTreeView tree_view) const;
+    void TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const;
 
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);

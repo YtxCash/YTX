@@ -174,12 +174,12 @@ void MainWindow::ROpenFile(CString& file_path)
         SetSalesData();
         SetPurchaseData();
 
-        CreateSection(finance_tree_, tr(Finance), finance_data_, finance_table_hash_, finance_settings_);
-        CreateSection(stakeholder_tree_, tr(Stakeholder), stakeholder_data_, stakeholder_table_hash_, stakeholder_settings_);
-        CreateSection(product_tree_, tr(Product), product_data_, product_table_hash_, product_settings_);
-        CreateSection(task_tree_, tr(Task), task_data_, task_table_hash_, task_settings_);
-        CreateSection(sales_tree_, tr(Sales), sales_data_, sales_table_hash_, sales_settings_);
-        CreateSection(purchase_tree_, tr(Purchase), purchase_data_, purchase_table_hash_, purchase_settings_);
+        CreateSection(finance_tree_, finance_table_hash_, finance_data_, finance_settings_, tr(Finance));
+        CreateSection(stakeholder_tree_, stakeholder_table_hash_, stakeholder_data_, stakeholder_settings_, tr(Stakeholder));
+        CreateSection(product_tree_, product_table_hash_, product_data_, product_settings_, tr(Product));
+        CreateSection(task_tree_, task_table_hash_, task_data_, task_settings_, tr(Task));
+        CreateSection(sales_tree_, sales_table_hash_, sales_data_, sales_settings_, tr(Sales));
+        CreateSection(purchase_tree_, purchase_table_hash_, purchase_data_, purchase_settings_, tr(Purchase));
 
         switch (start_) {
         case Section::kFinance:
@@ -283,7 +283,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             if (party_id <= 0)
                 return;
 
-            CreateTablePS(data_, tree_widget_->Model(), settings_, table_hash_, node_id, party_id);
+            CreateTablePS(tree_widget_->Model(), table_hash_, data_, settings_, node_id, party_id);
         }
 
         if (section != Section::kSales && section != Section::kPurchase) {
@@ -291,7 +291,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             if (section == Section::kStakeholder && unit == UNIT_PRODUCT)
                 return;
 
-            CreateTableFPTS(data_, tree_widget_->Model(), settings_, table_hash_, node_id);
+            CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
         }
     }
 
@@ -327,7 +327,7 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name) c
     return true;
 }
 
-void MainWindow::CreateTableFPTS(CData* data, PTreeModel tree_model, CSettings* settings, TableHash* table_hash, int node_id)
+void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
 {
     CString& name { tree_model->Name(node_id) };
     auto sql { data->sql };
@@ -400,7 +400,7 @@ void MainWindow::CreateTableFPTS(CData* data, PTreeModel tree_model, CSettings* 
     SignalStation::Instance().RegisterModel(section, node_id, model);
 }
 
-void MainWindow::CreateTablePS(CData* data, PTreeModel tree_model, CSettings* settings, TableHash* table_hash, int node_id, int party_id)
+void MainWindow::CreateTablePS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id)
 {
     CString& name { stakeholder_tree_->Model()->Name(party_id) };
     auto sql { data->sql };
@@ -439,9 +439,9 @@ void MainWindow::CreateTablePS(CData* data, PTreeModel tree_model, CSettings* se
     table_hash->insert(node_id, widget);
 }
 
-void MainWindow::TableConnectFPT(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
+void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
 {
-    connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
+    connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
     connect(tree_model, &TreeModel::SRule, table_model, &TableModel::RRule);
 
@@ -456,11 +456,11 @@ void MainWindow::TableConnectFPT(PQTableView view, PTableModel table_model, PTre
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::TableConnectOrder(PQTableView view, TableModelOrder* table_model, PTreeModel tree_model, const TableWidgetOrder* widget) const
+void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* table_model, PTreeModel tree_model, TableWidgetOrder* widget) const
 {
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, widget, &TableWidgetOrder::RUpdateComboModel);
-    connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
+    connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
 
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
     connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
@@ -477,138 +477,138 @@ void MainWindow::TableConnectOrder(PQTableView view, TableModelOrder* table_mode
     connect(widget, &TableWidgetOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 }
 
-void MainWindow::TableConnectStakeholder(PQTableView view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
+void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
 {
-    connect(table_model, &TableModel::SResizeColumnToContents, view, &QTableView::resizeColumnToContents);
+    connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
-void MainWindow::DelegateCommon(PQTableView view, PTreeModel tree_model, int node_id) const
+void MainWindow::DelegateCommon(PQTableView table_view, PTreeModel tree_model, int node_id) const
 {
-    auto node { new TableCombo(tree_model, node_id, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
+    auto node { new TableCombo(tree_model, node_id, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
-    auto date_time { new DateTime(interface_.date_format, false, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
+    auto date_time { new DateTime(interface_.date_format, false, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
 
-    auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
+    auto line { new Line(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
 
-    auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
+    auto state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
 
-    auto document { new TableDbClick(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
+    auto document { new TableDbClick(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 }
 
-void MainWindow::DelegateFinance(PQTableView view, CSettings* settings) const
+void MainWindow::DelegateFinance(PQTableView table_view, CSettings* settings) const
 {
-    auto amount { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), amount);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), amount);
+    auto amount { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), amount);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), amount);
 
-    auto fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), fx_rate);
+    auto fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), fx_rate);
 
-    auto subtotal { new TableDoubleSpinR(settings->amount_decimal, true, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
+    auto subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateTask(PQTableView view, CSettings* settings) const
+void MainWindow::DelegateTask(PQTableView table_view, CSettings* settings) const
 {
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
+    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_cost);
+    auto unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_cost);
 
-    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
+    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateProduct(PQTableView view, CSettings* settings) const
+void MainWindow::DelegateProduct(PQTableView table_view, CSettings* settings) const
 {
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
+    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_price);
+    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_price);
 
-    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
+    auto subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateStakeholder(PQTableView view, CSettings* settings) const
+void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings) const
 {
     auto product_tree_model { product_tree_->Model() };
-    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
+    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
-    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
+    auto unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
-    auto date_time { new DateTime(interface_.date_format, false, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
+    auto date_time { new DateTime(interface_.date_format, false, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
 
-    auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kCode), line);
+    auto line { new Line(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDescription), line);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kCode), line);
 
-    auto document { new TableDbClick(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDocument), document);
+    auto document { new TableDbClick(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto state { new CheckBox(QEvent::MouseButtonRelease, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
+    auto state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
+    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 }
 
-void MainWindow::DelegateOrder(PQTableView view, CSettings* settings) const
+void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
 {
     auto product_tree_model { product_tree_->Model() };
-    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
+    auto inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
+    auto outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 
-    auto color { new ColorR(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);
+    auto color { new ColorR(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);
 
-    auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
+    auto line { new Line(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
 
-    auto price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
+    auto price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
 
-    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
+    auto quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
 
-    auto amount { new TableDoubleSpinR(settings->amount_decimal, false, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kAmount), amount);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscount), amount);
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
+    auto amount { new TableDoubleSpinR(settings->amount_decimal, false, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kAmount), amount);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscount), amount);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
 }
 
-void MainWindow::CreateSection(TreeWidget* tree_widget, CString& name, CData& data, TableHash& table_hash, CSettings& settings)
+void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, CData& data, CSettings& settings, CString& name)
 {
     const auto& info { data.info };
     auto tab_widget { ui->tabWidget };
@@ -628,136 +628,136 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, CString& name, CData& da
     // view->setColumnHidden(1, true);
 }
 
-void MainWindow::SetDelegate(PQTreeView view, CInfo& info, CSettings& settings) const
+void MainWindow::SetDelegate(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    DelegateCommon(view, info);
+    DelegateCommon(tree_view, info);
 
     switch (info.section) {
     case Section::kFinance:
-        DelegateFinance(view, info, settings);
+        DelegateFinance(tree_view, info, settings);
         break;
     case Section::kTask:
-        DelegateTask(view, settings);
+        DelegateTask(tree_view, settings);
         break;
     case Section::kStakeholder:
-        DelegateStakeholder(view, settings);
+        DelegateStakeholder(tree_view, settings);
         break;
     case Section::kProduct:
-        DelegateProduct(view, settings);
+        DelegateProduct(tree_view, settings);
         break;
     case Section::kSales:
     case Section::kPurchase:
-        DelegateOrder(view, info, settings);
+        DelegateOrder(tree_view, info, settings);
         break;
     default:
         break;
     }
 }
 
-void MainWindow::DelegateCommon(PQTreeView view, CInfo& info) const
+void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
 {
-    auto line { new Line(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kCode), line);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kDescription), line);
+    auto line { new Line(tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kCode), line);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kDescription), line);
 
-    auto plain_text { new TreePlainText(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kNote), plain_text);
+    auto plain_text { new TreePlainText(tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kNote), plain_text);
 
-    auto rule { new TreeCombo(info.rule_hash, false, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
+    auto rule { new TreeCombo(info.rule_hash, false, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
 
-    auto branch { new CheckBox(QEvent::MouseButtonDblClick, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kBranch), branch);
+    auto branch { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kBranch), branch);
 
-    auto unit { new TreeCombo(info.unit_hash, false, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
+    auto unit { new TreeCombo(info.unit_hash, false, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
 }
 
-void MainWindow::DelegateFinance(PQTreeView view, CInfo& info, CSettings& settings) const
+void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kFinalTotal), final_total);
+    auto final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kFinalTotal), final_total);
 
-    auto initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
+    auto initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
 }
 
-void MainWindow::DelegateTask(PQTreeView view, CSettings& settings) const
+void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 {
-    auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
+    auto quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
 
-    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
+    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
-    auto unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
+    auto unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
 
-    auto color { new Color(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
+    auto color { new Color(tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
 }
 
-void MainWindow::DelegateProduct(PQTreeView view, CSettings& settings) const
+void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
 {
-    auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
+    auto quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
 
-    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
+    auto amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
 
-    auto price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
+    auto price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
 
-    auto color { new Color(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
+    auto color { new Color(tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
 }
 
-void MainWindow::DelegateStakeholder(PQTreeView view, CSettings& settings) const
+void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const
 {
-    auto payment_period { new PaymentPeriod(IZERO, IMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
+    auto payment_period { new PaymentPeriod(IZERO, IMAX, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
-    auto tax_rate { new TreeDoubleSpinPercent(settings.amount_decimal, DZERO, DMAX, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
+    auto tax_rate { new TreeDoubleSpinPercent(settings.amount_decimal, DZERO, DMAX, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
-    auto deadline { new DeadLine(DD, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
+    auto deadline { new DeadLine(DD, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 }
 
-void MainWindow::DelegateOrder(PQTreeView view, CInfo& info, CSettings& settings) const
+void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto rule { new TreeCombo(info.rule_hash, true, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
+    auto rule { new TreeCombo(info.rule_hash, true, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
 
-    auto amount { new OrderTotalR(settings.amount_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), amount);
+    auto amount { new OrderTotalR(settings.amount_decimal, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), amount);
 
-    auto quantity { new TreeDoubleSpinR(settings.common_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
+    auto quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
-    auto employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
+    auto employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnly, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
     auto party_unit { info.section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-    auto party { new SpecificUnit(stakeholder_tree_model, party_unit, true, UnitFilterMode::kIncludeUnitOnly, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
+    auto party { new SpecificUnit(stakeholder_tree_model, party_unit, true, UnitFilterMode::kIncludeUnitOnly, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, party, &SpecificUnit::RUpdateComboModel);
 
-    auto date_time { new DateTime(interface_.date_format, true, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
+    auto date_time { new DateTime(interface_.date_format, true, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
-    auto locked { new CheckBox(QEvent::MouseButtonDblClick, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
+    auto locked { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 
-void MainWindow::TreeConnect(const TreeWidget* tree_widget, const Sqlite* sql) const
+void MainWindow::TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const
 {
     auto view { tree_widget->View() };
     auto model { tree_widget->Model() };
@@ -947,7 +947,7 @@ void MainWindow::RestoreTab(CData& data, PTreeModel tree_model, CSettings& setti
 
     for (int node_id : list) {
         if (tree_model->Contains(node_id) && !tree_model->Branch(node_id) && node_id >= 1)
-            CreateTableFPTS(&data, tree_model, &settings, &table_hash, node_id);
+            CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
     }
 }
 
@@ -1334,17 +1334,17 @@ void MainWindow::SetAction() const
     ui->actionCheckReverse->setProperty(CHECK, std::to_underlying(Check::kReverse));
 }
 
-void MainWindow::SetView(PQTreeView view) const
+void MainWindow::SetView(PQTreeView tree_view) const
 {
-    view->setSelectionMode(QAbstractItemView::SingleSelection);
-    view->setDragDropMode(QAbstractItemView::InternalMove);
-    view->setEditTriggers(QAbstractItemView::DoubleClicked);
-    view->setDropIndicatorShown(true);
-    view->setSortingEnabled(true);
-    view->setContextMenuPolicy(Qt::CustomContextMenu);
-    view->setExpandsOnDoubleClick(true);
+    tree_view->setSelectionMode(QAbstractItemView::SingleSelection);
+    tree_view->setDragDropMode(QAbstractItemView::InternalMove);
+    tree_view->setEditTriggers(QAbstractItemView::DoubleClicked);
+    tree_view->setDropIndicatorShown(true);
+    tree_view->setSortingEnabled(true);
+    tree_view->setContextMenuPolicy(Qt::CustomContextMenu);
+    tree_view->setExpandsOnDoubleClick(true);
 
-    auto header { view->header() };
+    auto header { tree_view->header() };
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
     header->setSectionResizeMode(std::to_underlying(TreeEnumCommon::kDescription), QHeaderView::Stretch);
     header->setStretchLastSection(true);
@@ -1420,7 +1420,7 @@ void MainWindow::RJumpTriggered()
         return;
 
     if (!table_hash_->contains(rhs_node_id))
-        CreateTableFPTS(data_, tree_widget_->Model(), settings_, table_hash_, rhs_node_id);
+        CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, rhs_node_id);
 
     const int trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
     SwitchTab(rhs_node_id, trans_id);
@@ -1694,7 +1694,7 @@ void MainWindow::RUpdateName(const Node* node)
     }
 }
 
-void MainWindow::RUpdateSettings(CSettings& settings, const Interface& interface)
+void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
 {
     bool resize_column { false };
 
@@ -1943,7 +1943,7 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     };
 
     if (!Contains(lhs_node_id) && !Contains(rhs_node_id))
-        CreateTableFPTS(data_, tree_widget_->Model(), settings_, table_hash_, id);
+        CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, id);
 
     SwitchTab(id, trans_id);
 }
@@ -2028,7 +2028,7 @@ void MainWindow::RUpdateState()
     table_model->UpdateAllState(Check { QObject::sender()->property(CHECK).toInt() });
 }
 
-void MainWindow::SwitchSection(const Tab& last_tab) const
+void MainWindow::SwitchSection(CTab& last_tab) const
 {
     auto tab_widget { ui->tabWidget };
     auto tab_bar { tab_widget->tabBar() };

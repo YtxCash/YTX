@@ -37,5 +37,6 @@ struct Tab {
 };
 
 using CInfo = const Info;
+using CTab = const Tab;
 
 #endif // INFO_H
