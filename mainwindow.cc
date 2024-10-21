@@ -810,24 +810,33 @@ void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, in
 
 void MainWindow::RRemoveTriggered()
 {
-    auto current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget)
+    auto* widget { ui->tabWidget->currentWidget() };
+    if (!widget)
         return;
 
-    if (IsTreeWidget(current_widget))
-        RemoveNode(tree_widget_->View(), tree_widget_->Model());
+    if (IsTreeWidget(widget)) {
+        assert(dynamic_cast<TreeWidget*>(widget) && "Widget is not TreeWidget");
+        RemoveNode(static_cast<TreeWidget*>(widget));
+    }
 
-    if (IsTableWidget(current_widget))
-        RemoveTrans(current_widget);
+    if (IsTableWidget(widget)) {
+        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
+        RemoveTrans(static_cast<TableWidget*>(widget));
+    }
 }
 
-void MainWindow::RemoveNode(PQTreeView view, PTreeModel model)
+void MainWindow::RemoveNode(TreeWidget* tree_widget)
 {
-    if (!HasSelection(view))
+    auto view { tree_widget->View() };
+    if (!view || !HasSelection(view))
         return;
 
     auto index { view->currentIndex() };
     if (!index.isValid())
+        return;
+
+    auto model { tree_widget->Model() };
+    if (!model)
         return;
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
@@ -842,7 +851,7 @@ void MainWindow::RemoveNode(PQTreeView view, PTreeModel model)
         return;
     }
 
-    auto& sql { data_->sql };
+    auto* sql { data_->sql };
     bool interal_reference { sql->InternalReference(node_id) };
     bool exteral_reference { sql->ExternalReference(node_id) };
 
@@ -853,16 +862,16 @@ void MainWindow::RemoveNode(PQTreeView view, PTreeModel model)
 
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kUnit)).data().toInt() };
 
-    auto dialog { new class RemoveNode(model, node_id, unit, exteral_reference, this) };
+    auto* dialog { new class RemoveNode(model, node_id, unit, exteral_reference, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
     connect(dialog, &RemoveNode::SReplaceNode, sql, &Sqlite::RReplaceNode);
     dialog->exec();
 }
 
-void MainWindow::RemoveTrans(QWidget* widget)
+void MainWindow::RemoveTrans(TableWidget* table_widget)
 {
     // 1. 获取视图和检查选择
-    auto view { GetQTableView(widget) };
+    auto view { table_widget->View() };
     if (!view || !HasSelection(view)) {
         return;
     }
@@ -873,7 +882,7 @@ void MainWindow::RemoveTrans(QWidget* widget)
     }
 
     // 2. 获取模型和当前索引
-    auto model { GetTableModel(widget) };
+    auto model { table_widget->Model() };
     if (!model) {
         return;
     }
@@ -906,9 +915,9 @@ void MainWindow::RemoveTrans(QWidget* widget)
         view->setCurrentIndex(new_index);
 }
 
-void MainWindow::RemoveView(PTreeModel model, const QModelIndex& index, int node_id)
+void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id)
 {
-    model->RemoveNode(index.row(), index.parent());
+    tree_model->RemoveNode(index.row(), index.parent());
     auto widget { table_hash_->value(node_id) };
 
     if (widget) {
@@ -975,16 +984,16 @@ void MainWindow::Recent()
     SetClearMenuAction();
 }
 
-void MainWindow::RemoveBranch(PTreeModel model, const QModelIndex& index, int node_id)
+void MainWindow::RemoveBranch(PTreeModel tree_model, const QModelIndex& index, int node_id)
 {
     QMessageBox msg {};
     msg.setIcon(QMessageBox::Question);
-    msg.setText(tr("Remove %1").arg(model->GetPath(node_id)));
+    msg.setText(tr("Remove %1").arg(tree_model->GetPath(node_id)));
     msg.setInformativeText(tr("The branch will be removed, and its direct children will be promoted to the same level."));
     msg.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
 
     if (msg.exec() == QMessageBox::Ok)
-        model->RemoveNode(index.row(), index.parent());
+        tree_model->RemoveNode(index.row(), index.parent());
 }
 
 void MainWindow::RTabCloseRequested(int index)

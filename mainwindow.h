@@ -166,10 +166,10 @@ private:
     void SwitchTab(int node_id, int trans_id = 0) const;
     bool LockFile(CString& absolute_path, CString& complete_base_name) const;
 
-    void RemoveTrans(QWidget* widget);
-    void RemoveNode(PQTreeView view, PTreeModel model);
-    void RemoveView(PTreeModel model, const QModelIndex& index, int node_id);
-    void RemoveBranch(PTreeModel model, const QModelIndex& index, int node_id);
+    void RemoveTrans(TableWidget* table_widget);
+    void RemoveNode(TreeWidget* tree_widget);
+    void RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id);
+    void RemoveBranch(PTreeModel tree_model, const QModelIndex& index, int node_id);
 
     void UpdateInterface(const Interface& interface);
     void UpdateTranslate() const;
