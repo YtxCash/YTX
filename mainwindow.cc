@@ -250,7 +250,8 @@ void MainWindow::RInsertTriggered()
         return;
 
     if (IsTableWidget(widget)) {
-        AppendTrans(widget);
+        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
+        AppendTrans(static_cast<TableWidget*>(widget));
     }
 }
 
@@ -801,10 +802,10 @@ void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, in
     auto section { data_->info.section };
 
     if (section == Section::kSales || section == Section::kPurchase)
-        InsertNodePS(section, model, node, parent, row);
+        InsertNodePS(node, parent, row);
 
     if (section != Section::kSales && section != Section::kPurchase)
-        InsertNodeFPST(section, model, node, parent, parent_id, row);
+        InsertNodeFPST(node, parent, parent_id, row);
 }
 
 void MainWindow::RRemoveTriggered()
@@ -1373,12 +1374,12 @@ void MainWindow::RAppendNodeTriggered()
     InsertNodeFunction(parent_index, parent_id, 0);
 }
 
-void MainWindow::AppendTrans(QWidget* table_widget)
+void MainWindow::AppendTrans(TableWidget* table_widget)
 {
     if (!table_widget)
         return;
 
-    auto model { GetTableModel(table_widget) };
+    auto model { table_widget->Model() };
     if (!model)
         return;
 
@@ -1430,7 +1431,7 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
 {
     Q_UNUSED(pos);
 
-    auto menu = new QMenu(this);
+    auto* menu = new QMenu(this);
     menu->addAction(ui->actionInsert);
     menu->addAction(ui->actionEdit);
     menu->addAction(ui->actionAppendNode);
@@ -1441,12 +1442,11 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
 
 void MainWindow::REditNode()
 {
-    const auto& info { data_->info };
-    auto section { info.section };
+    auto section { data_->info.section };
     if (section == Section::kSales || section == Section::kPurchase)
         return;
 
-    const auto widget { ui->tabWidget->currentWidget() };
+    const auto* widget { ui->tabWidget->currentWidget() };
     if (!widget || !IsTreeWidget(widget))
         return;
 
@@ -1459,16 +1459,18 @@ void MainWindow::REditNode()
         return;
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
-
-    EditNodeFPTS(section, node_id, index, info.unit_hash);
+    EditNodeFPTS(index, node_id);
 }
 
-void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash)
+void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 {
+    auto section { data_->info.section };
+    const auto& unit_hash { data_->info.unit_hash };
+
     QDialog* dialog {};
     auto model { tree_widget_->Model() };
 
-    auto tmp_node { ResourcePool<Node>::Instance().Allocate() };
+    auto* tmp_node { ResourcePool<Node>::Instance().Allocate() };
     model->CopyNode(tmp_node, node_id);
 
     const auto& parent { index.parent() };
@@ -1478,7 +1480,7 @@ void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& i
         parent_path += interface_.separator;
 
     const auto& name_list { model->ChildrenName(parent_id, node_id) };
-    const auto& sqlite { data_->sql };
+    const auto* sqlite { data_->sql };
 
     bool is_not_referenced { !sqlite->InternalReference(node_id) && !sqlite->ExternalReference(node_id) };
     bool branch_enable { is_not_referenced && model->ChildrenEmpty(node_id) && !table_hash_->contains(node_id) };
@@ -1508,8 +1510,11 @@ void MainWindow::EditNodeFPTS(Section section, int node_id, const QModelIndex& i
     ResourcePool<Node>::Instance().Recycle(tmp_node);
 }
 
-void MainWindow::InsertNodeFPST(Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int parent_id, int row)
+void MainWindow::InsertNodeFPST(Node* node, const QModelIndex& parent, int parent_id, int row)
 {
+    auto tree_model { tree_widget_->Model() };
+    auto section { data_->info.section };
+
     auto parent_path { tree_model->GetPath(parent_id) };
     if (!parent_path.isEmpty())
         parent_path += interface_.separator;
@@ -1548,15 +1553,18 @@ void MainWindow::InsertNodeFPST(Section section, PTreeModel tree_model, Node* no
     dialog->exec();
 }
 
-void MainWindow::InsertNodePS(Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int row)
+void MainWindow::InsertNodePS(Node* node, const QModelIndex& parent, int row)
 {
-    InsertNodeOrder* dialog {};
-    auto sql { data_->sql };
+    auto tree_model { tree_widget_->Model() };
 
     auto node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadow(node_shadow, node);
     if (!node_shadow->id)
         return;
+
+    InsertNodeOrder* dialog {};
+    auto section { data_->info.section };
+    auto* sql { data_->sql };
 
     auto table_model { new TableModelOrder(sql, node->rule, 0, data_->info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
 

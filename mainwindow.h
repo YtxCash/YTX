@@ -157,13 +157,12 @@ private:
 
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
-    void InsertNodeFPST(
-        Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
-    void InsertNodePS(Section section, PTreeModel tree_model, Node* node, const QModelIndex& parent, int row); // Purchase Sales
+    void InsertNodeFPST(Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
+    void InsertNodePS(Node* node, const QModelIndex& parent, int row); // Purchase Sales
 
-    void AppendTrans(QWidget* table_widget);
+    void AppendTrans(TableWidget* table_widget);
 
-    void EditNodeFPTS(Section section, int node_id, const QModelIndex& index, CStringHash& unit_hash); // Finance Product Stakeholder Task
+    void EditNodeFPTS(const QModelIndex& index, int node_id); // Finance Product Stakeholder Task
     void SwitchTab(int node_id, int trans_id = 0) const;
     bool LockFile(CString& absolute_path, CString& complete_base_name) const;
 
