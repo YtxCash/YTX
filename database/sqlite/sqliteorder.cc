@@ -1,7 +1,10 @@
 #include "sqliteorder.h"
 
+#include <QDate>
+#include <QSqlError>
 #include <QSqlQuery>
 
+#include "component/constvalue.h"
 #include "global/resourcepool.h"
 
 SqliteOrder::SqliteOrder(CInfo& info, QObject* parent)
@@ -11,12 +14,47 @@ SqliteOrder::SqliteOrder(CInfo& info, QObject* parent)
 {
 }
 
+bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const QDate& end_date)
+{
+    CString& string { ReadNodeQS() };
+    if (string.isEmpty())
+        return false;
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+    query.prepare(string);
+
+    query.bindValue(":start_date", start_date.toString(DATE_FST));
+    query.bindValue(":end_date", end_date.toString(DATE_FST));
+
+    if (!query.exec()) {
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadNode" << query.lastError().text();
+        return false;
+    }
+
+    Node* node {};
+    int id {};
+    while (query.next()) {
+        id = query.value("id").toInt();
+
+        if (node_hash.contains(id))
+            continue;
+
+        node = ResourcePool<Node>::Instance().Allocate();
+        ReadNodeQuery(node, query);
+        node_hash.insert(node->id, node);
+    }
+
+    ReadRelationship(node_hash, query);
+    return true;
+}
+
 QString SqliteOrder::ReadNodeQS() const
 {
     return QString(R"(
     SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, amount, settled
     FROM %1
-    WHERE removed = 0
+    WHERE ((DATE(date_time) BETWEEN :start_date AND :end_date) OR branch = true) AND removed = 0
     )")
         .arg(node_);
 }

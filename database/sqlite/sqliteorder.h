@@ -9,6 +9,9 @@ class SqliteOrder final : public Sqlite {
 public:
     SqliteOrder(CInfo& info, QObject* parent = nullptr);
 
+public:
+    bool ReadNode(NodeHash& node_hash, const QDate& start_date, const QDate& end_date);
+
 protected:
     // tree
     void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;

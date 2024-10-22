@@ -1,6 +1,9 @@
 #ifndef TREEMODELORDER_H
 #define TREEMODELORDER_H
 
+#include <QDate>
+
+#include "database/sqlite/sqliteorder.h"
 #include "tree/model/treemodel.h"
 
 class TreeModelOrder final : public TreeModel {
@@ -30,8 +33,9 @@ public:
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
 
+    void ConstructTreeOrder(const QDate& start_date, const QDate& end_date);
+
 protected:
-    void ConstructTree() override;
     bool UpdateRule(Node* node, bool value) override; // charge = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
     bool UpdateName(Node* node, CString& value) override;
@@ -40,6 +44,9 @@ protected:
 
 private:
     bool UpdateLocked(Node* node, bool value);
+
+private:
+    SqliteOrder* sql_ {};
 };
 
 #endif // TREEMODELORDER_H

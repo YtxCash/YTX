@@ -9,8 +9,8 @@
 
 TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel { sql, info, default_unit, table_hash, separator, parent }
+    , sql_ { static_cast<SqliteOrder*>(sql) }
 {
-    TreeModelOrder::ConstructTree();
 }
 
 void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
@@ -118,9 +118,9 @@ void TreeModelOrder::UpdateAncestorValue(Node* node, double first_diff, double s
         emit dataChanged(index(ancestor.first().row(), column_begin), index(ancestor.last().row(), column_end), { Qt::DisplayRole });
 }
 
-void TreeModelOrder::ConstructTree()
+void TreeModelOrder::ConstructTreeOrder(const QDate& start_date, const QDate& end_date)
 {
-    sql_->ReadNode(node_hash_);
+    sql_->ReadNode(node_hash_, start_date, end_date);
 
     const auto& const_node_hash { std::as_const(node_hash_) };
 
