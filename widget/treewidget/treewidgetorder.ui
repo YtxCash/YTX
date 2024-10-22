@@ -34,10 +34,19 @@
    </item>
    <item row="0" column="0">
     <widget class="QGroupBox" name="treeWidgetOrder">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="title">
       <string/>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>-1</number>
+      </property>
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -51,16 +60,29 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QDateEdit" name="dateEditStart">
+       <widget class="DateEdit" name="dateEditStart">
+        <property name="frame">
+         <bool>false</bool>
+        </property>
         <property name="calendarPopup">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QDateEdit" name="dateEditEnd">
+       <widget class="DateEdit" name="dateEditEnd">
+        <property name="frame">
+         <bool>false</bool>
+        </property>
         <property name="calendarPopup">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pBtnRefresh">
+        <property name="text">
+         <string>Refresh</string>
         </property>
        </widget>
       </item>
@@ -82,6 +104,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DateEdit</class>
+   <extends>QDateEdit</extends>
+   <header location="global">widget/dateedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

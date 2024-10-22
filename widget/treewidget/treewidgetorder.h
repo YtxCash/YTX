@@ -3,6 +3,7 @@
 
 #include "component/info.h"
 #include "component/settings.h"
+#include "tree/model/treemodelorder.h"
 #include "treewidget.h"
 
 namespace Ui {
@@ -23,10 +24,15 @@ public:
     QPointer<QTreeView> View() const override;
     QPointer<TreeModel> Model() const override { return model_; };
 
+private slots:
+    void on_pBtnRefresh_clicked();
+
 private:
     Ui::TreeWidgetOrder* ui;
+    QDate start_ {};
+    QDate end_ {};
 
-    TreeModel* model_ {};
+    TreeModelOrder* model_ {};
     CInfo& info_;
     const Settings& settings_;
 };
