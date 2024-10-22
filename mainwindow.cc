@@ -14,9 +14,8 @@
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "database/sqlite/sqlitefinance.h"
+#include "database/sqlite/sqliteorder.h"
 #include "database/sqlite/sqliteproduct.h"
-#include "database/sqlite/sqlitepurchase.h"
-#include "database/sqlite/sqlitesales.h"
 #include "database/sqlite/sqlitestakeholder.h"
 #include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
@@ -1229,7 +1228,7 @@ void MainWindow::SetSalesData()
 
     sql_.QuerySettings(sales_settings_, section);
 
-    sql = new SqliteSales(info, this);
+    sql = new SqliteOrder(info, this);
 
     auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this) };
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
@@ -1261,7 +1260,7 @@ void MainWindow::SetPurchaseData()
 
     sql_.QuerySettings(purchase_settings_, section);
 
-    sql = new SqlitePurchase(info, this);
+    sql = new SqliteOrder(info, this);
 
     auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this) };
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);

@@ -1,13 +1,13 @@
-#ifndef SQLITEPURCHASE_H
-#define SQLITEPURCHASE_H
+#ifndef SQLITEORDER_H
+#define SQLITEORDER_H
 
 #include "sqlite.h"
 
-class SqlitePurchase final : public Sqlite {
+class SqliteOrder final : public Sqlite {
     Q_OBJECT
 
 public:
-    SqlitePurchase(CInfo& info, QObject* parent = nullptr);
+    SqliteOrder(CInfo& info, QObject* parent = nullptr);
 
 protected:
     // tree
@@ -36,6 +36,10 @@ protected:
     QString RUpdateStakeholderReferenceQS() const override;
     QString SearchTransQS() const override;
     QString UpdateTransValueQS() const override;
+
+private:
+    CString& node_;
+    CString& transaction_;
 };
 
-#endif // SQLITEPURCHASE_H
+#endif // SQLITEORDER_H
