@@ -133,7 +133,7 @@ void Preferences::IniStringList()
     operation_list_.emplaceBack(MINUS);
 
     date_format_list_.emplaceBack(DATE_TIME_FST);
-    date_format_list_.emplaceBack(DATE_TIME_SND);
+    date_format_list_.emplaceBack(DATE_FST);
 }
 
 void Preferences::on_pBtnApply_clicked() { emit SUpdateSettings(settings_, interface_); }

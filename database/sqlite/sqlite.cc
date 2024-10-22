@@ -835,6 +835,9 @@ bool Sqlite::DBTransaction(std::function<bool()> function) const
 
 bool Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query) const
 {
+    if (node_hash.isEmpty())
+        return false;
+
     auto part = QString(R"(
     SELECT ancestor, descendant
     FROM %1
@@ -859,6 +862,9 @@ bool Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query) const
 
         ancestor = node_hash.value(ancestor_id);
         descendant = node_hash.value(descendant_id);
+
+        if (!ancestor || !descendant)
+            continue;
 
         ancestor->children.emplaceBack(descendant);
         descendant->parent = ancestor;

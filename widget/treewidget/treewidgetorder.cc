@@ -12,6 +12,10 @@ TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSettings& setti
     , settings_ { settings }
 {
     ui->setupUi(this);
+
+    ui->dateEditStart->setDisplayFormat(DATE_FST);
+    ui->dateEditEnd->setDisplayFormat(DATE_FST);
+
     ui->dateEditStart->setDate(start_);
     ui->dateEditEnd->setDate(end_);
 
