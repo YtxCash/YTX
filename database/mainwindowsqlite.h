@@ -21,7 +21,8 @@ private:
     QString NodeStakeholder();
     QString NodeProduct();
     QString NodeTask();
-    QString NodeOrder(CString& table_name);
+    QString NodeSales();
+    QString NodePurchase();
 
     QString Path(CString& table_name);
 
@@ -29,7 +30,8 @@ private:
     QString TransactionTask();
     QString TransactionProduct();
     QString TransactionStakeholder();
-    QString TransactionOrder(CString& table_name);
+    QString TransactionSales();
+    QString TransactionPurchase();
 
 private:
     QSqlDatabase* db_ {};

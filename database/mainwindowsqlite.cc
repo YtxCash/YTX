@@ -97,13 +97,13 @@ void MainwindowSqlite::NewFile(CString& file_path)
     QString stakeholder_path = Path(STAKEHOLDER_PATH);
     QString stakeholder_transaction = TransactionStakeholder();
 
-    QString purchase = NodeOrder(PURCHASE);
+    QString purchase = NodePurchase();
     QString purchase_path = Path(PURCHASE_PATH);
-    QString purchase_transaction = TransactionOrder(PURCHASE_TRANSACTION);
+    QString purchase_transaction = TransactionPurchase();
 
-    QString sales = NodeOrder(SALES);
+    QString sales = NodeSales();
     QString sales_path = Path(SALES_PATH);
-    QString sales_transaction = TransactionOrder(SALES_TRANSACTION);
+    QString sales_transaction = TransactionSales();
 
     QString settings = QStringLiteral(R"(
     CREATE TABLE IF NOT EXISTS settings (
@@ -239,10 +239,10 @@ QString MainwindowSqlite::NodeTask()
     )");
 }
 
-QString MainwindowSqlite::NodeOrder(CString& table_name)
+QString MainwindowSqlite::NodeSales()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS sales (
         id                INTEGER PRIMARY KEY AUTOINCREMENT,
         name              TEXT,
         code              TEXT,
@@ -262,8 +262,33 @@ QString MainwindowSqlite::NodeOrder(CString& table_name)
         settled           NUMERIC,
         removed           BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
+}
+
+QString MainwindowSqlite::NodePurchase()
+{
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS purchase (
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        name              TEXT,
+        code              TEXT,
+        description       TEXT,
+        note              TEXT,
+        rule              BOOLEAN    DEFAULT 0,
+        branch            BOOLEAN    DEFAULT 0,
+        unit              INTEGER,
+        party             INTEGER,
+        employee          INTEGER,
+        date_time         DATE,
+        first             NUMERIC,
+        second            NUMERIC,
+        discount          NUMERIC,
+        locked            BOOLEAN    DEFAULT 0,
+        amount            NUMERIC,
+        settled           NUMERIC,
+        removed           BOOLEAN    DEFAULT 0
+    );
+    )");
 }
 
 QString MainwindowSqlite::Path(CString& table_name)
@@ -301,10 +326,10 @@ QString MainwindowSqlite::TransactionFinance()
     )");
 }
 
-QString MainwindowSqlite::TransactionOrder(CString& table_name)
+QString MainwindowSqlite::TransactionSales()
 {
-    return QString(R"(
-    CREATE TABLE IF NOT EXISTS %1 (
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS sales_transaction (
         id                  INTEGER PRIMARY KEY AUTOINCREMENT,
         code                TEXT,
         inside_product      INTEGER,
@@ -320,8 +345,29 @@ QString MainwindowSqlite::TransactionOrder(CString& table_name)
         outside_product     INTEGER,
         removed             BOOLEAN    DEFAULT 0
     );
-)")
-        .arg(table_name);
+    )");
+}
+
+QString MainwindowSqlite::TransactionPurchase()
+{
+    return QStringLiteral(R"(
+    CREATE TABLE IF NOT EXISTS purchase_transaction (
+        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+        code                TEXT,
+        inside_product      INTEGER,
+        first               NUMERIC,
+        second              NUMERIC,
+        description         TEXT,
+        unit_price          NUMERIC,
+        node_id             INTEGER,
+        discount_price      NUMERIC,
+        amount              NUMERIC,
+        discount            NUMERIC,
+        settled             NUMERIC,
+        outside_product     INTEGER,
+        removed             BOOLEAN    DEFAULT 0
+    );
+    )");
 }
 
 QString MainwindowSqlite::TransactionStakeholder()
