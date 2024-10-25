@@ -486,6 +486,8 @@ void TreeModel::LeafPathBranchPath(QStandardItemModel* combo_model) const
         for (const auto& [id, path] : branch_path_.asKeyValueRange())
             items.emplaceBack(path, id);
 
+        items.emplaceBack(QString(), 0);
+
         return items;
     });
 

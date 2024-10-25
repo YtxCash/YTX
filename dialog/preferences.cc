@@ -19,44 +19,39 @@ Preferences::Preferences(CInfo& info, const TreeModel* model, Interface interfac
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
+    leaf_branch_model_ = new QStandardItemModel(this);
+    model_->LeafPathBranchPath(leaf_branch_model_);
+
     IniStringList();
-    IniDialog(info.unit_hash, date_format_list_);
+    IniDialog(info.unit_hash);
     IniConnect();
 
-    Data();
+    // 使用QTimer延迟执行
+    QTimer::singleShot(100, this, [this, info]() { Data(); });
     DynamicLable(info.section);
 }
 
 Preferences::~Preferences() { delete ui; }
 
-void Preferences::IniDialog(CStringHash& unit_hash, CStringList& date_format_list)
+void Preferences::IniDialog(CStringHash& unit_hash)
 {
     ui->listWidget->setCurrentRow(0);
     ui->stackedWidget->setCurrentIndex(0);
     ui->pBtnOk->setDefault(true);
     this->setWindowTitle(tr("Preferences"));
 
-    IniCombo(ui->comboDateTime, date_format_list);
+    IniCombo(ui->comboDateTime, date_format_list_);
     IniCombo(ui->comboLanguage, language_list_);
     IniCombo(ui->comboSeparator, separator_list_);
     IniCombo(ui->comboTheme, theme_list_);
 
     IniCombo(ui->comboDefaultUnit, unit_hash);
 
-    IniCombo(ui->comboDynamicLhs, model_);
-    IniCombo(ui->comboStatic, model_);
+    ui->comboStatic->setModel(leaf_branch_model_);
+    ui->comboDynamicLhs->setModel(leaf_branch_model_);
+    ui->comboDynamicRhs->setModel(leaf_branch_model_);
+
     IniCombo(ui->comboOperation, operation_list_);
-    IniCombo(ui->comboDynamicRhs, model_);
-}
-
-void Preferences::IniCombo(QComboBox* combo, const TreeModel* model)
-{
-    // 不需要接收更新combo model的信号
-    auto* combo_model_ { new QStandardItemModel(this) };
-    model->LeafPathBranchPath(combo_model_);
-    combo->setModel(combo_model_);
-
-    combo->model()->sort(0);
 }
 
 void Preferences::IniCombo(QComboBox* combo, CStringList& list)
@@ -97,10 +92,6 @@ void Preferences::Data()
     DataCombo(ui->comboDynamicLhs, settings_.dynamic_node_lhs);
     DataCombo(ui->comboOperation, settings_.operation);
     DataCombo(ui->comboDynamicRhs, settings_.dynamic_node_rhs);
-
-    ui->comboDynamicLhs->insertItem(0, QString(), 0);
-    ui->comboDynamicRhs->insertItem(0, QString(), 0);
-    ui->comboStatic->insertItem(0, QString(), 0);
 
     ResizeLine(ui->lineStatic, settings_.static_label);
     ResizeLine(ui->lineDynamic, settings_.dynamic_label);

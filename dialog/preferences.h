@@ -47,8 +47,7 @@ private slots:
     void on_comboSeparator_currentIndexChanged(int index);
 
 private:
-    void IniDialog(CStringHash& unit_hash, CStringList& date_format_list);
-    void IniCombo(QComboBox* combo, const TreeModel* model);
+    void IniDialog(CStringHash& unit_hash);
     void IniCombo(QComboBox* combo, CStringList& list);
     void IniCombo(QComboBox* combo, CStringHash& hash);
 
@@ -69,6 +68,8 @@ private:
     QStringList separator_list_ {};
     QStringList operation_list_ {};
     QStringList date_format_list_ {};
+
+    QStandardItemModel* leaf_branch_model_ {};
 
     Interface interface_ {};
     Settings settings_ {};

@@ -52,7 +52,7 @@
    <item row="0" column="2">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QGridLayout" name="gridLayout">
@@ -343,9 +343,6 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-            </property>
             <property name="placeholderText">
              <string>Static Label</string>
             </property>
@@ -371,9 +368,6 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
             </property>
             <property name="placeholderText">
              <string>Dynamic Label</string>
