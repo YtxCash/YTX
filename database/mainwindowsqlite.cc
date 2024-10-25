@@ -114,7 +114,6 @@ void MainwindowSqlite::NewFile(CString& file_path)
         dynamic_node_lhs    INTEGER,
         operation           TEXT,
         dynamic_node_rhs    INTEGER,
-        hide_time           BOOLEAN    DEFAULT 1,
         default_unit        INTEGER,
         document_dir        TEXT,
         amount_decimal      INTEGER    DEFAULT 2,
