@@ -2,13 +2,14 @@
 #define TREEMODELSTAKEHOLDER_H
 
 #include "tree/model/treemodel.h"
+#include "treemodelhelper.h"
 
 class TreeModelStakeholder final : public TreeModel {
     Q_OBJECT
 
 public:
     TreeModelStakeholder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    ~TreeModelStakeholder() override = default;
+    ~TreeModelStakeholder() override;
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -16,15 +17,53 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+    int columnCount(const QModelIndex& /*parent*/ = QModelIndex()) const override { return info_.tree_header.size(); }
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
+    {
+        return TreeModelHelper::headerData(info_, section, orientation, role);
+    }
 
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     void UpdateNode(const Node* tmp_node) override;
-    void UpdateBaseUnit(int default_unit) override { root_->unit = default_unit; }
+    void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
+    void UpdateSeparator(CString& old_separator, CString& new_separator) override;
+    void CopyNode(Node* tmp_node, int node_id) const override;
+    void SetParent(Node* node, int parent_id) const override;
+    QStringList ChildrenName(int node_id, int exclude_child) const override;
+    QString GetPath(int node_id) const override;
+    void LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const override;
+    void LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const override;
+    QModelIndex GetIndex(int node_id) const override;
+    bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
+    bool ChildrenEmpty(int node_id) const override;
+    int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
+    const QString& Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
+    bool Branch(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
+    bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
+    void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
+
+    int Employee(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::employee); }
+    bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
 
 protected:
     bool IsReferenced(int node_id, CString& message) const override;
-    void ConstructTree() override;
     bool UpdateUnit(Node* node, int value) override;
+    Node* GetNodeByIndex(const QModelIndex& index) const override;
+    bool UpdateBranch(Node* node, bool value) override;
+    bool UpdateName(Node* node, CString& value) override;
+    void ConstructTree() override;
+
+private:
+    Sqlite* sql_ {};
+    Node* root_ {};
+
+    NodeHash node_hash_ {};
+    StringHash leaf_path_ {};
+    StringHash branch_path_ {};
+
+    CInfo& info_;
+    CTableHash& table_hash_;
+    CString& separator_;
 };
 
 #endif // TREEMODELSTAKEHOLDER_H

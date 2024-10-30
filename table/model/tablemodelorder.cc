@@ -5,7 +5,7 @@
 TableModelOrder::TableModelOrder(
     Sqlite* sql, bool rule, int node_id, CInfo& info, const NodeShadow* node_shadow, const TreeModel* product_tree, Sqlite* sqlite_stakeholder, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
-    , product_tree_ { product_tree }
+    , product_tree_ { static_cast<const TreeModelProduct*>(product_tree) }
     , sqlite_stakeholder_ { static_cast<SqliteStakeholder*>(sqlite_stakeholder) }
     , node_shadow_ { node_shadow }
 {

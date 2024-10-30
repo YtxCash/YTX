@@ -5,6 +5,7 @@
 
 #include "component/info.h"
 #include "component/using.h"
+#include "database/sqlite/sqlite.h"
 #include "tree/model/treemodel.h"
 
 class SearchNodeModel final : public QAbstractItemModel {

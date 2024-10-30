@@ -1,9 +1,5 @@
 #include "insertnodeorder.h"
 
-#include <QCompleter>
-#include <QMessageBox>
-
-#include "component/constvalue.h"
 #include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_insertnodeorder.h"
@@ -15,7 +11,7 @@ InsertNodeOrder::InsertNodeOrder(
     , node_shadow_ { node_shadow }
     , sql_ { sql }
     , party_unit_ { party_unit }
-    , stakeholder_tree_ { stakeholder_model }
+    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_model) }
     , settings_ { settings }
     , info_node_ { party_unit == UNIT_CUSTOMER ? SALES : PURCHASE }
     , node_id_ { *node_shadow->id }

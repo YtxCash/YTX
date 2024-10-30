@@ -1,15 +1,71 @@
 #include "treemodelproduct.h"
 
-#include <QMimeData>
-#include <QRegularExpression>
-
-#include "component/enumclass.h"
-#include "treemodelhelper.h"
+#include "global/resourcepool.h"
 
 TreeModelProduct::TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
-    : TreeModel { sql, info, default_unit, table_hash, separator, parent }
+    : TreeModel { parent }
+    , sql_ { sql }
+    , info_ { info }
+    , table_hash_ { table_hash }
+    , separator_ { separator }
 {
+    TreeModelHelper::InitializeRoot(root_, default_unit);
     ConstructTree();
+}
+
+TreeModelProduct::~TreeModelProduct() { qDeleteAll(node_hash_); }
+
+void TreeModelProduct::RUpdateLeafValue(
+    int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
+{
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
+    if (!node || node == root_ || node->branch)
+        return;
+
+    if (initial_credit_diff == 0 && initial_debit_diff == 0 && final_debit_diff == 0 && final_credit_diff == 0)
+        return;
+
+    bool rule { node->rule };
+
+    double initial_diff { (rule ? 1 : -1) * (initial_credit_diff - initial_debit_diff) };
+    double final_diff { (rule ? 1 : -1) * (final_credit_diff - final_debit_diff) };
+
+    node->initial_total += initial_diff;
+    node->final_total += final_diff;
+
+    sql_->UpdateNodeValue(node);
+    UpdateAncestorValue(node, initial_diff, final_diff);
+    emit SUpdateDSpinBox();
+}
+
+bool TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
+{
+    double old_final_total {};
+    double old_initial_total {};
+    double final_diff {};
+    double initial_diff {};
+    Node* node {};
+
+    for (int node_id : node_list) {
+        node = TreeModelHelper::GetNodeByID(node_hash_, node_id);
+
+        if (!node || node->branch)
+            continue;
+
+        old_final_total = node->final_total;
+        old_initial_total = node->initial_total;
+
+        sql_->LeafTotal(node);
+        sql_->UpdateNodeValue(node);
+
+        final_diff = node->final_total - old_final_total;
+        initial_diff = node->initial_total - old_initial_total;
+
+        UpdateAncestorValue(node, initial_diff, final_diff);
+    }
+
+    emit SUpdateDSpinBox();
+    return true;
 }
 
 void TreeModelProduct::UpdateNode(const Node* tmp_node)
@@ -37,6 +93,125 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->first, UNIT_PRICE, &Node::first);
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->second, COMMISSION, &Node::second);
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->date_time, COLOR, &Node::date_time);
+}
+
+void TreeModelProduct::UpdateSeparator(CString& old_separator, CString& new_separator)
+{
+    TreeModelHelper::UpdateSeparator(leaf_path_, branch_path_, old_separator, new_separator);
+}
+
+void TreeModelProduct::CopyNode(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNode(node_hash_, tmp_node, node_id); }
+
+void TreeModelProduct::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+
+QStringList TreeModelProduct::ChildrenName(int node_id, int exclude_child) const { return TreeModelHelper::ChildrenName(node_hash_, node_id, exclude_child); }
+
+QString TreeModelProduct::GetPath(int node_id) const { return TreeModelHelper::GetPath(leaf_path_, branch_path_, node_id); }
+
+void TreeModelProduct::LeafPathBranchPath(QStandardItemModel* combo_model) const { TreeModelHelper::LeafPathBranchPath(leaf_path_, branch_path_, combo_model); }
+
+void TreeModelProduct::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const
+{
+    TreeModelHelper::LeafPathExcludeID(leaf_path_, combo_model, exclude_id);
+}
+
+void TreeModelProduct::LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
+{
+    TreeModelHelper::LeafPathSpecificUnit(node_hash_, leaf_path_, combo_model, unit, unit_filter_mode);
+}
+
+QModelIndex TreeModelProduct::GetIndex(int node_id) const
+{
+    if (node_id == -1)
+        return QModelIndex();
+
+    auto it = node_hash_.constFind(node_id);
+    if (it == node_hash_.constEnd() || !it.value())
+        return QModelIndex();
+
+    const Node* node { it.value() };
+
+    if (!node->parent)
+        return QModelIndex();
+
+    auto row { node->parent->children.indexOf(node) };
+    if (row == -1)
+        return QModelIndex();
+
+    return createIndex(row, 0, node);
+}
+
+bool TreeModelProduct::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
+
+void TreeModelProduct::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
+{
+    TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
+}
+
+bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
+{
+    if (row <= -1 || row >= rowCount(parent))
+        return false;
+
+    auto* parent_node { GetNodeByIndex(parent) };
+    auto* node { parent_node->children.at(row) };
+
+    int node_id { node->id };
+    bool branch { node->branch };
+
+    beginRemoveRows(parent, row, row);
+    if (branch) {
+        for (auto* child : node->children) {
+            child->parent = parent_node;
+            parent_node->children.emplace_back(child);
+        }
+    }
+    parent_node->children.removeOne(node);
+    endRemoveRows();
+
+    if (branch) {
+        TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+        branch_path_.remove(node_id);
+        sql_->RemoveNode(node_id, true);
+        emit SUpdateName(node);
+    }
+
+    if (!branch) {
+        UpdateAncestorValue(node, -node->initial_total, -node->final_total);
+        leaf_path_.remove(node_id);
+        sql_->RemoveNode(node_id, false);
+    }
+
+    emit SSearch();
+    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SUpdateComboModel();
+
+    ResourcePool<Node>::Instance().Recycle(node);
+    node_hash_.remove(node_id);
+
+    return true;
+}
+
+bool TreeModelProduct::InsertNode(int row, const QModelIndex& parent, Node* node)
+{
+    if (row <= -1)
+        return false;
+
+    auto* parent_node { GetNodeByIndex(parent) };
+
+    beginInsertRows(parent, row, row);
+    parent_node->children.insert(row, node);
+    endInsertRows();
+
+    sql_->WriteNode(parent_node->id, node);
+    node_hash_.insert(node->id, node);
+
+    QString path { TreeModelHelper::ConstructPath(root_, node, separator_) };
+    (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
+
+    emit SSearch();
+    emit SUpdateComboModel();
+    return true;
 }
 
 bool TreeModelProduct::IsReferenced(int node_id, CString& message) const
@@ -75,6 +250,115 @@ bool TreeModelProduct::UpdateUnit(Node* node, int value)
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
     return true;
+}
+
+Node* TreeModelProduct::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
+
+bool TreeModelProduct::UpdateBranch(Node* node, bool value)
+{
+    if (node->branch == value)
+        return false;
+
+    const int node_id { node->id };
+    const QString path { GetPath(node_id) };
+    QString message {};
+
+    message = tr("Cannot change %1 branch,").arg(path);
+    if (TreeModelHelper::HasChildren(node, message))
+        return false;
+
+    message = tr("Cannot change %1 branch,").arg(path);
+    if (TreeModelHelper::IsOpened(table_hash_, node_id, message))
+        return false;
+
+    message = tr("Cannot change %1 branch,").arg(path);
+    if (IsReferenced(node_id, message))
+        return false;
+
+    node->branch = value;
+    sql_->UpdateField(info_.node, value, BRANCH, node_id);
+
+    (node->branch) ? branch_path_.insert(node_id, leaf_path_.take(node_id)) : leaf_path_.insert(node_id, branch_path_.take(node_id));
+    return true;
+}
+
+void TreeModelProduct::UpdateAncestorValue(
+    Node* node, double initial_diff, double final_diff, double /*amount_diff*/, double /*discount_diff*/, double /*settled_diff*/)
+{
+    if (!node || node == root_ || node->parent == root_ || !node->parent)
+        return;
+
+    if (initial_diff == 0 && final_diff == 0)
+        return;
+
+    bool equal {};
+    const int unit { node->unit };
+    const bool rule { node->rule };
+
+    for (node = node->parent; node && node != root_; node = node->parent) {
+        equal = node->rule == rule;
+        node->final_total += (equal ? 1 : -1) * final_diff;
+
+        if (node->unit == unit)
+            node->initial_total += (equal ? 1 : -1) * initial_diff;
+    }
+}
+
+bool TreeModelProduct::UpdateName(Node* node, CString& value)
+{
+    node->name = value;
+    sql_->UpdateField(info_.node, value, NAME, node->id);
+
+    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SSearch();
+    return true;
+}
+
+bool TreeModelProduct::UpdateRule(Node* node, bool value)
+{
+    if (node->rule == value)
+        return false;
+
+    node->rule = value;
+    sql_->UpdateField(info_.node, value, RULE, node->id);
+
+    node->final_total = -node->final_total;
+    node->initial_total = -node->initial_total;
+    if (!node->branch) {
+        emit SRule(node->id, value);
+        sql_->UpdateNodeValue(node);
+    }
+
+    return true;
+}
+
+void TreeModelProduct::ConstructTree()
+{
+    sql_->ReadNode(node_hash_);
+    const auto& const_node_hash { std::as_const(node_hash_) };
+
+    for (auto* node : const_node_hash) {
+        if (!node->parent) {
+            node->parent = root_;
+            root_->children.emplace_back(node);
+        }
+    }
+
+    QString path {};
+    for (auto* node : const_node_hash) {
+        path = TreeModelHelper::ConstructPath(root_, node, separator_);
+
+        if (node->branch) {
+            branch_path_.insert(node->id, path);
+            continue;
+        }
+
+        UpdateAncestorValue(node, node->initial_total, node->final_total);
+        leaf_path_.insert(node->id, path);
+    }
+
+    node_hash_.insert(-1, root_);
 }
 
 void TreeModelProduct::sort(int column, Qt::SortOrder order)
@@ -234,4 +518,46 @@ Qt::ItemFlags TreeModelProduct::flags(const QModelIndex& index) const
     }
 
     return flags;
+}
+
+bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+{
+    if (!canDropMimeData(data, action, row, column, parent))
+        return false;
+
+    auto* destination_parent { GetNodeByIndex(parent) };
+    if (!destination_parent->branch)
+        return false;
+
+    int node_id {};
+
+    if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
+        node_id = QVariant(mime).toInt();
+
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
+    if (!node || node->parent == destination_parent || TreeModelHelper::IsDescendant(destination_parent, node))
+        return false;
+
+    auto begin_row { row == -1 ? destination_parent->children.size() : row };
+    auto source_row { node->parent->children.indexOf(node) };
+    auto source_index { createIndex(node->parent->children.indexOf(node), 0, node) };
+
+    if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
+        node->parent->children.removeAt(source_row);
+        UpdateAncestorValue(node, -node->initial_total, -node->final_total);
+
+        destination_parent->children.insert(begin_row, node);
+        node->parent = destination_parent;
+        UpdateAncestorValue(node, node->initial_total, node->final_total);
+
+        endMoveRows();
+    }
+
+    sql_->DragNode(destination_parent->id, node_id);
+    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SUpdateName(node);
+    emit SUpdateComboModel();
+
+    return true;
 }

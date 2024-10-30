@@ -1726,7 +1726,7 @@ void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
         *settings_ = settings;
 
         if (update_default_unit)
-            tree_widget_->Model()->UpdateBaseUnit(settings.default_unit);
+            tree_widget_->Model()->UpdateDefaultUnit(settings.default_unit);
 
         tree_widget_->SetStatus();
         sql_.UpdateSettings(settings, data_->info.section);

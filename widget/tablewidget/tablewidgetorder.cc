@@ -1,7 +1,5 @@
 #include "tablewidgetorder.h"
 
-#include <QMessageBox>
-
 #include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_tablewidgetorder.h"
@@ -14,7 +12,7 @@ TableWidgetOrder::TableWidgetOrder(
     , sql_ { sql }
     , party_unit_ { party_unit }
     , order_table_ { order_table }
-    , stakeholder_tree_ { stakeholder_tree }
+    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_tree) }
     , settings_ { settings }
     , info_node_ { party_unit == UNIT_CUSTOMER ? SALES : PURCHASE }
     , node_id_ { *node_shadow->id }
@@ -35,6 +33,7 @@ TableWidgetOrder::TableWidgetOrder(
         IniDialog();
         IniData();
         ui->tableViewOrder->setFocus();
+        QTimer::singleShot(100, this, [this]() { IniDataCombo(); });
     }
 
     IniUnit(*node_shadow_->unit);
@@ -172,12 +171,6 @@ void TableWidgetOrder::IniDialog()
 
 void TableWidgetOrder::IniData()
 {
-    int party_index { ui->comboParty->findData(*node_shadow_->party) };
-    ui->comboParty->setCurrentIndex(party_index);
-
-    int employee_index { ui->comboEmployee->findData(*node_shadow_->employee) };
-    ui->comboEmployee->setCurrentIndex(employee_index);
-
     ui->dSpinSettled->setValue(*node_shadow_->final_total);
     ui->dSpinDiscount->setValue(*node_shadow_->discount);
     ui->dSpinFirst->setValue(*node_shadow_->first);
@@ -191,6 +184,15 @@ void TableWidgetOrder::IniData()
     ui->pBtnLockOrder->setChecked(*node_shadow_->locked);
 
     ui->tableViewOrder->setModel(order_table_);
+}
+
+void TableWidgetOrder::IniDataCombo()
+{
+    int party_index { ui->comboParty->findData(*node_shadow_->party) };
+    ui->comboParty->setCurrentIndex(party_index);
+
+    int employee_index { ui->comboEmployee->findData(*node_shadow_->employee) };
+    ui->comboEmployee->setCurrentIndex(employee_index);
 }
 
 void TableWidgetOrder::LockWidgets(bool locked, bool branch)

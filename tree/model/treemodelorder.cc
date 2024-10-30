@@ -1,18 +1,18 @@
 #include "treemodelorder.h"
 
-#include <QMimeData>
-#include <QRegularExpression>
-
-#include "component/constvalue.h"
-#include "component/enumclass.h"
 #include "global/resourcepool.h"
-#include "treemodelhelper.h"
 
 TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
-    : TreeModel { sql, info, default_unit, table_hash, separator, parent }
+    : TreeModel { parent }
     , sql_ { static_cast<SqliteOrder*>(sql) }
+    , info_ { info }
+    , table_hash_ { table_hash }
+    , separator_ { separator }
 {
+    TreeModelHelper::InitializeRoot(root_, default_unit);
 }
+
+TreeModelOrder::~TreeModelOrder() { qDeleteAll(node_hash_); }
 
 void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
@@ -119,6 +119,8 @@ void TreeModelOrder::UpdateAncestorValue(Node* node, double first_diff, double s
         emit dataChanged(index(ancestor.first().row(), column_begin), index(ancestor.last().row(), column_end), { Qt::DisplayRole });
 }
 
+Node* TreeModelOrder::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
+
 void TreeModelOrder::ConstructTreeOrder(const QDate& start_date, const QDate& end_date)
 {
     sql_->ReadNode(node_hash_, start_date, end_date);
@@ -137,6 +139,61 @@ void TreeModelOrder::ConstructTreeOrder(const QDate& start_date, const QDate& en
             UpdateAncestorValue(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 
     node_hash_.insert(-1, root_);
+}
+
+void TreeModelOrder::UpdateSeparator(CString& old_separator, CString& new_separator)
+{
+    TreeModelHelper::UpdateSeparator(leaf_path_, branch_path_, old_separator, new_separator);
+}
+
+void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+
+QString TreeModelOrder::GetPath(int node_id) const { return TreeModelHelper::GetPath(leaf_path_, branch_path_, node_id); }
+
+void TreeModelOrder::SetNodeShadow(NodeShadow* node_shadow, int node_id) const
+{
+    if (!node_shadow || node_id <= 0)
+        return;
+
+    auto it { node_hash_.constFind(node_id) };
+    if (it != node_hash_.constEnd() && it.value())
+        node_shadow->Set(it.value());
+}
+
+void TreeModelOrder::SetNodeShadow(NodeShadow* node_shadow, Node* node) const
+{
+    if (!node_shadow || !node)
+        return;
+
+    node_shadow->Set(node);
+}
+
+QModelIndex TreeModelOrder::GetIndex(int node_id) const
+{
+    if (node_id == -1)
+        return QModelIndex();
+
+    auto it = node_hash_.constFind(node_id);
+    if (it == node_hash_.constEnd() || !it.value())
+        return QModelIndex();
+
+    const Node* node { it.value() };
+
+    if (!node->parent)
+        return QModelIndex();
+
+    auto row { node->parent->children.indexOf(node) };
+    if (row == -1)
+        return QModelIndex();
+
+    return createIndex(row, 0, node);
+}
+
+bool TreeModelOrder::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
+
+void TreeModelOrder::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
+{
+    TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
 }
 
 bool TreeModelOrder::UpdateRule(Node* node, bool value)

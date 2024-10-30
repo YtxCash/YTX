@@ -3,6 +3,7 @@
 #include <QCompleter>
 #include <QDir>
 #include <QFileDialog>
+#include <QTimer>
 
 #include "component/constvalue.h"
 #include "dialog/signalblocker.h"

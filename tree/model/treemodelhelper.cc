@@ -84,7 +84,7 @@ void TreeModelHelper::InitializeRoot(Node*& root, int default_unit)
     assert(root != nullptr && "Root node should not be null after initialization");
 }
 
-Node* TreeModelHelper::GetNodeByID(const NodeHash& node_hash, int node_id)
+Node* TreeModelHelper::GetNodeByID(CNodeHash& node_hash, int node_id)
 {
     if (auto it = node_hash.constFind(node_id); it != node_hash.constEnd())
         return it.value();
@@ -191,7 +191,7 @@ bool TreeModelHelper::IsOpened(CTableHash& table_hash, int node_id, CString& mes
     return false;
 }
 
-void TreeModelHelper::SearchNode(const NodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list)
+void TreeModelHelper::SearchNode(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list)
 {
     node_list.reserve(node_id_list.size());
 
@@ -203,13 +203,11 @@ void TreeModelHelper::SearchNode(const NodeHash& node_hash, QList<const Node*>& 
     }
 }
 
-bool TreeModelHelper::ChildrenEmpty(const NodeHash& node_hash, int node_id)
+bool TreeModelHelper::ChildrenEmpty(CNodeHash& node_hash, int node_id)
 {
     auto it { node_hash.constFind(node_id) };
     return (it == node_hash.constEnd()) ? true : it.value()->children.isEmpty();
 }
-
-bool TreeModelHelper::Contains(const NodeHash& node_hash, int node_id) { return node_hash.contains(node_id); }
 
 void TreeModelHelper::UpdateSeparator(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator)
 {
@@ -225,7 +223,7 @@ void TreeModelHelper::UpdateSeparator(StringHash& leaf_path, StringHash& branch_
     UpdatePaths(branch_path);
 }
 
-void TreeModelHelper::CopyNode(const NodeHash& node_hash, Node* tmp_node, int node_id)
+void TreeModelHelper::CopyNode(CNodeHash& node_hash, Node* tmp_node, int node_id)
 {
     if (!tmp_node)
         return;
@@ -237,7 +235,7 @@ void TreeModelHelper::CopyNode(const NodeHash& node_hash, Node* tmp_node, int no
     *tmp_node = *(it.value());
 }
 
-void TreeModelHelper::SetParent(const NodeHash& node_hash, Node* node, int parent_id)
+void TreeModelHelper::SetParent(CNodeHash& node_hash, Node* node, int parent_id)
 {
     if (!node)
         return;
@@ -247,7 +245,7 @@ void TreeModelHelper::SetParent(const NodeHash& node_hash, Node* node, int paren
     node->parent = it == node_hash.constEnd() ? nullptr : it.value();
 }
 
-QStringList TreeModelHelper::ChildrenName(const NodeHash& node_hash, int node_id, int exclude_child)
+QStringList TreeModelHelper::ChildrenName(CNodeHash& node_hash, int node_id, int exclude_child)
 {
     auto it { node_hash.constFind(node_id) };
     if (it == node_hash.constEnd())
@@ -280,4 +278,104 @@ void TreeModelHelper::UpdateComboModel(QStandardItemModel* combo_model, const QV
     }
 
     combo_model->sort(0);
+}
+
+void TreeModelHelper::LeafPathBranchPath(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model)
+{
+    if (!combo_model)
+        return;
+
+    auto future = QtConcurrent::run([&]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path.size() + branch_path.size());
+
+        for (const auto& [id, path] : leaf_path.asKeyValueRange())
+            items.emplaceBack(path, id);
+
+        for (const auto& [id, path] : branch_path.asKeyValueRange())
+            items.emplaceBack(path, id);
+
+        items.emplaceBack(QString(), 0);
+
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    QObject::connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, watcher, [watcher, combo_model]() {
+        TreeModelHelper::UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
+}
+
+void TreeModelHelper::LeafPathExcludeID(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id)
+{
+    if (!combo_model)
+        return;
+
+    auto future = QtConcurrent::run([&]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path.size());
+
+        for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
+            if (id != exclude_id)
+                items.emplaceBack(path, id);
+        }
+
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    QObject::connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, watcher, [watcher, combo_model]() {
+        TreeModelHelper::UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
+}
+
+void TreeModelHelper::LeafPathSpecificUnit(
+    CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode)
+{
+    if (!combo_model)
+        return;
+
+    auto future = QtConcurrent::run([&]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path.size());
+
+        auto should_add = [unit, unit_filter_mode](const Node* node) {
+            switch (unit_filter_mode) {
+            case UnitFilterMode::kIncludeUnitOnlyWithEmpty:
+            case UnitFilterMode::kIncludeUnitOnly:
+                return node->unit == unit;
+            case UnitFilterMode::kExcludeUnitOnly:
+                return node->unit != unit;
+            default:
+                return true;
+            }
+        };
+
+        if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty) {
+            items.emplaceBack(QString(), 0);
+        }
+
+        for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
+            auto it = node_hash.constFind(id);
+            if (it != node_hash.constEnd() && should_add(it.value())) {
+                items.emplaceBack(path, id);
+            }
+        }
+
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    QObject::connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, watcher, [watcher, combo_model]() {
+        TreeModelHelper::UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
 }

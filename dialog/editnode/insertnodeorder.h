@@ -1,11 +1,10 @@
 #ifndef INSERTNODEORDER_H
 #define INSERTNODEORDER_H
 
-#include <QComboBox>
 #include <QDialog>
 
 #include "component/settings.h"
-#include "tree/model/treemodel.h"
+#include "tree/model/treemodelstakeholder.h"
 
 namespace Ui {
 class InsertNodeOrder;
@@ -63,7 +62,7 @@ private:
     NodeShadow* node_shadow_ {};
     Sqlite* sql_ {};
     int party_unit_ {};
-    TreeModel* stakeholder_tree_ {};
+    TreeModelStakeholder* stakeholder_tree_ {};
     CSettings& settings_;
 
     QStandardItemModel* combo_model_employee_ {};

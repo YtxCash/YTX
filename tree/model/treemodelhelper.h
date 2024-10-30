@@ -21,8 +21,6 @@ public:
         return QVariant();
     }
 
-    static int columnCount(const Info& info) { return info.tree_header.size(); }
-
     // Ytx's public
     static QString GetPath(CStringHash& leaf_path, CStringHash& branch_path, int node_id);
 
@@ -50,7 +48,7 @@ public:
         return true;
     }
 
-    template <typename T> static const T& GetValue(const NodeHash& node_hash, int node_id, T Node::* member)
+    template <typename T> static const T& GetValue(CNodeHash& node_hash, int node_id, T Node::* member)
     {
         if (auto it = node_hash.constFind(node_id); it != node_hash.constEnd())
             return it.value()->*member;
@@ -68,21 +66,23 @@ public:
     static void UpdateBranchUnit(const Node* root, Node* node);
     static void UpdatePath(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator);
     static void InitializeRoot(Node*& root, int default_unit);
-    static Node* GetNodeByID(const NodeHash& node_hash, int node_id);
+    static Node* GetNodeByID(CNodeHash& node_hash, int node_id);
     static bool IsDescendant(Node* lhs, Node* rhs);
     static void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare);
     static QString ConstructPath(const Node* root, const Node* node, CString& separator);
     static void ShowTemporaryTooltip(CString& message, int duration);
     static bool HasChildren(Node* node, CString& message);
     static bool IsOpened(CTableHash& table_hash, int node_id, CString& message);
-    static void SearchNode(const NodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list);
-    static bool ChildrenEmpty(const NodeHash& node_hash, int node_id);
-    static bool Contains(const NodeHash& node_hash, int node_id);
+    static void SearchNode(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list);
+    static bool ChildrenEmpty(CNodeHash& node_hash, int node_id);
     static void UpdateSeparator(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator);
-    static void CopyNode(const NodeHash& node_hash, Node* tmp_node, int node_id);
-    static void SetParent(const NodeHash& node_hash, Node* node, int parent_id);
-    static QStringList ChildrenName(const NodeHash& node_hash, int node_id, int exclude_child);
+    static void CopyNode(CNodeHash& node_hash, Node* tmp_node, int node_id);
+    static void SetParent(CNodeHash& node_hash, Node* node, int parent_id);
+    static QStringList ChildrenName(CNodeHash& node_hash, int node_id, int exclude_child);
     static void UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items);
+    static void LeafPathBranchPath(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
+    static void LeafPathExcludeID(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
+    static void LeafPathSpecificUnit(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode);
 };
 
 #endif // TREEMODELHELPER_H

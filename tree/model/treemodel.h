@@ -2,25 +2,22 @@
 #define TREEMODEL_H
 
 #include <QAbstractItemModel>
-#include <QComboBox>
 #include <QMimeData>
 #include <QStandardItemModel>
 
 #include "component/constvalue.h"
+#include "component/enumclass.h"
 #include "component/using.h"
-#include "database/sqlite/sqlite.h"
-#include "treemodelhelper.h"
-#include "widget/tablewidget/tablewidget.h"
+#include "tree/node.h"
 
 class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    virtual ~TreeModel();
+    explicit TreeModel(QObject* parent = nullptr);
+    virtual ~TreeModel() = default;
 
 protected:
-    TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-
     TreeModel() = delete;
     TreeModel(const TreeModel&) = delete;
     TreeModel& operator=(const TreeModel&) = delete;
@@ -46,123 +43,86 @@ signals:
 
 public slots:
     // receive from sqlite
-    bool RUpdateMultiLeafTotal(const QList<int>& node_list);
     bool RRemoveNode(int node_id);
 
+    // default impl for order, stakeholder
+    virtual bool RUpdateMultiLeafTotal(const QList<int>& /*node_list*/) { return {}; }
+
     // receive from related table model
-    virtual void RUpdateLeafValueOne(int /*node_id*/, double /*diff*/, CString& /*node_field*/) { };
-    virtual void RUpdateLeafValue(
-        int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff = 0.0);
+    // default impl for finance, stakeholder, product
+    virtual void RUpdateLeafValueOne(int /*node_id*/, double /*diff*/, CString& /*node_field*/) { }
+
+    // default impl for stakeholder
+    virtual void RUpdateLeafValue(int /*node_id*/, double /*initial_debit_diff*/, double /*initial_credit_diff*/, double /*final_debit_diff*/,
+        double /*final_credit_diff*/, double /*settled_diff*/)
+    {
+    }
 
     // receive from table model, member function
     void RSearch() { emit SSearch(); }
 
 public:
-    // virtual functions
-    virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex());
-    virtual bool InsertNode(int row, const QModelIndex& parent, Node* node);
-    virtual void UpdateNode(const Node* tmp_node);
-    virtual void UpdateBaseUnit(int default_unit);
-
-    // implemented functions
+    // Qt's
+    // Default implementations
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
-    void sort(int column, Qt::SortOrder order) override;
-    Qt::ItemFlags flags(const QModelIndex& index) const override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
-    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
-
-    // inline functions
     Qt::DropActions supportedDropActions() const override { return Qt::CopyAction | Qt::MoveAction; }
-    QStringList mimeTypes() const override { return QStringList { "node/id" }; }
+    QStringList mimeTypes() const override { return QStringList { NODE_ID }; }
 
-    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override
+    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int /*row*/, int /*column*/, const QModelIndex& /*parent*/) const override
     {
-        Q_UNUSED(row)
-        Q_UNUSED(column)
-        Q_UNUSED(parent)
-
         return data && data->hasFormat(NODE_ID) && action != Qt::IgnoreAction;
     }
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
-    {
-        if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-            return info_.tree_header.at(section);
+    // Ytx's
+    // Default implementations
+    virtual double InitialTotal(int /*node_id*/) const { return {}; }
+    virtual double FinalTotal(int /*node_id*/) const { return {}; }
 
-        return QVariant();
-    }
+    virtual QStringList ChildrenName(int /*node_id*/, int /*exclude_child*/) const { return {}; }
+    virtual bool Branch(int /*node_id*/) const { return {}; }
 
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override
-    {
-        Q_UNUSED(parent);
-        return info_.tree_header.size();
-    }
+    virtual void SetNodeShadow(NodeShadow* /*node_shadow*/, int /*node_id*/) const { }
+    virtual void SetNodeShadow(NodeShadow* /*node_shadow*/, Node* /*node*/) const { }
+    virtual void LeafPathSpecificUnit(QStandardItemModel* /*combo_model*/, int /*unit*/, UnitFilterMode /*unit_filter_mode*/) const { }
+    virtual void LeafPathBranchPath(QStandardItemModel* /*combo_model*/) const { }
+    virtual void CopyNode(Node* /*tmp_node*/, int /*node_id*/) const { }
+    virtual void LeafPathExcludeID(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
+    virtual void UpdateNode(const Node* /*tmp_node*/) { }
 
-    // member functions
-    void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const;
+    // Core pure virtual functions
+    virtual void UpdateDefaultUnit(int default_unit) = 0;
+    virtual void UpdateSeparator(CString& old_separator, CString& new_separator) = 0;
+    virtual void SetParent(Node* node, int parent_id) const = 0;
+    virtual void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const = 0;
 
-    int Employee(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::employee); }
-    int Unit(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
-    const QString& Name(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
-    const QString& Color(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::date_time); }
-    bool Branch(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
-    bool Rule(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
-    double InitialTotal(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::initial_total); }
-    double FinalTotal(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::final_total); }
-    double First(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::first); }
+    virtual bool Contains(int node_id) const = 0;
+    virtual bool ChildrenEmpty(int node_id) const = 0;
+    virtual bool Rule(int node_id) const = 0;
+    virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) = 0;
+    virtual bool InsertNode(int row, const QModelIndex& parent, Node* node) = 0;
 
-    bool ChildrenEmpty(int node_id) const;
-    bool Contains(int node_id) const { return node_hash_.contains(node_id); }
-
-    QString GetPath(int node_id) const;
-    QModelIndex GetIndex(int node_id) const;
-    void SetNodeShadow(NodeShadow* node_shadow, int node_id) const;
-    void SetNodeShadow(NodeShadow* node_shadow, Node* node) const;
-
-    void LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const;
-    void LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const;
-    void LeafPathBranchPath(QStandardItemModel* combo_model) const;
-    void UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items) const;
-
-    QStringList ChildrenName(int node_id, int exclude_child) const;
-
-    void SetParent(Node* node, int parent_id) const;
-    void CopyNode(Node* tmp_node, int node_id) const;
-
-    void UpdateSeparator(CString& old_separator, CString& new_separator);
+    virtual QModelIndex GetIndex(int node_id) const = 0;
+    virtual int Unit(int node_id) const = 0;
+    virtual QString GetPath(int node_id) const = 0;
+    virtual const QString& Name(int node_id) const = 0;
 
 protected:
-    // virtual functions
-    virtual void ConstructTree();
-    virtual bool UpdateRule(Node* node, bool value);
-    virtual bool UpdateUnit(Node* node, int value);
-    virtual bool UpdateName(Node* node, CString& value);
-    virtual bool IsReferenced(int node_id, CString& message) const;
+    // Core pure virtual functions
+    virtual bool UpdateUnit(Node* node, int value) = 0;
+    virtual bool UpdateName(Node* node, CString& value) = 0;
+    virtual Node* GetNodeByIndex(const QModelIndex& index) const = 0;
+
+    // Default implementations
+    virtual bool IsReferenced(int /*node_id*/, CString& /*message*/) const { return {}; }
+    virtual bool UpdateBranch(Node* /*node*/, bool /*value*/) { return {}; }
+    virtual bool UpdateRule(Node* /*node*/, bool /*value*/) { return {}; }
+
+    virtual void ConstructTree() { };
     virtual void UpdateAncestorValue(
-        Node* node, double initial_diff, double final_diff, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
-
-    // member functions
-
-    Node* GetNodeByIndex(const QModelIndex& index) const;
-
-    // jsus store leaf's total into sqlite3 table, ignore branch's total
-    bool UpdateBranch(Node* node, bool new_value);
-
-protected:
-    Sqlite* sql_ {};
-    Node* root_ {};
-
-    NodeHash node_hash_ {};
-    StringHash leaf_path_ {};
-    StringHash branch_path_ {};
-
-    CInfo& info_;
-    CTableHash& table_hash_;
-    CString& separator_;
+        Node* /*node*/, double /*initial_diff*/, double /*final_diff*/, double /*amount_diff*/, double /*discount_diff*/, double /*settled_diff*/) { };
 };
 
 using PTreeModel = QPointer<TreeModel>;

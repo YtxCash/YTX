@@ -4,6 +4,7 @@
 #include "database/sqlite/sqlitestakeholder.h"
 #include "tablemodel.h"
 #include "tree/model/treemodel.h"
+#include "tree/model/treemodelproduct.h"
 
 class TableModelOrder final : public TableModel {
     Q_OBJECT
@@ -64,7 +65,7 @@ private:
     void SearchPrice(TransShadow* trans_shadow, int product_id, bool is_inside) const;
 
 private:
-    const TreeModel* product_tree_ {};
+    const TreeModelProduct* product_tree_ {};
     SqliteStakeholder* sqlite_stakeholder_ {};
     QHash<int, double> update_price_ {}; // inside_product_id, exclusive_price
     const NodeShadow* node_shadow_ {};

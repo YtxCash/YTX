@@ -1,11 +1,9 @@
 #ifndef TABLEWIDGETORDER_H
 #define TABLEWIDGETORDER_H
 
-#include <QComboBox>
-
 #include "component/settings.h"
 #include "table/model/tablemodel.h"
-#include "tree/model/treemodel.h"
+#include "tree/model/treemodelstakeholder.h"
 #include "widget/tablewidget/tablewidget.h"
 
 namespace Ui {
@@ -54,6 +52,7 @@ private slots:
 private:
     void IniDialog();
     void IniData();
+    void IniDataCombo();
     void LockWidgets(bool locked, bool branch);
     void IniUnit(int unit);
 
@@ -63,7 +62,7 @@ private:
     Sqlite* sql_ {};
     int party_unit_ {};
     TableModel* order_table_ {};
-    TreeModel* stakeholder_tree_ {};
+    TreeModelStakeholder* stakeholder_tree_ {};
     CSettings* settings_ {};
 
     QStandardItemModel* combo_model_employee_ {};

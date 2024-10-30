@@ -1,18 +1,19 @@
 #include "treemodelstakeholder.h"
 
-#include <QMimeData>
-#include <QRegularExpression>
-
-#include "component/constvalue.h"
-#include "component/enumclass.h"
 #include "global/resourcepool.h"
-#include "treemodelhelper.h"
 
 TreeModelStakeholder::TreeModelStakeholder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
-    : TreeModel { sql, info, default_unit, table_hash, separator, parent }
+    : TreeModel { parent }
+    , sql_ { sql }
+    , info_ { info }
+    , table_hash_ { table_hash }
+    , separator_ { separator }
 {
-    TreeModelStakeholder::ConstructTree();
+    TreeModelHelper::InitializeRoot(root_, default_unit);
+    ConstructTree();
 }
+
+TreeModelStakeholder::~TreeModelStakeholder() { qDeleteAll(node_hash_); }
 
 void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
 {
@@ -42,6 +43,82 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->unit, UNIT, &Node::unit);
 }
 
+void TreeModelStakeholder::UpdateSeparator(CString& old_separator, CString& new_separator)
+{
+    TreeModelHelper::UpdateSeparator(leaf_path_, branch_path_, old_separator, new_separator);
+}
+
+void TreeModelStakeholder::CopyNode(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNode(node_hash_, tmp_node, node_id); }
+
+void TreeModelStakeholder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+
+QStringList TreeModelStakeholder::ChildrenName(int node_id, int exclude_child) const
+{
+    return TreeModelHelper::ChildrenName(node_hash_, node_id, exclude_child);
+}
+
+QString TreeModelStakeholder::GetPath(int node_id) const { return TreeModelHelper::GetPath(leaf_path_, branch_path_, node_id); }
+
+void TreeModelStakeholder::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const
+{
+    TreeModelHelper::LeafPathExcludeID(leaf_path_, combo_model, exclude_id);
+}
+
+void TreeModelStakeholder::LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
+{
+    TreeModelHelper::LeafPathSpecificUnit(node_hash_, leaf_path_, combo_model, unit, unit_filter_mode);
+}
+
+QModelIndex TreeModelStakeholder::GetIndex(int node_id) const
+{
+    if (node_id == -1)
+        return QModelIndex();
+
+    auto it = node_hash_.constFind(node_id);
+    if (it == node_hash_.constEnd() || !it.value())
+        return QModelIndex();
+
+    const Node* node { it.value() };
+
+    if (!node->parent)
+        return QModelIndex();
+
+    auto row { node->parent->children.indexOf(node) };
+    if (row == -1)
+        return QModelIndex();
+
+    return createIndex(row, 0, node);
+}
+
+bool TreeModelStakeholder::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
+
+void TreeModelStakeholder::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
+{
+    TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
+}
+
+bool TreeModelStakeholder::InsertNode(int row, const QModelIndex& parent, Node* node)
+{
+    if (row <= -1)
+        return false;
+
+    auto* parent_node { GetNodeByIndex(parent) };
+
+    beginInsertRows(parent, row, row);
+    parent_node->children.insert(row, node);
+    endInsertRows();
+
+    sql_->WriteNode(parent_node->id, node);
+    node_hash_.insert(node->id, node);
+
+    QString path { TreeModelHelper::ConstructPath(root_, node, separator_) };
+    (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
+
+    emit SSearch();
+    emit SUpdateComboModel();
+    return true;
+}
+
 bool TreeModelStakeholder::IsReferenced(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
@@ -55,33 +132,6 @@ bool TreeModelStakeholder::IsReferenced(int node_id, CString& message) const
     }
 
     return false;
-}
-
-void TreeModelStakeholder::ConstructTree()
-{
-    sql_->ReadNode(node_hash_);
-    const auto& const_node_hash { std::as_const(node_hash_) };
-
-    for (auto* node : const_node_hash) {
-        if (!node->parent) {
-            node->parent = root_;
-            root_->children.emplace_back(node);
-        }
-    }
-
-    QString path {};
-    for (const auto* node : const_node_hash) {
-        path = TreeModelHelper::ConstructPath(root_, node, separator_);
-
-        if (node->branch) {
-            branch_path_.insert(node->id, path);
-            continue;
-        }
-
-        leaf_path_.insert(node->id, path);
-    }
-
-    node_hash_.insert(-1, root_);
 }
 
 bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
@@ -105,6 +155,74 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
     return true;
+}
+
+Node* TreeModelStakeholder::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
+
+bool TreeModelStakeholder::UpdateBranch(Node* node, bool value)
+{
+    if (node->branch == value)
+        return false;
+
+    const int node_id { node->id };
+    const QString path { GetPath(node_id) };
+    QString message {};
+
+    message = tr("Cannot change %1 branch,").arg(path);
+    if (TreeModelHelper::HasChildren(node, message))
+        return false;
+
+    message = tr("Cannot change %1 branch,").arg(path);
+    if (TreeModelHelper::IsOpened(table_hash_, node_id, message))
+        return false;
+
+    message = tr("Cannot change %1 branch,").arg(path);
+    if (IsReferenced(node_id, message))
+        return false;
+
+    node->branch = value;
+    sql_->UpdateField(info_.node, value, BRANCH, node_id);
+
+    (node->branch) ? branch_path_.insert(node_id, leaf_path_.take(node_id)) : leaf_path_.insert(node_id, branch_path_.take(node_id));
+    return true;
+}
+
+bool TreeModelStakeholder::UpdateName(Node* node, CString& value)
+{
+    node->name = value;
+    sql_->UpdateField(info_.node, value, NAME, node->id);
+
+    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SSearch();
+    return true;
+}
+
+void TreeModelStakeholder::ConstructTree()
+{
+    sql_->ReadNode(node_hash_);
+    const auto& const_node_hash { std::as_const(node_hash_) };
+
+    for (auto* node : const_node_hash) {
+        if (!node->parent) {
+            node->parent = root_;
+            root_->children.emplace_back(node);
+        }
+    }
+
+    QString path {};
+    for (auto* node : const_node_hash) {
+        path = TreeModelHelper::ConstructPath(root_, node, separator_);
+
+        if (node->branch) {
+            branch_path_.insert(node->id, path);
+            continue;
+        }
+
+        leaf_path_.insert(node->id, path);
+    }
+
+    node_hash_.insert(-1, root_);
 }
 
 void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
