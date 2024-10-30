@@ -6,6 +6,7 @@
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "global/resourcepool.h"
+#include "treemodelhelper.h"
 
 TreeModelStakeholder::TreeModelStakeholder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel { sql, info, default_unit, table_hash, separator, parent }
@@ -18,7 +19,7 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
     if (!tmp_node)
         return;
 
-    auto* node { const_cast<Node*>(GetNodeByID(tmp_node->id)) };
+    auto* node { const_cast<Node*>(TreeModelHelper::GetNodeByID(node_hash_, tmp_node->id)) };
     if (*node == *tmp_node)
         return;
 
@@ -30,26 +31,26 @@ void TreeModelStakeholder::UpdateNode(const Node* tmp_node)
         emit SUpdateComboModel();
     }
 
-    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
-    UpdateField(node, tmp_node->code, CODE, &Node::code);
-    UpdateField(node, tmp_node->note, NOTE, &Node::note);
-    UpdateField(node, tmp_node->first, PAYMENT_PERIOD, &Node::first);
-    UpdateField(node, tmp_node->second, TAX_RATE, &Node::second);
-    UpdateField(node, tmp_node->date_time, DEADLINE, &Node::date_time);
-    UpdateField(node, tmp_node->rule, RULE, &Node::rule);
-    UpdateField(node, tmp_node->employee, EMPLOYEE, &Node::employee);
-    UpdateField(node, tmp_node->unit, UNIT, &Node::unit);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->first, PAYMENT_PERIOD, &Node::first);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->second, TAX_RATE, &Node::second);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->date_time, DEADLINE, &Node::date_time);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->rule, RULE, &Node::rule);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->employee, EMPLOYEE, &Node::employee);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->unit, UNIT, &Node::unit);
 }
 
 bool TreeModelStakeholder::IsReferenced(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);
+        TreeModelHelper::ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
     if (sql_->ExternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1 it is external referenced.").arg(message), 3000);
+        TreeModelHelper::ShowTemporaryTooltip(tr("%1 it is external referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
@@ -70,7 +71,7 @@ void TreeModelStakeholder::ConstructTree()
 
     QString path {};
     for (const auto* node : const_node_hash) {
-        path = ConstructPath(node);
+        path = TreeModelHelper::ConstructPath(root_, node, separator_);
 
         if (node->branch) {
             branch_path_.insert(node->id, path);
@@ -93,7 +94,7 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
     QString message {};
 
     message = tr("Cannot change %1 unit,").arg(path);
-    if (HasChildren(node, message))
+    if (TreeModelHelper::HasChildren(node, message))
         return false;
 
     message = tr("Cannot change %1 unit,").arg(path);
@@ -142,7 +143,7 @@ void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    SortIterative(root_, Compare);
+    TreeModelHelper::SortIterative(root_, Compare);
     emit layoutChanged();
 }
 
@@ -168,7 +169,7 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
     endRemoveRows();
 
     if (branch) {
-        UpdatePath(node);
+        TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
         branch_path_.remove(node_id);
         sql_->RemoveNode(node_id, true);
     }
@@ -243,16 +244,16 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
 
     switch (kColumn) {
     case TreeEnumStakeholder::kCode:
-        UpdateField(node, value.toString(), CODE, &Node::code);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumStakeholder::kDescription:
-        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumStakeholder::kNote:
-        UpdateField(node, value.toString(), NOTE, &Node::note);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumStakeholder::kRule:
-        UpdateField(node, value.toBool(), RULE, &Node::rule);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toBool(), RULE, &Node::rule);
         break;
     case TreeEnumStakeholder::kBranch:
         UpdateBranch(node, value.toBool());
@@ -261,16 +262,16 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumStakeholder::kDeadline:
-        UpdateField(node, value.toString(), DEADLINE, &Node::date_time);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DEADLINE, &Node::date_time);
         break;
     case TreeEnumStakeholder::kEmployee:
-        UpdateField(node, value.toInt(), EMPLOYEE, &Node::employee);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toInt(), EMPLOYEE, &Node::employee);
         break;
     case TreeEnumStakeholder::kPaymentPeriod:
-        UpdateField(node, value.toDouble(), PAYMENT_PERIOD, &Node::first);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), PAYMENT_PERIOD, &Node::first);
         break;
     case TreeEnumStakeholder::kTaxRate:
-        UpdateField(node, value.toDouble(), TAX_RATE, &Node::second);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), TAX_RATE, &Node::second);
         break;
     default:
         return false;
@@ -318,8 +319,8 @@ bool TreeModelStakeholder::dropMimeData(const QMimeData* data, Qt::DropAction ac
     if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
-    auto* node { GetNodeByID(node_id) };
-    if (!node || node->parent == destination_parent || IsDescendant(destination_parent, node))
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
+    if (!node || node->parent == destination_parent || TreeModelHelper::IsDescendant(destination_parent, node))
         return false;
 
     auto begin_row { row == -1 ? destination_parent->children.size() : row };
@@ -336,7 +337,7 @@ bool TreeModelStakeholder::dropMimeData(const QMimeData* data, Qt::DropAction ac
     }
 
     sql_->DragNode(destination_parent->id, node_id);
-    UpdatePath(node);
+    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumStakeholder::kName));
 
     return true;

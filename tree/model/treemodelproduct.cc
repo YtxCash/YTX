@@ -4,6 +4,7 @@
 #include <QRegularExpression>
 
 #include "component/enumclass.h"
+#include "treemodelhelper.h"
 
 TreeModelProduct::TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel { sql, info, default_unit, table_hash, separator, parent }
@@ -16,7 +17,7 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
     if (!tmp_node)
         return;
 
-    auto* node { const_cast<Node*>(GetNodeByID(tmp_node->id)) };
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, tmp_node->id) };
     if (*node == *tmp_node)
         return;
 
@@ -30,23 +31,23 @@ void TreeModelProduct::UpdateNode(const Node* tmp_node)
         emit SUpdateComboModel();
     }
 
-    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
-    UpdateField(node, tmp_node->code, CODE, &Node::code);
-    UpdateField(node, tmp_node->note, NOTE, &Node::note);
-    UpdateField(node, tmp_node->first, UNIT_PRICE, &Node::first);
-    UpdateField(node, tmp_node->second, COMMISSION, &Node::second);
-    UpdateField(node, tmp_node->date_time, COLOR, &Node::date_time);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->first, UNIT_PRICE, &Node::first);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->second, COMMISSION, &Node::second);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->date_time, COLOR, &Node::date_time);
 }
 
 bool TreeModelProduct::IsReferenced(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);
+        TreeModelHelper::ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
     if (sql_->ExternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1 it is external referenced.").arg(message), 3000);
+        TreeModelHelper::ShowTemporaryTooltip(tr("%1 it is external referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
@@ -63,7 +64,7 @@ bool TreeModelProduct::UpdateUnit(Node* node, int value)
     QString message {};
 
     message = tr("Cannot change %1 unit,").arg(path);
-    if (HasChildren(node, message))
+    if (TreeModelHelper::HasChildren(node, message))
         return false;
 
     message = tr("Cannot change %1 unit,").arg(path);
@@ -114,7 +115,7 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    SortIterative(root_, Compare);
+    TreeModelHelper::SortIterative(root_, Compare);
     emit layoutChanged();
 }
 
@@ -174,13 +175,13 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
 
     switch (kColumn) {
     case TreeEnumProduct::kCode:
-        UpdateField(node, value.toString(), CODE, &Node::code);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumProduct::kDescription:
-        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumProduct::kNote:
-        UpdateField(node, value.toString(), NOTE, &Node::note);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumProduct::kRule:
         UpdateRule(node, value.toBool());
@@ -189,16 +190,16 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
         UpdateBranch(node, value.toBool());
         break;
     case TreeEnumProduct::kColor:
-        UpdateField(node, value.toString(), COLOR, &Node::date_time);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::date_time);
         break;
     case TreeEnumProduct::kUnit:
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumProduct::kCommission:
-        UpdateField(node, value.toDouble(), COMMISSION, &Node::second);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), COMMISSION, &Node::second);
         break;
     case TreeEnumProduct::kUnitPrice:
-        UpdateField(node, value.toDouble(), UNIT_PRICE, &Node::first);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), UNIT_PRICE, &Node::first);
         break;
     default:
         return false;

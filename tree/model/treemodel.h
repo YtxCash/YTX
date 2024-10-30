@@ -9,6 +9,7 @@
 #include "component/constvalue.h"
 #include "component/using.h"
 #include "database/sqlite/sqlite.h"
+#include "treemodelhelper.h"
 #include "widget/tablewidget/tablewidget.h"
 
 class TreeModel : public QAbstractItemModel {
@@ -104,15 +105,15 @@ public:
     // member functions
     void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const;
 
-    int Employee(int node_id) const { return GetValue(node_id, &Node::employee); }
-    int Unit(int node_id) const { return GetValue(node_id, &Node::unit); }
-    const QString& Name(int node_id) const { return GetValue(node_id, &Node::name); }
-    const QString& Color(int node_id) const { return GetValue(node_id, &Node::date_time); }
-    bool Branch(int node_id) const { return GetValue(node_id, &Node::branch); }
-    bool Rule(int node_id) const { return GetValue(node_id, &Node::rule); }
-    double InitialTotal(int node_id) const { return GetValue(node_id, &Node::initial_total); }
-    double FinalTotal(int node_id) const { return GetValue(node_id, &Node::final_total); }
-    double First(int node_id) const { return GetValue(node_id, &Node::first); }
+    int Employee(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::employee); }
+    int Unit(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
+    const QString& Name(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
+    const QString& Color(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::date_time); }
+    bool Branch(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
+    bool Rule(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
+    double InitialTotal(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::initial_total); }
+    double FinalTotal(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::final_total); }
+    double First(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::first); }
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }
@@ -146,53 +147,10 @@ protected:
 
     // member functions
 
-    bool IsDescendant(Node* lhs, Node* rhs) const;
-    void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare) const;
-
-    Node* GetNodeByID(int node_id) const;
     Node* GetNodeByIndex(const QModelIndex& index) const;
-    QString ConstructPath(const Node* node) const;
 
     // jsus store leaf's total into sqlite3 table, ignore branch's total
-    void UpdatePath(const Node* node);
-    void UpdateBranchUnit(Node* node) const;
     bool UpdateBranch(Node* node, bool new_value);
-
-    void InitializeRoot(int default_unit);
-    void ShowTemporaryTooltip(CString& message, int duration = 3000) const;
-    bool HasChildren(Node* node, CString& message) const;
-    bool IsOpened(int node_id, CString& message) const;
-
-protected:
-    template <typename T> const T& GetValue(int node_id, T Node::* member) const
-    {
-        if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
-            return it.value()->*member;
-
-        // If the node_id does not exist, return a static empty object to ensure a safe default value
-        // Examples:
-        // double InitialTotal(int node_id) const { return GetValue(node_id, &Node::initial_total); }
-        // double FinalTotal(int node_id) const { return GetValue(node_id, &Node::final_total); }
-        // Note: In the SetStatus() function of TreeWidget,
-        // a node_id of 0 may be passed, so empty{} is needed to prevent illegal access
-        static const T empty {};
-        return empty;
-    }
-
-    template <typename T> bool UpdateField(Node* node, const T& value, CString& field, T Node::* member) const
-    {
-        if constexpr (std::is_floating_point_v<T>) {
-            if (std::abs(node->*member - value) < TOLERANCE)
-                return false;
-        } else {
-            if (node->*member == value)
-                return false;
-        }
-
-        node->*member = value;
-        sql_->UpdateField(info_.node, value, field, node->id);
-        return true;
-    }
 
 protected:
     Sqlite* sql_ {};

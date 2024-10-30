@@ -1,5 +1,7 @@
 #include "treemodeltask.h"
 
+#include "treemodelhelper.h"
+
 TreeModelTask::TreeModelTask(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel(sql, info, default_unit, table_hash, separator, parent)
 {
@@ -71,13 +73,13 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
 
     switch (kColumn) {
     case TreeEnumTask::kCode:
-        UpdateField(node, value.toString(), CODE, &Node::code);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumTask::kDescription:
-        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumTask::kNote:
-        UpdateField(node, value.toString(), NOTE, &Node::note);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumTask::kRule:
         UpdateRule(node, value.toBool());
@@ -86,13 +88,13 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
         UpdateBranch(node, value.toBool());
         break;
     case TreeEnumTask::kColor:
-        UpdateField(node, value.toString(), COLOR, &Node::date_time);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::date_time);
         break;
     case TreeEnumTask::kUnit:
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumTask::kUnitCost:
-        UpdateField(node, value.toDouble(), UNIT_COST, &Node::first);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), UNIT_COST, &Node::first);
         break;
     default:
         return false;
@@ -138,7 +140,7 @@ void TreeModelTask::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    SortIterative(root_, Compare);
+    TreeModelHelper::SortIterative(root_, Compare);
     emit layoutChanged();
 }
 
@@ -175,7 +177,7 @@ void TreeModelTask::UpdateNode(const Node* tmp_node)
     if (!tmp_node)
         return;
 
-    auto* node { const_cast<Node*>(GetNodeByID(tmp_node->id)) };
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, tmp_node->id) };
     if (*node == *tmp_node)
         return;
 
@@ -189,8 +191,8 @@ void TreeModelTask::UpdateNode(const Node* tmp_node)
         emit SUpdateComboModel();
     }
 
-    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
-    UpdateField(node, tmp_node->code, CODE, &Node::code);
-    UpdateField(node, tmp_node->note, NOTE, &Node::note);
-    UpdateField(node, tmp_node->date_time, COLOR, &Node::date_time);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->date_time, COLOR, &Node::date_time);
 }

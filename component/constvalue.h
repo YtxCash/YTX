@@ -11,6 +11,7 @@ static constexpr int IMIN = -1'000'000'000;
 static constexpr int ROW_HEIGHT = 24;
 static constexpr int THIRTY_ONE = 31;
 static constexpr int IZERO = 0;
+static constexpr int THREE_THOUSAND = 3000;
 
 // Constants for unit
 static constexpr int UNIT_CASH = 0;

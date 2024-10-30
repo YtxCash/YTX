@@ -1,13 +1,10 @@
 #include "treemodel.h"
 
-#include <QApplication>
 #include <QFutureWatcher>
 #include <QQueue>
-#include <QTimer>
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
-#include "widget/temporarylabel.h"
 
 TreeModel::TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : QAbstractItemModel(parent)
@@ -16,7 +13,7 @@ TreeModel::TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& tab
     , table_hash_ { table_hash }
     , separator_ { separator }
 {
-    InitializeRoot(default_unit);
+    TreeModelHelper::InitializeRoot(root_, default_unit);
 }
 
 TreeModel::~TreeModel() { qDeleteAll(node_hash_); }
@@ -30,7 +27,7 @@ bool TreeModel::RUpdateMultiLeafTotal(const QList<int>& node_list)
     Node* node {};
 
     for (int node_id : node_list) {
-        node = GetNodeByID(node_id);
+        node = TreeModelHelper::GetNodeByID(node_hash_, node_id);
 
         if (!node || node->branch)
             continue;
@@ -64,7 +61,7 @@ bool TreeModel::RRemoveNode(int node_id)
 void TreeModel::RUpdateLeafValue(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
-    auto* node { GetNodeByID(node_id) };
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
     if (!node || node == root_ || node->branch)
         return;
 
@@ -106,7 +103,7 @@ bool TreeModel::RemoveNode(int row, const QModelIndex& parent)
     endRemoveRows();
 
     if (branch) {
-        UpdatePath(node);
+        TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
         branch_path_.remove(node_id);
         sql_->RemoveNode(node_id, true);
         emit SUpdateName(node);
@@ -142,7 +139,7 @@ bool TreeModel::InsertNode(int row, const QModelIndex& parent, Node* node)
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    QString path { ConstructPath(node) };
+    QString path { TreeModelHelper::ConstructPath(root_, node, separator_) };
     (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
 
     emit SSearch();
@@ -173,9 +170,9 @@ void TreeModel::UpdateNode(const Node* tmp_node)
         emit SUpdateComboModel();
     }
 
-    UpdateField(node, tmp_node->description, DESCRIPTION, &Node::description);
-    UpdateField(node, tmp_node->code, CODE, &Node::code);
-    UpdateField(node, tmp_node->note, NOTE, &Node::note);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
 }
 
 void TreeModel::UpdateBaseUnit(int default_unit)
@@ -189,7 +186,7 @@ void TreeModel::UpdateBaseUnit(int default_unit)
 
     for (auto* node : const_node_hash)
         if (node->branch && node->unit != default_unit)
-            UpdateBranchUnit(node);
+            TreeModelHelper::UpdateBranchUnit(root_, node);
 }
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent) const
@@ -272,13 +269,13 @@ bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int rol
 
     switch (kColumn) {
     case TreeEnum::kCode:
-        UpdateField(node, value.toString(), CODE, &Node::code);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnum::kDescription:
-        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnum::kNote:
-        UpdateField(node, value.toString(), NOTE, &Node::note);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnum::kRule:
         UpdateRule(node, value.toBool());
@@ -329,7 +326,7 @@ void TreeModel::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    SortIterative(root_, Compare);
+    TreeModelHelper::SortIterative(root_, Compare);
     emit layoutChanged();
 }
 
@@ -373,8 +370,8 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
-    auto* node { GetNodeByID(node_id) };
-    if (!node || node->parent == destination_parent || IsDescendant(destination_parent, node))
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
+    if (!node || node->parent == destination_parent || TreeModelHelper::IsDescendant(destination_parent, node))
         return false;
 
     auto begin_row { row == -1 ? destination_parent->children.size() : row };
@@ -393,7 +390,7 @@ bool TreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int r
     }
 
     sql_->DragNode(destination_parent->id, node_id);
-    UpdatePath(node);
+    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
     emit SUpdateName(node);
     emit SUpdateComboModel();
@@ -624,88 +621,6 @@ QString TreeModel::GetPath(int node_id) const
     return {};
 }
 
-bool TreeModel::IsDescendant(Node* lhs, Node* rhs) const
-{
-    if (!lhs || !rhs || lhs == rhs)
-        return false;
-
-    while (lhs && lhs != rhs)
-        lhs = lhs->parent;
-
-    return lhs == rhs;
-}
-
-QString TreeModel::ConstructPath(const Node* node) const
-{
-    if (!node || node == root_)
-        return QString();
-
-    QStringList tmp {};
-
-    while (node && node != root_) {
-        tmp.prepend(node->name);
-        node = node->parent;
-    }
-
-    return tmp.join(separator_);
-}
-
-void TreeModel::UpdatePath(const Node* node)
-{
-    QQueue<const Node*> queue {};
-    queue.enqueue(node);
-
-    const Node* current {};
-    QString path {};
-
-    while (!queue.isEmpty()) {
-        current = queue.dequeue();
-
-        path = ConstructPath(current);
-
-        if (current->branch) {
-            for (const auto* child : current->children)
-                queue.enqueue(child);
-
-            branch_path_.insert(current->id, path);
-            continue;
-        }
-
-        leaf_path_.insert(current->id, path);
-    }
-}
-
-void TreeModel::SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare) const
-{
-    if (!node)
-        return;
-
-    QQueue<Node*> queue {};
-    queue.enqueue(node);
-
-    Node* current {};
-
-    while (!queue.isEmpty()) {
-        current = queue.dequeue();
-
-        if (current->children.isEmpty())
-            continue;
-
-        std::sort(current->children.begin(), current->children.end(), Compare);
-        for (auto* child : current->children) {
-            queue.enqueue(child);
-        }
-    }
-}
-
-Node* TreeModel::GetNodeByID(int node_id) const
-{
-    if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
-        return it.value();
-
-    return nullptr;
-}
-
 void TreeModel::UpdateAncestorValue(
     Node* node, double initial_diff, double final_diff, double /*amount_diff*/, double /*discount_diff*/, double /*settled_diff*/)
 {
@@ -738,11 +653,11 @@ bool TreeModel::UpdateBranch(Node* node, bool value)
     QString message {};
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (HasChildren(node, message))
+    if (TreeModelHelper::HasChildren(node, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (IsOpened(node_id, message))
+    if (TreeModelHelper::IsOpened(table_hash_, node_id, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
@@ -784,7 +699,7 @@ void TreeModel::ConstructTree()
 
     QString path {};
     for (auto* node : const_node_hash) {
-        path = ConstructPath(node);
+        path = TreeModelHelper::ConstructPath(root_, node, separator_);
 
         if (node->branch) {
             branch_path_.insert(node->id, path);
@@ -838,7 +753,7 @@ bool TreeModel::UpdateUnit(Node* node, int value)
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
     if (node->branch)
-        UpdateBranchUnit(node);
+        TreeModelHelper::UpdateBranchUnit(root_, node);
 
     return true;
 }
@@ -859,111 +774,21 @@ QMimeData* TreeModel::mimeData(const QModelIndexList& indexes) const
     return mime_data;
 }
 
-void TreeModel::UpdateBranchUnit(Node* node) const
-{
-    if (!node || !node->branch || node->unit == root_->unit)
-        return;
-
-    QQueue<const Node*> queue {};
-    queue.enqueue(node);
-
-    const Node* current {};
-
-    double initial_total { 0.0 };
-    const int unit { node->unit };
-    const bool rule { node->rule };
-
-    while (!queue.isEmpty()) {
-        current = queue.dequeue();
-
-        if (current->branch) {
-            for (const auto* child : current->children)
-                queue.enqueue(child);
-        } else if (current->unit == unit) {
-            initial_total += (current->rule == rule ? 1 : -1) * current->initial_total;
-        }
-    }
-
-    node->initial_total = initial_total;
-}
-
 bool TreeModel::UpdateName(Node* node, CString& value)
 {
     node->name = value;
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
-    UpdatePath(node);
+    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
     emit SSearch();
     return true;
 }
 
-void TreeModel::InitializeRoot(int default_unit)
-{
-    if (root_ == nullptr) {
-        root_ = ResourcePool<Node>::Instance().Allocate();
-        root_->id = -1;
-        root_->branch = true;
-        root_->unit = default_unit;
-    }
-
-    assert(root_ != nullptr && "Root node should not be null after initialization");
-}
-
-void TreeModel::ShowTemporaryTooltip(CString& message, int duration) const
-{
-    auto* label { new TemporaryLabel(message) };
-    label->setWindowFlags(Qt::ToolTip);
-    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    label->setWordWrap(true);
-    label->setAttribute(Qt::WA_DeleteOnClose);
-    label->adjustSize();
-
-    const int extra_space = 12 * 2;
-    label->resize(label->width() + extra_space, label->height() + extra_space);
-    label->setContentsMargins(12, 0, 0, 0);
-
-    QWidget* mainWindow { QApplication::activeWindow() };
-    if (mainWindow) {
-        QRect parent_rect { mainWindow->geometry() };
-        QPoint center_point { parent_rect.center() - QPoint(label->width() / 2, label->height() / 2) };
-        label->move(center_point);
-    }
-
-    label->show();
-
-    QTimer* timer { new QTimer(label) };
-    timer->setSingleShot(true);
-    connect(timer, &QTimer::timeout, label, &QLabel::close);
-    timer->start(duration);
-
-    connect(label, &QLabel::destroyed, this, [timer]() { timer->stop(); });
-}
-
-bool TreeModel::HasChildren(Node* node, CString& message) const
-{
-    if (!node->children.isEmpty()) {
-        ShowTemporaryTooltip(tr("%1 it has children nodes.").arg(message), 3000);
-        return true;
-    }
-
-    return false;
-}
-
-bool TreeModel::IsOpened(int node_id, CString& message) const
-{
-    if (table_hash_.contains(node_id)) {
-        ShowTemporaryTooltip(tr("%1 it is opened.").arg(message), 3000);
-        return true;
-    }
-
-    return false;
-}
-
 bool TreeModel::IsReferenced(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
-        ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), 3000);
+        TreeModelHelper::ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 

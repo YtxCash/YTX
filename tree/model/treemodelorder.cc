@@ -6,6 +6,7 @@
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "global/resourcepool.h"
+#include "treemodelhelper.h"
 
 TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel { sql, info, default_unit, table_hash, separator, parent }
@@ -263,7 +264,7 @@ void TreeModelOrder::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    SortIterative(root_, Compare);
+    TreeModelHelper::SortIterative(root_, Compare);
     emit layoutChanged();
 }
 
@@ -389,13 +390,13 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
 
     switch (kColumn) {
     case TreeEnumOrder::kCode:
-        UpdateField(node, value.toString(), CODE, &Node::code);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumOrder::kDescription:
-        UpdateField(node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumOrder::kNote:
-        UpdateField(node, value.toString(), NOTE, &Node::note);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumOrder::kRule:
         UpdateRule(node, value.toBool());
@@ -404,13 +405,13 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumOrder::kParty:
-        UpdateField(node, value.toInt(), PARTY, &Node::party);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toInt(), PARTY, &Node::party);
         break;
     case TreeEnumOrder::kEmployee:
-        UpdateField(node, value.toInt(), EMPLOYEE, &Node::employee);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toInt(), EMPLOYEE, &Node::employee);
         break;
     case TreeEnumOrder::kDateTime:
-        UpdateField(node, value.toString(), DATE_TIME, &Node::date_time);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DATE_TIME, &Node::date_time);
         break;
     case TreeEnumOrder::kLocked:
         UpdateLocked(node, value.toBool());
@@ -471,8 +472,8 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
-    auto* node { GetNodeByID(node_id) };
-    if (!node || node->parent == destination_parent || IsDescendant(destination_parent, node))
+    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
+    if (!node || node->parent == destination_parent || TreeModelHelper::IsDescendant(destination_parent, node))
         return false;
 
     if (node->unit != destination_parent->unit) {

@@ -204,5 +204,6 @@ inline void NodeShadow::Set(Node* node)
 }
 
 using NodeHash = QHash<int, Node*>;
+using CNodeHash = const QHash<int, Node*>;
 
 #endif // NODE_H
