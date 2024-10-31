@@ -265,7 +265,7 @@ void Search::RSearch()
 void Search::RDoubleClicked(const QModelIndex& index)
 {
     if (ui->rBtnNode->isChecked()) {
-        int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
+        int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
         emit STreeLocation(node_id);
     }
 

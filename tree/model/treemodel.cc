@@ -54,7 +54,7 @@ QMimeData* TreeModel::mimeData(const QModelIndexList& indexes) const
     auto first_index { indexes.first() };
 
     if (first_index.isValid()) {
-        int id { first_index.sibling(first_index.row(), std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
+        int id { first_index.sibling(first_index.row(), std::to_underlying(TreeEnum::kID)).data().toInt() };
         mime_data->setData(NODE_ID, QByteArray::number(id));
     }
 

@@ -259,11 +259,11 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
     if (index.column() != 0)
         return;
 
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kBranch)).data().toBool() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
     if (branch)
         return;
 
-    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
+    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
     if (node_id <= 0)
         return;
 
@@ -657,29 +657,29 @@ void MainWindow::SetDelegate(PQTreeView tree_view, CInfo& info, CSettings& setti
 void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
 {
     auto* line { new Line(tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kCode), line);
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kDescription), line);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kCode), line);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kDescription), line);
 
     auto* plain_text { new TreePlainText(tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kNote), plain_text);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNote), plain_text);
 
     auto* rule { new TreeCombo(info.rule_hash, false, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
     auto* branch { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kBranch), branch);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
 
     auto* unit { new TreeCombo(info.unit_hash, false, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kUnit), unit);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
 }
 
 void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
     auto* final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kFinalTotal), final_total);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kFinalTotal), final_total);
 
     auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kInitialTotal), initial_total);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kInitialTotal), initial_total);
 }
 
 void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
@@ -728,7 +728,7 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
 void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
     auto* rule { new TreeCombo(info.rule_hash, true, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumCommon::kRule), rule);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
     auto* amount { new OrderTotalR(settings.amount_decimal, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
@@ -785,7 +785,7 @@ void MainWindow::InsertNode(TreeWidget* tree_widget)
     auto parent_index { current_index.parent() };
     parent_index = parent_index.isValid() ? parent_index : QModelIndex();
 
-    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() : -1 };
+    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
     InsertNodeFunction(parent_index, parent_id, current_index.row() + 1);
 }
 
@@ -838,8 +838,8 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     if (!model)
         return;
 
-    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kBranch)).data().toBool() };
+    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
 
     if (branch) {
         if (model->ChildrenEmpty(node_id))
@@ -859,7 +859,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
         return;
     }
 
-    const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kUnit)).data().toInt() };
+    const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
 
     auto* dialog { new class RemoveNode(model, node_id, unit, exteral_reference, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
@@ -1355,7 +1355,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
 
     auto* header { tree_view->header() };
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
-    header->setSectionResizeMode(std::to_underlying(TreeEnumCommon::kDescription), QHeaderView::Stretch);
+    header->setSectionResizeMode(std::to_underlying(TreeEnum::kDescription), QHeaderView::Stretch);
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignCenter);
 }
@@ -1374,11 +1374,11 @@ void MainWindow::RAppendNodeTriggered()
     if (!parent_index.isValid())
         return;
 
-    const bool branch { parent_index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kBranch)).data().toBool() };
+    const bool branch { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
     if (!branch)
         return;
 
-    const int parent_id { parent_index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
+    const int parent_id { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
     InsertNodeFunction(parent_index, parent_id, 0);
 }
 
@@ -1466,7 +1466,7 @@ void MainWindow::REditNode()
     if (!index.isValid())
         return;
 
-    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() };
+    const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
     EditNodeFPTS(index, node_id);
 }
 
@@ -1482,7 +1482,7 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
     model->CopyNode(tmp_node, node_id);
 
     const auto& parent { index.parent() };
-    const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnumCommon::kID)).data().toInt() : -1 };
+    const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
     auto parent_path { model->GetPath(parent_id) };
     if (!parent_path.isEmpty())
         parent_path += interface_.separator;
@@ -1844,7 +1844,7 @@ void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
 {
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
     table_view ? header->setSectionResizeMode(std::to_underlying(TableEnumSearch::kDescription), QHeaderView::Stretch)
-               : header->setSectionResizeMode(std::to_underlying(TreeEnumCommon::kDescription), QHeaderView::Stretch);
+               : header->setSectionResizeMode(std::to_underlying(TreeEnum::kDescription), QHeaderView::Stretch);
     ;
 }
 

@@ -51,7 +51,7 @@ enum class TableEnumOrder {
 };
 
 // Enum class defining node columns
-enum class TreeEnumCommon {
+enum class TreeEnum {
     kName,
     kID,
     kCode,
@@ -62,7 +62,7 @@ enum class TreeEnumCommon {
     kUnit,
 };
 
-enum class TreeEnum { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kInitialTotal, kFinalTotal, kPlaceholder };
+enum class TreeEnumFinance { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kInitialTotal, kFinalTotal, kPlaceholder };
 
 enum class TreeEnumTask { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kColor, kUnitCost, kQuantity, kAmount, kPlaceholder };
 

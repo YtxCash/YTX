@@ -102,7 +102,7 @@ bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)
     }
 
     emit SSearch();
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateComboModel();
 
     ResourcePool<Node>::Instance().Recycle(node);
@@ -184,28 +184,28 @@ QVariant TreeModelFinance::data(const QModelIndex& index, int role) const
     if (node->id == -1)
         return QVariant();
 
-    const TreeEnum kColumn { index.column() };
+    const TreeEnumFinance kColumn { index.column() };
 
     switch (kColumn) {
-    case TreeEnum::kName:
+    case TreeEnumFinance::kName:
         return node->name;
-    case TreeEnum::kID:
+    case TreeEnumFinance::kID:
         return node->id;
-    case TreeEnum::kCode:
+    case TreeEnumFinance::kCode:
         return node->code;
-    case TreeEnum::kDescription:
+    case TreeEnumFinance::kDescription:
         return node->description;
-    case TreeEnum::kNote:
+    case TreeEnumFinance::kNote:
         return node->note;
-    case TreeEnum::kRule:
+    case TreeEnumFinance::kRule:
         return node->rule;
-    case TreeEnum::kBranch:
+    case TreeEnumFinance::kBranch:
         return node->branch ? node->branch : QVariant();
-    case TreeEnum::kUnit:
+    case TreeEnumFinance::kUnit:
         return node->unit;
-    case TreeEnum::kInitialTotal:
+    case TreeEnumFinance::kInitialTotal:
         return node->unit == root_->unit ? QVariant() : node->initial_total;
-    case TreeEnum::kFinalTotal:
+    case TreeEnumFinance::kFinalTotal:
         return node->final_total;
     default:
         return QVariant();
@@ -221,25 +221,25 @@ bool TreeModelFinance::setData(const QModelIndex& index, const QVariant& value, 
     if (node->id == -1)
         return false;
 
-    const TreeEnum kColumn { index.column() };
+    const TreeEnumFinance kColumn { index.column() };
 
     switch (kColumn) {
-    case TreeEnum::kCode:
+    case TreeEnumFinance::kCode:
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
-    case TreeEnum::kDescription:
+    case TreeEnumFinance::kDescription:
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
-    case TreeEnum::kNote:
+    case TreeEnumFinance::kNote:
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
-    case TreeEnum::kRule:
+    case TreeEnumFinance::kRule:
         UpdateRule(node, value.toBool());
         break;
-    case TreeEnum::kBranch:
+    case TreeEnumFinance::kBranch:
         UpdateBranch(node, value.toBool());
         break;
-    case TreeEnum::kUnit:
+    case TreeEnumFinance::kUnit:
         UpdateUnit(node, value.toInt());
         break;
     default:
@@ -256,25 +256,25 @@ void TreeModelFinance::sort(int column, Qt::SortOrder order)
         return;
 
     auto Compare = [column, order](const Node* lhs, const Node* rhs) -> bool {
-        const TreeEnum kColumn { column };
+        const TreeEnumFinance kColumn { column };
         switch (kColumn) {
-        case TreeEnum::kName:
+        case TreeEnumFinance::kName:
             return (order == Qt::AscendingOrder) ? (lhs->name < rhs->name) : (lhs->name > rhs->name);
-        case TreeEnum::kCode:
+        case TreeEnumFinance::kCode:
             return (order == Qt::AscendingOrder) ? (lhs->code < rhs->code) : (lhs->code > rhs->code);
-        case TreeEnum::kDescription:
+        case TreeEnumFinance::kDescription:
             return (order == Qt::AscendingOrder) ? (lhs->description < rhs->description) : (lhs->description > rhs->description);
-        case TreeEnum::kNote:
+        case TreeEnumFinance::kNote:
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
-        case TreeEnum::kRule:
+        case TreeEnumFinance::kRule:
             return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
-        case TreeEnum::kBranch:
+        case TreeEnumFinance::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
-        case TreeEnum::kUnit:
+        case TreeEnumFinance::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
-        case TreeEnum::kInitialTotal:
+        case TreeEnumFinance::kInitialTotal:
             return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
-        case TreeEnum::kFinalTotal:
+        case TreeEnumFinance::kFinalTotal:
             return (order == Qt::AscendingOrder) ? (lhs->final_total < rhs->final_total) : (lhs->final_total > rhs->final_total);
         default:
             return false;
@@ -292,16 +292,16 @@ Qt::ItemFlags TreeModelFinance::flags(const QModelIndex& index) const
         return Qt::NoItemFlags;
 
     auto flags { QAbstractItemModel::flags(index) };
-    const TreeEnum kColumn { index.column() };
+    const TreeEnumFinance kColumn { index.column() };
 
     switch (kColumn) {
-    case TreeEnum::kName:
+    case TreeEnumFinance::kName:
         flags |= Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
         flags &= ~Qt::ItemIsEditable;
         break;
-    case TreeEnum::kInitialTotal:
-    case TreeEnum::kFinalTotal:
-    case TreeEnum::kBranch:
+    case TreeEnumFinance::kInitialTotal:
+    case TreeEnumFinance::kFinalTotal:
+    case TreeEnumFinance::kBranch:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:
@@ -347,7 +347,7 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateName(node);
     emit SUpdateComboModel();
 
@@ -525,7 +525,7 @@ bool TreeModelFinance::UpdateName(Node* node, CString& value)
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
     TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;
 }

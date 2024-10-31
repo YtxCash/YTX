@@ -182,7 +182,7 @@ bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
     }
 
     emit SSearch();
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateComboModel();
 
     ResourcePool<Node>::Instance().Recycle(node);
@@ -309,7 +309,7 @@ bool TreeModelProduct::UpdateName(Node* node, CString& value)
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
     TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;
 }
@@ -554,7 +554,7 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
-    emit SResizeColumnToContents(std::to_underlying(TreeEnumCommon::kName));
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateName(node);
     emit SUpdateComboModel();
 
