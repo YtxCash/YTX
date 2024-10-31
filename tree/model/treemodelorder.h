@@ -49,7 +49,7 @@ public:
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
     bool ChildrenEmpty(int node_id) const override;
     int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
-    const QString& Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
+    QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
     void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }

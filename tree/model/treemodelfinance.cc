@@ -38,7 +38,7 @@ void TreeModelFinance::RUpdateLeafValue(
     emit SUpdateDSpinBox();
 }
 
-bool TreeModelFinance::RUpdateMultiLeafTotal(const QList<int>& node_list)
+void TreeModelFinance::RUpdateMultiLeafTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};
@@ -65,7 +65,6 @@ bool TreeModelFinance::RUpdateMultiLeafTotal(const QList<int>& node_list)
     }
 
     emit SUpdateDSpinBox();
-    return true;
 }
 
 bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)

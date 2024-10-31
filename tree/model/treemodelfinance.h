@@ -14,7 +14,7 @@ public:
 public slots:
     void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,
         double settled_diff = 0.0) override;
-    bool RUpdateMultiLeafTotal(const QList<int>& node_list) override;
+    void RUpdateMultiLeafTotal(const QList<int>& node_list) override;
 
 public:
     // virtual functions
@@ -49,7 +49,7 @@ public:
     double FinalTotal(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::final_total); }
 
     int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
-    const QString& Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
+    QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
     bool Branch(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
 

@@ -49,7 +49,7 @@ void TreeModelTask::RUpdateLeafValue(
     emit SUpdateDSpinBox();
 }
 
-bool TreeModelTask::RUpdateMultiLeafTotal(const QList<int>& node_list)
+void TreeModelTask::RUpdateMultiLeafTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};
@@ -76,7 +76,6 @@ bool TreeModelTask::RUpdateMultiLeafTotal(const QList<int>& node_list)
     }
 
     emit SUpdateDSpinBox();
-    return true;
 }
 
 QVariant TreeModelTask::data(const QModelIndex& index, int role) const

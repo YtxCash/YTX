@@ -38,7 +38,7 @@ void TreeModelProduct::RUpdateLeafValue(
     emit SUpdateDSpinBox();
 }
 
-bool TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
+void TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};
@@ -65,7 +65,6 @@ bool TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
     }
 
     emit SUpdateDSpinBox();
-    return true;
 }
 
 void TreeModelProduct::UpdateNode(const Node* tmp_node)

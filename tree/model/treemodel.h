@@ -46,7 +46,7 @@ public slots:
     bool RRemoveNode(int node_id);
 
     // default impl for order, stakeholder
-    virtual bool RUpdateMultiLeafTotal(const QList<int>& /*node_list*/) { return {}; }
+    virtual void RUpdateMultiLeafTotal(const QList<int>& /*node_list*/) { }
 
     // receive from related table model
     // default impl for finance, stakeholder, product
@@ -107,7 +107,7 @@ public:
     virtual QModelIndex GetIndex(int node_id) const = 0;
     virtual int Unit(int node_id) const = 0;
     virtual QString GetPath(int node_id) const = 0;
-    virtual const QString& Name(int node_id) const = 0;
+    virtual QString Name(int node_id) const = 0;
 
 protected:
     // Core pure virtual functions
