@@ -314,7 +314,7 @@ void TreeModelHelper::LeafPathExcludeID(CStringHash& leaf_path, QStandardItemMod
     if (!combo_model)
         return;
 
-    auto future = QtConcurrent::run([&]() {
+    auto future = QtConcurrent::run([leaf_path, exclude_id]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf_path.size());
 
@@ -341,7 +341,7 @@ void TreeModelHelper::LeafPathSpecificUnit(
     if (!combo_model)
         return;
 
-    auto future = QtConcurrent::run([&]() {
+    auto future = QtConcurrent::run([&, unit, unit_filter_mode]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf_path.size());
 
