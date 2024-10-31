@@ -84,36 +84,36 @@ public:
     virtual QStringList ChildrenName(int /*node_id*/, int /*exclude_child*/) const { return {}; }
     virtual bool Branch(int /*node_id*/) const { return {}; }
 
+    virtual void CopyNode(Node* /*tmp_node*/, int /*node_id*/) const { }
+    virtual void LeafPathBranchPath(QStandardItemModel* /*combo_model*/) const { }
+    virtual void LeafPathExcludeID(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
+    virtual void LeafPathSpecificUnit(QStandardItemModel* /*combo_model*/, int /*unit*/, UnitFilterMode /*unit_filter_mode*/) const { }
     virtual void SetNodeShadow(NodeShadow* /*node_shadow*/, int /*node_id*/) const { }
     virtual void SetNodeShadow(NodeShadow* /*node_shadow*/, Node* /*node*/) const { }
-    virtual void LeafPathSpecificUnit(QStandardItemModel* /*combo_model*/, int /*unit*/, UnitFilterMode /*unit_filter_mode*/) const { }
-    virtual void LeafPathBranchPath(QStandardItemModel* /*combo_model*/) const { }
-    virtual void CopyNode(Node* /*tmp_node*/, int /*node_id*/) const { }
-    virtual void LeafPathExcludeID(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
     virtual void UpdateNode(const Node* /*tmp_node*/) { }
 
     // Core pure virtual functions
+    virtual void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const = 0;
+    virtual void SetParent(Node* node, int parent_id) const = 0;
     virtual void UpdateDefaultUnit(int default_unit) = 0;
     virtual void UpdateSeparator(CString& old_separator, CString& new_separator) = 0;
-    virtual void SetParent(Node* node, int parent_id) const = 0;
-    virtual void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const = 0;
 
-    virtual bool Contains(int node_id) const = 0;
     virtual bool ChildrenEmpty(int node_id) const = 0;
-    virtual bool Rule(int node_id) const = 0;
-    virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) = 0;
+    virtual bool Contains(int node_id) const = 0;
     virtual bool InsertNode(int row, const QModelIndex& parent, Node* node) = 0;
+    virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) = 0;
+    virtual bool Rule(int node_id) const = 0;
 
     virtual QModelIndex GetIndex(int node_id) const = 0;
-    virtual int Unit(int node_id) const = 0;
     virtual QString GetPath(int node_id) const = 0;
     virtual QString Name(int node_id) const = 0;
+    virtual int Unit(int node_id) const = 0;
 
 protected:
     // Core pure virtual functions
-    virtual bool UpdateUnit(Node* node, int value) = 0;
-    virtual bool UpdateName(Node* node, CString& value) = 0;
     virtual Node* GetNodeByIndex(const QModelIndex& index) const = 0;
+    virtual bool UpdateName(Node* node, CString& value) = 0;
+    virtual bool UpdateUnit(Node* node, int value) = 0;
 
     // Default implementations
     virtual bool IsReferenced(int /*node_id*/, CString& /*message*/) const { return {}; }
