@@ -25,7 +25,7 @@ signals:
     void SMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
     // send to tree model
-    void SUpdateMultiLeafTotal(const QList<int>& node_id_list);
+    void SUpdateMultiLeafTotalFPT(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
     // send to mainwindow
     void SFreeView(int node_id);

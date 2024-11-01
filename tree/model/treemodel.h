@@ -46,14 +46,14 @@ public slots:
     bool RRemoveNode(int node_id);
 
     // default impl for order, stakeholder
-    virtual void RUpdateMultiLeafTotal(const QList<int>& /*node_list*/) { }
+    virtual void RUpdateMultiLeafTotalFPT(const QList<int>& /*node_list*/) { }
 
     // receive from related table model
     // default impl for finance, stakeholder, product
-    virtual void RUpdateLeafValueOne(int /*node_id*/, double /*diff*/, CString& /*node_field*/) { }
+    virtual void RUpdateLeafValueTO(int /*node_id*/, double /*diff*/, CString& /*node_field*/) { }
 
     // default impl for stakeholder
-    virtual void RUpdateLeafValue(int /*node_id*/, double /*initial_debit_diff*/, double /*initial_credit_diff*/, double /*final_debit_diff*/,
+    virtual void RUpdateLeafValueFPTO(int /*node_id*/, double /*initial_debit_diff*/, double /*initial_credit_diff*/, double /*final_debit_diff*/,
         double /*final_credit_diff*/, double /*settled_diff*/)
     {
     }

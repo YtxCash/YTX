@@ -15,7 +15,7 @@ TreeModelFinance::TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, C
 
 TreeModelFinance::~TreeModelFinance() { qDeleteAll(node_hash_); }
 
-void TreeModelFinance::RUpdateLeafValue(
+void TreeModelFinance::RUpdateLeafValueFPTO(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
     auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
@@ -38,7 +38,7 @@ void TreeModelFinance::RUpdateLeafValue(
     emit SUpdateDSpinBox();
 }
 
-void TreeModelFinance::RUpdateMultiLeafTotal(const QList<int>& node_list)
+void TreeModelFinance::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};

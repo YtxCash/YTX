@@ -12,9 +12,9 @@ public:
     ~TreeModelFinance() override;
 
 public slots:
-    void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,
+    void RUpdateLeafValueFPTO(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,
         double settled_diff = 0.0) override;
-    void RUpdateMultiLeafTotal(const QList<int>& node_list) override;
+    void RUpdateMultiLeafTotalFPT(const QList<int>& node_list) override;
 
 public:
     // virtual functions

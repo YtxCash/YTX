@@ -19,8 +19,8 @@ protected:
 
 signals:
     // send to tree model
-    void SUpdateLeafValueOne(int node_id, double diff, CString& node_field);
-    void SUpdateLeafValue(
+    void SUpdateLeafValueTO(int node_id, double diff, CString& node_field);
+    void SUpdateLeafValueFPTO(
         int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff = 0.0);
     void SSearch();
 
@@ -31,9 +31,6 @@ signals:
 
     // send to its table view
     void SResizeColumnToContents(int column);
-
-    // send to edit/insert order dialog
-    void SUpdateOrderDescription(const QString& value);
 
 public slots:
     // receive from sql

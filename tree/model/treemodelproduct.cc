@@ -15,7 +15,7 @@ TreeModelProduct::TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, C
 
 TreeModelProduct::~TreeModelProduct() { qDeleteAll(node_hash_); }
 
-void TreeModelProduct::RUpdateLeafValue(
+void TreeModelProduct::RUpdateLeafValueFPTO(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
     auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
@@ -38,7 +38,7 @@ void TreeModelProduct::RUpdateLeafValue(
     emit SUpdateDSpinBox();
 }
 
-void TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
+void TreeModelProduct::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};

@@ -25,7 +25,7 @@ void Sqlite::RRemoveNode(int node_id)
     auto section { info_.section };
     if (section == Section::kFinance || section == Section::kProduct || section == Section::kTask) {
         emit SRemoveMultiTrans(node_trans);
-        emit SUpdateMultiLeafTotal(node_trans.uniqueKeys());
+        emit SUpdateMultiLeafTotalFPT(node_trans.uniqueKeys());
     }
 
     // Recycle will mark all transactions for removal. This must occur after SRemoveMultiTrans()
@@ -95,7 +95,7 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
     // end deal with database
 
     emit SMoveMultiTrans(old_node_id, new_node_id, node_trans.values());
-    emit SUpdateMultiLeafTotal(QList { old_node_id, new_node_id });
+    emit SUpdateMultiLeafTotalFPT(QList { old_node_id, new_node_id });
 
     if (section == Section::kProduct)
         emit SUpdateProductReference(old_node_id, new_node_id);

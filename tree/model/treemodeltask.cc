@@ -15,7 +15,7 @@ TreeModelTask::TreeModelTask(Sqlite* sql, CInfo& info, int default_unit, CTableH
 
 TreeModelTask::~TreeModelTask() { qDeleteAll(node_hash_); }
 
-void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
+void TreeModelTask::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch || diff == 0.0)
@@ -26,7 +26,7 @@ void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff, CString& node_
     sql_->UpdateField(info_.node, node->first, node_field, node_id);
 }
 
-void TreeModelTask::RUpdateLeafValue(
+void TreeModelTask::RUpdateLeafValueFPTO(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
     auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
@@ -50,7 +50,7 @@ void TreeModelTask::RUpdateLeafValue(
     emit SUpdateDSpinBox();
 }
 
-void TreeModelTask::RUpdateMultiLeafTotal(const QList<int>& node_list)
+void TreeModelTask::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};

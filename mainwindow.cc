@@ -445,8 +445,8 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
     connect(tree_model, &TreeModel::SRule, table_model, &TableModel::RRule);
 
-    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
+    connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
 
     connect(table_model, &TableModel::SRemoveOneTrans, &SignalStation::Instance(), &SignalStation::RRemoveOneTrans);
     connect(table_model, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
@@ -462,11 +462,11 @@ void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* tabl
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, widget, &TableWidgetOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
 
-    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
+    connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
 
-    connect(table_model, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValueFPTO, widget, &TableWidgetOrder::RUpdateLeafValueFPTO);
+    connect(table_model, &TableModel::SUpdateLeafValueTO, widget, &TableWidgetOrder::RUpdateLeafValueTO);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_model.data()) && "Tree Model is not TreeModelOrder");
     auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
@@ -772,7 +772,7 @@ void MainWindow::TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const
     connect(model, &TreeModel::SResizeColumnToContents, view, &QTreeView::resizeColumnToContents);
 
     connect(sql, &Sqlite::SRemoveNode, model, &TreeModel::RRemoveNode);
-    connect(sql, &Sqlite::SUpdateMultiLeafTotal, model, &TreeModel::RUpdateMultiLeafTotal);
+    connect(sql, &Sqlite::SUpdateMultiLeafTotalFPT, model, &TreeModel::RUpdateMultiLeafTotalFPT);
 
     connect(sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }
@@ -1614,11 +1614,11 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, dialog, &EditNodeOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
 
-    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
+    connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
 
-    connect(table_model, &TableModel::SUpdateLeafValue, dialog, &EditNodeOrder::RUpdateLeafValue);
-    connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &EditNodeOrder::RUpdateLeafValueOne);
+    connect(table_model, &TableModel::SUpdateLeafValueFPTO, dialog, &EditNodeOrder::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueTO, dialog, &EditNodeOrder::RUpdateLeafValueTO);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model().data()) && "Model is not TreeModelOrder");
     auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };

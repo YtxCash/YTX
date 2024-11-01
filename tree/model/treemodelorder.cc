@@ -13,7 +13,7 @@ TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTabl
 
 TreeModelOrder::~TreeModelOrder() { qDeleteAll(node_hash_); }
 
-void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
+void TreeModelOrder::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch || diff == 0.0)
@@ -31,7 +31,7 @@ void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node
     UpdateAncestorValueOrder(node, diff);
 }
 
-void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void TreeModelOrder::RUpdateLeafValueFPTO(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch)
