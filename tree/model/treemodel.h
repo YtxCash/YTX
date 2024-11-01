@@ -25,8 +25,8 @@ protected:
     TreeModel& operator=(TreeModel&&) = delete;
 
 signals:
-    // send to related table model
-    void SRuleFPT(int node_id, bool rule);
+    // send to SignalStation
+    void SRule(Section seciton, int node_id, bool rule);
 
     // send to its view
     void SResizeColumnToContents(int column);
@@ -34,7 +34,7 @@ signals:
     // send to search dialog
     void SSearch();
 
-    // send to mainwindow
+    // send to Mainwindow
     void SUpdateName(const Node* node);
     void SUpdateDSpinBox();
 
@@ -58,7 +58,7 @@ public slots:
     {
     }
 
-    // receive from table model, member function
+    // receive from TableModel
     void RSearch() { emit SSearch(); }
 
 public:

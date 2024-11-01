@@ -477,7 +477,7 @@ bool TreeModelFinance::UpdateRuleFPTO(Node* node, bool value)
     node->final_total = -node->final_total;
     node->initial_total = -node->initial_total;
     if (!node->branch) {
-        emit SRuleFPT(node->id, value);
+        emit SRule(info_.section, node->id, value);
         sql_->UpdateNodeValue(node);
     }
 

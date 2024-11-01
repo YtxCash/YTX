@@ -38,7 +38,7 @@ void TableModel::RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QLi
         AppendMultiTrans(node_id_, trans_id_list);
 }
 
-void TableModel::RRuleFPT(int node_id, bool rule)
+void TableModel::RRule(int node_id, bool rule)
 {
     if (node_id_ != node_id || rule_ == rule)
         return;

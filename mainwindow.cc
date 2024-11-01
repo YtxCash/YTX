@@ -443,7 +443,6 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
 {
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
-    connect(tree_model, &TreeModel::SRuleFPT, table_model, &TableModel::RRuleFPT);
 
     connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
     connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
@@ -770,6 +769,8 @@ void MainWindow::TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const
     connect(model, &TreeModel::SUpdateDSpinBox, tree_widget, &TreeWidget::RUpdateDSpinBox);
 
     connect(model, &TreeModel::SResizeColumnToContents, view, &QTreeView::resizeColumnToContents);
+
+    connect(model, &TreeModel::SRule, &SignalStation::Instance(), &SignalStation::RRule);
 
     connect(sql, &Sqlite::SRemoveNode, model, &TreeModel::RRemoveNode);
     connect(sql, &Sqlite::SUpdateMultiLeafTotalFPT, model, &TreeModel::RUpdateMultiLeafTotalFPT);

@@ -20,10 +20,11 @@ void SignalStation::DeregisterModel(Section section, int node_id) { model_hash_[
 
 void SignalStation::RAppendOneTrans(Section section, const TransShadow* trans_shadow)
 {
-    auto section_model_hash { model_hash_.value(section) };
-    int rhs_node_id { *trans_shadow->rhs_node };
+    if (!trans_shadow)
+        return;
 
-    auto model { section_model_hash.value(rhs_node_id, nullptr) };
+    int rhs_node_id { *trans_shadow->rhs_node };
+    const auto* model { FindTableModel(section, rhs_node_id) };
     if (!model)
         return;
 
@@ -33,9 +34,7 @@ void SignalStation::RAppendOneTrans(Section section, const TransShadow* trans_sh
 
 void SignalStation::RRemoveOneTrans(Section section, int node_id, int trans_id)
 {
-    auto section_model_hash { model_hash_.value(section) };
-
-    auto model { section_model_hash.value(node_id, nullptr) };
+    const auto* model { FindTableModel(section, node_id) };
     if (!model)
         return;
 
@@ -45,9 +44,7 @@ void SignalStation::RRemoveOneTrans(Section section, int node_id, int trans_id)
 
 void SignalStation::RUpdateBalance(Section section, int node_id, int trans_id)
 {
-    auto section_model_hash { model_hash_.value(section) };
-
-    auto model { section_model_hash.value(node_id, nullptr) };
+    const auto* model { FindTableModel(section, node_id) };
     if (!model)
         return;
 
@@ -57,15 +54,25 @@ void SignalStation::RUpdateBalance(Section section, int node_id, int trans_id)
 
 void SignalStation::RAppendPrice(Section section, TransShadow* trans_shadow)
 {
-    auto section_model_hash { model_hash_.value(section) };
-    int node_id { *trans_shadow->node_id };
+    if (!trans_shadow)
+        return;
 
-    auto model { section_model_hash.value(node_id, nullptr) };
+    int node_id { *trans_shadow->node_id };
+    const auto* model { FindTableModel(section, node_id) };
     if (!model)
         return;
 
-    auto* cast_model { static_cast<const TableModelStakeholder*>(model) };
-
+    const auto* cast_model { static_cast<const TableModelStakeholder*>(model) };
     connect(this, &SignalStation::SAppendPrice, cast_model, &TableModelStakeholder::RAppendPrice, Qt::SingleShotConnection);
     emit SAppendPrice(trans_shadow);
+}
+
+void SignalStation::RRule(Section section, int node_id, bool rule)
+{
+    const auto* model { FindTableModel(section, node_id) };
+    if (!model)
+        return;
+
+    connect(this, &SignalStation::SRule, model, &TableModel::RRule, Qt::SingleShotConnection);
+    emit SRule(node_id, rule);
 }

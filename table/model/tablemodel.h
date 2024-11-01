@@ -18,7 +18,7 @@ protected:
     TableModel(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
 
 signals:
-    // send to tree model
+    // send to TreeModel
     void SUpdateLeafValueTO(int node_id, double diff, CString& node_field);
     void SUpdateLeafValueFPTO(
         int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff = 0.0);
@@ -33,17 +33,15 @@ signals:
     void SResizeColumnToContents(int column);
 
 public slots:
-    // receive from sql
+    // receive from Sqlite
     void RRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans);
     void RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
-
-    // receive from tree model
-    void RRuleFPT(int node_id, bool rule);
 
     // receive from signal station
     void RAppendOneTrans(const TransShadow* trans_shadow);
     void RRemoveOneTrans(int node_id, int trans_id);
     void RUpdateBalance(int node_id, int trans_id);
+    void RRule(int node_id, bool rule);
 
 public:
     // implemented functions
