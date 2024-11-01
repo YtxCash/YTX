@@ -1,23 +1,23 @@
-#ifndef TREEWIDGETCOMMON_H
-#define TREEWIDGETCOMMON_H
+#ifndef TREEWIDGETFPT_H
+#define TREEWIDGETFPT_H
 
 #include "component/info.h"
 #include "component/settings.h"
 #include "treewidget.h"
 
 namespace Ui {
-class TreeWidgetCommon;
+class TreeWidgetFPT;
 }
 
-class TreeWidgetCommon final : public TreeWidget {
+class TreeWidgetFPT final : public TreeWidget {
     Q_OBJECT
 
 public slots:
     void RUpdateDSpinBox() override;
 
 public:
-    TreeWidgetCommon(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent = nullptr);
-    ~TreeWidgetCommon() override;
+    TreeWidgetFPT(TreeModel* model, CInfo& info, CSettings& settings, QWidget* parent = nullptr);
+    ~TreeWidgetFPT() override;
 
     QPointer<QTreeView> View() const override;
     QPointer<TreeModel> Model() const override { return model_; };
@@ -29,7 +29,7 @@ private:
     double Operate(double lhs, double rhs, const QString& operation);
 
 private:
-    Ui::TreeWidgetCommon* ui;
+    Ui::TreeWidgetFPT* ui;
 
     TreeModel* model_ {};
     CInfo& info_ {};
@@ -38,4 +38,4 @@ private:
     bool equal_unit { false };
 };
 
-#endif // TREEWIDGETCOMMON_H
+#endif // TREEWIDGETFPT_H

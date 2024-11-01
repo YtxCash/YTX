@@ -1,13 +1,13 @@
-#include "insertnodeorder.h"
+#include "editnodeorder.h"
 
 #include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
-#include "ui_insertnodeorder.h"
+#include "ui_editnodeorder.h"
 
-InsertNodeOrder::InsertNodeOrder(
+EditNodeOrder::EditNodeOrder(
     NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit, QWidget* parent)
     : QDialog(parent)
-    , ui(new Ui::InsertNodeOrder)
+    , ui(new Ui::EditNodeOrder)
     , node_shadow_ { node_shadow }
     , sql_ { sql }
     , party_unit_ { party_unit }
@@ -33,9 +33,9 @@ InsertNodeOrder::InsertNodeOrder(
     IniUnit(*node_shadow->unit);
 }
 
-InsertNodeOrder::~InsertNodeOrder() { delete ui; }
+EditNodeOrder::~EditNodeOrder() { delete ui; }
 
-void InsertNodeOrder::RUpdateComboModel()
+void EditNodeOrder::RUpdateComboModel()
 {
     if (*node_shadow_->branch)
         return;
@@ -62,7 +62,7 @@ void InsertNodeOrder::RUpdateComboModel()
     ui->comboEmployee->blockSignals(false);
 }
 
-void InsertNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
+void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
 {
     if (node_id != node_id_)
         return;
@@ -111,9 +111,9 @@ void InsertNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVari
     }
 }
 
-void InsertNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
+void EditNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void InsertNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
@@ -122,9 +122,9 @@ void InsertNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, doubl
     ui->dSpinSettled->setValue(ui->dSpinSettled->value() + (*node_shadow_->unit == UNIT_CASH ? settled_diff : 0.0));
 }
 
-QTableView* InsertNodeOrder::View() { return ui->tableViewOrder; }
+QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
 
-void InsertNodeOrder::IniDialog()
+void EditNodeOrder::IniDialog()
 {
     combo_model_party_ = new QStandardItemModel(this);
     stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
@@ -156,7 +156,7 @@ void InsertNodeOrder::IniDialog()
     ui->comboParty->setFocus();
 }
 
-void InsertNodeOrder::accept()
+void EditNodeOrder::accept()
 {
     if (auto* focus_widget { this->focusWidget() })
         focus_widget->clearFocus();
@@ -171,9 +171,9 @@ void InsertNodeOrder::accept()
     }
 }
 
-void InsertNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &InsertNodeOrder::accept); }
+void EditNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &EditNodeOrder::accept); }
 
-void InsertNodeOrder::LockWidgets(bool locked, bool branch)
+void EditNodeOrder::LockWidgets(bool locked, bool branch)
 {
     bool basic_enable { !locked };
     bool not_branch_enable { !locked && !branch };
@@ -211,7 +211,7 @@ void InsertNodeOrder::LockWidgets(bool locked, bool branch)
     ui->pBtnPrint->setEnabled(locked && !branch);
 }
 
-void InsertNodeOrder::IniUnit(int unit)
+void EditNodeOrder::IniUnit(int unit)
 {
     switch (unit) {
     case UNIT_CASH:
@@ -228,7 +228,7 @@ void InsertNodeOrder::IniUnit(int unit)
     }
 }
 
-void InsertNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
+void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
 {
     if (!*node_shadow_->branch || arg1.isEmpty())
         return;
@@ -244,7 +244,7 @@ void InsertNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
         sql_->UpdateField(info_node_, arg1, NAME, node_id_);
 }
 
-void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
+void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
 {
     if (*node_shadow_->branch)
         return;
@@ -274,7 +274,7 @@ void InsertNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == RULE_MONTHLY);
 }
 
-void InsertNodeOrder::on_chkBoxRefund_toggled(bool checked)
+void EditNodeOrder::on_chkBoxRefund_toggled(bool checked)
 {
     *node_shadow_->rule = checked;
 
@@ -282,7 +282,7 @@ void InsertNodeOrder::on_chkBoxRefund_toggled(bool checked)
         sql_->UpdateField(info_node_, checked, RULE, node_id_);
 }
 
-void InsertNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
+void EditNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
 {
     *node_shadow_->employee = ui->comboEmployee->currentData().toInt();
     if (node_id_ == 0) {
@@ -294,7 +294,7 @@ void InsertNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
         sql_->UpdateField(info_node_, *node_shadow_->employee, EMPLOYEE, node_id_);
 }
 
-void InsertNodeOrder::on_rBtnCash_toggled(bool checked)
+void EditNodeOrder::on_rBtnCash_toggled(bool checked)
 {
     if (!checked)
         return;
@@ -310,7 +310,7 @@ void InsertNodeOrder::on_rBtnCash_toggled(bool checked)
     }
 }
 
-void InsertNodeOrder::on_rBtnMonthly_toggled(bool checked)
+void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
 {
     if (!checked)
         return;
@@ -326,7 +326,7 @@ void InsertNodeOrder::on_rBtnMonthly_toggled(bool checked)
     }
 }
 
-void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
+void EditNodeOrder::on_rBtnPending_toggled(bool checked)
 {
     if (!checked)
         return;
@@ -342,7 +342,7 @@ void InsertNodeOrder::on_rBtnPending_toggled(bool checked)
     }
 }
 
-void InsertNodeOrder::on_pBtnInsertParty_clicked()
+void EditNodeOrder::on_pBtnInsertParty_clicked()
 {
     const auto& name { ui->comboParty->currentText() };
     if (*node_shadow_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
@@ -361,7 +361,7 @@ void InsertNodeOrder::on_pBtnInsertParty_clicked()
     ui->comboParty->setCurrentIndex(party_index);
 }
 
-void InsertNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
+void EditNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
 {
     *node_shadow_->date_time = date_time.toString(DATE_TIME_FST);
 
@@ -369,7 +369,7 @@ void InsertNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time
         sql_->UpdateField(info_node_, *node_shadow_->date_time, DATE_TIME, node_id_);
 }
 
-void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
+void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
 {
     accept();
 
@@ -389,14 +389,14 @@ void InsertNodeOrder::on_pBtnLockOrder_toggled(bool checked)
     }
 }
 
-void InsertNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1)
+void EditNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1)
 {
     bool enable { arg1 == Qt::Checked };
     *node_shadow_->branch = enable;
     LockWidgets(false, enable);
 }
 
-void InsertNodeOrder::on_lineDescription_editingFinished()
+void EditNodeOrder::on_lineDescription_editingFinished()
 {
     *node_shadow_->description = ui->lineDescription->text();
 

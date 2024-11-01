@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>InsertNodeOrder</class>
- <widget class="QDialog" name="InsertNodeOrder">
+ <class>EditNodeOrder</class>
+ <widget class="QDialog" name="EditNodeOrder">
   <property name="geometry">
    <rect>
     <x>0</x>

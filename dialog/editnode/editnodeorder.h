@@ -1,5 +1,5 @@
-#ifndef INSERTNODEORDER_H
-#define INSERTNODEORDER_H
+#ifndef EDITNODEORDER_H
+#define EDITNODEORDER_H
 
 #include <QDialog>
 
@@ -7,16 +7,16 @@
 #include "tree/model/treemodelstakeholder.h"
 
 namespace Ui {
-class InsertNodeOrder;
+class EditNodeOrder;
 }
 
-class InsertNodeOrder final : public QDialog {
+class EditNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    InsertNodeOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit,
+    EditNodeOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit,
         QWidget* parent = nullptr);
-    ~InsertNodeOrder();
+    ~EditNodeOrder();
 
 signals:
     void SUpdateNodeID(int node_id);
@@ -57,7 +57,7 @@ private:
     void IniUnit(int unit);
 
 private:
-    Ui::InsertNodeOrder* ui;
+    Ui::EditNodeOrder* ui;
 
     NodeShadow* node_shadow_ {};
     Sqlite* sql_ {};
@@ -72,4 +72,4 @@ private:
     int node_id_ {};
 };
 
-#endif // INSERTNODEORDER_H
+#endif // EDITNODEORDER_H

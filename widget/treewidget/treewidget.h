@@ -28,6 +28,5 @@ protected:
 };
 
 using PQTreeView = QPointer<QTreeView>;
-using CTreeWidget = const TreeWidget;
 
 #endif // TREEWIDGET_H

@@ -1,5 +1,5 @@
-#ifndef TABLEWIDGETCOMMON_H
-#define TABLEWIDGETCOMMON_H
+#ifndef TABLEWIDGETFPTS_H
+#define TABLEWIDGETFPTS_H
 
 #include <QTableView>
 
@@ -7,22 +7,22 @@
 #include "widget/tablewidget/tablewidget.h"
 
 namespace Ui {
-class TableWidgetCommon;
+class TableWidgetFPTS;
 }
 
-class TableWidgetCommon final : public TableWidget {
+class TableWidgetFPTS final : public TableWidget {
     Q_OBJECT
 
 public:
-    explicit TableWidgetCommon(TableModel* model, QWidget* parent = nullptr);
-    ~TableWidgetCommon();
+    explicit TableWidgetFPTS(TableModel* model, QWidget* parent = nullptr);
+    ~TableWidgetFPTS();
 
     QPointer<TableModel> Model() const override { return model_; }
     QPointer<QTableView> View() const override;
 
 private:
-    Ui::TableWidgetCommon* ui;
+    Ui::TableWidgetFPTS* ui;
     TableModel* model_ {};
 };
 
-#endif // TABLEWIDGETCOMMON_H
+#endif // TABLEWIDGETFPTS_H

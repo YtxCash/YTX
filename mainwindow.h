@@ -127,7 +127,7 @@ private:
     void SetPurchaseData();
 
     void CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id);
-    void CreateTablePS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id);
+    void CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id);
     void DelegateCommon(PQTableView table_view, PTreeModel tree_model, int node_id) const;
     void DelegateFinance(PQTableView table_view, CSettings* settings) const;
     void DelegateTask(PQTableView table_view, CSettings* settings) const;
@@ -158,7 +158,7 @@ private:
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
     void InsertNodeFPST(Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
-    void InsertNodePS(Node* node, const QModelIndex& parent, int row); // Purchase Sales
+    void InsertNodeOrder(Node* node, const QModelIndex& parent, int row); // Purchase Sales
 
     void AppendTrans(TableWidget* table_widget);
 
