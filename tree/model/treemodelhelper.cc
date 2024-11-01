@@ -380,3 +380,24 @@ void TreeModelHelper::LeafPathSpecificUnit(
 
     watcher->setFuture(future);
 }
+
+void TreeModelHelper::UpdateAncestorValueFPT(const Node* root, Node* node, double initial_diff, double final_diff)
+{
+    if (!node || node == root || node->parent == root || !node->parent)
+        return;
+
+    if (initial_diff == 0 && final_diff == 0)
+        return;
+
+    bool equal {};
+    const int unit { node->unit };
+    const bool rule { node->rule };
+
+    for (node = node->parent; node && node != root; node = node->parent) {
+        equal = node->rule == rule;
+        node->final_total += (equal ? 1 : -1) * final_diff;
+
+        if (node->unit == unit)
+            node->initial_total += (equal ? 1 : -1) * initial_diff;
+    }
+}

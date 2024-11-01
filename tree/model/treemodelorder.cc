@@ -29,7 +29,7 @@ void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node
     auto index { GetIndex(node_id) };
     emit dataChanged(index.siblingAtColumn(column), index.siblingAtColumn(column));
 
-    UpdateAncestorValue(node, diff);
+    UpdateAncestorValueOrder(node, diff);
 }
 
 void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
@@ -54,7 +54,7 @@ void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double sec
     auto index { GetIndex(node->id) };
     emit dataChanged(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFirst)), index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kSettled)));
 
-    UpdateAncestorValue(node, first_diff, second_diff, amount_diff, discount_diff, settled);
+    UpdateAncestorValueOrder(node, first_diff, second_diff, amount_diff, discount_diff, settled);
 }
 
 bool TreeModelOrder::RUpdateStakeholderReference(int old_node_id, int new_node_id)
@@ -81,11 +81,11 @@ void TreeModelOrder::RUpdateLocked(int node_id, bool checked)
     auto* node { it.value() };
 
     int coefficient = checked ? 1 : -1;
-    UpdateAncestorValue(node, coefficient * node->first, coefficient * node->second, coefficient * node->initial_total, coefficient * node->discount,
+    UpdateAncestorValueOrder(node, coefficient * node->first, coefficient * node->second, coefficient * node->initial_total, coefficient * node->discount,
         coefficient * node->final_total);
 }
 
-void TreeModelOrder::UpdateAncestorValue(Node* node, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void TreeModelOrder::UpdateAncestorValueOrder(Node* node, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     if (!node || node == root_ || node->parent == root_ || !node->parent)
         return;
@@ -136,7 +136,7 @@ void TreeModelOrder::ConstructTreeOrder(const QDate& start_date, const QDate& en
 
     for (auto* node : const_node_hash)
         if (!node->branch && node->locked)
-            UpdateAncestorValue(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
+            UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 
     node_hash_.insert(-1, root_);
 }
@@ -257,7 +257,7 @@ bool TreeModelOrder::UpdateLocked(Node* node, bool value)
 
     int coefficient = value ? 1 : -1;
 
-    UpdateAncestorValue(node, coefficient * node->first, coefficient * node->second, coefficient * node->initial_total, coefficient * node->discount,
+    UpdateAncestorValueOrder(node, coefficient * node->first, coefficient * node->second, coefficient * node->initial_total, coefficient * node->discount,
         coefficient * node->final_total);
 
     node->locked = value;
@@ -339,7 +339,7 @@ bool TreeModelOrder::InsertNode(int row, const QModelIndex& parent, Node* node)
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    UpdateAncestorValue(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
+    UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 
     emit SSearch();
     return true;
@@ -370,7 +370,7 @@ bool TreeModelOrder::RemoveNode(int row, const QModelIndex& parent)
         sql_->RemoveNode(node_id, true);
 
     if (!branch) {
-        UpdateAncestorValue(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
+        UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
         sql_->RemoveNode(node_id, false);
     }
 

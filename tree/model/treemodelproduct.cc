@@ -34,7 +34,7 @@ void TreeModelProduct::RUpdateLeafValue(
     node->final_total += final_diff;
 
     sql_->UpdateNodeValue(node);
-    UpdateAncestorValue(node, initial_diff, final_diff);
+    TreeModelHelper::UpdateAncestorValueFPT(root_, node, initial_diff, final_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -61,7 +61,7 @@ void TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
         final_diff = node->final_total - old_final_total;
         initial_diff = node->initial_total - old_initial_total;
 
-        UpdateAncestorValue(node, initial_diff, final_diff);
+        TreeModelHelper::UpdateAncestorValueFPT(root_, node, initial_diff, final_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -176,7 +176,7 @@ bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
     }
 
     if (!branch) {
-        UpdateAncestorValue(node, -node->initial_total, -node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(root_, node, -node->initial_total, -node->final_total);
         leaf_path_.remove(node_id);
         sql_->RemoveNode(node_id, false);
     }
@@ -281,28 +281,6 @@ bool TreeModelProduct::UpdateBranch(Node* node, bool value)
     return true;
 }
 
-void TreeModelProduct::UpdateAncestorValue(
-    Node* node, double initial_diff, double final_diff, double /*amount_diff*/, double /*discount_diff*/, double /*settled_diff*/)
-{
-    if (!node || node == root_ || node->parent == root_ || !node->parent)
-        return;
-
-    if (initial_diff == 0 && final_diff == 0)
-        return;
-
-    bool equal {};
-    const int unit { node->unit };
-    const bool rule { node->rule };
-
-    for (node = node->parent; node && node != root_; node = node->parent) {
-        equal = node->rule == rule;
-        node->final_total += (equal ? 1 : -1) * final_diff;
-
-        if (node->unit == unit)
-            node->initial_total += (equal ? 1 : -1) * initial_diff;
-    }
-}
-
 bool TreeModelProduct::UpdateName(Node* node, CString& value)
 {
     node->name = value;
@@ -353,7 +331,8 @@ void TreeModelProduct::ConstructTree()
             continue;
         }
 
-        UpdateAncestorValue(node, node->initial_total, node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(root_, node, node->initial_total, node->final_total);
+
         leaf_path_.insert(node->id, path);
     }
 
@@ -543,11 +522,11 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        UpdateAncestorValue(node, -node->initial_total, -node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(root_, node, -node->initial_total, -node->final_total);
 
         destination_parent->children.insert(begin_row, node);
         node->parent = destination_parent;
-        UpdateAncestorValue(node, node->initial_total, node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(root_, node, node->initial_total, node->final_total);
 
         endMoveRows();
     }

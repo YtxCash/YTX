@@ -121,8 +121,6 @@ protected:
     virtual bool UpdateRule(Node* /*node*/, bool /*value*/) { return {}; }
 
     virtual void ConstructTree() { };
-    virtual void UpdateAncestorValue(
-        Node* /*node*/, double /*initial_diff*/, double /*final_diff*/, double /*amount_diff*/, double /*discount_diff*/, double /*settled_diff*/) { };
 };
 
 using PTreeModel = QPointer<TreeModel>;

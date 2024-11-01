@@ -61,8 +61,6 @@ protected:
     bool UpdateUnit(Node* node, int value) override;
     bool UpdateName(Node* node, CString& value) override;
     bool IsReferenced(int node_id, CString& message) const override;
-    void UpdateAncestorValue(
-        Node* node, double initial_diff, double final_diff, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0) override;
 
     Node* GetNodeByIndex(const QModelIndex& index) const override;
     bool UpdateBranch(Node* node, bool value) override;

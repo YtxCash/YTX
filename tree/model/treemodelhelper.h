@@ -83,6 +83,7 @@ public:
     static void LeafPathBranchPath(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
     static void LeafPathExcludeID(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
     static void LeafPathSpecificUnit(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode);
+    static void UpdateAncestorValueFPT(const Node* root, Node* node, double initial_diff, double final_diff);
 };
 
 #endif // TREEMODELHELPER_H

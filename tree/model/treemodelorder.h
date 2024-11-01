@@ -58,13 +58,13 @@ protected:
     bool UpdateRule(Node* node, bool value) override; // charge = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
     bool UpdateName(Node* node, CString& value) override;
-    void UpdateAncestorValue(
-        Node* node, double first_diff, double second_diff = 0.0, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0) override;
 
     Node* GetNodeByIndex(const QModelIndex& index) const override;
 
 private:
     bool UpdateLocked(Node* node, bool value);
+    void UpdateAncestorValueOrder(
+        Node* node, double first_diff, double second_diff = 0.0, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
 
 private:
     SqliteOrder* sql_ {};

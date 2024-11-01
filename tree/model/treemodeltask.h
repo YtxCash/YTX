@@ -54,9 +54,6 @@ public:
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
 
 protected:
-    void UpdateAncestorValue(
-        Node* node, double initial_diff, double final_diff, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0) override;
-
     bool IsReferenced(int node_id, CString& message) const override;
     bool UpdateName(Node* node, CString& value) override;
     bool UpdateUnit(Node* node, int value) override;
