@@ -1,6 +1,7 @@
 #include "tablemodel.h"
 
-#include <QSet>
+#include <QMutexLocker>
+#include <QtConcurrent>
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
@@ -98,7 +99,7 @@ void TableModel::RRemoveOneTrans(int node_id, int trans_id)
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(row));
     endRemoveRows();
 
-    RunAccumulateSubtotal(row, rule_);
+    AccumulateSubtotal(row, rule_);
 }
 
 void TableModel::RUpdateBalance(int node_id, int trans_id)
@@ -108,7 +109,7 @@ void TableModel::RUpdateBalance(int node_id, int trans_id)
 
     auto index { GetIndex(trans_id) };
     if (index.isValid())
-        RunAccumulateSubtotal(index.row(), rule_);
+        AccumulateSubtotal(index.row(), rule_);
 }
 
 bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
@@ -136,7 +137,7 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
-        RunAccumulateSubtotal(row, rule_);
+        AccumulateSubtotal(row, rule_);
 
         sql_->RemoveTrans(trans_id);
     }
@@ -398,7 +399,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     if (old_rhs_node == 0) {
         if (rhs_changed) {
             sql_->WriteTrans(trans_shadow);
-            RunAccumulateSubtotal(kRow, rule_);
+            AccumulateSubtotal(kRow, rule_);
 
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
@@ -425,7 +426,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     }
 
     if (deb_changed || cre_changed) {
-        RunAccumulateSubtotal(kRow, rule_);
+        AccumulateSubtotal(kRow, rule_);
         emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
     }
 
@@ -481,7 +482,7 @@ void TableModel::sort(int column, Qt::SortOrder order)
     std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 
-    RunAccumulateSubtotal(0, rule_);
+    AccumulateSubtotal(0, rule_);
 }
 
 Qt::ItemFlags TableModel::flags(const QModelIndex& index) const
@@ -570,11 +571,16 @@ void TableModel::AccumulateSubtotal(int start, bool rule) const
     if (start <= -1 || start >= trans_shadow_list_.size() || trans_shadow_list_.isEmpty())
         return;
 
-    double previous_subtotal { start >= 1 ? trans_shadow_list_.at(start - 1)->subtotal : 0.0 };
+    // 启动新线程执行累积操作
+    QtConcurrent::run([this, start, rule]() {
+        QMutexLocker locker(&mutex_);
+        double previous_subtotal { start >= 1 ? trans_shadow_list_.at(start - 1)->subtotal : 0.0 };
 
-    std::accumulate(trans_shadow_list_.begin() + start, trans_shadow_list_.end(), previous_subtotal, [&](double current_subtotal, TransShadow* trans_shadow) {
-        trans_shadow->subtotal = Balance(rule, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit) + current_subtotal;
-        return trans_shadow->subtotal;
+        std::accumulate(
+            trans_shadow_list_.begin() + start, trans_shadow_list_.end(), previous_subtotal, [&](double current_subtotal, TransShadow* trans_shadow) {
+                trans_shadow->subtotal = Balance(rule, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit) + current_subtotal;
+                return trans_shadow->subtotal;
+            });
     });
 }
 
@@ -609,7 +615,7 @@ bool TableModel::RemoveMultiTrans(const QSet<int>& trans_id_set)
     }
 
     if (min_row != -1)
-        RunAccumulateSubtotal(min_row, rule_);
+        AccumulateSubtotal(min_row, rule_);
 
     return true;
 }
@@ -624,7 +630,7 @@ bool TableModel::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();
 
-    RunAccumulateSubtotal(row, rule_);
+    AccumulateSubtotal(row, rule_);
 
     return true;
 }

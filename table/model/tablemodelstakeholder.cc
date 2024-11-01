@@ -1,5 +1,7 @@
 #include "tablemodelstakeholder.h"
 
+#include <QDateTime>
+
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 

@@ -1,5 +1,7 @@
 #include "tablewidgetorder.h"
 
+#include <QTimer>
+
 #include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_tablewidgetorder.h"

@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QQueue>
 #include <QTimer>
+#include <QtConcurrent>
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"

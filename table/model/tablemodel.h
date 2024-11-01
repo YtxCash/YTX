@@ -4,13 +4,9 @@
 // default implementations are for finance.
 
 #include <QAbstractItemModel>
-#include <QtConcurrent>
+#include <QMutex>
 
-#include "component/enumclass.h"
-#include "component/info.h"
-#include "component/using.h"
 #include "database/sqlite/sqlite.h"
-#include "table/trans.h"
 
 class TableModel : public QAbstractItemModel {
     Q_OBJECT
@@ -91,7 +87,7 @@ protected:
 
     bool UpdateRhsNode(TransShadow* trans_shadow, int value) const;
 
-    void RunAccumulateSubtotal(int row, bool rule) const { QtConcurrent::run(&TableModel::AccumulateSubtotal, this, row, rule); }
+    void AccumulateSubtotal(int start, bool rule) const;
 
 protected:
     template <typename T>
@@ -118,15 +114,13 @@ protected:
         return true;
     }
 
-private:
-    void AccumulateSubtotal(int start, bool rule) const;
-
 protected:
     Sqlite* sql_ {};
     bool rule_ {};
 
     CInfo& info_;
     int node_id_ {};
+    mutable QMutex mutex_ {};
 
     QList<TransShadow*> trans_shadow_list_ {};
 };

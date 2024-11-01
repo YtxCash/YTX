@@ -80,7 +80,7 @@ void TableModelProduct::sort(int column, Qt::SortOrder order)
     std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 
-    RunAccumulateSubtotal(0, rule_);
+    AccumulateSubtotal(0, rule_);
 }
 
 bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& parent)
@@ -107,7 +107,7 @@ bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& pa
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
-        RunAccumulateSubtotal(row, rule_);
+        AccumulateSubtotal(row, rule_);
 
         sql_->RemoveTrans(trans_id);
     }
