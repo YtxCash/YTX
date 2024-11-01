@@ -41,9 +41,9 @@
 #include "dialog/about.h"
 #include "dialog/editdocument.h"
 #include "dialog/editnode/editnodefinance.h"
+#include "dialog/editnode/editnodeorder.h"
 #include "dialog/editnode/editnodeproduct.h"
 #include "dialog/editnode/editnodestakeholder.h"
-#include "dialog/editnode/editnodeorder.h"
 #include "dialog/preferences.h"
 #include "dialog/removenode.h"
 #include "dialog/search.h"
@@ -408,7 +408,7 @@ void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, 
     auto section { info.section };
 
     auto* node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
-    tree_model->SetNodeShadow(node_shadow, node_id);
+    tree_model->SetNodeShadowOrder(node_shadow, node_id);
 
     TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
     TableWidgetOrder* widget {};
@@ -804,7 +804,7 @@ void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, in
         InsertNodeOrder(node, parent, row);
 
     if (section != Section::kSales && section != Section::kPurchase)
-        InsertNodeFPST(node, parent, parent_id, row);
+        InsertNodeFPTS(node, parent, parent_id, row);
 }
 
 void MainWindow::RRemoveTriggered()
@@ -955,7 +955,7 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
     }
 
     for (int node_id : list) {
-        if (tree_model->Contains(node_id) && !tree_model->Branch(node_id) && node_id >= 1)
+        if (tree_model->Contains(node_id) && !tree_model->BranchFPTS(node_id) && node_id >= 1)
             CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
     }
 }
@@ -1230,7 +1230,7 @@ void MainWindow::SetSalesData()
 
     sql = new SqliteOrder(info, this);
 
-    auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this) };
+    auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, this) };
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
 
     connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
@@ -1262,7 +1262,7 @@ void MainWindow::SetPurchaseData()
 
     sql = new SqliteOrder(info, this);
 
-    auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this) };
+    auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, this) };
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
 
     connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
@@ -1479,7 +1479,7 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
     auto model { tree_widget_->Model() };
 
     auto* tmp_node { ResourcePool<Node>::Instance().Allocate() };
-    model->CopyNode(tmp_node, node_id);
+    model->CopyNodeFPTS(tmp_node, node_id);
 
     const auto& parent { index.parent() };
     const int parent_id { parent.isValid() ? parent.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
@@ -1487,7 +1487,7 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
     if (!parent_path.isEmpty())
         parent_path += interface_.separator;
 
-    const auto& name_list { model->ChildrenName(parent_id, node_id) };
+    const auto& name_list { model->ChildrenNameFPTS(parent_id, node_id) };
     const auto* sqlite { data_->sql };
 
     bool is_not_referenced { !sqlite->InternalReference(node_id) && !sqlite->ExternalReference(node_id) };
@@ -1513,12 +1513,12 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
         return ResourcePool<Node>::Instance().Recycle(tmp_node);
     }
 
-    connect(dialog, &QDialog::accepted, this, [=]() { model->UpdateNode(tmp_node); });
+    connect(dialog, &QDialog::accepted, this, [=]() { model->UpdateNodeFPTS(tmp_node); });
     dialog->exec();
     ResourcePool<Node>::Instance().Recycle(tmp_node);
 }
 
-void MainWindow::InsertNodeFPST(Node* node, const QModelIndex& parent, int parent_id, int row)
+void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int parent_id, int row)
 {
     auto tree_model { tree_widget_->Model() };
     auto section { data_->info.section };
@@ -1528,7 +1528,7 @@ void MainWindow::InsertNodeFPST(Node* node, const QModelIndex& parent, int paren
         parent_path += interface_.separator;
 
     const auto& info { data_->info };
-    const auto& name_list { tree_model->ChildrenName(parent_id, 0) };
+    const auto& name_list { tree_model->ChildrenNameFPTS(parent_id, 0) };
 
     QDialog* dialog {};
 
@@ -1566,7 +1566,7 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     auto tree_model { tree_widget_->Model() };
 
     auto* node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
-    tree_model->SetNodeShadow(node_shadow, node);
+    tree_model->SetNodeShadowOrder(node_shadow, node);
     if (!node_shadow->id)
         return;
 
@@ -1770,12 +1770,10 @@ void MainWindow::UpdateInterface(CInterface& interface)
     auto old_separator { interface_.separator };
 
     if (old_separator != new_separator) {
-        finance_tree_->Model()->UpdateSeparator(old_separator, new_separator);
-        stakeholder_tree_->Model()->UpdateSeparator(old_separator, new_separator);
-        product_tree_->Model()->UpdateSeparator(old_separator, new_separator);
-        task_tree_->Model()->UpdateSeparator(old_separator, new_separator);
-        sales_tree_->Model()->UpdateSeparator(old_separator, new_separator);
-        purchase_tree_->Model()->UpdateSeparator(old_separator, new_separator);
+        finance_tree_->Model()->UpdateSeparatorFPTS(old_separator, new_separator);
+        stakeholder_tree_->Model()->UpdateSeparatorFPTS(old_separator, new_separator);
+        product_tree_->Model()->UpdateSeparatorFPTS(old_separator, new_separator);
+        task_tree_->Model()->UpdateSeparatorFPTS(old_separator, new_separator);
 
         auto* widget { ui->tabWidget };
         int count { ui->tabWidget->count() };

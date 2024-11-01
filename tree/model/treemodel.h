@@ -78,25 +78,25 @@ public:
 
     // Ytx's
     // Default implementations
-    virtual double InitialTotal(int /*node_id*/) const { return {}; }
-    virtual double FinalTotal(int /*node_id*/) const { return {}; }
+    virtual double InitialTotalFPT(int /*node_id*/) const { return {}; }
+    virtual double FinalTotalFPT(int /*node_id*/) const { return {}; }
 
-    virtual QStringList ChildrenName(int /*node_id*/, int /*exclude_child*/) const { return {}; }
-    virtual bool Branch(int /*node_id*/) const { return {}; }
+    virtual QStringList ChildrenNameFPTS(int /*node_id*/, int /*exclude_child*/) const { return {}; }
+    virtual bool BranchFPTS(int /*node_id*/) const { return {}; }
 
-    virtual void CopyNode(Node* /*tmp_node*/, int /*node_id*/) const { }
-    virtual void LeafPathBranchPath(QStandardItemModel* /*combo_model*/) const { }
-    virtual void LeafPathExcludeID(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
-    virtual void LeafPathSpecificUnit(QStandardItemModel* /*combo_model*/, int /*unit*/, UnitFilterMode /*unit_filter_mode*/) const { }
-    virtual void SetNodeShadow(NodeShadow* /*node_shadow*/, int /*node_id*/) const { }
-    virtual void SetNodeShadow(NodeShadow* /*node_shadow*/, Node* /*node*/) const { }
-    virtual void UpdateNode(const Node* /*tmp_node*/) { }
+    virtual void CopyNodeFPTS(Node* /*tmp_node*/, int /*node_id*/) const { }
+    virtual void LeafPathBranchPathFPT(QStandardItemModel* /*combo_model*/) const { }
+    virtual void LeafPathExcludeIDFPTS(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
+    virtual void LeafPathSpecificUnitPS(QStandardItemModel* /*combo_model*/, int /*unit*/, UnitFilterMode /*unit_filter_mode*/) const { }
+    virtual void SetNodeShadowOrder(NodeShadow* /*node_shadow*/, int /*node_id*/) const { }
+    virtual void SetNodeShadowOrder(NodeShadow* /*node_shadow*/, Node* /*node*/) const { }
+    virtual void UpdateNodeFPTS(const Node* /*tmp_node*/) { }
+    virtual void UpdateSeparatorFPTS(CString& /*old_separator*/, CString& /*new_separator*/) { };
 
     // Core pure virtual functions
     virtual void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const = 0;
     virtual void SetParent(Node* node, int parent_id) const = 0;
     virtual void UpdateDefaultUnit(int default_unit) = 0;
-    virtual void UpdateSeparator(CString& old_separator, CString& new_separator) = 0;
 
     virtual bool ChildrenEmpty(int node_id) const = 0;
     virtual bool Contains(int node_id) const = 0;
@@ -105,8 +105,8 @@ public:
     virtual bool Rule(int node_id) const = 0;
 
     virtual QModelIndex GetIndex(int node_id) const = 0;
-    virtual QString GetPath(int node_id) const = 0;
     virtual QString Name(int node_id) const = 0;
+    virtual QString GetPath(int node_id) const = 0;
     virtual int Unit(int node_id) const = 0;
 
 protected:
@@ -116,11 +116,11 @@ protected:
     virtual bool UpdateUnit(Node* node, int value) = 0;
 
     // Default implementations
-    virtual bool IsReferenced(int /*node_id*/, CString& /*message*/) const { return {}; }
-    virtual bool UpdateBranch(Node* /*node*/, bool /*value*/) { return {}; }
-    virtual bool UpdateRule(Node* /*node*/, bool /*value*/) { return {}; }
+    virtual bool IsReferencedFPTS(int /*node_id*/, CString& /*message*/) const { return {}; }
+    virtual bool UpdateBranchFPTS(Node* /*node*/, bool /*value*/) { return {}; }
+    virtual bool UpdateRuleFPTO(Node* /*node*/, bool /*value*/) { return {}; }
 
-    virtual void ConstructTree() { };
+    virtual void ConstructTreeFPTS() { };
 };
 
 using PTreeModel = QPointer<TreeModel>;

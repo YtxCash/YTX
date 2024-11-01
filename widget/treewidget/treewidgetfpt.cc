@@ -57,8 +57,8 @@ void TreeWidgetFPT::RUpdateDSpinBox()
 
 void TreeWidgetFPT::DynamicStatus(int lhs_node_id, int rhs_node_id)
 {
-    double lhs_total { equal_unit ? model_->InitialTotal(lhs_node_id) : model_->FinalTotal(lhs_node_id) };
-    double rhs_total { equal_unit ? model_->InitialTotal(rhs_node_id) : model_->FinalTotal(rhs_node_id) };
+    double lhs_total { equal_unit ? model_->InitialTotalFPT(lhs_node_id) : model_->FinalTotalFPT(lhs_node_id) };
+    double rhs_total { equal_unit ? model_->InitialTotalFPT(rhs_node_id) : model_->FinalTotalFPT(rhs_node_id) };
 
     const auto& operation { settings_.operation.isEmpty() ? PLUS : settings_.operation };
     double total { Operate(lhs_total, rhs_total, operation) };
@@ -66,7 +66,7 @@ void TreeWidgetFPT::DynamicStatus(int lhs_node_id, int rhs_node_id)
     ui->dspin_box_dynamic_->setValue(total);
 }
 
-void TreeWidgetFPT::StaticStatus(int node_id) { ui->dspin_box_static_->setValue(model_->InitialTotal(node_id)); }
+void TreeWidgetFPT::StaticStatus(int node_id) { ui->dspin_box_static_->setValue(model_->InitialTotalFPT(node_id)); }
 
 double TreeWidgetFPT::Operate(double lhs, double rhs, const QString& operation)
 {

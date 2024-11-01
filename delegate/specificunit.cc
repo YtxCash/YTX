@@ -68,4 +68,4 @@ QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& option, const QModelInd
     return CalculateTextSize(text, option);
 }
 
-void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnit(combo_model_, unit_, unit_filter_mode_); }
+void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, unit_filter_mode_); }

@@ -77,7 +77,7 @@ void RemoveNode::IniDialog()
 
     // 不需要接收更新combo model的信号
     auto* combo_model_ { new QStandardItemModel(this) };
-    model_->LeafPathExcludeID(combo_model_, node_id_);
+    model_->LeafPathExcludeIDFPTS(combo_model_, node_id_);
     ui->comboBox->setModel(combo_model_);
 }
 

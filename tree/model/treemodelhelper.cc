@@ -9,7 +9,7 @@
 #include "global/resourcepool.h"
 #include "widget/temporarylabel.h"
 
-QString TreeModelHelper::GetPath(CStringHash& leaf_path, CStringHash& branch_path, int node_id)
+QString TreeModelHelper::GetPathFPTS(CStringHash& leaf_path, CStringHash& branch_path, int node_id)
 {
     if (auto it = leaf_path.constFind(node_id); it != leaf_path.constEnd())
         return it.value();
@@ -20,7 +20,7 @@ QString TreeModelHelper::GetPath(CStringHash& leaf_path, CStringHash& branch_pat
     return {};
 }
 
-void TreeModelHelper::UpdateBranchUnit(const Node* root, Node* node)
+void TreeModelHelper::UpdateBranchUnitF(const Node* root, Node* node)
 {
     if (!node || !node->branch || node->unit == root->unit)
         return;
@@ -48,7 +48,7 @@ void TreeModelHelper::UpdateBranchUnit(const Node* root, Node* node)
     node->initial_total = initial_total;
 }
 
-void TreeModelHelper::UpdatePath(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator)
+void TreeModelHelper::UpdatePathFPTS(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator)
 {
     QQueue<const Node*> queue {};
     queue.enqueue(node);
@@ -59,7 +59,7 @@ void TreeModelHelper::UpdatePath(StringHash& leaf_path, StringHash& branch_path,
     while (!queue.isEmpty()) {
         current = queue.dequeue();
 
-        path = ConstructPath(root, current, separator);
+        path = ConstructPathFPTS(root, current, separator);
 
         if (current->branch) {
             for (const auto* child : current->children)
@@ -127,7 +127,7 @@ void TreeModelHelper::SortIterative(Node* node, std::function<bool(const Node*, 
     }
 }
 
-QString TreeModelHelper::ConstructPath(const Node* root, const Node* node, CString& separator)
+QString TreeModelHelper::ConstructPathFPTS(const Node* root, const Node* node, CString& separator)
 {
     if (!node || node == root)
         return QString();
@@ -142,7 +142,7 @@ QString TreeModelHelper::ConstructPath(const Node* root, const Node* node, CStri
     return tmp.join(separator);
 }
 
-void TreeModelHelper::ShowTemporaryTooltip(CString& message, int duration)
+void TreeModelHelper::ShowTemporaryTooltipFPTS(CString& message, int duration)
 {
     auto* label { new TemporaryLabel(message) };
     label->setWindowFlags(Qt::ToolTip);
@@ -172,20 +172,20 @@ void TreeModelHelper::ShowTemporaryTooltip(CString& message, int duration)
     QObject::connect(label, &QLabel::destroyed, timer, [timer]() { timer->stop(); });
 }
 
-bool TreeModelHelper::HasChildren(Node* node, CString& message)
+bool TreeModelHelper::HasChildrenFPTS(Node* node, CString& message)
 {
     if (!node->children.isEmpty()) {
-        ShowTemporaryTooltip(QObject::tr("%1 it has children nodes.").arg(message), THREE_THOUSAND);
+        ShowTemporaryTooltipFPTS(QObject::tr("%1 it has children nodes.").arg(message), THREE_THOUSAND);
         return true;
     }
 
     return false;
 }
 
-bool TreeModelHelper::IsOpened(CTableHash& table_hash, int node_id, CString& message)
+bool TreeModelHelper::IsOpenedFPTS(CTableHash& table_hash, int node_id, CString& message)
 {
     if (table_hash.contains(node_id)) {
-        ShowTemporaryTooltip(QObject::tr("%1 it is opened.").arg(message), THREE_THOUSAND);
+        ShowTemporaryTooltipFPTS(QObject::tr("%1 it is opened.").arg(message), THREE_THOUSAND);
         return true;
     }
 
@@ -210,7 +210,7 @@ bool TreeModelHelper::ChildrenEmpty(CNodeHash& node_hash, int node_id)
     return (it == node_hash.constEnd()) ? true : it.value()->children.isEmpty();
 }
 
-void TreeModelHelper::UpdateSeparator(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator)
+void TreeModelHelper::UpdateSeparatorFPTS(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator)
 {
     if (old_separator == new_separator || new_separator.isEmpty())
         return;
@@ -224,7 +224,7 @@ void TreeModelHelper::UpdateSeparator(StringHash& leaf_path, StringHash& branch_
     UpdatePaths(branch_path);
 }
 
-void TreeModelHelper::CopyNode(CNodeHash& node_hash, Node* tmp_node, int node_id)
+void TreeModelHelper::CopyNodeFPTS(CNodeHash& node_hash, Node* tmp_node, int node_id)
 {
     if (!tmp_node)
         return;
@@ -246,7 +246,7 @@ void TreeModelHelper::SetParent(CNodeHash& node_hash, Node* node, int parent_id)
     node->parent = it == node_hash.constEnd() ? nullptr : it.value();
 }
 
-QStringList TreeModelHelper::ChildrenName(CNodeHash& node_hash, int node_id, int exclude_child)
+QStringList TreeModelHelper::ChildrenNameFPTS(CNodeHash& node_hash, int node_id, int exclude_child)
 {
     auto it { node_hash.constFind(node_id) };
     if (it == node_hash.constEnd())
@@ -281,7 +281,7 @@ void TreeModelHelper::UpdateComboModel(QStandardItemModel* combo_model, const QV
     combo_model->sort(0);
 }
 
-void TreeModelHelper::LeafPathBranchPath(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model)
+void TreeModelHelper::LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model)
 {
     if (!combo_model)
         return;
@@ -310,7 +310,7 @@ void TreeModelHelper::LeafPathBranchPath(CStringHash& leaf_path, CStringHash& br
     watcher->setFuture(future);
 }
 
-void TreeModelHelper::LeafPathExcludeID(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id)
+void TreeModelHelper::LeafPathExcludeIDFPTS(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id)
 {
     if (!combo_model)
         return;
@@ -336,7 +336,7 @@ void TreeModelHelper::LeafPathExcludeID(CStringHash& leaf_path, QStandardItemMod
     watcher->setFuture(future);
 }
 
-void TreeModelHelper::LeafPathSpecificUnit(
+void TreeModelHelper::LeafPathSpecificUnitPS(
     CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode)
 {
     if (!combo_model)

@@ -10,7 +10,7 @@ TreeModelTask::TreeModelTask(Sqlite* sql, CInfo& info, int default_unit, CTableH
     , separator_ { separator }
 {
     TreeModelHelper::InitializeRoot(root_, default_unit);
-    ConstructTree();
+    ConstructTreeFPTS();
 }
 
 TreeModelTask::~TreeModelTask() { qDeleteAll(node_hash_); }
@@ -142,10 +142,10 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumTask::kRule:
-        UpdateRule(node, value.toBool());
+        UpdateRuleFPTO(node, value.toBool());
         break;
     case TreeEnumTask::kBranch:
-        UpdateBranch(node, value.toBool());
+        UpdateBranchFPTS(node, value.toBool());
         break;
     case TreeEnumTask::kColor:
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::date_time);
@@ -266,7 +266,7 @@ bool TreeModelTask::dropMimeData(const QMimeData* data, Qt::DropAction action, i
     }
 
     sql_->DragNode(destination_parent->id, node_id);
-    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateName(node);
     emit SUpdateComboModel();
@@ -274,7 +274,7 @@ bool TreeModelTask::dropMimeData(const QMimeData* data, Qt::DropAction action, i
     return true;
 }
 
-void TreeModelTask::UpdateNode(const Node* tmp_node)
+void TreeModelTask::UpdateNodeFPTS(const Node* tmp_node)
 {
     if (!tmp_node)
         return;
@@ -283,9 +283,9 @@ void TreeModelTask::UpdateNode(const Node* tmp_node)
     if (*node == *tmp_node)
         return;
 
-    UpdateRule(node, tmp_node->rule);
+    UpdateRuleFPTO(node, tmp_node->rule);
     UpdateUnit(node, tmp_node->unit);
-    UpdateBranch(node, tmp_node->branch);
+    UpdateBranchFPTS(node, tmp_node->branch);
 
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
@@ -301,7 +301,7 @@ void TreeModelTask::UpdateNode(const Node* tmp_node)
 
 Node* TreeModelTask::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
 
-bool TreeModelTask::UpdateBranch(Node* node, bool value)
+bool TreeModelTask::UpdateBranchFPTS(Node* node, bool value)
 {
     if (node->branch == value)
         return false;
@@ -311,15 +311,15 @@ bool TreeModelTask::UpdateBranch(Node* node, bool value)
     QString message {};
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (TreeModelHelper::HasChildren(node, message))
+    if (TreeModelHelper::HasChildrenFPTS(node, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (TreeModelHelper::IsOpened(table_hash_, node_id, message))
+    if (TreeModelHelper::IsOpenedFPTS(table_hash_, node_id, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (IsReferenced(node_id, message))
+    if (IsReferencedFPTS(node_id, message))
         return false;
 
     node->branch = value;
@@ -329,24 +329,24 @@ bool TreeModelTask::UpdateBranch(Node* node, bool value)
     return true;
 }
 
-void TreeModelTask::UpdateSeparator(CString& old_separator, CString& new_separator)
+void TreeModelTask::UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
 {
-    TreeModelHelper::UpdateSeparator(leaf_path_, branch_path_, old_separator, new_separator);
+    TreeModelHelper::UpdateSeparatorFPTS(leaf_path_, branch_path_, old_separator, new_separator);
 }
 
-void TreeModelTask::CopyNode(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNode(node_hash_, tmp_node, node_id); }
+void TreeModelTask::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
 
 void TreeModelTask::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
 
-QStringList TreeModelTask::ChildrenName(int node_id, int exclude_child) const { return TreeModelHelper::ChildrenName(node_hash_, node_id, exclude_child); }
+QStringList TreeModelTask::ChildrenNameFPTS(int node_id, int exclude_child) const { return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child); }
 
-QString TreeModelTask::GetPath(int node_id) const { return TreeModelHelper::GetPath(leaf_path_, branch_path_, node_id); }
+QString TreeModelTask::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
-void TreeModelTask::LeafPathBranchPath(QStandardItemModel* combo_model) const { TreeModelHelper::LeafPathBranchPath(leaf_path_, branch_path_, combo_model); }
+void TreeModelTask::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const { TreeModelHelper::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model); }
 
-void TreeModelTask::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const
+void TreeModelTask::LeafPathExcludeIDFPTS(QStandardItemModel* combo_model, int exclude_id) const
 {
-    TreeModelHelper::LeafPathExcludeID(leaf_path_, combo_model, exclude_id);
+    TreeModelHelper::LeafPathExcludeIDFPTS(leaf_path_, combo_model, exclude_id);
 }
 
 QModelIndex TreeModelTask::GetIndex(int node_id) const
@@ -399,7 +399,7 @@ bool TreeModelTask::RemoveNode(int row, const QModelIndex& parent)
     endRemoveRows();
 
     if (branch) {
-        TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+        TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
         branch_path_.remove(node_id);
         sql_->RemoveNode(node_id, true);
         emit SUpdateName(node);
@@ -436,7 +436,7 @@ bool TreeModelTask::InsertNode(int row, const QModelIndex& parent, Node* node)
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    QString path { TreeModelHelper::ConstructPath(root_, node, separator_) };
+    QString path { TreeModelHelper::ConstructPathFPTS(root_, node, separator_) };
     (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
 
     emit SSearch();
@@ -444,10 +444,10 @@ bool TreeModelTask::InsertNode(int row, const QModelIndex& parent, Node* node)
     return true;
 }
 
-bool TreeModelTask::IsReferenced(int node_id, CString& message) const
+bool TreeModelTask::IsReferencedFPTS(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
-        TreeModelHelper::ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
+        TreeModelHelper::ShowTemporaryTooltipFPTS(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
@@ -459,7 +459,7 @@ bool TreeModelTask::UpdateName(Node* node, CString& value)
     node->name = value;
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
-    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;
@@ -470,21 +470,25 @@ bool TreeModelTask::UpdateUnit(Node* node, int value)
     if (node->unit == value)
         return false;
 
-    int node_id { node->id };
-    auto message { tr("Cannot change %1 unit,").arg(GetPath(node_id)) };
-    if (IsReferenced(node_id, message))
+    const int node_id { node->id };
+    const QString path { GetPath(node_id) };
+    QString message {};
+
+    message = tr("Cannot change %1 unit,").arg(path);
+    if (TreeModelHelper::HasChildrenFPTS(node, message))
+        return false;
+
+    message = tr("Cannot change %1 unit,").arg(path);
+    if (IsReferencedFPTS(node_id, message))
         return false;
 
     node->unit = value;
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
-    if (node->branch)
-        TreeModelHelper::UpdateBranchUnit(root_, node);
-
     return true;
 }
 
-bool TreeModelTask::UpdateRule(Node* node, bool value)
+bool TreeModelTask::UpdateRuleFPTO(Node* node, bool value)
 {
     if (node->rule == value)
         return false;
@@ -502,7 +506,7 @@ bool TreeModelTask::UpdateRule(Node* node, bool value)
     return true;
 }
 
-void TreeModelTask::ConstructTree()
+void TreeModelTask::ConstructTreeFPTS()
 {
     sql_->ReadNode(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };
@@ -516,7 +520,7 @@ void TreeModelTask::ConstructTree()
 
     QString path {};
     for (auto* node : const_node_hash) {
-        path = TreeModelHelper::ConstructPath(root_, node, separator_);
+        path = TreeModelHelper::ConstructPathFPTS(root_, node, separator_);
 
         if (node->branch) {
             branch_path_.insert(node->id, path);

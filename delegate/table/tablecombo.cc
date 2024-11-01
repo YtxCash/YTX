@@ -64,4 +64,4 @@ QSize TableCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex
     return CalculateTextSize(text, option);
 }
 
-void TableCombo::RUpdateComboModel() { tree_model_->LeafPathExcludeID(combo_model_, exclude_id_); }
+void TableCombo::RUpdateComboModel() { tree_model_->LeafPathExcludeIDFPTS(combo_model_, exclude_id_); }

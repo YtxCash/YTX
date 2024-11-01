@@ -24,21 +24,21 @@ public:
     }
 
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
-    void UpdateNode(const Node* tmp_node) override;
+    void UpdateNodeFPTS(const Node* tmp_node) override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
-    void UpdateSeparator(CString& old_separator, CString& new_separator) override;
-    void CopyNode(Node* tmp_node, int node_id) const override;
+    void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator) override;
+    void CopyNodeFPTS(Node* tmp_node, int node_id) const override;
     void SetParent(Node* node, int parent_id) const override;
-    QStringList ChildrenName(int node_id, int exclude_child) const override;
+    QStringList ChildrenNameFPTS(int node_id, int exclude_child) const override;
     QString GetPath(int node_id) const override;
-    void LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const override;
-    void LeafPathSpecificUnit(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const override;
+    void LeafPathExcludeIDFPTS(QStandardItemModel* combo_model, int exclude_id) const override;
+    void LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const override;
     QModelIndex GetIndex(int node_id) const override;
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
     bool ChildrenEmpty(int node_id) const override;
     int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
     QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
-    bool Branch(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
+    bool BranchFPTS(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
     void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
 
@@ -46,12 +46,12 @@ public:
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
 
 protected:
-    bool IsReferenced(int node_id, CString& message) const override;
+    bool IsReferencedFPTS(int node_id, CString& message) const override;
     bool UpdateUnit(Node* node, int value) override;
     Node* GetNodeByIndex(const QModelIndex& index) const override;
-    bool UpdateBranch(Node* node, bool value) override;
+    bool UpdateBranchFPTS(Node* node, bool value) override;
     bool UpdateName(Node* node, CString& value) override;
-    void ConstructTree() override;
+    void ConstructTreeFPTS() override;
 
 private:
     Sqlite* sql_ {};

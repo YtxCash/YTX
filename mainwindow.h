@@ -157,7 +157,7 @@ private:
 
     void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
-    void InsertNodeFPST(Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
+    void InsertNodeFPTS(Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
     void InsertNodeOrder(Node* node, const QModelIndex& parent, int row); // Purchase Sales
 
     void AppendTrans(TableWidget* table_widget);

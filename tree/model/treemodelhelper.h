@@ -22,7 +22,7 @@ public:
     }
 
     // Ytx's public
-    static QString GetPath(CStringHash& leaf_path, CStringHash& branch_path, int node_id);
+    static QString GetPathFPTS(CStringHash& leaf_path, CStringHash& branch_path, int node_id);
 
     // Ytx's protected
     static Node* GetNodeByIndex(Node* root, const QModelIndex& index)
@@ -63,26 +63,26 @@ public:
         return empty;
     }
 
-    static void UpdateBranchUnit(const Node* root, Node* node);
-    static void UpdatePath(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator);
+    static void UpdateBranchUnitF(const Node* root, Node* node);
+    static void UpdatePathFPTS(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator);
     static void InitializeRoot(Node*& root, int default_unit);
     static Node* GetNodeByID(CNodeHash& node_hash, int node_id);
     static bool IsDescendant(Node* lhs, Node* rhs);
     static void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare);
-    static QString ConstructPath(const Node* root, const Node* node, CString& separator);
-    static void ShowTemporaryTooltip(CString& message, int duration);
-    static bool HasChildren(Node* node, CString& message);
-    static bool IsOpened(CTableHash& table_hash, int node_id, CString& message);
+    static QString ConstructPathFPTS(const Node* root, const Node* node, CString& separator);
+    static void ShowTemporaryTooltipFPTS(CString& message, int duration);
+    static bool HasChildrenFPTS(Node* node, CString& message);
+    static bool IsOpenedFPTS(CTableHash& table_hash, int node_id, CString& message);
     static void SearchNode(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list);
     static bool ChildrenEmpty(CNodeHash& node_hash, int node_id);
-    static void UpdateSeparator(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator);
-    static void CopyNode(CNodeHash& node_hash, Node* tmp_node, int node_id);
+    static void UpdateSeparatorFPTS(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator);
+    static void CopyNodeFPTS(CNodeHash& node_hash, Node* tmp_node, int node_id);
     static void SetParent(CNodeHash& node_hash, Node* node, int parent_id);
-    static QStringList ChildrenName(CNodeHash& node_hash, int node_id, int exclude_child);
+    static QStringList ChildrenNameFPTS(CNodeHash& node_hash, int node_id, int exclude_child);
     static void UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items);
-    static void LeafPathBranchPath(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
-    static void LeafPathExcludeID(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
-    static void LeafPathSpecificUnit(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode);
+    static void LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
+    static void LeafPathExcludeIDFPTS(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
+    static void LeafPathSpecificUnitPS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode);
     static void UpdateAncestorValueFPT(const Node* root, Node* node, double initial_diff, double final_diff);
 };
 

@@ -71,8 +71,8 @@ void TableWidgetOrder::RUpdateComboModel()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
-    stakeholder_tree_->LeafPathSpecificUnit(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
 
     int index_employee { ui->comboEmployee->findData(employee_id) };
     ui->comboEmployee->setCurrentIndex(index_employee);
@@ -147,12 +147,12 @@ void TableWidgetOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, doub
 void TableWidgetOrder::IniDialog()
 {
     combo_model_party_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnit(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
     ui->comboParty->setModel(combo_model_party_);
     ui->comboParty->setCurrentIndex(-1);
 
     combo_model_employee_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnit(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
     ui->comboEmployee->setModel(combo_model_employee_);
     ui->comboEmployee->setCurrentIndex(-1);
 

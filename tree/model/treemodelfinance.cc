@@ -10,7 +10,7 @@ TreeModelFinance::TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, C
     , separator_ { separator }
 {
     TreeModelHelper::InitializeRoot(root_, default_unit);
-    ConstructTree();
+    ConstructTreeFPTS();
 }
 
 TreeModelFinance::~TreeModelFinance() { qDeleteAll(node_hash_); }
@@ -89,7 +89,7 @@ bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)
     endRemoveRows();
 
     if (branch) {
-        TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+        TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
         branch_path_.remove(node_id);
         sql_->RemoveNode(node_id, true);
         emit SUpdateName(node);
@@ -125,7 +125,7 @@ bool TreeModelFinance::InsertNode(int row, const QModelIndex& parent, Node* node
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    QString path { TreeModelHelper::ConstructPath(root_, node, separator_) };
+    QString path { TreeModelHelper::ConstructPathFPTS(root_, node, separator_) };
     (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
 
     emit SSearch();
@@ -133,7 +133,7 @@ bool TreeModelFinance::InsertNode(int row, const QModelIndex& parent, Node* node
     return true;
 }
 
-void TreeModelFinance::UpdateNode(const Node* tmp_node)
+void TreeModelFinance::UpdateNodeFPTS(const Node* tmp_node)
 {
     if (!tmp_node)
         return;
@@ -146,8 +146,8 @@ void TreeModelFinance::UpdateNode(const Node* tmp_node)
     if (*node == *tmp_node)
         return;
 
-    UpdateBranch(node, tmp_node->branch);
-    UpdateRule(node, tmp_node->rule);
+    UpdateBranchFPTS(node, tmp_node->branch);
+    UpdateRuleFPTO(node, tmp_node->rule);
     UpdateUnit(node, tmp_node->unit);
 
     if (node->name != tmp_node->name) {
@@ -172,7 +172,7 @@ void TreeModelFinance::UpdateDefaultUnit(int default_unit)
 
     for (auto* node : const_node_hash)
         if (node->branch && node->unit != default_unit)
-            TreeModelHelper::UpdateBranchUnit(root_, node);
+            TreeModelHelper::UpdateBranchUnitF(root_, node);
 }
 
 QVariant TreeModelFinance::data(const QModelIndex& index, int role) const
@@ -234,10 +234,10 @@ bool TreeModelFinance::setData(const QModelIndex& index, const QVariant& value, 
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumFinance::kRule:
-        UpdateRule(node, value.toBool());
+        UpdateRuleFPTO(node, value.toBool());
         break;
     case TreeEnumFinance::kBranch:
-        UpdateBranch(node, value.toBool());
+        UpdateBranchFPTS(node, value.toBool());
         break;
     case TreeEnumFinance::kUnit:
         UpdateUnit(node, value.toInt());
@@ -346,7 +346,7 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
     }
 
     sql_->DragNode(destination_parent->id, node_id);
-    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateName(node);
     emit SUpdateComboModel();
@@ -354,24 +354,30 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
     return true;
 }
 
-void TreeModelFinance::UpdateSeparator(CString& old_separator, CString& new_separator)
+void TreeModelFinance::UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
 {
-    TreeModelHelper::UpdateSeparator(leaf_path_, branch_path_, old_separator, new_separator);
+    TreeModelHelper::UpdateSeparatorFPTS(leaf_path_, branch_path_, old_separator, new_separator);
 }
 
-void TreeModelFinance::CopyNode(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNode(node_hash_, tmp_node, node_id); }
+void TreeModelFinance::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
 
 void TreeModelFinance::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
 
-QStringList TreeModelFinance::ChildrenName(int node_id, int exclude_child) const { return TreeModelHelper::ChildrenName(node_hash_, node_id, exclude_child); }
-
-QString TreeModelFinance::GetPath(int node_id) const { return TreeModelHelper::GetPath(leaf_path_, branch_path_, node_id); }
-
-void TreeModelFinance::LeafPathBranchPath(QStandardItemModel* combo_model) const { TreeModelHelper::LeafPathBranchPath(leaf_path_, branch_path_, combo_model); }
-
-void TreeModelFinance::LeafPathExcludeID(QStandardItemModel* combo_model, int exclude_id) const
+QStringList TreeModelFinance::ChildrenNameFPTS(int node_id, int exclude_child) const
 {
-    TreeModelHelper::LeafPathExcludeID(leaf_path_, combo_model, exclude_id);
+    return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child);
+}
+
+QString TreeModelFinance::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
+
+void TreeModelFinance::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const
+{
+    TreeModelHelper::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
+}
+
+void TreeModelFinance::LeafPathExcludeIDFPTS(QStandardItemModel* combo_model, int exclude_id) const
+{
+    TreeModelHelper::LeafPathExcludeIDFPTS(leaf_path_, combo_model, exclude_id);
 }
 
 QModelIndex TreeModelFinance::GetIndex(int node_id) const
@@ -404,7 +410,7 @@ void TreeModelFinance::SearchNode(QList<const Node*>& node_list, const QList<int
 
 Node* TreeModelFinance::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
 
-bool TreeModelFinance::UpdateBranch(Node* node, bool value)
+bool TreeModelFinance::UpdateBranchFPTS(Node* node, bool value)
 {
     if (node->branch == value)
         return false;
@@ -414,15 +420,15 @@ bool TreeModelFinance::UpdateBranch(Node* node, bool value)
     QString message {};
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (TreeModelHelper::HasChildren(node, message))
+    if (TreeModelHelper::HasChildrenFPTS(node, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (TreeModelHelper::IsOpened(table_hash_, node_id, message))
+    if (TreeModelHelper::IsOpenedFPTS(table_hash_, node_id, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (IsReferenced(node_id, message))
+    if (IsReferencedFPTS(node_id, message))
         return false;
 
     node->branch = value;
@@ -432,7 +438,7 @@ bool TreeModelFinance::UpdateBranch(Node* node, bool value)
     return true;
 }
 
-void TreeModelFinance::ConstructTree()
+void TreeModelFinance::ConstructTreeFPTS()
 {
     sql_->ReadNode(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };
@@ -446,7 +452,7 @@ void TreeModelFinance::ConstructTree()
 
     QString path {};
     for (auto* node : const_node_hash) {
-        path = TreeModelHelper::ConstructPath(root_, node, separator_);
+        path = TreeModelHelper::ConstructPathFPTS(root_, node, separator_);
 
         if (node->branch) {
             branch_path_.insert(node->id, path);
@@ -460,7 +466,7 @@ void TreeModelFinance::ConstructTree()
     node_hash_.insert(-1, root_);
 }
 
-bool TreeModelFinance::UpdateRule(Node* node, bool value)
+bool TreeModelFinance::UpdateRuleFPTO(Node* node, bool value)
 {
     if (node->rule == value)
         return false;
@@ -485,14 +491,14 @@ bool TreeModelFinance::UpdateUnit(Node* node, int value)
 
     int node_id { node->id };
     auto message { tr("Cannot change %1 unit,").arg(GetPath(node_id)) };
-    if (IsReferenced(node_id, message))
+    if (IsReferencedFPTS(node_id, message))
         return false;
 
     node->unit = value;
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
     if (node->branch)
-        TreeModelHelper::UpdateBranchUnit(root_, node);
+        TreeModelHelper::UpdateBranchUnitF(root_, node);
 
     return true;
 }
@@ -502,16 +508,16 @@ bool TreeModelFinance::UpdateName(Node* node, CString& value)
     node->name = value;
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
-    TreeModelHelper::UpdatePath(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;
 }
 
-bool TreeModelFinance::IsReferenced(int node_id, CString& message) const
+bool TreeModelFinance::IsReferencedFPTS(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
-        TreeModelHelper::ShowTemporaryTooltip(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
+        TreeModelHelper::ShowTemporaryTooltipFPTS(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 

@@ -2,12 +2,11 @@
 
 #include "global/resourcepool.h"
 
-TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
+TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, QObject* parent)
     : TreeModel { parent }
     , sql_ { static_cast<SqliteOrder*>(sql) }
     , info_ { info }
     , table_hash_ { table_hash }
-    , separator_ { separator }
 {
     TreeModelHelper::InitializeRoot(root_, default_unit);
 }
@@ -141,16 +140,9 @@ void TreeModelOrder::ConstructTreeOrder(const QDate& start_date, const QDate& en
     node_hash_.insert(-1, root_);
 }
 
-void TreeModelOrder::UpdateSeparator(CString& old_separator, CString& new_separator)
-{
-    TreeModelHelper::UpdateSeparator(leaf_path_, branch_path_, old_separator, new_separator);
-}
-
 void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
 
-QString TreeModelOrder::GetPath(int node_id) const { return TreeModelHelper::GetPath(leaf_path_, branch_path_, node_id); }
-
-void TreeModelOrder::SetNodeShadow(NodeShadow* node_shadow, int node_id) const
+void TreeModelOrder::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
 {
     if (!node_shadow || node_id <= 0)
         return;
@@ -160,7 +152,7 @@ void TreeModelOrder::SetNodeShadow(NodeShadow* node_shadow, int node_id) const
         node_shadow->Set(it.value());
 }
 
-void TreeModelOrder::SetNodeShadow(NodeShadow* node_shadow, Node* node) const
+void TreeModelOrder::SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const
 {
     if (!node_shadow || !node)
         return;
@@ -191,12 +183,20 @@ QModelIndex TreeModelOrder::GetIndex(int node_id) const
 
 bool TreeModelOrder::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
 
+QString TreeModelOrder::GetPath(int node_id) const
+{
+    if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
+        return it.value()->name;
+
+    return {};
+}
+
 void TreeModelOrder::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
 {
     TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
 }
 
-bool TreeModelOrder::UpdateRule(Node* node, bool value)
+bool TreeModelOrder::UpdateRuleFPTO(Node* node, bool value)
 {
     if (node->rule == value || node->branch)
         return false;
@@ -456,7 +456,7 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumOrder::kRule:
-        UpdateRule(node, value.toBool());
+        UpdateRuleFPTO(node, value.toBool());
         break;
     case TreeEnumOrder::kUnit:
         UpdateUnit(node, value.toInt());

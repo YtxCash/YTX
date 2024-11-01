@@ -11,7 +11,7 @@ class TreeModelOrder final : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+    TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, QObject* parent = nullptr);
     ~TreeModelOrder() override;
 
 signals:
@@ -40,22 +40,21 @@ public:
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
 
     void ConstructTreeOrder(const QDate& start_date, const QDate& end_date);
-    void UpdateSeparator(CString& old_separator, CString& new_separator) override;
     void SetParent(Node* node, int parent_id) const override;
-    QString GetPath(int node_id) const override;
-    void SetNodeShadow(NodeShadow* node_shadow, int node_id) const override;
-    void SetNodeShadow(NodeShadow* node_shadow, Node* node) const override;
+    void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const override;
+    void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const override;
     QModelIndex GetIndex(int node_id) const override;
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
     bool ChildrenEmpty(int node_id) const override;
     int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
     QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
+    QString GetPath(int node_id) const override;
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
     void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
 
 protected:
-    bool UpdateRule(Node* node, bool value) override; // charge = 0, refund = 1
+    bool UpdateRuleFPTO(Node* node, bool value) override; // charge = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
     bool UpdateName(Node* node, CString& value) override;
 
@@ -71,12 +70,9 @@ private:
     Node* root_ {};
 
     NodeHash node_hash_ {};
-    StringHash leaf_path_ {};
-    StringHash branch_path_ {};
 
     CInfo& info_;
     CTableHash& table_hash_;
-    CString& separator_;
 };
 
 #endif // TREEMODELORDER_H
