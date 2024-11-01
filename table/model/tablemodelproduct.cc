@@ -2,6 +2,7 @@
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
+#include "tablemodelhelper.h"
 
 TableModelProduct::TableModelProduct(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
@@ -80,7 +81,7 @@ void TableModelProduct::sort(int column, Qt::SortOrder order)
     std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 
-    AccumulateSubtotal(0, rule_);
+    TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, 0, rule_);
 }
 
 bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& parent)
@@ -107,7 +108,7 @@ bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& pa
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
-        AccumulateSubtotal(row, rule_);
+        TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
 
         sql_->RemoveTrans(trans_id);
     }

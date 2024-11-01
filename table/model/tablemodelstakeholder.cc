@@ -4,6 +4,7 @@
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
+#include "tablemodelhelper.h"
 
 TableModelStakeholder::TableModelStakeholder(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
@@ -120,22 +121,23 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     switch (kColumn) {
     case TableEnumStakeholder::kDateTime:
-        UpdateField(trans_shadow, value.toString(), DATE_TIME, &TransShadow::date_time);
+        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), DATE_TIME, &TransShadow::date_time);
         break;
     case TableEnumStakeholder::kCode:
-        UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
+        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnumStakeholder::kOutsideProduct:
-        UpdateField(trans_shadow, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
+        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
         break;
     case TableEnumStakeholder::kUnitPrice:
-        UpdateField(trans_shadow, value.toDouble(), UNIT_PRICE, &TransShadow::unit_price);
+        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toDouble(), UNIT_PRICE, &TransShadow::unit_price);
         break;
     case TableEnumStakeholder::kDescription:
-        UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
+        TableModelHelper::UpdateField(
+            sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnumStakeholder::kState:
-        UpdateField(trans_shadow, value.toBool(), STATE, &TransShadow::state);
+        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnumStakeholder::kInsideProduct:
         rhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());

@@ -79,45 +79,13 @@ protected:
     virtual bool RemoveMultiTrans(const QSet<int>& trans_id_list); // just remove trnas_shadow, keep trans
     virtual bool AppendMultiTrans(int node_id, const QList<int>& trans_id_list);
 
-    // member functions
-    double Balance(bool rule, double debit, double credit) const { return (rule ? 1 : -1) * (credit - debit); }
-
-    bool UpdateRhsNode(TransShadow* trans_shadow, int value) const;
-
-    void AccumulateSubtotal(int start, bool rule) const;
-
-protected:
-    template <typename T>
-    bool UpdateField(TransShadow* trans_shadow, const T& value, CString& field, T* TransShadow::* member, const std::function<void()>& action = {}) const
-    {
-        if (trans_shadow == nullptr || trans_shadow->*member == nullptr || *(trans_shadow->*member) == value)
-            return false;
-
-        *(trans_shadow->*member) = value;
-
-        if (*trans_shadow->rhs_node == 0)
-            return false;
-
-        try {
-            sql_->UpdateField(info_.transaction, value, field, *trans_shadow->id);
-
-            if (action)
-                action();
-        } catch (const std::exception& e) {
-            qWarning() << "Failed in UpdateField" << e.what();
-            return false;
-        }
-
-        return true;
-    }
-
 protected:
     Sqlite* sql_ {};
     bool rule_ {};
 
     CInfo& info_;
     int node_id_ {};
-    mutable QMutex mutex_ {};
+    QMutex mutex_ {};
 
     QList<TransShadow*> trans_shadow_list_ {};
 };
