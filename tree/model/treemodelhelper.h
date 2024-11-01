@@ -84,7 +84,7 @@ public:
 
     static void UpdateBranchUnitF(const Node* root, Node* node);
     static void CopyNodeFPTS(CNodeHash& node_hash, Node* tmp_node, int node_id);
-    static void UpdateAncestorValueFPT(const Node* root, Node* node, double initial_diff, double final_diff);
+    static void UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff);
     static void ShowTemporaryTooltipFPTS(CString& message, int duration);
 };
 

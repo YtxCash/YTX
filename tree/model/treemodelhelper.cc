@@ -381,7 +381,7 @@ void TreeModelHelper::LeafPathSpecificUnitPS(
     watcher->setFuture(future);
 }
 
-void TreeModelHelper::UpdateAncestorValueFPT(const Node* root, Node* node, double initial_diff, double final_diff)
+void TreeModelHelper::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff)
 {
     if (!node || node == root || node->parent == root || !node->parent)
         return;
@@ -389,15 +389,21 @@ void TreeModelHelper::UpdateAncestorValueFPT(const Node* root, Node* node, doubl
     if (initial_diff == 0 && final_diff == 0)
         return;
 
-    bool equal {};
-    const int unit { node->unit };
-    const bool rule { node->rule };
+    const int unit = node->unit;
+    const bool rule = node->rule;
 
-    for (node = node->parent; node && node != root; node = node->parent) {
-        equal = node->rule == rule;
-        node->final_total += (equal ? 1 : -1) * final_diff;
+    // 确保所有数据都是通过值传递，避免悬空指针
+    QtConcurrent::run([=, &mutex]() {
+        // 使用 RAII 方式加锁
+        QMutexLocker locker(&mutex);
 
-        if (node->unit == unit)
-            node->initial_total += (equal ? 1 : -1) * initial_diff;
-    }
+        // 遍历并更新祖先节点
+        for (Node* current = node->parent; current && current != root; current = current->parent) {
+            bool equal = current->rule == rule;
+            current->final_total += (equal ? 1 : -1) * final_diff;
+            if (current->unit == unit) {
+                current->initial_total += (equal ? 1 : -1) * initial_diff;
+            }
+        }
+    });
 }

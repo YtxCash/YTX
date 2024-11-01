@@ -66,6 +66,7 @@ protected:
 private:
     Sqlite* sql_ {};
     Node* root_ {};
+    QMutex mutex_ {};
 
     NodeHash node_hash_ {};
     StringHash leaf_path_ {};

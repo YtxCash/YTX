@@ -45,7 +45,7 @@ void TreeModelTask::RUpdateLeafValueFPTO(
     node->final_total += final_diff;
 
     sql_->UpdateNodeValue(node);
-    TreeModelHelper::UpdateAncestorValueFPT(root_, node, initial_diff, final_diff);
+    TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
 
     emit SUpdateDSpinBox();
 }
@@ -73,7 +73,7 @@ void TreeModelTask::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
         final_diff = node->final_total - old_final_total;
         initial_diff = node->initial_total - old_initial_total;
 
-        TreeModelHelper::UpdateAncestorValueFPT(root_, node, initial_diff, final_diff);
+        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -256,11 +256,11 @@ bool TreeModelTask::dropMimeData(const QMimeData* data, Qt::DropAction action, i
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        TreeModelHelper::UpdateAncestorValueFPT(root_, node, -node->initial_total, -node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
 
         destination_parent->children.insert(begin_row, node);
         node->parent = destination_parent;
-        TreeModelHelper::UpdateAncestorValueFPT(root_, node, node->initial_total, node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
 
         endMoveRows();
     }
@@ -338,11 +338,17 @@ void TreeModelTask::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelH
 
 void TreeModelTask::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
 
-QStringList TreeModelTask::ChildrenNameFPTS(int node_id, int exclude_child) const { return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child); }
+QStringList TreeModelTask::ChildrenNameFPTS(int node_id, int exclude_child) const
+{
+    return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child);
+}
 
 QString TreeModelTask::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
-void TreeModelTask::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const { TreeModelHelper::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model); }
+void TreeModelTask::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const
+{
+    TreeModelHelper::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
+}
 
 void TreeModelTask::LeafPathExcludeIDFPTS(QStandardItemModel* combo_model, int exclude_id) const
 {
@@ -406,7 +412,7 @@ bool TreeModelTask::RemoveNode(int row, const QModelIndex& parent)
     }
 
     if (!branch) {
-        TreeModelHelper::UpdateAncestorValueFPT(root_, node, -node->initial_total, -node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
 
         leaf_path_.remove(node_id);
         sql_->RemoveNode(node_id, false);
@@ -527,7 +533,7 @@ void TreeModelTask::ConstructTreeFPTS()
             continue;
         }
 
-        TreeModelHelper::UpdateAncestorValueFPT(root_, node, node->initial_total, node->final_total);
+        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
 
         leaf_path_.insert(node->id, path);
     }
