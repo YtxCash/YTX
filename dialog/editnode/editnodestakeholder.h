@@ -1,8 +1,6 @@
 #ifndef EDITNODESTAKEHOLDER_H
 #define EDITNODESTAKEHOLDER_H
 
-// Used solely for inserting node
-
 #include <QComboBox>
 #include <QDialog>
 

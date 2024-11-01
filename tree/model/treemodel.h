@@ -119,7 +119,6 @@ protected:
     virtual bool IsReferencedFPTS(int /*node_id*/, CString& /*message*/) const { return {}; }
     virtual bool UpdateBranchFPTS(Node* /*node*/, bool /*value*/) { return {}; }
     virtual bool UpdateRuleFPTO(Node* /*node*/, bool /*value*/) { return {}; }
-
     virtual void ConstructTreeFPTS() { };
 };
 
