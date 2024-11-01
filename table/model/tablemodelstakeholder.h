@@ -14,7 +14,6 @@ public slots:
     void RAppendPrice(TransShadow* trans_shadow);
 
 public:
-    // implemented functions
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     void sort(int column, Qt::SortOrder order) override;

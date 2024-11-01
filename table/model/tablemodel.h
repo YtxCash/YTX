@@ -24,7 +24,7 @@ signals:
         int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff = 0.0);
     void SSearch();
 
-    // send to signal station
+    // send to SignalStation
     void SAppendOneTrans(Section section, const TransShadow* trans_shadow);
     void SRemoveOneTrans(Section section, int node_id, int trans_id);
     void SUpdateBalance(Section section, int node_id, int trans_id);
@@ -37,7 +37,7 @@ public slots:
     void RRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans);
     void RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
-    // receive from signal station
+    // receive from SignalStation
     void RAppendOneTrans(const TransShadow* trans_shadow);
     void RRemoveOneTrans(int node_id, int trans_id);
     void RUpdateBalance(int node_id, int trans_id);
