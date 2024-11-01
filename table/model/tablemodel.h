@@ -34,11 +34,11 @@ signals:
 
 public slots:
     // receive from sql
-    void RRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
-    void RMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
+    void RRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans);
+    void RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
     // receive from tree model
-    void RRule(int node_id, bool rule);
+    void RRuleFPT(int node_id, bool rule);
 
     // receive from signal station
     void RAppendOneTrans(const TransShadow* trans_shadow);

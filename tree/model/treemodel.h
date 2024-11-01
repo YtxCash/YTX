@@ -26,7 +26,7 @@ protected:
 
 signals:
     // send to related table model
-    void SRule(int node_id, bool rule);
+    void SRuleFPT(int node_id, bool rule);
 
     // send to its view
     void SResizeColumnToContents(int column);

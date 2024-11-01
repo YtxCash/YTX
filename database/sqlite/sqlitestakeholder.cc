@@ -32,7 +32,7 @@ bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
     // end deal with database
 
     if (!trans_id_list.isEmpty())
-        emit SMoveMultiTrans(0, new_node_id, trans_id_list);
+        emit SMoveMultiTransFPTS(0, new_node_id, trans_id_list);
 
     emit SUpdateStakeholderReference(old_node_id, new_node_id);
 

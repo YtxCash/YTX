@@ -443,7 +443,7 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
 {
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
-    connect(tree_model, &TreeModel::SRule, table_model, &TableModel::RRule);
+    connect(tree_model, &TreeModel::SRuleFPT, table_model, &TableModel::RRuleFPT);
 
     connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
     connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
@@ -452,8 +452,8 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
     connect(table_model, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
     connect(table_model, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
 
-    connect(data->sql, &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
-    connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
+    connect(data->sql, &Sqlite::SRemoveMultiTransFPT, table_model, &TableModel::RRemoveMultiTransFPT);
+    connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
 }
 
 void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* table_model, PTreeModel tree_model, TableWidgetOrder* widget) const
@@ -482,7 +482,7 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 
-    connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
+    connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
 }
 
 void MainWindow::DelegateCommon(PQTableView table_view, PTreeModel tree_model, int node_id) const

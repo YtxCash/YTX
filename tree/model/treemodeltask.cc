@@ -505,7 +505,7 @@ bool TreeModelTask::UpdateRuleFPTO(Node* node, bool value)
     node->final_total = -node->final_total;
     node->initial_total = -node->initial_total;
     if (!node->branch) {
-        emit SRule(node->id, value);
+        emit SRuleFPT(node->id, value);
         sql_->UpdateNodeValue(node);
     }
 

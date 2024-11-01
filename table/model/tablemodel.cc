@@ -20,7 +20,7 @@ TableModel::TableModel(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject
 
 TableModel::~TableModel() { ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_); }
 
-void TableModel::RRemoveMultiTrans(const QMultiHash<int, int>& node_trans)
+void TableModel::RRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans)
 {
     if (!node_trans.contains(node_id_))
         return;
@@ -29,7 +29,7 @@ void TableModel::RRemoveMultiTrans(const QMultiHash<int, int>& node_trans)
     RemoveMultiTrans(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
 }
 
-void TableModel::RMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
+void TableModel::RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
 {
     if (node_id_ == old_node_id)
         RemoveMultiTrans(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
@@ -38,7 +38,7 @@ void TableModel::RMoveMultiTrans(int old_node_id, int new_node_id, const QList<i
         AppendMultiTrans(node_id_, trans_id_list);
 }
 
-void TableModel::RRule(int node_id, bool rule)
+void TableModel::RRuleFPT(int node_id, bool rule)
 {
     if (node_id_ != node_id || rule_ == rule)
         return;
