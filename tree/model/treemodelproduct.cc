@@ -91,7 +91,7 @@ void TreeModelProduct::UpdateNodeFPTS(const Node* tmp_node)
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->first, UNIT_PRICE, &Node::first);
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->second, COMMISSION, &Node::second);
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->date_time, COLOR, &Node::date_time);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->color, COLOR, &Node::color);
 }
 
 void TreeModelProduct::UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
@@ -369,7 +369,7 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
         case TreeEnumProduct::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
         case TreeEnumProduct::kColor:
-            return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
+            return (order == Qt::AscendingOrder) ? (lhs->color < rhs->color) : (lhs->color > rhs->color);
         case TreeEnumProduct::kCommission:
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
         case TreeEnumProduct::kUnitPrice:
@@ -417,7 +417,7 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
     case TreeEnumProduct::kUnit:
         return node->unit;
     case TreeEnumProduct::kColor:
-        return node->date_time;
+        return node->color;
     case TreeEnumProduct::kCommission:
         return node->second == 0 ? QVariant() : node->second;
     case TreeEnumProduct::kUnitPrice:
@@ -459,7 +459,7 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
         UpdateBranchFPTS(node, value.toBool());
         break;
     case TreeEnumProduct::kColor:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::date_time);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::color);
         break;
     case TreeEnumProduct::kUnit:
         UpdateUnit(node, value.toInt());

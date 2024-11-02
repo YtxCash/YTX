@@ -51,7 +51,7 @@ public:
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
 
-    const QString& Color(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::date_time); }
+    const QString& Color(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::color); }
     double First(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::first); }
 
 protected:

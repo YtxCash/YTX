@@ -108,7 +108,7 @@ QVariant TreeModelTask::data(const QModelIndex& index, int role) const
     case TreeEnumTask::kUnit:
         return node->unit;
     case TreeEnumTask::kColor:
-        return node->date_time;
+        return node->color;
     case TreeEnumTask::kUnitCost:
         return node->first == 0 ? QVariant() : node->first;
     case TreeEnumTask::kQuantity:
@@ -148,7 +148,7 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
         UpdateBranchFPTS(node, value.toBool());
         break;
     case TreeEnumTask::kColor:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::date_time);
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::color);
         break;
     case TreeEnumTask::kUnit:
         UpdateUnit(node, value.toInt());
@@ -187,7 +187,7 @@ void TreeModelTask::sort(int column, Qt::SortOrder order)
         case TreeEnumTask::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
         case TreeEnumTask::kColor:
-            return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
+            return (order == Qt::AscendingOrder) ? (lhs->color < rhs->color) : (lhs->color > rhs->color);
         case TreeEnumTask::kUnitCost:
             return (order == Qt::AscendingOrder) ? (lhs->first < rhs->first) : (lhs->first > rhs->first);
         case TreeEnumTask::kQuantity:
@@ -296,7 +296,7 @@ void TreeModelTask::UpdateNodeFPTS(const Node* tmp_node)
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
     TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->date_time, COLOR, &Node::date_time);
+    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->color, COLOR, &Node::color);
 }
 
 Node* TreeModelTask::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }

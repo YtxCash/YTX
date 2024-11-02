@@ -92,7 +92,7 @@ void SqliteProduct::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":rule", node->rule);
     query.bindValue(":branch", node->branch);
     query.bindValue(":unit", node->unit);
-    query.bindValue(":color", node->date_time);
+    query.bindValue(":color", node->color);
     query.bindValue(":commission", node->second);
     query.bindValue(":unit_price", node->first);
 }
@@ -107,7 +107,7 @@ void SqliteProduct::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->rule = query.value("rule").toBool();
     node->branch = query.value("branch").toBool();
     node->unit = query.value("unit").toInt();
-    node->date_time = query.value("color").toString();
+    node->color = query.value("color").toString();
     node->second = query.value("commission").toDouble();
     node->first = query.value("unit_price").toDouble();
     node->initial_total = query.value("quantity").toDouble();

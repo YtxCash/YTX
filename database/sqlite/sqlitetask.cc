@@ -177,7 +177,7 @@ void SqliteTask::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":rule", node->rule);
     query.bindValue(":branch", node->branch);
     query.bindValue(":unit", node->unit);
-    query.bindValue(":color", node->date_time);
+    query.bindValue(":color", node->color);
     query.bindValue(":unit_cost", node->first);
 }
 
@@ -193,7 +193,7 @@ void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->unit = query.value("unit").toInt();
     node->initial_total = query.value("quantity").toDouble();
     node->final_total = query.value("amount").toDouble();
-    node->date_time = query.value("color").toString();
+    node->color = query.value("color").toString();
     node->first = query.value("unit_cost").toDouble();
 }
 

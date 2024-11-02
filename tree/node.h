@@ -27,6 +27,8 @@ struct Node {
     QString code {};
     QString description {};
     QString note {};
+    QString date_time {};
+    QString color {};
     bool rule { false };
     bool branch { false };
     int unit {};
@@ -37,7 +39,6 @@ struct Node {
     bool locked {};
 
     // order and stakeholder
-    QString date_time {};
     int employee {};
     // order
     int party {};
@@ -55,6 +56,8 @@ inline Node::Node(const Node& other)
     , code(other.code)
     , description(other.description)
     , note(other.note)
+    , date_time(other.date_time)
+    , color(other.color)
     , rule(other.rule)
     , branch(other.branch)
     , unit(other.unit)
@@ -62,7 +65,6 @@ inline Node::Node(const Node& other)
     , second(other.second)
     , discount(other.discount)
     , locked(other.locked)
-    , date_time(other.date_time)
     , employee(other.employee)
     , party(other.party)
     , final_total(other.final_total)
@@ -85,6 +87,7 @@ inline Node& Node::operator=(const Node& other)
     unit = other.unit;
     first = other.first;
     second = other.second;
+    color = other.color;
     discount = other.discount;
     locked = other.locked;
     date_time = other.date_time;
@@ -98,9 +101,9 @@ inline Node& Node::operator=(const Node& other)
 
 inline bool Node::operator==(const Node& other) const noexcept
 {
-    return std::tie(name, id, code, party, employee, locked, first, date_time, description, note, rule, branch, unit, parent, children)
-        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.locked, other.first, other.date_time, other.description, other.note,
-            other.rule, other.branch, other.unit, other.parent, other.children)
+    return std::tie(name, id, code, party, employee, locked, first, date_time, color, description, note, rule, branch, unit, parent, children)
+        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.locked, other.first, other.date_time, other.color, other.description,
+            other.note, other.rule, other.branch, other.unit, other.parent, other.children)
         && std::abs(second - other.second) < TOLERANCE && std::abs(discount - other.discount) < TOLERANCE;
 }
 
@@ -118,6 +121,7 @@ inline void Node::Reset()
     date_time.clear();
     description.clear();
     note.clear();
+    color.clear();
     rule = false;
     branch = false;
     unit = 0;
@@ -146,6 +150,7 @@ struct NodeShadow {
     bool* locked {};
 
     QString* date_time {};
+    QString* color {};
     int* employee {};
     int* party {};
 
@@ -170,6 +175,7 @@ inline void NodeShadow::Reset()
     locked = nullptr;
 
     date_time = nullptr;
+    color = nullptr;
     employee = nullptr;
     party = nullptr;
 
@@ -195,6 +201,7 @@ inline void NodeShadow::Set(Node* node)
         locked = &node->locked;
 
         date_time = &node->date_time;
+        color = &node->color;
         employee = &node->employee;
         party = &node->party;
 
