@@ -332,6 +332,7 @@ bool TreeModelTask::UpdateBranchFPTS(Node* node, bool value)
 void TreeModelTask::UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
 {
     TreeModelHelper::UpdateSeparatorFPTS(leaf_path_, branch_path_, old_separator, new_separator);
+    emit SUpdateComboModel();
 }
 
 void TreeModelTask::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }

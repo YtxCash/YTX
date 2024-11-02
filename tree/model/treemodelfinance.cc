@@ -357,6 +357,7 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
 void TreeModelFinance::UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
 {
     TreeModelHelper::UpdateSeparatorFPTS(leaf_path_, branch_path_, old_separator, new_separator);
+    emit SUpdateComboModel();
 }
 
 void TreeModelFinance::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
