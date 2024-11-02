@@ -760,8 +760,8 @@ bool Sqlite::SearchTrans(TransList& trans_list, CString& text) const
     while (query.next()) {
         id = query.value("id").toInt();
 
-        if (trans_hash_.contains(id)) {
-            trans = trans_hash_.value(id);
+        if (auto it = trans_hash_.constFind(id); it != trans_hash_.constEnd()) {
+            trans = it.value();
             trans_list.emplaceBack(trans);
             continue;
         }
@@ -907,8 +907,8 @@ void Sqlite::ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, 
         id = query.value("id").toInt();
         trans_shadow = ResourcePool<TransShadow>::Instance().Allocate();
 
-        if (trans_hash_.contains(id)) {
-            trans = trans_hash_.value(id);
+        if (auto it = trans_hash_.constFind(id); it != trans_hash_.constEnd()) {
+            trans = it.value();
         } else {
             trans = ResourcePool<Trans>::Instance().Allocate();
             trans->id = id;
