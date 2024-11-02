@@ -11,7 +11,7 @@ class TreeModelOrder final : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, QObject* parent = nullptr);
+    TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObject* parent = nullptr);
     ~TreeModelOrder() override;
 
 signals:
@@ -39,7 +39,7 @@ public:
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
 
-    void ConstructTreeOrder(const QDate& start_date, const QDate& end_date);
+    void UpdateTree(const QDate& start_date, const QDate& end_date);
     void SetParent(Node* node, int parent_id) const override;
     void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const override;
     void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const override;
@@ -57,8 +57,8 @@ protected:
     bool UpdateRuleFPTO(Node* node, bool value) override; // charge = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
     bool UpdateName(Node* node, CString& value) override;
-
     Node* GetNodeByIndex(const QModelIndex& index) const override;
+    void ConstructTree() override;
 
 private:
     bool UpdateLocked(Node* node, bool value);
@@ -72,7 +72,6 @@ private:
     NodeHash node_hash_ {};
 
     CInfo& info_;
-    CTableHash& table_hash_;
 };
 
 #endif // TREEMODELORDER_H

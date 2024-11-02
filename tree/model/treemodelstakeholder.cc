@@ -10,7 +10,7 @@ TreeModelStakeholder::TreeModelStakeholder(Sqlite* sql, CInfo& info, int default
     , separator_ { separator }
 {
     TreeModelHelper::InitializeRoot(root_, default_unit);
-    ConstructTreeFPTS();
+    ConstructTree();
 }
 
 TreeModelStakeholder::~TreeModelStakeholder() { qDeleteAll(node_hash_); }
@@ -199,7 +199,7 @@ bool TreeModelStakeholder::UpdateName(Node* node, CString& value)
     return true;
 }
 
-void TreeModelStakeholder::ConstructTreeFPTS()
+void TreeModelStakeholder::ConstructTree()
 {
     sql_->ReadNode(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };

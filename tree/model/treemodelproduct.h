@@ -61,7 +61,7 @@ protected:
     bool UpdateBranchFPTS(Node* node, bool value) override;
     bool UpdateName(Node* node, CString& value) override;
     bool UpdateRuleFPTO(Node* node, bool value) override;
-    void ConstructTreeFPTS() override;
+    void ConstructTree() override;
 
 private:
     Sqlite* sql_ {};

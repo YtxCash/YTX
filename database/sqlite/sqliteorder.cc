@@ -14,6 +14,8 @@ SqliteOrder::SqliteOrder(CInfo& info, QObject* parent)
 {
 }
 
+SqliteOrder::~SqliteOrder() { qDeleteAll(node_hash_buffer_); }
+
 bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const QDate& end_date)
 {
     CString& string { ReadNodeQS() };
@@ -34,17 +36,26 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
 
     Node* node {};
     int id {};
+    QSet<int> keep {};
+
     while (query.next()) {
         id = query.value("id").toInt();
+        keep.insert(id);
 
         if (node_hash.contains(id))
             continue;
 
+        if (node_hash_buffer_.contains(id)) {
+            node_hash.insert(id, node_hash_buffer_.take(id));
+            continue;
+        }
+
         node = ResourcePool<Node>::Instance().Allocate();
         ReadNodeQuery(node, query);
-        node_hash.insert(node->id, node);
+        node_hash.insert(id, node);
     }
 
+    MoveToBuffer(node_hash, node_hash_buffer_, keep);
     ReadRelationship(node_hash, query);
     return true;
 }

@@ -10,7 +10,7 @@ TreeModelFinance::TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, C
     , separator_ { separator }
 {
     TreeModelHelper::InitializeRoot(root_, default_unit);
-    ConstructTreeFPTS();
+    ConstructTree();
 }
 
 TreeModelFinance::~TreeModelFinance() { qDeleteAll(node_hash_); }
@@ -439,7 +439,7 @@ bool TreeModelFinance::UpdateBranchFPTS(Node* node, bool value)
     return true;
 }
 
-void TreeModelFinance::ConstructTreeFPTS()
+void TreeModelFinance::ConstructTree()
 {
     sql_->ReadNode(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };

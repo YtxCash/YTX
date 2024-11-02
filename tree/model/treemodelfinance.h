@@ -61,7 +61,7 @@ protected:
 
     Node* GetNodeByIndex(const QModelIndex& index) const override;
     bool UpdateBranchFPTS(Node* node, bool value) override;
-    void ConstructTreeFPTS() override;
+    void ConstructTree() override;
 
 private:
     Sqlite* sql_ {};

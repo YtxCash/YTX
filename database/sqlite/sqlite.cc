@@ -863,7 +863,7 @@ bool Sqlite::ReadRelationship(const NodeHash& node_hash, QSqlQuery& query) const
         ancestor = node_hash.value(ancestor_id);
         descendant = node_hash.value(descendant_id);
 
-        if (!ancestor || !descendant)
+        if (!ancestor || !descendant || descendant->parent)
             continue;
 
         ancestor->children.emplaceBack(descendant);

@@ -10,7 +10,7 @@ TreeModelTask::TreeModelTask(Sqlite* sql, CInfo& info, int default_unit, CTableH
     , separator_ { separator }
 {
     TreeModelHelper::InitializeRoot(root_, default_unit);
-    ConstructTreeFPTS();
+    ConstructTree();
 }
 
 TreeModelTask::~TreeModelTask() { qDeleteAll(node_hash_); }
@@ -513,7 +513,7 @@ bool TreeModelTask::UpdateRuleFPTO(Node* node, bool value)
     return true;
 }
 
-void TreeModelTask::ConstructTreeFPTS()
+void TreeModelTask::ConstructTree()
 {
     sql_->ReadNode(node_hash_);
     const auto& const_node_hash { std::as_const(node_hash_) };

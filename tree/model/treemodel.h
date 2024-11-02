@@ -107,12 +107,12 @@ protected:
     virtual Node* GetNodeByIndex(const QModelIndex& index) const = 0;
     virtual bool UpdateName(Node* node, CString& value) = 0;
     virtual bool UpdateUnit(Node* node, int value) = 0;
+    virtual void ConstructTree() = 0;
 
     // Default implementations
     virtual bool IsReferencedFPTS(int /*node_id*/, CString& /*message*/) const { return {}; }
     virtual bool UpdateBranchFPTS(Node* /*node*/, bool /*value*/) { return {}; }
     virtual bool UpdateRuleFPTO(Node* /*node*/, bool /*value*/) { return {}; }
-    virtual void ConstructTreeFPTS() { };
 };
 
 using PTreeModel = QPointer<TreeModel>;

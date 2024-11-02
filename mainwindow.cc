@@ -1231,7 +1231,7 @@ void MainWindow::SetSalesData()
 
     sql = new SqliteOrder(info, this);
 
-    auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, this) };
+    auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, this) };
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
 
     connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
@@ -1263,7 +1263,7 @@ void MainWindow::SetPurchaseData()
 
     sql = new SqliteOrder(info, this);
 
-    auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, this) };
+    auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, this) };
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
 
     connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);

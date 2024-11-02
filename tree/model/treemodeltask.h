@@ -57,7 +57,7 @@ protected:
     bool UpdateName(Node* node, CString& value) override;
     bool UpdateUnit(Node* node, int value) override;
     bool UpdateRuleFPTO(Node* node, bool value) override;
-    void ConstructTreeFPTS() override;
+    void ConstructTree() override;
     Node* GetNodeByIndex(const QModelIndex& index) const override;
 
 private:

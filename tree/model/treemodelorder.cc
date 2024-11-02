@@ -2,13 +2,13 @@
 
 #include "global/resourcepool.h"
 
-TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, QObject* parent)
+TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObject* parent)
     : TreeModel { parent }
     , sql_ { static_cast<SqliteOrder*>(sql) }
     , info_ { info }
-    , table_hash_ { table_hash }
 {
     TreeModelHelper::InitializeRoot(root_, default_unit);
+    ConstructTree();
 }
 
 TreeModelOrder::~TreeModelOrder() { qDeleteAll(node_hash_); }
@@ -120,8 +120,9 @@ void TreeModelOrder::UpdateAncestorValueOrder(Node* node, double first_diff, dou
 
 Node* TreeModelOrder::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
 
-void TreeModelOrder::ConstructTreeOrder(const QDate& start_date, const QDate& end_date)
+void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
 {
+    beginResetModel();
     sql_->ReadNode(node_hash_, start_date, end_date);
 
     const auto& const_node_hash { std::as_const(node_hash_) };
@@ -133,11 +134,19 @@ void TreeModelOrder::ConstructTreeOrder(const QDate& start_date, const QDate& en
         }
     }
 
-    for (auto* node : const_node_hash)
+    for (auto* node : const_node_hash) {
+        if (node->branch) {
+            node->first = 0.0;
+            node->second = 0.0;
+            node->initial_total = 0.0;
+            node->discount = 0.0;
+            node->final_total = 0.0;
+        }
+
         if (!node->branch && node->locked)
             UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
-
-    node_hash_.insert(-1, root_);
+    }
+    endResetModel();
 }
 
 void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
@@ -273,6 +282,26 @@ bool TreeModelOrder::UpdateName(Node* node, CString& value)
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kName));
     return true;
+}
+
+void TreeModelOrder::ConstructTree()
+{
+    sql_->ReadNode(node_hash_, QDate::currentDate(), QDate::currentDate());
+
+    const auto& const_node_hash { std::as_const(node_hash_) };
+
+    for (auto* node : const_node_hash) {
+        if (!node->parent) {
+            node->parent = root_;
+            root_->children.emplace_back(node);
+        }
+    }
+
+    for (auto* node : const_node_hash)
+        if (!node->branch && node->locked)
+            UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
+
+    node_hash_.insert(-1, root_);
 }
 
 void TreeModelOrder::sort(int column, Qt::SortOrder order)

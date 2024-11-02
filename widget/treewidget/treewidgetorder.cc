@@ -19,7 +19,6 @@ TreeWidgetOrder::TreeWidgetOrder(TreeModel* model, CInfo& info, CSettings& setti
     ui->dateEditStart->setDate(start_);
     ui->dateEditEnd->setDate(end_);
 
-    model_->ConstructTreeOrder(start_, end_);
     ui->treeViewOrder->setModel(model);
 }
 
@@ -49,4 +48,4 @@ void TreeWidgetOrder::on_dateEditEnd_dateChanged(const QDate& date)
     end_ = date;
 }
 
-void TreeWidgetOrder::on_pBtnRefresh_clicked() { model_->ConstructTreeOrder(start_, end_); }
+void TreeWidgetOrder::on_pBtnRefresh_clicked() { model_->UpdateTree(start_, end_); }
