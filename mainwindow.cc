@@ -19,11 +19,11 @@
 #include "database/sqlite/sqlitestakeholder.h"
 #include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
-#include "delegate/datetime.h"
 #include "delegate/line.h"
 #include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
 #include "delegate/table/tablecombo.h"
+#include "delegate/table/tabledatetime.h"
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespin.h"
 #include "delegate/table/tabledoublespinr.h"
@@ -33,6 +33,7 @@
 #include "delegate/tree/stakeholder/deadline.h"
 #include "delegate/tree/stakeholder/paymentperiod.h"
 #include "delegate/tree/treecombo.h"
+#include "delegate/tree/treedatetime.h"
 #include "delegate/tree/treedoublespin.h"
 #include "delegate/tree/treedoublespinpercent.h"
 #include "delegate/tree/treedoublespinr.h"
@@ -490,7 +491,7 @@ void MainWindow::DelegateCommon(PQTableView table_view, PTreeModel tree_model, i
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
-    auto* date_time { new DateTime(interface_.date_format, false, table_view) };
+    auto* date_time { new TableDateTime(interface_.date_format, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
 
     auto* line { new Line(table_view) };
@@ -554,7 +555,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings
     auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
-    auto* date_time { new DateTime(interface_.date_format, false, table_view) };
+    auto* date_time { new TableDateTime(interface_.date_format, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
 
     auto* line { new Line(table_view) };
@@ -694,6 +695,9 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 
     auto* color { new Color(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
+
+    auto* date_time { new TreeDateTime(interface_.date_format, true, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kDateTime), date_time);
 }
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
@@ -749,7 +753,7 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, party, &SpecificUnit::RUpdateComboModel);
 
-    auto* date_time { new DateTime(interface_.date_format, true, tree_view) };
+    auto* date_time { new TreeDateTime(interface_.date_format, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
     auto* locked { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
@@ -1299,13 +1303,13 @@ void MainWindow::SetHeader()
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Term"), tr("Branch"), tr("Mark"),
         tr("Deadline"), tr("Employee"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
-    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Color"),
-        tr("UnitCost"), tr("Quantity"), tr("Amount"), "" };
+    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("DateTime"),
+        tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), "" };
     task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Debit"),
         tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
     task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
-        tr("Color"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
+        tr("DateTime"), tr("Color"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled") };
@@ -1538,6 +1542,7 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
         dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, true, this);
         break;
     case Section::kTask:
+        node->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);
         dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, true, this);
         break;
     case Section::kStakeholder:

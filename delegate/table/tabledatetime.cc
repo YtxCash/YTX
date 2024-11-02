@@ -1,28 +1,23 @@
-#include "datetime.h"
+#include "tabledatetime.h"
 
 #include "component/constvalue.h"
-#include "component/enumclass.h"
 #include "widget/datetimeedit.h"
 
-DateTime::DateTime(const QString& date_format, bool skip_branch, QObject* parent)
+TableDateTime::TableDateTime(const QString& date_format, QObject* parent)
     : StyledItemDelegate { parent }
     , date_format_ { date_format }
-    , skip_branch_ { skip_branch }
 {
 }
 
-QWidget* DateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QWidget* TableDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
 {
-    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
-        return nullptr;
-
     auto* editor { new DateTimeEdit(parent) };
     editor->setDisplayFormat(date_format_);
 
     return editor;
 }
 
-void DateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
+void TableDateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto date_time { QDateTime::fromString(index.data().toString(), DATE_TIME_FST) };
     if (!date_time.isValid())
@@ -32,7 +27,7 @@ void DateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
     cast_ediotr->setDateTime(date_time);
 }
 
-void DateTime::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void TableDateTime::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_ediotr { static_cast<DateTimeEdit*>(editor) };
     auto date_time { cast_ediotr->dateTime() };
@@ -41,7 +36,7 @@ void DateTime::setModelData(QWidget* editor, QAbstractItemModel* model, const QM
     model->setData(index, date_time.toString(DATE_TIME_FST));
 }
 
-void DateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void TableDateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto date_time { index.data().toDateTime() };
     if (!date_time.isValid())
@@ -50,7 +45,7 @@ void DateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
     PaintText(date_time.toString(date_format_), painter, option, index, Qt::AlignCenter);
 }
 
-QSize DateTime::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize TableDateTime::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto text { index.data().toDateTime().toString(date_format_) };
     return CalculateTextSize(text, option);
