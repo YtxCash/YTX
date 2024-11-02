@@ -41,23 +41,7 @@ protected:
     QString UpdateTransValueQS() const override;
 
 private:
-    void MoveToBuffer(QHash<int, Node*>& node_hash, QHash<int, Node*>& node_hash_buffer, const QSet<int>& keep)
-    {
-        // 预分配空间以提高性能
-        const auto estimated_moves { node_hash.size() - keep.size() };
-        if (estimated_moves >= 1) {
-            node_hash_buffer.reserve(node_hash_buffer.size() + estimated_moves);
-        }
-
-        for (auto it = node_hash.begin(); it != node_hash.end();) {
-            if (!keep.contains(it.key())) {
-                node_hash_buffer.insert(it.key(), it.value());
-                it = node_hash.erase(it);
-            } else {
-                ++it;
-            }
-        }
-    }
+    void MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer, const QSet<int>& keep);
 
 private:
     CString& node_;

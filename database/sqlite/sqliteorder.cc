@@ -45,8 +45,9 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
         if (node_hash.contains(id))
             continue;
 
-        if (node_hash_buffer_.contains(id)) {
-            node_hash.insert(id, node_hash_buffer_.take(id));
+        if (auto it = node_hash_buffer_.constFind(id); it != node_hash_buffer_.constEnd()) {
+            node_hash.insert(id, std::move(it.value()));
+            node_hash_buffer_.erase(it);
             continue;
         }
 
@@ -166,6 +167,23 @@ QString SqliteOrder::UpdateTransValueQS() const
     WHERE id = :trans_id
     )")
         .arg(transaction_);
+}
+
+void SqliteOrder::MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer, const QSet<int>& keep)
+{
+    const auto estimated_moves { node_hash.size() - keep.size() };
+    if (estimated_moves >= 1) {
+        node_hash_buffer.reserve(node_hash_buffer.size() + estimated_moves);
+    }
+
+    for (auto it = node_hash.cbegin(); it != node_hash.cend();) {
+        if (!keep.contains(it.key())) {
+            node_hash_buffer.insert(it.key(), std::move(it.value()));
+            it = static_cast<NodeHash::const_iterator>(node_hash.erase(it));
+        } else {
+            ++it;
+        }
+    }
 }
 
 void SqliteOrder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
