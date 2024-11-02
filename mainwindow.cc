@@ -1686,7 +1686,7 @@ void MainWindow::RUpdateName(const Node* node)
         QQueue<const Node*> queue {};
         queue.enqueue(node);
 
-        QList<int> list {};
+        QSet<int> set {};
         while (!queue.isEmpty()) {
             auto* queue_node = queue.dequeue();
 
@@ -1694,7 +1694,7 @@ void MainWindow::RUpdateName(const Node* node)
                 for (const auto* child : queue_node->children)
                     queue.enqueue(child);
             else
-                list.emplaceBack(queue_node->id);
+                set.insert(queue_node->id);
         }
 
         int node_id {};
@@ -1703,7 +1703,7 @@ void MainWindow::RUpdateName(const Node* node)
         for (int index = 0; index != count; ++index) {
             node_id = tab_bar->tabData(index).value<Tab>().node_id;
 
-            if (list.contains(node_id)) {
+            if (set.contains(node_id)) {
                 path = model->GetPath(node_id);
                 tab_bar->setTabToolTip(index, path);
             }
