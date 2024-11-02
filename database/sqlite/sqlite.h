@@ -20,14 +20,14 @@ protected:
     Sqlite(CInfo& info, QObject* parent = nullptr);
 
 signals:
-    // send to all table model
+    // send to all TableModel
     void SRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans);
     void SMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
-    // send to tree model
+    // send to TreeModel
     void SUpdateMultiLeafTotalFPT(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
-    // send to mainwindow
+    // send to Mainwindow
     void SFreeView(int node_id);
     // send to sql itsself
     void SUpdateProductReference(int old_node_id, int new_node_id);

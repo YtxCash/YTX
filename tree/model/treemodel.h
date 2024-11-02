@@ -31,35 +31,28 @@ signals:
     // send to its view
     void SResizeColumnToContents(int column);
 
-    // send to search dialog
+    // send to Search dialog
     void SSearch();
 
     // send to Mainwindow
     void SUpdateName(const Node* node);
     void SUpdateDSpinBox();
 
-    // send to specificunit delegate, table combo delegate, InsertNodeOrder and TableWidgetOrder
+    // send to SpecificUnit delegate, TableCombo delegate, EditNodeOrder and TableWidgetOrder
     void SUpdateComboModel();
 
 public slots:
-    // receive from sqlite
+    // receive from Sqlite
     bool RRemoveNode(int node_id);
-
-    // default impl for order, stakeholder
     virtual void RUpdateMultiLeafTotalFPT(const QList<int>& /*node_list*/) { }
 
-    // receive from related table model
-    // default impl for finance, stakeholder, product
+    // receive from  TableModel
+    void RSearch() { emit SSearch(); }
     virtual void RUpdateLeafValueTO(int /*node_id*/, double /*diff*/, CString& /*node_field*/) { }
-
-    // default impl for stakeholder
     virtual void RUpdateLeafValueFPTO(int /*node_id*/, double /*initial_debit_diff*/, double /*initial_credit_diff*/, double /*final_debit_diff*/,
         double /*final_credit_diff*/, double /*settled_diff*/)
     {
     }
-
-    // receive from TableModel
-    void RSearch() { emit SSearch(); }
 
 public:
     // Qt's

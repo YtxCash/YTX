@@ -17,13 +17,11 @@ public slots:
     void RUpdateMultiLeafTotalFPT(const QList<int>& node_list) override;
 
 public:
-    // virtual functions
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     void UpdateNodeFPTS(const Node* tmp_node) override;
     void UpdateDefaultUnit(int default_unit) override;
 
-    // implemented functions
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     void sort(int column, Qt::SortOrder order) override;
@@ -56,7 +54,6 @@ public:
     void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
 
 protected:
-    // virtual functions
     bool UpdateRuleFPTO(Node* node, bool value) override;
     bool UpdateUnit(Node* node, int value) override;
     bool UpdateName(Node* node, CString& value) override;
