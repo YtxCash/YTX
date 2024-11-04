@@ -1197,7 +1197,7 @@ void MainWindow::SetTaskData()
     info.path = TASK_PATH;
     info.transaction = TASK_TRANSACTION;
 
-    QStringList unit_list { {}, tr("PRODUCT"), tr("PARTY") };
+    QStringList unit_list { {}, tr("PRODUCT"), tr("STAKEHOLDER") };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)

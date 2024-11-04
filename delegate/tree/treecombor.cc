@@ -15,7 +15,7 @@ void TreeComboR::paint(QPainter* painter, const QStyleOptionViewItem& option, co
 
 QSize TreeComboR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QString text = HashValue(index.data(Qt::EditRole).toInt());
+    const QString text = HashValue(index.data().toInt());
     return CalculateTextSize(text, option);
 }
 

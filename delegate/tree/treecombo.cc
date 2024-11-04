@@ -60,7 +60,7 @@ void TreeCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, con
 
 QSize TreeCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QString text = HashValue(index.data(Qt::EditRole).toInt());
+    const QString text = HashValue(index.data().toInt());
     return CalculateTextSize(text, option);
 }
 

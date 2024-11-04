@@ -105,10 +105,10 @@ enum class TreeEnumSearch {
     kColor,
     kFirst,
     kSecond,
-    kLocked,
-    kAmount,
     kDiscount,
-    kSettled
+    kLocked,
+    kInitialTotal,
+    kFinalTotal
 };
 
 // Enum class defining check options

@@ -70,33 +70,40 @@ void Search::HideTreeColumn(QTableView* view, Section section)
 {
     switch (section) {
     case Section::kFinance:
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kParty), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kEmployee), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDateTime), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kFirst), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kSecond), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDiscount), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kParty), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDateTime), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kFirst), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kSecond), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kColor), true);
         break;
     case Section::kTask:
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kEmployee), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kParty), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDiscount), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kLocked), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kSecond), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kParty), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kSecond), true);
         break;
     case Section::kProduct:
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kEmployee), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kParty), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDiscount), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kParty), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDateTime), true);
         break;
     case Section::kStakeholder:
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kAmount), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kSettled), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDateTime), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kDiscount), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumOrder::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kInitialTotal), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kFinalTotal), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDateTime), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kColor), true);
+        break;
+    case Section::kSales:
+    case Section::kPurchase:
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kColor), true);
         break;
     default:
         break;
@@ -146,35 +153,35 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setModel(model);
 
     auto* unit { new TreeComboR(info_.unit_hash, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kUnit), unit);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kUnit), unit);
 
     auto* rule { new TreeComboR(rule_hash_, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kRule), rule);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kRule), rule);
 
     auto* total { new TreeDoubleSpinR(settings_.amount_decimal, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), total);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), total);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), total);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kInitialTotal), total);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFinalTotal), total);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kDiscount), total);
 
     auto* check { new CheckBoxR(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kBranch), check);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), check);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kBranch), check);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kLocked), check);
 
     auto* name { new SearchComboR(tree_, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kName), name);
 
     if (info_.section == Section::kProduct || info_.section == Section::kTask) {
         auto* color { new ColorR(view) };
-        view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), color);
+        view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kColor), color);
     }
 
     auto* party { new SearchComboR(stakeholder_tree_, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), party);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kParty), party);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kEmployee), party);
 
     auto* value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), value);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), value);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFirst), value);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kSecond), value);
 
     // view->setColumnHidden(std::to_underlying(TreeEnum::kID), true);
 }
@@ -238,7 +245,7 @@ void Search::IniView(QTableView* view)
 void Search::ResizeTreeColumn(QHeaderView* header)
 {
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
-    header->setSectionResizeMode(std::to_underlying(TreeEnumOrder::kDescription), QHeaderView::Stretch);
+    header->setSectionResizeMode(std::to_underlying(TreeEnumSearch::kDescription), QHeaderView::Stretch);
 }
 
 void Search::ResizeTableColumn(QHeaderView* header)

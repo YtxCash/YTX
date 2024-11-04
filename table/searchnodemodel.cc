@@ -58,7 +58,7 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
     case TreeEnumSearch::kRule:
         return node->rule;
     case TreeEnumSearch::kBranch:
-        return node->branch;
+        return node->branch ? node->branch : QVariant();
     case TreeEnumSearch::kUnit:
         return node->unit;
     case TreeEnumSearch::kParty:
@@ -76,10 +76,10 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
     case TreeEnumSearch::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
     case TreeEnumSearch::kLocked:
-        return node->locked == 0 ? QVariant() : node->locked;
-    case TreeEnumSearch::kAmount:
+        return node->locked ? node->locked : QVariant();
+    case TreeEnumSearch::kInitialTotal:
         return node->initial_total;
-    case TreeEnumSearch::kSettled:
+    case TreeEnumSearch::kFinalTotal:
         return node->final_total;
     default:
         return QVariant();
@@ -96,7 +96,7 @@ QVariant SearchNodeModel::headerData(int section, Qt::Orientation orientation, i
 
 void SearchNodeModel::sort(int column, Qt::SortOrder order)
 {
-    if (column <= -1 || column >= info_.tree_header.size())
+    if (column <= -1 || column >= info_.search_node_header.size())
         return;
 
     auto Compare = [column, order](const Node* lhs, const Node* rhs) -> bool {
@@ -133,8 +133,10 @@ void SearchNodeModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->discount < rhs->discount) : (lhs->discount > rhs->discount);
         case TreeEnumSearch::kLocked:
             return (order == Qt::AscendingOrder) ? (lhs->locked < rhs->locked) : (lhs->locked > rhs->locked);
-        case TreeEnumSearch::kAmount:
+        case TreeEnumSearch::kFinalTotal:
             return (order == Qt::AscendingOrder) ? (lhs->final_total < rhs->final_total) : (lhs->final_total > rhs->final_total);
+        case TreeEnumSearch::kInitialTotal:
+            return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
         default:
             return false;
         }
