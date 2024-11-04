@@ -1,14 +1,14 @@
-#ifndef SEARCHPATHBYCOLUMNR_H
-#define SEARCHPATHBYCOLUMNR_H
+#ifndef SEARCHPATHTREER_H
+#define SEARCHPATHTREER_H
 
 // read only
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-class SearchPathByColumnR final : public StyledItemDelegate {
+class SearchPathTreeR final : public StyledItemDelegate {
 public:
-    SearchPathByColumnR(CTreeModel* model, int column, QObject* parent = nullptr);
+    SearchPathTreeR(CTreeModel* model, int column, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -20,4 +20,4 @@ private:
     int column_ {};
 };
 
-#endif // SEARCHPATHBYCOLUMNR_H
+#endif // SEARCHPATHTREER_H

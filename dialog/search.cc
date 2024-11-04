@@ -5,7 +5,8 @@
 #include "component/enumclass.h"
 #include "delegate/checkbox.h"
 #include "delegate/checkboxr.h"
-#include "delegate/search/searchpathbycolumnr.h"
+#include "delegate/search/searchpathtabler.h"
+#include "delegate/search/searchpathtreer.h"
 #include "delegate/table/colorr.h"
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespinr.h"
@@ -169,7 +170,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kBranch), check);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kLocked), check);
 
-    auto* name { new SearchPathByColumnR(tree_, std::to_underlying(TreeEnumSearch::kID), view) };
+    auto* name { new SearchPathTreeR(tree_, std::to_underlying(TreeEnumSearch::kID), view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kName), name);
 
     if (info_.section == Section::kProduct || info_.section == Section::kTask) {
@@ -177,11 +178,9 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
         view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kColor), color);
     }
 
-    auto* party { new SearchPathByColumnR(stakeholder_tree_, std::to_underlying(TreeEnumSearch::kParty), view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kParty), party);
-
-    auto* employee { new SearchPathByColumnR(stakeholder_tree_, std::to_underlying(TreeEnumSearch::kEmployee), view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kEmployee), employee);
+    auto* stakeholder { new SearchPathTableR(stakeholder_tree_, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kParty), stakeholder);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kEmployee), stakeholder);
 
     auto* value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFirst), value);
@@ -208,26 +207,24 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kUnitPrice), ratio);
 
     if (info_.section == Section::kFinance || info_.section == Section::kTask || info_.section == Section::kProduct) {
-        auto* lhs_node_name { new SearchPathByColumnR(tree_, std::to_underlying(TableEnumSearch::kLhsNode), view) };
-        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), lhs_node_name);
-
-        auto* rhs_node_name { new SearchPathByColumnR(tree_, std::to_underlying(TableEnumSearch::kRhsNode), view) };
-        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), rhs_node_name);
+        auto* node_name { new SearchPathTableR(tree_, view) };
+        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), node_name);
+        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
     }
 
     if (info_.section == Section::kStakeholder) {
-        auto* rhs_node_name { new SearchPathByColumnR(tree_, std::to_underlying(TableEnumSearch::kRhsNode), view) };
+        auto* rhs_node_name { new SearchPathTableR(tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), rhs_node_name);
 
-        auto* lhs_node_name { new SearchPathByColumnR(product_tree_, std::to_underlying(TableEnumSearch::kLhsNode), view) };
+        auto* lhs_node_name { new SearchPathTableR(product_tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), lhs_node_name);
     }
 
     if (info_.section == Section::kSales || info_.section == Section::kPurchase) {
-        auto* rhs_node_name { new SearchPathByColumnR(stakeholder_tree_, std::to_underlying(TableEnumSearch::kRhsNode), view) };
+        auto* rhs_node_name { new SearchPathTableR(stakeholder_tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), rhs_node_name);
 
-        auto* lhs_node_name { new SearchPathByColumnR(product_tree_, std::to_underlying(TableEnumSearch::kLhsNode), view) };
+        auto* lhs_node_name { new SearchPathTableR(product_tree_, view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), lhs_node_name);
     }
 
@@ -288,7 +285,20 @@ void Search::RDoubleClicked(const QModelIndex& index)
         int lhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kLhsNode)).data().toInt() };
         int rhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kRhsNode)).data().toInt() };
         int trans_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kID)).data().toInt() };
-        emit STableLocation(trans_id, lhs_node_id, rhs_node_id);
+        int node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kNodeID)).data().toInt() };
+
+        switch (info_.section) {
+        case Section::kStakeholder:
+            emit STableLocation(trans_id, node_id, 0);
+            break;
+        case Section::kFinance:
+        case Section::kProduct:
+        case Section::kTask:
+            emit STableLocation(trans_id, lhs_node_id, rhs_node_id);
+            break;
+        default:
+            break;
+        }
     }
 }
 
