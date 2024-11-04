@@ -726,6 +726,10 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
 
     auto* deadline { new DeadLine(DD, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
+
+    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
+    connect(stakeholder_tree_->Model(), &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 }
 
 void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const
@@ -1297,7 +1301,7 @@ void MainWindow::SetHeader()
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"),
         tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
     stakeholder_data_.info.table_header
-        = { tr("ID"), tr("OutsideProduct"), tr("DateTime"), tr("Code"), tr("Description"), tr("D"), tr("S"), tr("InsideProduct"), tr("UnitPrice") };
+        = { tr("ID"), tr("InsideProduct"), tr("DateTime"), tr("Code"), tr("Description"), tr("D"), tr("S"), tr("OutsideProduct"), tr("UnitPrice") };
     stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("InsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
         tr("NodeID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("OutsideProduct") };
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {},
@@ -1928,7 +1932,8 @@ void MainWindow::RSearchTriggered()
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    auto* dialog { new Search(data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), data_->sql, data_->info.rule_hash, *settings_, this) };
+    auto* dialog { new Search(
+        data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), data_->sql, data_->info.rule_hash, *settings_, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);

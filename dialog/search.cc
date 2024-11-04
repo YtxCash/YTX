@@ -5,7 +5,7 @@
 #include "component/enumclass.h"
 #include "delegate/checkbox.h"
 #include "delegate/checkboxr.h"
-#include "delegate/search/searchcombor.h"
+#include "delegate/search/searchpathbycolumnr.h"
 #include "delegate/table/colorr.h"
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespinr.h"
@@ -14,12 +14,14 @@
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
-Search::Search(CInfo& info, const TreeModel* tree, const TreeModel* stakeholder_tree, Sqlite* sql, CStringHash& rule_hash, CSettings& settings, QWidget* parent)
+Search::Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, Sqlite* sql, CStringHash& rule_hash, CSettings& settings,
+    QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Search)
     , sql_ { sql }
     , tree_ { tree }
     , stakeholder_tree_ { stakeholder_tree }
+    , product_tree_ { product_tree }
     , settings_ { settings }
     , info_ { info }
     , rule_hash_ { rule_hash }
@@ -73,33 +75,33 @@ void Search::HideTreeColumn(QTableView* view, Section section)
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kParty), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDateTime), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kColor), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kFirst), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kSecond), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kColor), true);
         break;
     case Section::kTask:
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kParty), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kSecond), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kSecond), true);
         break;
     case Section::kProduct:
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kParty), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kEmployee), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDateTime), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDateTime), true);
         break;
     case Section::kStakeholder:
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kInitialTotal), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kFinalTotal), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDateTime), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kParty), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kColor), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kDiscount), true);
         view->setColumnHidden(std::to_underlying(TreeEnumSearch::kLocked), true);
-        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kColor), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kInitialTotal), true);
+        view->setColumnHidden(std::to_underlying(TreeEnumSearch::kFinalTotal), true);
         break;
     case Section::kSales:
     case Section::kPurchase:
@@ -167,7 +169,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kBranch), check);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kLocked), check);
 
-    auto* name { new SearchComboR(tree_, view) };
+    auto* name { new SearchPathByColumnR(tree_, std::to_underlying(TreeEnumSearch::kID), view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kName), name);
 
     if (info_.section == Section::kProduct || info_.section == Section::kTask) {
@@ -175,9 +177,11 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
         view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kColor), color);
     }
 
-    auto* party { new SearchComboR(stakeholder_tree_, view) };
+    auto* party { new SearchPathByColumnR(stakeholder_tree_, std::to_underlying(TreeEnumSearch::kParty), view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kParty), party);
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kEmployee), party);
+
+    auto* employee { new SearchPathByColumnR(stakeholder_tree_, std::to_underlying(TreeEnumSearch::kEmployee), view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kEmployee), employee);
 
     auto* value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFirst), value);
@@ -204,23 +208,27 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kUnitPrice), ratio);
 
     if (info_.section == Section::kFinance || info_.section == Section::kTask || info_.section == Section::kProduct) {
-        auto* node_name { new SearchComboR(tree_, view) };
-        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
-        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
-    }
-
-    if (info_.section == Section::kStakeholder) {
-        auto* lhs_node_name { new SearchComboR(tree_, view) };
+        auto* lhs_node_name { new SearchPathByColumnR(tree_, std::to_underlying(TableEnumSearch::kLhsNode), view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), lhs_node_name);
 
-        auto* rhs_node_name { new SearchComboR(stakeholder_tree_, view) };
+        auto* rhs_node_name { new SearchPathByColumnR(tree_, std::to_underlying(TableEnumSearch::kRhsNode), view) };
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), rhs_node_name);
     }
 
+    if (info_.section == Section::kStakeholder) {
+        auto* rhs_node_name { new SearchPathByColumnR(tree_, std::to_underlying(TableEnumSearch::kRhsNode), view) };
+        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), rhs_node_name);
+
+        auto* lhs_node_name { new SearchPathByColumnR(product_tree_, std::to_underlying(TableEnumSearch::kLhsNode), view) };
+        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), lhs_node_name);
+    }
+
     if (info_.section == Section::kSales || info_.section == Section::kPurchase) {
-        auto* node_name { new SearchComboR(stakeholder_tree_, view) };
-        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsNode), node_name);
-        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), node_name);
+        auto* rhs_node_name { new SearchPathByColumnR(stakeholder_tree_, std::to_underlying(TableEnumSearch::kRhsNode), view) };
+        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), rhs_node_name);
+
+        auto* lhs_node_name { new SearchPathByColumnR(product_tree_, std::to_underlying(TableEnumSearch::kLhsNode), view) };
+        view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), lhs_node_name);
     }
 
     auto* state { new CheckBox(QEvent::MouseButtonDblClick, view) };

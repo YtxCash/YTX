@@ -79,7 +79,7 @@ QVariant SearchTransModel::data(const QModelIndex& index, int role) const
     case TableEnumSearch::kRhsCredit:
         return trans->rhs_credit == 0 ? QVariant() : trans->rhs_credit;
     case TableEnumSearch::kState:
-        return trans->state;
+        return trans->state ? trans->state : QVariant();
     case TableEnumSearch::kDocument:
         return trans->document.isEmpty() ? QVariant() : QString::number(trans->document.size());
     default:

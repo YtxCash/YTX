@@ -116,5 +116,6 @@ protected:
 };
 
 using PTreeModel = QPointer<TreeModel>;
+using CTreeModel = const TreeModel;
 
 #endif // TREEMODEL_H

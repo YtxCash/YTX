@@ -97,9 +97,9 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
         return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
     case TableEnumStakeholder::kState:
         return *trans_shadow->state ? *trans_shadow->state : QVariant();
-    case TableEnumStakeholder::kInsideProduct:
-        return *trans_shadow->lhs_node == 0 ? QVariant() : *trans_shadow->lhs_node;
     case TableEnumStakeholder::kOutsideProduct:
+        return *trans_shadow->lhs_node == 0 ? QVariant() : *trans_shadow->lhs_node;
+    case TableEnumStakeholder::kInsideProduct:
         return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
     default:
         return QVariant();
@@ -126,7 +126,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     case TableEnumStakeholder::kCode:
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
         break;
-    case TableEnumStakeholder::kOutsideProduct:
+    case TableEnumStakeholder::kInsideProduct:
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
         break;
     case TableEnumStakeholder::kUnitPrice:
@@ -139,7 +139,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     case TableEnumStakeholder::kState:
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
         break;
-    case TableEnumStakeholder::kInsideProduct:
+    case TableEnumStakeholder::kOutsideProduct:
         rhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
         break;
     default:
@@ -179,9 +179,9 @@ void TableModelStakeholder::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->document->size() < rhs->document->size()) : (lhs->document->size() > rhs->document->size());
         case TableEnumStakeholder::kState:
             return (order == Qt::AscendingOrder) ? (lhs->state < rhs->state) : (lhs->state > rhs->state);
-        case TableEnumStakeholder::kInsideProduct:
-            return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
         case TableEnumStakeholder::kOutsideProduct:
+            return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
+        case TableEnumStakeholder::kInsideProduct:
             return (order == Qt::AscendingOrder) ? (*lhs->lhs_node < *rhs->lhs_node) : (*lhs->lhs_node > *rhs->lhs_node);
         default:
             return false;

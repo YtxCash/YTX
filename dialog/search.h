@@ -17,7 +17,7 @@ class Search final : public QDialog {
     Q_OBJECT
 
 public:
-    Search(CInfo& info, const TreeModel* tree, const TreeModel* stakeholder_tree, Sqlite* sql, CStringHash& rule_hash, CSettings& settings,
+    Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, Sqlite* sql, CStringHash& rule_hash, CSettings& settings,
         QWidget* parent = nullptr);
     ~Search();
 
@@ -55,8 +55,9 @@ private:
     SearchNodeModel* search_tree_ {};
     SearchTransModel* search_table_ {};
     Sqlite* sql_ {};
-    const TreeModel* tree_ {};
-    const TreeModel* stakeholder_tree_ {};
+    CTreeModel* tree_ {};
+    CTreeModel* stakeholder_tree_ {};
+    CTreeModel* product_tree_ {};
 
     CSettings& settings_;
     CInfo& info_;
