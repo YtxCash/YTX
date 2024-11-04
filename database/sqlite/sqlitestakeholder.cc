@@ -34,7 +34,7 @@ bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
     if (!trans_id_list.isEmpty())
         emit SMoveMultiTransFPTS(0, new_node_id, trans_id_list);
 
-    emit SUpdateStakeholderReference(old_node_id, new_node_id);
+    emit SUpdateStakeholderSO(old_node_id, new_node_id);
 
     // SFreeView will mark all referenced transactions for removal. This must occur after SMoveMultiTrans()
     emit SFreeView(old_node_id);
@@ -47,6 +47,8 @@ void SqliteStakeholder::RRemoveNode(int node_id)
 {
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
+    emit SUpdateStakeholderSO(node_id, 0);
+
     ReplaceNodeFunctionStakeholder(node_id, 0);
 }
 
@@ -165,8 +167,10 @@ QString SqliteStakeholder::RemoveNodeSecondQS() const
 QString SqliteStakeholder::InternalReferenceQS() const
 {
     return QStringLiteral(R"(
-    SELECT COUNT(*) FROM stakeholder_transaction
-    WHERE (node_id = :node_id OR outside_product = :node_id) AND removed = 0
+    SELECT
+    (SELECT COUNT(*) FROM stakeholder_transaction WHERE (node_id = :node_id OR outside_product = :node_id) AND removed = 0) +
+    (SELECT COUNT(*) FROM stakeholder WHERE employee = :node_id AND removed = 0)
+    AS total_count;
     )");
 }
 
@@ -227,6 +231,17 @@ QString SqliteStakeholder::SearchTransQS() const
     FROM stakeholder_transaction
     WHERE (unit_price = :text OR description LIKE :description) AND removed = 0
     ORDER BY date_time
+    )");
+}
+
+QString SqliteStakeholder::RemoveNodeFirstQS() const
+{
+    return QStringLiteral(R"(
+    UPDATE stakeholder
+    SET
+        removed = CASE WHEN id = :node_id THEN 1 ELSE removed END,
+        employee = CASE WHEN employee = :node_id THEN NULL ELSE employee END
+    WHERE id = :node_id OR employee = :node_id;
     )");
 }
 

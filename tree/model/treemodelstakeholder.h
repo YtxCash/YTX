@@ -11,6 +11,9 @@ public:
     TreeModelStakeholder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelStakeholder() override;
 
+public slots:
+    void RUpdateStakeholderSO(int old_node_id, int new_node_id) override;
+
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;

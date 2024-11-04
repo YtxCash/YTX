@@ -15,6 +15,16 @@ TreeModelStakeholder::TreeModelStakeholder(Sqlite* sql, CInfo& info, int default
 
 TreeModelStakeholder::~TreeModelStakeholder() { qDeleteAll(node_hash_); }
 
+void TreeModelStakeholder::RUpdateStakeholderSO(int old_node_id, int new_node_id)
+{
+    const auto& const_node_hash { std::as_const(node_hash_) };
+
+    for (auto* node : const_node_hash) {
+        if (node->employee == old_node_id)
+            node->employee = new_node_id;
+    }
+}
+
 void TreeModelStakeholder::UpdateNodeFPTS(const Node* tmp_node)
 {
     if (!tmp_node)

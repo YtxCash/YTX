@@ -29,9 +29,9 @@ signals:
     void SRemoveNode(int node_id);
     // send to Mainwindow
     void SFreeView(int node_id);
-    // send to sql itsself
+    // send to sql itsself and treemodel
     void SUpdateProductReference(int old_node_id, int new_node_id);
-    void SUpdateStakeholderReference(int old_node_id, int new_node_id);
+    void SUpdateStakeholderSO(int old_node_id, int new_node_id);
 
 public slots:
     // receive from remove node dialog
@@ -39,7 +39,7 @@ public slots:
     virtual bool RReplaceNode(int old_node_id, int new_node_id);
     // receive from sql
     bool RUpdateProductReference(int old_node_id, int new_node_id);
-    bool RUpdateStakeholderReference(int old_node_id, int new_node_id);
+    bool RUpdateStakeholderSO(int old_node_id, int new_node_id);
 
 public:
     // tree
@@ -87,7 +87,7 @@ protected:
     virtual void UpdateNodeValueBind(const Node* /*node*/, QSqlQuery& /*query*/) const { };
 
     //
-    QString RemoveNodeFirstQS() const;
+    virtual QString RemoveNodeFirstQS() const;
     QString RemoveNodeBranchQS() const;
     QString RemoveNodeThirdQS() const;
     QString DragNodeFirstQS() const;

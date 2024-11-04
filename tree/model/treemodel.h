@@ -54,6 +54,8 @@ public slots:
     {
     }
 
+    virtual void RUpdateStakeholderSO(int /*old_node_id*/, int /*new_node_id*/) { };
+
 public:
     // Qt's
     // Default implementations

@@ -56,7 +56,7 @@ void TreeModelOrder::RUpdateLeafValueFPTO(int node_id, double first_diff, double
     UpdateAncestorValueOrder(node, first_diff, second_diff, amount_diff, discount_diff, settled);
 }
 
-bool TreeModelOrder::RUpdateStakeholderReference(int old_node_id, int new_node_id)
+void TreeModelOrder::RUpdateStakeholderSO(int old_node_id, int new_node_id)
 {
     const auto& const_node_hash { std::as_const(node_hash_) };
 
@@ -67,8 +67,6 @@ bool TreeModelOrder::RUpdateStakeholderReference(int old_node_id, int new_node_i
         if (node->employee == old_node_id)
             node->employee = new_node_id;
     }
-
-    return true;
 }
 
 void TreeModelOrder::RUpdateLocked(int node_id, bool checked)

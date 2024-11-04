@@ -129,7 +129,7 @@ bool Sqlite::RUpdateProductReference(int old_node_id, int new_node_id)
     return true;
 }
 
-bool Sqlite::RUpdateStakeholderReference(int old_node_id, int new_node_id)
+bool Sqlite::RUpdateStakeholderSO(int old_node_id, int new_node_id)
 {
     CString& string { RUpdateStakeholderReferenceQS() };
     if (string.isEmpty())

@@ -46,6 +46,7 @@ protected:
     QString RReplaceNodeQS() const override;
     QString RUpdateProductReferenceQS() const override;
     QString SearchTransQS() const override;
+    QString RemoveNodeFirstQS() const override;
 
 private:
     void ReadTransFunction(QSqlQuery& query);
