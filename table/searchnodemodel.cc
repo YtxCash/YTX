@@ -42,42 +42,44 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto* node { node_list_.at(index.row()) };
-    const TreeEnumOrder kColumn { index.column() };
+    const TreeEnumSearch kColumn { index.column() };
 
     switch (kColumn) {
-    case TreeEnumOrder::kName:
+    case TreeEnumSearch::kName:
         return node->name;
-    case TreeEnumOrder::kID:
+    case TreeEnumSearch::kID:
         return node->id;
-    case TreeEnumOrder::kCode:
+    case TreeEnumSearch::kCode:
         return node->code;
-    case TreeEnumOrder::kDescription:
+    case TreeEnumSearch::kDescription:
         return node->description;
-    case TreeEnumOrder::kNote:
+    case TreeEnumSearch::kNote:
         return node->note;
-    case TreeEnumOrder::kRule:
+    case TreeEnumSearch::kRule:
         return node->rule;
-    case TreeEnumOrder::kBranch:
+    case TreeEnumSearch::kBranch:
         return node->branch;
-    case TreeEnumOrder::kUnit:
+    case TreeEnumSearch::kUnit:
         return node->unit;
-    case TreeEnumOrder::kParty:
+    case TreeEnumSearch::kParty:
         return node->party == 0 ? QVariant() : node->party;
-    case TreeEnumOrder::kEmployee:
+    case TreeEnumSearch::kEmployee:
         return node->employee == 0 ? QVariant() : node->employee;
-    case TreeEnumOrder::kDateTime:
+    case TreeEnumSearch::kDateTime:
         return node->date_time;
-    case TreeEnumOrder::kFirst:
+    case TreeEnumSearch::kColor:
+        return node->color;
+    case TreeEnumSearch::kFirst:
         return node->first == 0 ? QVariant() : node->first;
-    case TreeEnumOrder::kSecond:
+    case TreeEnumSearch::kSecond:
         return node->second == 0 ? QVariant() : node->second;
-    case TreeEnumOrder::kDiscount:
+    case TreeEnumSearch::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
-    case TreeEnumOrder::kLocked:
+    case TreeEnumSearch::kLocked:
         return node->locked == 0 ? QVariant() : node->locked;
-    case TreeEnumOrder::kAmount:
+    case TreeEnumSearch::kAmount:
         return node->initial_total;
-    case TreeEnumOrder::kSettled:
+    case TreeEnumSearch::kSettled:
         return node->final_total;
     default:
         return QVariant();
@@ -98,38 +100,40 @@ void SearchNodeModel::sort(int column, Qt::SortOrder order)
         return;
 
     auto Compare = [column, order](const Node* lhs, const Node* rhs) -> bool {
-        const TreeEnumOrder kColumn { column };
+        const TreeEnumSearch kColumn { column };
 
         switch (kColumn) {
-        case TreeEnumOrder::kName:
+        case TreeEnumSearch::kName:
             return (order == Qt::AscendingOrder) ? (lhs->name < rhs->name) : (lhs->name > rhs->name);
-        case TreeEnumOrder::kCode:
+        case TreeEnumSearch::kCode:
             return (order == Qt::AscendingOrder) ? (lhs->code < rhs->code) : (lhs->code > rhs->code);
-        case TreeEnumOrder::kDescription:
+        case TreeEnumSearch::kDescription:
             return (order == Qt::AscendingOrder) ? (lhs->description < rhs->description) : (lhs->description > rhs->description);
-        case TreeEnumOrder::kNote:
+        case TreeEnumSearch::kNote:
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
-        case TreeEnumOrder::kRule:
+        case TreeEnumSearch::kRule:
             return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
-        case TreeEnumOrder::kBranch:
+        case TreeEnumSearch::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
-        case TreeEnumOrder::kUnit:
+        case TreeEnumSearch::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
-        case TreeEnumOrder::kParty:
+        case TreeEnumSearch::kParty:
             return (order == Qt::AscendingOrder) ? (lhs->party < rhs->party) : (lhs->party > rhs->party);
-        case TreeEnumOrder::kEmployee:
+        case TreeEnumSearch::kEmployee:
             return (order == Qt::AscendingOrder) ? (lhs->employee < rhs->employee) : (lhs->employee > rhs->employee);
-        case TreeEnumOrder::kDateTime:
+        case TreeEnumSearch::kDateTime:
             return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
-        case TreeEnumOrder::kFirst:
+        case TreeEnumSearch::kColor:
+            return (order == Qt::AscendingOrder) ? (lhs->color < rhs->color) : (lhs->color > rhs->color);
+        case TreeEnumSearch::kFirst:
             return (order == Qt::AscendingOrder) ? (lhs->first < rhs->first) : (lhs->first > rhs->first);
-        case TreeEnumOrder::kSecond:
+        case TreeEnumSearch::kSecond:
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
-        case TreeEnumOrder::kDiscount:
+        case TreeEnumSearch::kDiscount:
             return (order == Qt::AscendingOrder) ? (lhs->discount < rhs->discount) : (lhs->discount > rhs->discount);
-        case TreeEnumOrder::kLocked:
+        case TreeEnumSearch::kLocked:
             return (order == Qt::AscendingOrder) ? (lhs->locked < rhs->locked) : (lhs->locked > rhs->locked);
-        case TreeEnumOrder::kAmount:
+        case TreeEnumSearch::kAmount:
             return (order == Qt::AscendingOrder) ? (lhs->final_total < rhs->final_total) : (lhs->final_total > rhs->final_total);
         default:
             return false;
