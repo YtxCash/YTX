@@ -81,7 +81,8 @@ public:
 
     virtual void CopyNodeFPTS(Node* /*tmp_node*/, int /*node_id*/) const { }
     virtual void LeafPathBranchPathFPT(QStandardItemModel* /*combo_model*/) const { }
-    virtual void LeafPathExcludeIDFPTS(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
+    virtual void LeafPathExcludeIDFPT(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
+    virtual void LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* /*combo_model*/, int /*unit*/, int /*exclude_id*/) const { }
     virtual void LeafPathSpecificUnitPS(QStandardItemModel* /*combo_model*/, int /*unit*/, UnitFilterMode /*unit_filter_mode*/) const { }
     virtual void SetNodeShadowOrder(NodeShadow* /*node_shadow*/, int /*node_id*/) const { }
     virtual void SetNodeShadowOrder(NodeShadow* /*node_shadow*/, Node* /*node*/) const { }

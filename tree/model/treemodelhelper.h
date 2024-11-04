@@ -74,10 +74,10 @@ public:
     static void UpdatePathFPTS(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator);
     static void UpdateSeparatorFPTS(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator);
     static void LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
-    static void LeafPathExcludeIDFPTS(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
+    static void LeafPathExcludeIDFPT(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
     static void LeafPathSpecificUnitPS(
         CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode);
-
+    static void LeafPathSpecificUnitExcludeIDFPTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, int exclude_id);
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsOpenedFPTS(CTableHash& table_hash, int node_id, CString& message);
     static QStringList ChildrenNameFPTS(CNodeHash& node_hash, int node_id, int exclude_child);

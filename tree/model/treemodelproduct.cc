@@ -116,14 +116,19 @@ void TreeModelProduct::LeafPathBranchPathFPT(QStandardItemModel* combo_model) co
     TreeModelHelper::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
 }
 
-void TreeModelProduct::LeafPathExcludeIDFPTS(QStandardItemModel* combo_model, int exclude_id) const
+void TreeModelProduct::LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
 {
-    TreeModelHelper::LeafPathExcludeIDFPTS(leaf_path_, combo_model, exclude_id);
+    TreeModelHelper::LeafPathExcludeIDFPT(leaf_path_, combo_model, exclude_id);
 }
 
 void TreeModelProduct::LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
 {
     TreeModelHelper::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, unit_filter_mode);
+}
+
+void TreeModelProduct::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
+{
+    TreeModelHelper::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
 }
 
 QModelIndex TreeModelProduct::GetIndex(int node_id) const

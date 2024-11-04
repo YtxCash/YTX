@@ -361,9 +361,14 @@ void TreeModelTask::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const
     TreeModelHelper::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
 }
 
-void TreeModelTask::LeafPathExcludeIDFPTS(QStandardItemModel* combo_model, int exclude_id) const
+void TreeModelTask::LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
 {
-    TreeModelHelper::LeafPathExcludeIDFPTS(leaf_path_, combo_model, exclude_id);
+    TreeModelHelper::LeafPathExcludeIDFPT(leaf_path_, combo_model, exclude_id);
+}
+
+void TreeModelTask::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
+{
+    TreeModelHelper::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
 }
 
 QModelIndex TreeModelTask::GetIndex(int node_id) const

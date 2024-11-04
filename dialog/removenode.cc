@@ -6,11 +6,12 @@
 #include "dialog/signalblocker.h"
 #include "ui_removenode.h"
 
-RemoveNode::RemoveNode(CTreeModel* model, int node_id, int unit, bool disable, QWidget* parent)
+RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool disable, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::RemoveNode)
     , node_id_ { node_id }
     , unit_ { unit }
+    , section_ { section }
     , model_ { model }
 {
     ui->setupUi(this);
@@ -77,7 +78,8 @@ void RemoveNode::IniDialog()
 
     // 不需要接收更新combo model的信号
     auto* combo_model_ { new QStandardItemModel(this) };
-    model_->LeafPathExcludeIDFPTS(combo_model_, node_id_);
+    model_->LeafPathSpecificUnitExcludeIDFPTS(combo_model_, unit_, node_id_);
+
     ui->comboBox->setModel(combo_model_);
 }
 

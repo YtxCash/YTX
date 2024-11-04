@@ -310,7 +310,7 @@ void TreeModelHelper::LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash&
     watcher->setFuture(future);
 }
 
-void TreeModelHelper::LeafPathExcludeIDFPTS(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id)
+void TreeModelHelper::LeafPathExcludeIDFPT(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id)
 {
     if (!combo_model)
         return;
@@ -361,6 +361,36 @@ void TreeModelHelper::LeafPathSpecificUnitPS(
         if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty) {
             items.emplaceBack(QString(), 0);
         }
+
+        for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
+            auto it = node_hash.constFind(id);
+            if (it != node_hash.constEnd() && should_add(it.value())) {
+                items.emplaceBack(path, id);
+            }
+        }
+
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    QObject::connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, watcher, [watcher, combo_model]() {
+        TreeModelHelper::UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
+}
+
+void TreeModelHelper::LeafPathSpecificUnitExcludeIDFPTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, int exclude_id)
+{
+    if (!combo_model)
+        return;
+
+    auto future = QtConcurrent::run([&, unit, exclude_id]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path.size());
+
+        auto should_add = [unit, exclude_id](const Node* node) { return node->unit == unit && node->id != exclude_id; };
 
         for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
             auto it = node_hash.constFind(id);

@@ -39,7 +39,8 @@ public:
     QStringList ChildrenNameFPTS(int node_id, int exclude_child) const override;
     QString GetPath(int node_id) const override;
     void LeafPathBranchPathFPT(QStandardItemModel* combo_model) const override;
-    void LeafPathExcludeIDFPTS(QStandardItemModel* combo_model, int exclude_id) const override;
+    void LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const override;
+    void LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const override;
     QModelIndex GetIndex(int node_id) const override;
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
     bool ChildrenEmpty(int node_id) const override;

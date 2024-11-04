@@ -13,7 +13,7 @@ class RemoveNode final : public QDialog {
     Q_OBJECT
 
 public:
-    RemoveNode(CTreeModel* model, int node_id, int unit, bool disable, QWidget* parent = nullptr);
+    RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool disable, QWidget* parent = nullptr);
     ~RemoveNode();
 
 signals:
@@ -34,7 +34,7 @@ private:
 private:
     int node_id_ {};
     int unit_ {};
-    int section_ {};
+    Section section_ {};
 
     CTreeModel* model_ {};
 };
