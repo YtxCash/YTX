@@ -11,7 +11,7 @@
 class SearchNodeModel final : public QAbstractItemModel {
     Q_OBJECT
 public:
-    SearchNodeModel(CInfo& info, const TreeModel* tree_model, Sqlite* sql, QObject* parent = nullptr);
+    SearchNodeModel(CInfo& info, CTreeModel* tree_model, Sqlite* sql, QObject* parent = nullptr);
     ~SearchNodeModel() = default;
 
 public:
@@ -33,7 +33,7 @@ private:
     Sqlite* sql_ {};
 
     CInfo& info_;
-    const TreeModel* tree_model_;
+    CTreeModel* tree_model_;
 
     QList<const Node*> node_list_ {};
 };

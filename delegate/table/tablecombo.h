@@ -8,7 +8,7 @@
 
 class TableCombo final : public StyledItemDelegate {
 public:
-    TableCombo(const TreeModel* tree_model, int exclude_id, QObject* parent = nullptr);
+    TableCombo(CTreeModel* tree_model, int exclude_id, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -21,7 +21,7 @@ public slots:
 private:
     int exclude_id_ {};
     mutable int last_insert_ {};
-    const TreeModel* tree_model_ {};
+    CTreeModel* tree_model_ {};
 
     QStandardItemModel* combo_model_ {};
 };

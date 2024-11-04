@@ -2,7 +2,7 @@
 
 #include "widget/combobox.h"
 
-TableCombo::TableCombo(const TreeModel* tree_model, int exclude_id, QObject* parent)
+TableCombo::TableCombo(CTreeModel* tree_model, int exclude_id, QObject* parent)
     : StyledItemDelegate { parent }
     , exclude_id_ { exclude_id }
     , tree_model_ { tree_model }

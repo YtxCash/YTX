@@ -10,7 +10,7 @@ class TableModelOrder final : public TableModel {
     Q_OBJECT
 
 public:
-    TableModelOrder(Sqlite* sql, bool rule, int node_id, CInfo& info, const NodeShadow* node_shadow, const TreeModel* product_tree, Sqlite* sqlite_stakeholder,
+    TableModelOrder(Sqlite* sql, bool rule, int node_id, CInfo& info, const NodeShadow* node_shadow, CTreeModel* product_tree, Sqlite* sqlite_stakeholder,
         QObject* parent = nullptr);
     ~TableModelOrder() override = default;
 

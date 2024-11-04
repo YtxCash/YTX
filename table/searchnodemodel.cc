@@ -2,7 +2,7 @@
 
 #include "component/enumclass.h"
 
-SearchNodeModel::SearchNodeModel(CInfo& info, const TreeModel* tree_model, Sqlite* sql, QObject* parent)
+SearchNodeModel::SearchNodeModel(CInfo& info, CTreeModel* tree_model, Sqlite* sql, QObject* parent)
     : QAbstractItemModel { parent }
     , sql_ { sql }
     , info_ { info }

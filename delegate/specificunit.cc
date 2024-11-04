@@ -4,7 +4,7 @@
 
 #include "widget/combobox.h"
 
-SpecificUnit::SpecificUnit(const TreeModel* tree_model, int unit, bool skip_branch, UnitFilterMode unit_filter_mode, QObject* parent)
+SpecificUnit::SpecificUnit(CTreeModel* tree_model, int unit, bool skip_branch, UnitFilterMode unit_filter_mode, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
     , unit_filter_mode_ { unit_filter_mode }

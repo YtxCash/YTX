@@ -18,7 +18,7 @@ class Preferences final : public QDialog {
     Q_OBJECT
 
 public:
-    Preferences(CInfo& info, const TreeModel* model, Interface interface, Settings settings, QWidget* parent = nullptr);
+    Preferences(CInfo& info, CTreeModel* model, Interface interface, Settings settings, QWidget* parent = nullptr);
     ~Preferences();
 
 signals:
@@ -73,7 +73,7 @@ private:
 
     Interface interface_ {};
     Settings settings_ {};
-    const TreeModel* model_ {};
+    CTreeModel* model_ {};
 };
 
 #endif // PREFERENCES_H
