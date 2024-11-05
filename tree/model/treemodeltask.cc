@@ -13,7 +13,11 @@ TreeModelTask::TreeModelTask(Sqlite* sql, CInfo& info, int default_unit, CTableH
     ConstructTree();
 }
 
-TreeModelTask::~TreeModelTask() { qDeleteAll(node_hash_); }
+TreeModelTask::~TreeModelTask()
+{
+    qDeleteAll(node_hash_);
+    delete root_;
+}
 
 void TreeModelTask::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
 {
@@ -364,11 +368,11 @@ void TreeModelTask::UpdateSeparatorFPTS(CString& old_separator, CString& new_sep
 
 void TreeModelTask::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
 
-void TreeModelTask::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+void TreeModelTask::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, root_, node, parent_id); }
 
 QStringList TreeModelTask::ChildrenNameFPTS(int node_id, int exclude_child) const
 {
-    return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child);
+    return TreeModelHelper::ChildrenNameFPTS(node_hash_, root_, node_id, exclude_child);
 }
 
 QString TreeModelTask::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
@@ -570,6 +574,4 @@ void TreeModelTask::ConstructTree()
 
         leaf_path_.insert(node->id, path);
     }
-
-    node_hash_.insert(-1, root_);
 }

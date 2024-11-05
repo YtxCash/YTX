@@ -35,7 +35,7 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
     }
 
     // just contains root_
-    if (node_hash.size() != 1)
+    if (!node_hash.isEmpty())
         MoveToBuffer(node_hash, node_hash_buffer_);
 
     Node* node {};
@@ -177,10 +177,8 @@ void SqliteOrder::MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer)
     node_hash_buffer.reserve(node_hash_buffer.size() + node_hash.size());
 
     for (auto it = node_hash.cbegin(); it != node_hash.cend();) {
-        if (it.value()->id != -1) {
-            node_hash_buffer.insert(std::move(it.key()), std::move(it.value()));
-            it = static_cast<NodeHash::const_iterator>(node_hash.erase(it));
-        }
+        node_hash_buffer.insert(std::move(it.key()), std::move(it.value()));
+        it = static_cast<NodeHash::const_iterator>(node_hash.erase(it));
     }
 }
 

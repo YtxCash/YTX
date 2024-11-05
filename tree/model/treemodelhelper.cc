@@ -236,23 +236,21 @@ void TreeModelHelper::CopyNodeFPTS(CNodeHash& node_hash, Node* tmp_node, int nod
     *tmp_node = *(it.value());
 }
 
-void TreeModelHelper::SetParent(CNodeHash& node_hash, Node* node, int parent_id)
+void TreeModelHelper::SetParent(CNodeHash& node_hash, Node* root, Node* node, int parent_id)
 {
     if (!node)
         return;
 
     auto it { node_hash.constFind(parent_id) };
 
-    node->parent = it == node_hash.constEnd() ? nullptr : it.value();
+    node->parent = it == node_hash.constEnd() ? root : it.value();
 }
 
-QStringList TreeModelHelper::ChildrenNameFPTS(CNodeHash& node_hash, int node_id, int exclude_child)
+QStringList TreeModelHelper::ChildrenNameFPTS(CNodeHash& node_hash, Node* root, int node_id, int exclude_child)
 {
     auto it { node_hash.constFind(node_id) };
-    if (it == node_hash.constEnd())
-        return {};
 
-    auto* node { it.value() };
+    auto* node { it == node_hash.constEnd() ? root : it.value() };
     QStringList list {};
     list.reserve(node->children.size());
 

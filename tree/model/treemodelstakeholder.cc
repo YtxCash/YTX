@@ -13,7 +13,11 @@ TreeModelStakeholder::TreeModelStakeholder(Sqlite* sql, CInfo& info, int default
     ConstructTree();
 }
 
-TreeModelStakeholder::~TreeModelStakeholder() { qDeleteAll(node_hash_); }
+TreeModelStakeholder::~TreeModelStakeholder()
+{
+    qDeleteAll(node_hash_);
+    delete root_;
+}
 
 void TreeModelStakeholder::RUpdateStakeholderSO(int old_node_id, int new_node_id)
 {
@@ -78,11 +82,11 @@ void TreeModelStakeholder::UpdateSeparatorFPTS(CString& old_separator, CString& 
 
 void TreeModelStakeholder::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
 
-void TreeModelStakeholder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+void TreeModelStakeholder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, root_, node, parent_id); }
 
 QStringList TreeModelStakeholder::ChildrenNameFPTS(int node_id, int exclude_child) const
 {
-    return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child);
+    return TreeModelHelper::ChildrenNameFPTS(node_hash_, root_, node_id, exclude_child);
 }
 
 QString TreeModelStakeholder::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
@@ -249,8 +253,6 @@ void TreeModelStakeholder::ConstructTree()
 
         leaf_path_.insert(node->id, path);
     }
-
-    node_hash_.insert(-1, root_);
 }
 
 void TreeModelStakeholder::sort(int column, Qt::SortOrder order)

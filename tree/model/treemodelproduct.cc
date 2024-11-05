@@ -13,7 +13,11 @@ TreeModelProduct::TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, C
     ConstructTree();
 }
 
-TreeModelProduct::~TreeModelProduct() { qDeleteAll(node_hash_); }
+TreeModelProduct::~TreeModelProduct()
+{
+    qDeleteAll(node_hash_);
+    delete root_;
+}
 
 void TreeModelProduct::RUpdateLeafValueFPTO(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
@@ -119,11 +123,11 @@ void TreeModelProduct::UpdateSeparatorFPTS(CString& old_separator, CString& new_
 
 void TreeModelProduct::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
 
-void TreeModelProduct::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+void TreeModelProduct::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, root_, node, parent_id); }
 
 QStringList TreeModelProduct::ChildrenNameFPTS(int node_id, int exclude_child) const
 {
-    return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child);
+    return TreeModelHelper::ChildrenNameFPTS(node_hash_, root_, node_id, exclude_child);
 }
 
 QString TreeModelProduct::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
@@ -364,8 +368,6 @@ void TreeModelProduct::ConstructTree()
 
         leaf_path_.insert(node->id, path);
     }
-
-    node_hash_.insert(-1, root_);
 }
 
 void TreeModelProduct::sort(int column, Qt::SortOrder order)

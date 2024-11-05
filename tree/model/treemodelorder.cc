@@ -11,7 +11,11 @@ TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObje
     ConstructTree();
 }
 
-TreeModelOrder::~TreeModelOrder() { qDeleteAll(node_hash_); }
+TreeModelOrder::~TreeModelOrder()
+{
+    qDeleteAll(node_hash_);
+    delete root_;
+}
 
 void TreeModelOrder::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
 {
@@ -164,7 +168,7 @@ void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
     endResetModel();
 }
 
-void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, root_, node, parent_id); }
 
 void TreeModelOrder::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
 {
@@ -315,8 +319,6 @@ void TreeModelOrder::ConstructTree()
     for (auto* node : const_node_hash)
         if (!node->branch && node->locked)
             UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
-
-    node_hash_.insert(-1, root_);
 }
 
 void TreeModelOrder::sort(int column, Qt::SortOrder order)

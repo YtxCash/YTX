@@ -59,7 +59,7 @@ public:
     }
 
     static void InitializeRoot(Node*& root, int default_unit);
-    static void SetParent(CNodeHash& node_hash, Node* node, int parent_id);
+    static void SetParent(CNodeHash& node_hash, Node* root, Node* node, int parent_id);
 
     static Node* GetNodeByID(CNodeHash& node_hash, int node_id);
     static bool IsDescendant(Node* lhs, Node* rhs);
@@ -80,7 +80,7 @@ public:
     static void LeafPathSpecificUnitExcludeIDFPTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, int exclude_id);
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsOpenedFPTS(CTableHash& table_hash, int node_id, CString& message);
-    static QStringList ChildrenNameFPTS(CNodeHash& node_hash, int node_id, int exclude_child);
+    static QStringList ChildrenNameFPTS(CNodeHash& node_hash, Node* root, int node_id, int exclude_child);
 
     static void UpdateBranchUnitF(const Node* root, Node* node);
     static void CopyNodeFPTS(CNodeHash& node_hash, Node* tmp_node, int node_id);

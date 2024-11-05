@@ -13,7 +13,11 @@ TreeModelFinance::TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, C
     ConstructTree();
 }
 
-TreeModelFinance::~TreeModelFinance() { qDeleteAll(node_hash_); }
+TreeModelFinance::~TreeModelFinance()
+{
+    qDeleteAll(node_hash_);
+    delete root_;
+}
 
 void TreeModelFinance::RUpdateLeafValueFPTO(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
@@ -379,11 +383,11 @@ void TreeModelFinance::UpdateSeparatorFPTS(CString& old_separator, CString& new_
 
 void TreeModelFinance::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
 
-void TreeModelFinance::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, node, parent_id); }
+void TreeModelFinance::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, root_, node, parent_id); }
 
 QStringList TreeModelFinance::ChildrenNameFPTS(int node_id, int exclude_child) const
 {
-    return TreeModelHelper::ChildrenNameFPTS(node_hash_, node_id, exclude_child);
+    return TreeModelHelper::ChildrenNameFPTS(node_hash_, root_, node_id, exclude_child);
 }
 
 QString TreeModelFinance::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
@@ -485,8 +489,6 @@ void TreeModelFinance::ConstructTree()
         TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
         leaf_path_.insert(node->id, path);
     }
-
-    node_hash_.insert(-1, root_);
 }
 
 bool TreeModelFinance::UpdateRuleFPTO(Node* node, bool value)
