@@ -71,7 +71,6 @@ private:
     Node* root_ {};
 
     NodeHash node_hash_ {};
-    NodeHash node_hash_buffer_ {};
 
     CInfo& info_;
 };

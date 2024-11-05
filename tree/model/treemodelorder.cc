@@ -142,6 +142,7 @@ Node* TreeModelOrder::GetNodeByIndex(const QModelIndex& index) const { return Tr
 void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
 {
     beginResetModel();
+    root_->children.clear();
     sql_->ReadNode(node_hash_, start_date, end_date);
 
     const auto& const_node_hash { std::as_const(node_hash_) };

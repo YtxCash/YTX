@@ -177,6 +177,7 @@ void SqliteOrder::MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer)
     node_hash_buffer.reserve(node_hash_buffer.size() + node_hash.size());
 
     for (auto it = node_hash.cbegin(); it != node_hash.cend();) {
+        it.value()->parent = nullptr;
         node_hash_buffer.insert(std::move(it.key()), std::move(it.value()));
         it = static_cast<NodeHash::const_iterator>(node_hash.erase(it));
     }
