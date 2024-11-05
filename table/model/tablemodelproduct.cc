@@ -171,8 +171,8 @@ bool TableModelProduct::UpdateCredit(TransShadow* trans_shadow, double value)
     double amount_debit_diff { quantity_debit_diff * unit_cost };
     double amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, amount_debit_diff, amount_credit_diff, quantity_debit_diff, quantity_credit_diff);
-    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, amount_credit_diff, amount_debit_diff, quantity_credit_diff, quantity_debit_diff);
+    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
+    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
 
     return true;
 }
