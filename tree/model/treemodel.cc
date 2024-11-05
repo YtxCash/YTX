@@ -5,14 +5,12 @@ TreeModel::TreeModel(QObject* parent)
 {
 }
 
-bool TreeModel::RRemoveNode(int node_id)
+void TreeModel::RRemoveNode(int node_id)
 {
     auto index { GetIndex(node_id) };
     int row { index.row() };
     auto parent_index { index.parent() };
     RemoveNode(row, parent_index);
-
-    return true;
 }
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent) const

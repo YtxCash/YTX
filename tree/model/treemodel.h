@@ -43,7 +43,7 @@ signals:
 
 public slots:
     // receive from Sqlite
-    bool RRemoveNode(int node_id);
+    void RRemoveNode(int node_id);
     virtual void RUpdateMultiLeafTotalFPT(const QList<int>& /*node_list*/) { }
 
     // receive from  TableModel
