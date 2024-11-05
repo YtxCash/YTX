@@ -181,7 +181,7 @@ QVariant TreeModelFinance::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return QVariant();
 
     const TreeEnumFinance kColumn { index.column() };
@@ -218,7 +218,7 @@ bool TreeModelFinance::setData(const QModelIndex& index, const QVariant& value, 
         return false;
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return false;
 
     const TreeEnumFinance kColumn { index.column() };

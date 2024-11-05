@@ -85,7 +85,7 @@ QVariant TreeModelTask::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return QVariant();
 
     const TreeEnumTask kColumn { index.column() };
@@ -128,7 +128,7 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
         return false;
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return false;
 
     const TreeEnumTask kColumn { index.column() };

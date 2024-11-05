@@ -416,7 +416,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return QVariant();
 
     const TreeEnumOrder kColumn { index.column() };
@@ -467,7 +467,7 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         return false;
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return false;
 
     const TreeEnumOrder kColumn { index.column() };

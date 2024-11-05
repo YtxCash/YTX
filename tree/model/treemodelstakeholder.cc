@@ -324,7 +324,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return QVariant();
 
     const TreeEnumStakeholder kColumn { index.column() };
@@ -366,7 +366,7 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         return false;
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return false;
 
     const TreeEnumStakeholder kColumn { index.column() };

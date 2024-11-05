@@ -101,10 +101,18 @@ inline Node& Node::operator=(const Node& other)
 
 inline bool Node::operator==(const Node& other) const noexcept
 {
-    return std::tie(name, id, code, party, employee, locked, first, date_time, color, description, note, rule, branch, unit, parent, children)
-        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.locked, other.first, other.date_time, other.color, other.description,
-            other.note, other.rule, other.branch, other.unit, other.parent, other.children)
-        && std::abs(second - other.second) < TOLERANCE && std::abs(discount - other.discount) < TOLERANCE;
+    auto AlmostEqual = [](double a, double b, double tolerance = TOLERANCE) noexcept { return std::abs(a - b) < tolerance; };
+
+    // Compare non-floating-point data members
+    bool basic_fields_equal = std::tie(name, id, code, party, employee, locked, date_time, color, description, note, rule, branch, unit, parent, children)
+        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.locked, other.date_time, other.color, other.description, other.note,
+            other.rule, other.branch, other.unit, other.parent, other.children);
+
+    // Compare floating-point data members, considering tolerance
+    bool floating_fields_equal = AlmostEqual(first, other.first) && AlmostEqual(second, other.second) && AlmostEqual(discount, other.discount)
+        && AlmostEqual(initial_total, other.initial_total) && AlmostEqual(final_total, other.final_total);
+
+    return basic_fields_equal && floating_fields_equal;
 }
 
 inline void Node::Reset()

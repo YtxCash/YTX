@@ -173,7 +173,7 @@ bool Sqlite::WriteNode(int parent_id, Node* node) const
 {
     // root_'s id is -1
     CString& string { WriteNodeQS() };
-    if (string.isEmpty() || !node || node->id == -1)
+    if (string.isEmpty() || !node)
         return false;
 
     QSqlQuery query(*db_);

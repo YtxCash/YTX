@@ -399,7 +399,7 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return QVariant();
 
     const TreeEnumProduct kColumn { index.column() };
@@ -442,7 +442,7 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
         return false;
 
     auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
+    if (node == root_)
         return false;
 
     const TreeEnumProduct kColumn { index.column() };
