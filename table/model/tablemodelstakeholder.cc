@@ -97,9 +97,9 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
         return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
     case TableEnumStakeholder::kState:
         return *trans_shadow->state ? *trans_shadow->state : QVariant();
-    case TableEnumStakeholder::kOutsideProduct:
-        return *trans_shadow->lhs_node == 0 ? QVariant() : *trans_shadow->lhs_node;
     case TableEnumStakeholder::kInsideProduct:
+        return *trans_shadow->lhs_node == 0 ? QVariant() : *trans_shadow->lhs_node;
+    case TableEnumStakeholder::kOutsideProduct:
         return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
     default:
         return QVariant();
@@ -117,7 +117,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     auto* trans_shadow { trans_shadow_list_.at(kRow) };
     int old_lhs_node { *trans_shadow->lhs_node };
 
-    bool rhs_changed { false };
+    bool lhs_changed { false };
 
     switch (kColumn) {
     case TableEnumStakeholder::kDateTime:
@@ -127,7 +127,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnumStakeholder::kInsideProduct:
-        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
+        lhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
         break;
     case TableEnumStakeholder::kUnitPrice:
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toDouble(), UNIT_PRICE, &TransShadow::unit_price);
@@ -140,18 +140,21 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnumStakeholder::kOutsideProduct:
-        rhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
+        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
         break;
     default:
         return false;
     }
 
-    if (rhs_changed) {
+    if (lhs_changed) {
         if (old_lhs_node == 0)
             sql_->WriteTrans(trans_shadow);
         else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
     }
+
+    if (trans_shadow_list_.size() == 1)
+        emit SResizeColumnToContents(std::to_underlying(TableEnumStakeholder::kDateTime));
 
     emit SResizeColumnToContents(index.column());
     return true;
