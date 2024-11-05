@@ -63,12 +63,12 @@ bool Sqlite::FreeView(int old_node_id, int new_node_id) const
     return true;
 }
 
-bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
+void Sqlite::RReplaceNode(int old_node_id, int new_node_id)
 {
     // finance, product, task
     auto section { info_.section };
     if (section == Section::kPurchase || section == Section::kSales)
-        return false;
+        return;
 
     bool free { FreeView(old_node_id, new_node_id) };
 
@@ -77,20 +77,20 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
     // end deal with trans hash
 
     if (node_trans.isEmpty())
-        return true;
+        return;
 
     // begin deal with database
     QSqlQuery query(*db_);
     CString& string { RReplaceNodeQS() };
     if (string.isEmpty())
-        return false;
+        return;
 
     query.prepare(string);
     query.bindValue(":new_node_id", new_node_id);
     query.bindValue(":old_node_id", old_node_id);
     if (!query.exec()) {
         qWarning() << "Failed in RReplaceNode" << query.lastError().text();
-        return false;
+        return;
     }
     // end deal with database
 
@@ -98,22 +98,20 @@ bool Sqlite::RReplaceNode(int old_node_id, int new_node_id)
     emit SUpdateMultiLeafTotalFPT(QList { old_node_id, new_node_id });
 
     if (section == Section::kProduct)
-        emit SUpdateProductReference(old_node_id, new_node_id);
+        emit SUpdateProductSO(old_node_id, new_node_id);
 
     // SFreeView will mark all referenced transactions for removal. This must occur after SMoveMultiTrans()
     if (free) {
         emit SFreeView(old_node_id);
         emit SRemoveNode(old_node_id);
     }
-
-    return true;
 }
 
-bool Sqlite::RUpdateProductReference(int old_node_id, int new_node_id)
+void Sqlite::RUpdateProductSO(int old_node_id, int new_node_id)
 {
     CString& string { RUpdateProductReferenceQS() };
     if (string.isEmpty())
-        return false;
+        return;
 
     QSqlQuery query(*db_);
     query.prepare(string);
@@ -121,19 +119,17 @@ bool Sqlite::RUpdateProductReference(int old_node_id, int new_node_id)
     query.bindValue(":new_node_id", new_node_id);
     if (!query.exec()) {
         qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in RUpdateProductReference" << query.lastError().text();
-        return false;
+        return;
     }
 
     UpdateProductReference(old_node_id, new_node_id);
-
-    return true;
 }
 
-bool Sqlite::RUpdateStakeholderSO(int old_node_id, int new_node_id)
+void Sqlite::RUpdateStakeholderO(int old_node_id, int new_node_id)
 {
     CString& string { RUpdateStakeholderReferenceQS() };
     if (string.isEmpty())
-        return false;
+        return;
 
     QSqlQuery query(*db_);
     query.prepare(string);
@@ -141,11 +137,10 @@ bool Sqlite::RUpdateStakeholderSO(int old_node_id, int new_node_id)
     query.bindValue(":new_node_id", new_node_id);
     if (!query.exec()) {
         qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in RUpdateStakeholderReference" << query.lastError().text();
-        return false;
+        return;
     }
 
     UpdateStakeholderReference(old_node_id, new_node_id);
-    return true;
 }
 
 bool Sqlite::ReadNode(NodeHash& node_hash)

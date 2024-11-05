@@ -29,17 +29,18 @@ signals:
     void SRemoveNode(int node_id);
     // send to Mainwindow
     void SFreeView(int node_id);
+    // send to sql itsself
+    void SUpdateProductSO(int old_node_id, int new_node_id);
     // send to sql itsself and treemodel
-    void SUpdateProductReference(int old_node_id, int new_node_id);
     void SUpdateStakeholderSO(int old_node_id, int new_node_id);
 
 public slots:
     // receive from remove node dialog
     virtual void RRemoveNode(int node_id);
-    virtual bool RReplaceNode(int old_node_id, int new_node_id);
+    virtual void RReplaceNode(int old_node_id, int new_node_id);
     // receive from sql
-    bool RUpdateProductReference(int old_node_id, int new_node_id);
-    bool RUpdateStakeholderSO(int old_node_id, int new_node_id);
+    void RUpdateProductSO(int old_node_id, int new_node_id);
+    void RUpdateStakeholderO(int old_node_id, int new_node_id);
 
 public:
     // tree

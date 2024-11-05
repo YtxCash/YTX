@@ -1186,7 +1186,7 @@ void MainWindow::SetStakeholderData()
     auto* model { new TreeModelStakeholder(sql, info, stakeholder_settings_.default_unit, stakeholder_table_hash_, interface_.separator, this) };
     stakeholder_tree_ = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
 
-    connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
+    connect(product_data_.sql, &Sqlite::SUpdateProductSO, sql, &Sqlite::RUpdateProductSO);
     connect(sql, &Sqlite::SUpdateStakeholderSO, model, &TreeModel::RUpdateStakeholderSO);
     connect(static_cast<SqliteStakeholder*>(sql), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
 }
@@ -1244,8 +1244,7 @@ void MainWindow::SetSalesData()
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
 
     connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholderSO, model, &TreeModel::RUpdateStakeholderSO);
-    connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
-    connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
+    connect(product_data_.sql, &Sqlite::SUpdateProductSO, sql, &Sqlite::RUpdateProductSO);
 }
 
 void MainWindow::SetPurchaseData()
@@ -1277,8 +1276,7 @@ void MainWindow::SetPurchaseData()
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
 
     connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholderSO, model, &TreeModel::RUpdateStakeholderSO);
-    connect(product_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
-    connect(stakeholder_data_.sql, &Sqlite::SUpdateProductReference, sql, &Sqlite::RUpdateProductReference);
+    connect(product_data_.sql, &Sqlite::SUpdateProductSO, sql, &Sqlite::RUpdateProductSO);
 }
 
 void MainWindow::SetHeader()

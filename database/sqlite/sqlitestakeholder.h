@@ -14,7 +14,7 @@ signals:
     void SAppendPrice(Section section, TransShadow* trans_shadow);
 
 public slots:
-    bool RReplaceNode(int old_node_id, int new_node_id) override;
+    void RReplaceNode(int old_node_id, int new_node_id) override;
     void RRemoveNode(int node_id) override;
 
 public:

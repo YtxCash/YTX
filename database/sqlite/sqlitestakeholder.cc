@@ -11,7 +11,7 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 {
 }
 
-bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
+void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
 {
     // begin deal with trans hash
     auto node_trans { ReplaceNodeFunction(old_node_id, new_node_id) };
@@ -27,7 +27,7 @@ bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
     query.bindValue(":old_node_id", old_node_id);
     if (!query.exec()) {
         qWarning() << "Error in replace node setp" << query.lastError().text();
-        return false;
+        return;
     }
     // end deal with database
 
@@ -39,8 +39,6 @@ bool SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
     // SFreeView will mark all referenced transactions for removal. This must occur after SMoveMultiTrans()
     emit SFreeView(old_node_id);
     emit SRemoveNode(old_node_id);
-
-    return true;
 }
 
 void SqliteStakeholder::RRemoveNode(int node_id)
