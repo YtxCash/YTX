@@ -34,19 +34,18 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
         return false;
     }
 
+    // just contains root_
+    if (node_hash.size() != 1)
+        MoveToBuffer(node_hash, node_hash_buffer_);
+
     Node* node {};
     int id {};
-    QSet<int> keep {};
 
     while (query.next()) {
         id = query.value("id").toInt();
-        keep.insert(id);
-
-        if (node_hash.contains(id))
-            continue;
 
         if (auto it = node_hash_buffer_.constFind(id); it != node_hash_buffer_.constEnd()) {
-            node_hash.insert(id, std::move(it.value()));
+            node_hash.insert(std::move(it.key()), std::move(it.value()));
             node_hash_buffer_.erase(it);
             continue;
         }
@@ -56,8 +55,9 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
         node_hash.insert(id, node);
     }
 
-    MoveToBuffer(node_hash, node_hash_buffer_, keep);
-    ReadRelationship(node_hash, query);
+    if (!node_hash.isEmpty())
+        ReadRelationship(node_hash, query);
+
     return true;
 }
 
@@ -169,19 +169,17 @@ QString SqliteOrder::UpdateTransValueQS() const
         .arg(transaction_);
 }
 
-void SqliteOrder::MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer, const QSet<int>& keep)
+void SqliteOrder::MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer)
 {
-    const auto estimated_moves { node_hash.size() - keep.size() };
-    if (estimated_moves >= 1) {
-        node_hash_buffer.reserve(node_hash_buffer.size() + estimated_moves);
-    }
+    if (node_hash.isEmpty())
+        return;
+
+    node_hash_buffer.reserve(node_hash_buffer.size() + node_hash.size());
 
     for (auto it = node_hash.cbegin(); it != node_hash.cend();) {
-        if (!keep.contains(it.key())) {
-            node_hash_buffer.insert(it.key(), std::move(it.value()));
+        if (it.value()->id != -1) {
+            node_hash_buffer.insert(std::move(it.key()), std::move(it.value()));
             it = static_cast<NodeHash::const_iterator>(node_hash.erase(it));
-        } else {
-            ++it;
         }
     }
 }

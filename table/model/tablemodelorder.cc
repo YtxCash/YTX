@@ -309,7 +309,6 @@ bool TableModelOrder::removeRows(int row, int /*count*/, const QModelIndex& pare
 int TableModelOrder::GetNodeRow(int node_id) const
 {
     int row { 0 };
-
     for (const auto* trans_shadow : trans_shadow_list_) {
         if (*trans_shadow->lhs_node == node_id) {
             return row;

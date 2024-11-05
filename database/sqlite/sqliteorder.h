@@ -41,7 +41,7 @@ protected:
     QString UpdateTransValueQS() const override;
 
 private:
-    void MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer, const QSet<int>& keep);
+    void MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer);
 
 private:
     CString& node_;
