@@ -590,11 +590,13 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        // UpdateOrderBranchTotal(node, -node->first_property, -node->third_property, -node->initial_total, -node->final_total);
+        UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
 
         destination_parent->children.insert(begin_row, node);
+        node->unit = destination_parent->unit;
         node->parent = destination_parent;
-        // UpdateOrderBranchTotal(node, node->first_property, node->third_property, node->initial_total, node->final_total);
+        node->final_total = node->unit == UNIT_CASH ? node->initial_total - node->discount : 0.0;
+        UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 
         endMoveRows();
     }
