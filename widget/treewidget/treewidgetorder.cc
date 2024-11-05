@@ -28,23 +28,13 @@ QPointer<QTreeView> TreeWidgetOrder::View() const { return ui->treeViewOrder; }
 
 void TreeWidgetOrder::on_dateEditStart_dateChanged(const QDate& date)
 {
-    if (date > end_) {
-        ui->pBtnRefresh->setEnabled(false);
-        return;
-    }
-
-    ui->pBtnRefresh->setEnabled(true);
+    ui->pBtnRefresh->setEnabled(date <= end_);
     start_ = date;
 }
 
 void TreeWidgetOrder::on_dateEditEnd_dateChanged(const QDate& date)
 {
-    if (date < start_) {
-        ui->pBtnRefresh->setEnabled(false);
-        return;
-    }
-
-    ui->pBtnRefresh->setEnabled(true);
+    ui->pBtnRefresh->setEnabled(date >= start_);
     end_ = date;
 }
 
