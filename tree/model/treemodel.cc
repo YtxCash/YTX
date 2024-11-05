@@ -24,23 +24,6 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent) con
     return node ? createIndex(row, column, node) : QModelIndex();
 }
 
-QModelIndex TreeModel::parent(const QModelIndex& index) const
-{ // root_'s index is QModelIndex();
-
-    if (!index.isValid())
-        return QModelIndex();
-
-    auto* node { GetNodeByIndex(index) };
-    if (node->id == -1)
-        return QModelIndex();
-
-    auto* parent_node { node->parent };
-    if (parent_node->id == -1)
-        return QModelIndex();
-
-    return createIndex(parent_node->parent->children.indexOf(parent_node), 0, parent_node);
-}
-
 int TreeModel::rowCount(const QModelIndex& parent) const { return GetNodeByIndex(parent)->children.size(); }
 
 QMimeData* TreeModel::mimeData(const QModelIndexList& indexes) const
