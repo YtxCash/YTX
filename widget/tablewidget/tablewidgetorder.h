@@ -72,7 +72,7 @@ private:
     void IniDialog();
     void IniData();
     void IniDataCombo();
-    void LockWidgets(bool locked, bool branch);
+    void LockWidgets(bool locked);
     void IniUnit(int unit);
 
 private:

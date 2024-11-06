@@ -22,34 +22,23 @@ TableWidgetOrder::TableWidgetOrder(
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    bool branch { *node_shadow_->branch };
     bool locked { *node_shadow->locked };
 
-    if (branch) {
-        ui->comboParty->lineEdit()->setValidator(&LineEdit::kInputValidator);
-        ui->comboParty->lineEdit()->setText(*node_shadow_->name);
-        ui->comboParty->setFocus();
-    }
-
-    if (!branch) {
-        IniDialog();
-        IniData();
-        ui->tableViewOrder->setFocus();
-        QTimer::singleShot(100, this, [this]() { IniDataCombo(); });
-    }
+    IniDialog();
+    IniData();
+    ui->tableViewOrder->setFocus();
+    QTimer::singleShot(100, this, [this]() { IniDataCombo(); });
 
     IniUnit(*node_shadow_->unit);
 
-    ui->chkBoxBranch->setChecked(branch);
     ui->chkBoxBranch->setEnabled(false);
 
     ui->pBtnLockOrder->setChecked(locked);
     ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
-    ui->labelParty->setText(branch ? tr("Branch") : tr("Party"));
     if (locked)
         ui->pBtnPrint->setFocus();
 
-    LockWidgets(locked, branch);
+    LockWidgets(locked);
 }
 
 TableWidgetOrder::~TableWidgetOrder()
@@ -119,7 +108,7 @@ void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVar
 
         ui->pBtnLockOrder->setChecked(locked);
         ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
-        LockWidgets(locked, *node_shadow_->branch);
+        LockWidgets(locked);
 
         if (locked) {
             ui->pBtnPrint->setFocus();
@@ -135,7 +124,8 @@ void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVar
 
 void TableWidgetOrder::RUpdateLeafValueTO(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void TableWidgetOrder::RUpdateLeafValueFPTO(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void TableWidgetOrder::RUpdateLeafValueFPTO(
+    int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
@@ -197,42 +187,41 @@ void TableWidgetOrder::IniDataCombo()
     ui->comboEmployee->setCurrentIndex(employee_index);
 }
 
-void TableWidgetOrder::LockWidgets(bool locked, bool branch)
+void TableWidgetOrder::LockWidgets(bool locked)
 {
-    bool basic_enable { !locked };
-    bool not_branch_enable { !locked && !branch };
+    const bool enable { !locked };
 
-    ui->labelParty->setEnabled(basic_enable);
-    ui->comboParty->setEnabled(basic_enable);
+    ui->labelParty->setEnabled(enable);
+    ui->comboParty->setEnabled(enable);
 
-    ui->pBtnInsertParty->setEnabled(not_branch_enable);
+    ui->pBtnInsertParty->setEnabled(enable);
 
-    ui->labelSettled->setEnabled(not_branch_enable);
-    ui->dSpinSettled->setEnabled(not_branch_enable);
+    ui->labelSettled->setEnabled(enable);
+    ui->dSpinSettled->setEnabled(enable);
 
-    ui->dSpinAmount->setEnabled(not_branch_enable);
+    ui->dSpinAmount->setEnabled(enable);
 
-    ui->labelDiscount->setEnabled(not_branch_enable);
-    ui->dSpinDiscount->setEnabled(not_branch_enable);
+    ui->labelDiscount->setEnabled(enable);
+    ui->dSpinDiscount->setEnabled(enable);
 
-    ui->labelEmployee->setEnabled(not_branch_enable);
-    ui->comboEmployee->setEnabled(not_branch_enable);
-    ui->tableViewOrder->setEnabled(not_branch_enable);
+    ui->labelEmployee->setEnabled(enable);
+    ui->comboEmployee->setEnabled(enable);
+    ui->tableViewOrder->setEnabled(enable);
 
-    ui->rBtnCash->setEnabled(not_branch_enable);
-    ui->rBtnMonthly->setEnabled(not_branch_enable);
-    ui->rBtnPending->setEnabled(not_branch_enable);
-    ui->dateTimeEdit->setEnabled(not_branch_enable);
+    ui->rBtnCash->setEnabled(enable);
+    ui->rBtnMonthly->setEnabled(enable);
+    ui->rBtnPending->setEnabled(enable);
+    ui->dateTimeEdit->setEnabled(enable);
 
-    ui->dSpinFirst->setEnabled(not_branch_enable);
-    ui->labelFirst->setEnabled(not_branch_enable);
-    ui->dSpinSecond->setEnabled(not_branch_enable);
-    ui->labelSecond->setEnabled(not_branch_enable);
+    ui->dSpinFirst->setEnabled(enable);
+    ui->labelFirst->setEnabled(enable);
+    ui->dSpinSecond->setEnabled(enable);
+    ui->labelSecond->setEnabled(enable);
 
-    ui->chkBoxRefund->setEnabled(not_branch_enable);
-    ui->lineDescription->setEnabled(basic_enable);
+    ui->chkBoxRefund->setEnabled(enable);
+    ui->lineDescription->setEnabled(enable);
 
-    ui->pBtnPrint->setEnabled(locked && !branch);
+    ui->pBtnPrint->setEnabled(locked);
 }
 
 void TableWidgetOrder::IniUnit(int unit)
@@ -377,7 +366,7 @@ void TableWidgetOrder::on_pBtnLockOrder_toggled(bool checked)
 
     ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
 
-    LockWidgets(checked, *node_shadow_->branch);
+    LockWidgets(checked);
 
     if (checked) {
         ui->pBtnPrint->setFocus();
