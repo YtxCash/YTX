@@ -195,9 +195,9 @@ void EditNodeOrder::LockWidgets(bool locked, bool branch)
     ui->comboEmployee->setEnabled(not_branch_enable);
     ui->tableViewOrder->setEnabled(not_branch_enable);
 
-    ui->rBtnCash->setEnabled(not_branch_enable);
-    ui->rBtnMonthly->setEnabled(not_branch_enable);
-    ui->rBtnPending->setEnabled(not_branch_enable);
+    ui->rBtnCash->setEnabled(basic_enable);
+    ui->rBtnMonthly->setEnabled(basic_enable);
+    ui->rBtnPending->setEnabled(basic_enable);
     ui->dateTimeEdit->setEnabled(not_branch_enable);
 
     ui->dSpinFirst->setEnabled(not_branch_enable);
