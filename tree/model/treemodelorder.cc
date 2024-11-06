@@ -137,9 +137,7 @@ void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
             node->parent = root_;
             root_->children.emplace_back(node);
         }
-    }
 
-    for (auto* node : const_node_hash) {
         if (node->branch) {
             node->first = 0.0;
             node->second = 0.0;
@@ -147,7 +145,9 @@ void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
             node->discount = 0.0;
             node->final_total = 0.0;
         }
+    }
 
+    for (auto* node : const_node_hash) {
         if (!node->branch && node->locked)
             UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
     }
