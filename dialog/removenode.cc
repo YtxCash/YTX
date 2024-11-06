@@ -17,20 +17,13 @@ RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int unit
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog();
+    IniData(section, disable);
     IniConnect();
-
-    if (disable)
-        DisableRemove();
 }
 
 RemoveNode::~RemoveNode() { delete ui; }
 
-void RemoveNode::DisableRemove()
-{
-    ui->rBtnRemoveRecords->setDisabled(true);
-    ui->label->setText(tr("The node has external references, so it can’t be removed directly. Should it be replaced instead?"));
-}
+void RemoveNode::DisableRemove() { }
 
 void RemoveNode::RCustomAccept()
 {
@@ -69,12 +62,25 @@ void RemoveNode::RCustomAccept()
     }
 }
 
-void RemoveNode::IniDialog()
+void RemoveNode::IniData(Section section, bool disable_remove)
 {
     ui->label->setWordWrap(true);
-    ui->rBtnReplaceRecords->setChecked(true);
     ui->pBtnCancel->setDefault(true);
     this->setWindowTitle(tr("Remove %1").arg(model_->GetPath(node_id_)));
+
+    if (section == Section::kSales || section == Section::kPurchase) {
+        ui->comboBox->setEnabled(false);
+        ui->rBtnReplaceRecords->setEnabled(false);
+        ui->rBtnRemoveRecords->setChecked(true);
+        return;
+    }
+
+    ui->rBtnReplaceRecords->setChecked(true);
+
+    if (disable_remove) {
+        ui->rBtnRemoveRecords->setDisabled(true);
+        ui->label->setText(tr("The node has external references, so it can’t be removed directly. Should it be replaced instead?"));
+    }
 
     // 不需要接收更新combo model的信号
     auto* combo_model_ { new QStandardItemModel(this) };

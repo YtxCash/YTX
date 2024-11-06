@@ -32,7 +32,7 @@ class RemoveNode final : public QDialog {
     Q_OBJECT
 
 public:
-    RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool disable, QWidget* parent = nullptr);
+    RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool disable_remove, QWidget* parent = nullptr);
     ~RemoveNode();
 
 signals:
@@ -45,7 +45,7 @@ private slots:
 
 private:
     Ui::RemoveNode* ui;
-    void IniDialog();
+    void IniData(Section section, bool disable_remove);
     void IniConnect();
 
     void DisableRemove();
