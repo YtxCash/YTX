@@ -32,7 +32,8 @@ void TreeModelOrder::RUpdateLeafValueTO(int node_id, double diff, CString& node_
     auto index { GetIndex(node_id) };
     emit dataChanged(index.siblingAtColumn(column), index.siblingAtColumn(column));
 
-    UpdateAncestorValueOrder(node, diff);
+    if (!node->branch && node->locked)
+        UpdateAncestorValueOrder(node, diff);
 }
 
 void TreeModelOrder::RUpdateLeafValueFPTO(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
@@ -57,7 +58,8 @@ void TreeModelOrder::RUpdateLeafValueFPTO(int node_id, double first_diff, double
     auto index { GetIndex(node->id) };
     emit dataChanged(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFirst)), index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kSettled)));
 
-    UpdateAncestorValueOrder(node, first_diff, second_diff, amount_diff, discount_diff, settled);
+    if (!node->branch && node->locked)
+        UpdateAncestorValueOrder(node, first_diff, second_diff, amount_diff, discount_diff, settled);
 }
 
 void TreeModelOrder::RUpdateStakeholderSO(int old_node_id, int new_node_id)
@@ -386,7 +388,8 @@ bool TreeModelOrder::InsertNode(int row, const QModelIndex& parent, Node* node)
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
+    if (!node->branch && node->locked)
+        UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 
     emit SSearch();
     return true;
@@ -413,11 +416,12 @@ bool TreeModelOrder::RemoveNode(int row, const QModelIndex& parent)
     parent_node->children.removeOne(node);
     endRemoveRows();
 
-    if (branch)
+    if (branch) {
         sql_->RemoveNode(node_id, true);
-
-    if (!branch) {
-        UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
+    } else {
+        if (node->locked) {
+            UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
+        }
         sql_->RemoveNode(node_id, false);
     }
 
@@ -580,23 +584,27 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     if (!node || node->parent == destination_parent || TreeModelHelper::IsDescendant(destination_parent, node))
         return false;
 
-    if (node->unit != destination_parent->unit) {
-        node->unit = destination_parent->unit; // todo a lot
-    }
-
     auto begin_row { row == -1 ? destination_parent->children.size() : row };
     auto source_row { node->parent->children.indexOf(node) };
     auto source_index { createIndex(node->parent->children.indexOf(node), 0, node) };
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
+        if (node->branch) {
+            UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
+        } else {
+            if (node->locked) {
+                UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
+            }
+        }
 
         destination_parent->children.insert(begin_row, node);
         node->unit = destination_parent->unit;
         node->parent = destination_parent;
         node->final_total = node->unit == UNIT_CASH ? node->initial_total - node->discount : 0.0;
-        UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
+
+        if (node->locked)
+            UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 
         endMoveRows();
     }
