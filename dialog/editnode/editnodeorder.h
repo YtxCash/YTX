@@ -46,7 +46,7 @@ public slots:
     void accept() override;
     void RUpdateComboModel();
     void RUpdateLeafValueTO(int node_id, double diff); // first
-    void RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
+    void RUpdateLeafValueFPTO(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff);
     void RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value);
 
 public:

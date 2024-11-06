@@ -113,8 +113,11 @@ void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVarian
 
 void EditNodeOrder::RUpdateLeafValueTO(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void EditNodeOrder::RUpdateLeafValueFPTO(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
+    if (*node_shadow_->branch)
+        return;
+
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
     ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
@@ -164,7 +167,10 @@ void EditNodeOrder::accept()
     if (node_id_ == 0) {
         emit QDialog::accepted();
         node_id_ = *node_shadow_->id;
-        emit SUpdateNodeID(node_id_);
+
+        if (!(*node_shadow_->branch))
+            emit SUpdateNodeID(node_id_);
+
         ui->chkBoxBranch->setEnabled(false);
         ui->pBtnSaveOrder->setEnabled(false);
         ui->tableViewOrder->clearSelection();
@@ -285,10 +291,6 @@ void EditNodeOrder::on_chkBoxRefund_toggled(bool checked)
 void EditNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
 {
     *node_shadow_->employee = ui->comboEmployee->currentData().toInt();
-    if (node_id_ == 0) {
-        ui->pBtnSaveOrder->setEnabled(true);
-        ui->pBtnLockOrder->setEnabled(true);
-    }
 
     if (node_id_ != 0)
         sql_->UpdateField(info_node_, *node_shadow_->employee, EMPLOYEE, node_id_);
@@ -376,7 +378,8 @@ void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
     *node_shadow_->locked = checked;
 
     sql_->UpdateField(info_node_, checked, LOCKED, node_id_);
-    emit SUpdateLocked(node_id_, checked);
+    if (!(*node_shadow_->branch))
+        emit SUpdateLocked(node_id_, checked);
 
     ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
 
@@ -394,6 +397,22 @@ void EditNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1
     bool enable { arg1 == Qt::Checked };
     *node_shadow_->branch = enable;
     LockWidgets(false, enable);
+
+    ui->comboEmployee->setCurrentIndex(-1);
+    ui->comboParty->setCurrentIndex(-1);
+
+    ui->pBtnSaveOrder->setEnabled(false);
+    ui->pBtnLockOrder->setEnabled(false);
+
+    *node_shadow_->party = 0;
+    *node_shadow_->employee = 0;
+    if (enable)
+        node_shadow_->date_time->clear();
+    else
+        *node_shadow_->date_time = ui->dateTimeEdit->dateTime().toString(DATE_TIME_FST);
+
+    ui->chkBoxRefund->setChecked(false);
+    ui->tableViewOrder->clearSelection();
 }
 
 void EditNodeOrder::on_lineDescription_editingFinished()

@@ -1631,7 +1631,7 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
     connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
 
-    connect(table_model, &TableModel::SUpdateLeafValueFPTO, dialog, &EditNodeOrder::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueFPTO, dialog, &EditNodeOrder::RUpdateLeafValueFPTO);
     connect(table_model, &TableModel::SUpdateLeafValueTO, dialog, &EditNodeOrder::RUpdateLeafValueTO);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model().data()) && "Model is not TreeModelOrder");

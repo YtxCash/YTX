@@ -63,7 +63,7 @@ void OrderName::paint(QPainter* painter, const QStyleOptionViewItem& option, con
 
 QSize OrderName::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QString& text = tree_model_->GetPath(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kParty)).data().toInt());
+    const QString& text = index.data().toString() + tree_model_->GetPath(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kParty)).data().toInt());
     return CalculateTextSize(text, option);
 }
 
