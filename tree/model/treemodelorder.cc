@@ -11,11 +11,7 @@ TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObje
     ConstructTree();
 }
 
-TreeModelOrder::~TreeModelOrder()
-{
-    qDeleteAll(node_hash_);
-    delete root_;
-}
+TreeModelOrder::~TreeModelOrder() { delete root_; }
 
 void TreeModelOrder::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
 {

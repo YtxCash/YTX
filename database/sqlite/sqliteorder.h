@@ -60,9 +60,6 @@ protected:
     QString UpdateTransValueQS() const override;
 
 private:
-    void MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer);
-
-private:
     CString& node_;
     CString& transaction_;
     NodeHash node_hash_buffer_ {};

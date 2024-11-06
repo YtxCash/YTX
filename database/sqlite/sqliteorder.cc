@@ -34,9 +34,8 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
         return false;
     }
 
-    // just contains root_
     if (!node_hash.isEmpty())
-        MoveToBuffer(node_hash, node_hash_buffer_);
+        node_hash.clear();
 
     Node* node {};
     int id {};
@@ -45,14 +44,16 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
         id = query.value("id").toInt();
 
         if (auto it = node_hash_buffer_.constFind(id); it != node_hash_buffer_.constEnd()) {
-            node_hash.insert(std::move(it.key()), std::move(it.value()));
-            node_hash_buffer_.erase(it);
+            it.value()->children.clear();
+            it.value()->parent = nullptr;
+            node_hash.insert(it.key(), it.value());
             continue;
         }
 
         node = ResourcePool<Node>::Instance().Allocate();
         ReadNodeQuery(node, query);
         node_hash.insert(id, node);
+        node_hash_buffer_.insert(id, node);
     }
 
     if (!node_hash.isEmpty())
@@ -167,21 +168,6 @@ QString SqliteOrder::UpdateTransValueQS() const
     WHERE id = :trans_id
     )")
         .arg(transaction_);
-}
-
-void SqliteOrder::MoveToBuffer(NodeHash& node_hash, NodeHash& node_hash_buffer)
-{
-    if (node_hash.isEmpty())
-        return;
-
-    node_hash_buffer.reserve(node_hash_buffer.size() + node_hash.size());
-
-    for (auto it = node_hash.cbegin(); it != node_hash.cend();) {
-        it.value()->parent = nullptr;
-        it.value()->children.clear();
-        node_hash_buffer.insert(std::move(it.key()), std::move(it.value()));
-        it = static_cast<NodeHash::const_iterator>(node_hash.erase(it));
-    }
 }
 
 void SqliteOrder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
