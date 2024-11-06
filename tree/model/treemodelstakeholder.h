@@ -39,7 +39,11 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
-    int columnCount(const QModelIndex& /*parent*/ = QModelIndex()) const override { return info_.tree_header.size(); }
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override
+    {
+        Q_UNUSED(parent);
+        return info_.tree_header.size();
+    }
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
     {
         return TreeModelHelper::headerData(info_, section, orientation, role);

@@ -67,13 +67,28 @@ public slots:
 
     // receive from  TableModel
     void RSearch() { emit SSearch(); }
-    virtual void RUpdateLeafValueTO(int /*node_id*/, double /*diff*/, CString& /*node_field*/) { }
-    virtual void RUpdateLeafValueFPTO(int /*node_id*/, double /*initial_debit_diff*/, double /*initial_credit_diff*/, double /*final_debit_diff*/,
-        double /*final_credit_diff*/, double /*settled_diff*/)
+    virtual void RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
     {
+        Q_UNUSED(node_id);
+        Q_UNUSED(diff);
+        Q_UNUSED(node_field);
+    }
+    virtual void RUpdateLeafValueFPTO(
+        int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff)
+    {
+        Q_UNUSED(node_id);
+        Q_UNUSED(initial_debit_diff);
+        Q_UNUSED(initial_credit_diff);
+        Q_UNUSED(final_debit_diff);
+        Q_UNUSED(final_credit_diff);
+        Q_UNUSED(settled_diff);
     }
 
-    virtual void RUpdateStakeholderSO(int /*old_node_id*/, int /*new_node_id*/) { };
+    virtual void RUpdateStakeholderSO(int old_node_id, int new_node_id)
+    {
+        Q_UNUSED(old_node_id);
+        Q_UNUSED(new_node_id);
+    };
 
 public:
     // Qt's
@@ -92,21 +107,68 @@ public:
 
     // Ytx's
     // Default implementations
-    virtual double InitialTotalFPT(int /*node_id*/) const { return {}; }
-    virtual double FinalTotalFPT(int /*node_id*/) const { return {}; }
+    virtual double InitialTotalFPT(int node_id) const
+    {
+        Q_UNUSED(node_id);
+        return {};
+    }
+    virtual double FinalTotalFPT(int node_id) const
+    {
+        Q_UNUSED(node_id);
+        return {};
+    }
 
-    virtual QStringList ChildrenNameFPTS(int /*node_id*/, int /*exclude_child*/) const { return {}; }
-    virtual bool BranchFPTS(int /*node_id*/) const { return {}; }
+    virtual QStringList ChildrenNameFPTS(int node_id, int exclude_child) const
+    {
+        Q_UNUSED(node_id);
+        Q_UNUSED(exclude_child);
+        return {};
+    }
+    virtual bool BranchFPTS(int node_id) const
+    {
+        Q_UNUSED(node_id);
+        return {};
+    }
 
-    virtual void CopyNodeFPTS(Node* /*tmp_node*/, int /*node_id*/) const { }
-    virtual void LeafPathBranchPathFPT(QStandardItemModel* /*combo_model*/) const { }
-    virtual void LeafPathExcludeIDFPT(QStandardItemModel* /*combo_model*/, int /*exclude_id*/) const { }
-    virtual void LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* /*combo_model*/, int /*unit*/, int /*exclude_id*/) const { }
-    virtual void LeafPathSpecificUnitPS(QStandardItemModel* /*combo_model*/, int /*unit*/, UnitFilterMode /*unit_filter_mode*/) const { }
-    virtual void SetNodeShadowOrder(NodeShadow* /*node_shadow*/, int /*node_id*/) const { }
-    virtual void SetNodeShadowOrder(NodeShadow* /*node_shadow*/, Node* /*node*/) const { }
-    virtual void UpdateNodeFPTS(const Node* /*tmp_node*/) { }
-    virtual void UpdateSeparatorFPTS(CString& /*old_separator*/, CString& /*new_separator*/) { };
+    virtual void CopyNodeFPTS(Node* tmp_node, int node_id) const
+    {
+        Q_UNUSED(tmp_node);
+        Q_UNUSED(node_id);
+    }
+    virtual void LeafPathBranchPathFPT(QStandardItemModel* combo_model) const { Q_UNUSED(combo_model); }
+    virtual void LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
+    {
+        Q_UNUSED(combo_model);
+        Q_UNUSED(exclude_id);
+    }
+    virtual void LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
+    {
+        Q_UNUSED(combo_model);
+        Q_UNUSED(unit);
+        Q_UNUSED(exclude_id);
+    }
+    virtual void LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
+    {
+        Q_UNUSED(combo_model);
+        Q_UNUSED(unit);
+        Q_UNUSED(unit_filter_mode);
+    }
+    virtual void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
+    {
+        Q_UNUSED(node_shadow);
+        Q_UNUSED(node_id);
+    }
+    virtual void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const
+    {
+        Q_UNUSED(node_shadow);
+        Q_UNUSED(node);
+    }
+    virtual void UpdateNodeFPTS(const Node* tmp_node) { Q_UNUSED(tmp_node); }
+    virtual void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
+    {
+        Q_UNUSED(old_separator);
+        Q_UNUSED(new_separator);
+    };
 
     // Core pure virtual functions
     virtual void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const = 0;
@@ -132,9 +194,26 @@ protected:
     virtual void ConstructTree() = 0;
 
     // Default implementations
-    virtual bool IsReferencedFPTS(int /*node_id*/, CString& /*message*/) const { return {}; }
-    virtual bool UpdateBranchFPTS(Node* /*node*/, bool /*value*/) { return {}; }
-    virtual bool UpdateRuleFPTO(Node* /*node*/, bool /*value*/) { return {}; }
+    virtual bool IsReferencedFPTS(int node_id, CString& message) const
+    {
+        Q_UNUSED(node_id);
+        Q_UNUSED(message);
+        return {};
+    }
+
+    virtual bool UpdateBranchFPTS(Node* node, bool value)
+    {
+        Q_UNUSED(node);
+        Q_UNUSED(value);
+        return {};
+    }
+
+    virtual bool UpdateRuleFPTO(Node* node, bool value)
+    {
+        Q_UNUSED(node);
+        Q_UNUSED(value);
+        return {};
+    }
 };
 
 using PTreeModel = QPointer<TreeModel>;
