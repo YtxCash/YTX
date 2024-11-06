@@ -1,15 +1,20 @@
 #include "treedoublespinunitr.h"
 
-TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int& decimal, const int& unit, CStringHash& unit_symbol_hash, QObject* parent)
+TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringHash& unit_symbol_hash, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , unit_ { unit }
     , unit_symbol_hash_ { unit_symbol_hash }
+    , ignore_zero_ { ignore_zero }
 {
 }
 
 void TreeDoubleSpinUnitR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+    const double value { index.data().toDouble() };
+    if (ignore_zero_ && value == 0.0)
+        return QStyledItemDelegate::paint(painter, option, index);
+
     PaintText(Format(index), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 

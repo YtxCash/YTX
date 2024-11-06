@@ -450,7 +450,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kEmployee:
         return node->employee == 0 ? QVariant() : node->employee;
     case TreeEnumOrder::kDateTime:
-        return node->date_time.isEmpty() ? QVariant() : node->date_time;
+        return node->branch || node->date_time.isEmpty() ? QVariant() : node->date_time;
     case TreeEnumOrder::kFirst:
         return node->first == 0 ? QVariant() : node->first;
     case TreeEnumOrder::kSecond:
@@ -458,7 +458,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
     case TreeEnumOrder::kLocked:
-        return node->locked ? node->locked : QVariant();
+        return !node->branch && node->locked ? node->locked : QVariant();
     case TreeEnumOrder::kAmount:
         return node->initial_total;
     case TreeEnumOrder::kSettled:

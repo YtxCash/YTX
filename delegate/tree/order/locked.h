@@ -17,24 +17,21 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TREEDOUBLESPINPERCENT_H
-#define TREEDOUBLESPINPERCENT_H
+#ifndef LOCKED_H
+#define LOCKED_H
+
+#include <QEvent>
 
 #include "delegate/styleditemdelegate.h"
 
-class TreeDoubleSpinPercent : public StyledItemDelegate {
+class Locked final : public StyledItemDelegate {
 public:
-    TreeDoubleSpinPercent(const int& decimal, double min, double max, QObject* parent = nullptr);
-    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
-    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    explicit Locked(QEvent::Type type, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    inline bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private:
-    const int& decimal_;
-    double max_ {};
-    double min_ {};
+    QEvent::Type type_ {};
 };
 
-#endif // TREEDOUBLESPINPERCENT_H
+#endif // LOCKED_H

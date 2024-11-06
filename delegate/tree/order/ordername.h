@@ -17,28 +17,32 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TREEDOUBLESPINUNITR_H
-#define TREEDOUBLESPINUNITR_H
+#ifndef ORDERNAME_H
+#define ORDERNAME_H
 
-// read only
+#include <QStandardItemModel>
 
-#include "component/using.h"
 #include "delegate/styleditemdelegate.h"
+#include "tree/model/treemodel.h"
 
-class TreeDoubleSpinUnitR final : public StyledItemDelegate {
+class OrderName : public StyledItemDelegate {
 public:
-    TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringHash& unit_symbol_hash, QObject* parent = nullptr);
+    OrderName(CTreeModel* tree_model, int unit, UnitFilterMode unit_filter_mode, QObject* parent = nullptr);
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-private:
-    QString Format(const QModelIndex& index) const;
+public slots:
+    void RUpdateComboModel();
 
 private:
-    const int& decimal_ {};
-    const int& unit_ {};
-    CStringHash& unit_symbol_hash_;
-    bool ignore_zero_ {};
+    CTreeModel* tree_model_ {};
+    const UnitFilterMode unit_filter_mode_ {};
+    const int unit_ {};
+
+    QStandardItemModel* combo_model_ {};
 };
 
-#endif // TREEDOUBLESPINUNITR_H
+#endif // ORDERNAME_H

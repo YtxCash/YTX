@@ -161,7 +161,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     auto* rule { new TreeComboR(rule_hash_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kRule), rule);
 
-    auto* total { new TreeDoubleSpinR(settings_.amount_decimal, view) };
+    auto* total { new TreeDoubleSpinR(settings_.amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kInitialTotal), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFinalTotal), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kDiscount), total);

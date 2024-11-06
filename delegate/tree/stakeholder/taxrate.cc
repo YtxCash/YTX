@@ -1,9 +1,9 @@
-#include "treedoublespinpercent.h"
+#include "taxrate.h"
 
 #include "component/constvalue.h"
 #include "widget/doublespinbox.h"
 
-TreeDoubleSpinPercent::TreeDoubleSpinPercent(const int& decimal, double min, double max, QObject* parent)
+TaxRate::TaxRate(const int& decimal, double min, double max, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , max_ { max }
@@ -11,7 +11,7 @@ TreeDoubleSpinPercent::TreeDoubleSpinPercent(const int& decimal, double min, dou
 {
 }
 
-QWidget* TreeDoubleSpinPercent::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+QWidget* TaxRate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     Q_UNUSED(option);
     Q_UNUSED(index);
@@ -26,19 +26,19 @@ QWidget* TreeDoubleSpinPercent::createEditor(QWidget* parent, const QStyleOption
     return editor;
 }
 
-void TreeDoubleSpinPercent::setEditorData(QWidget* editor, const QModelIndex& index) const
+void TaxRate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
     cast_editor->setValue(index.data().toDouble() * HUNDRED);
 }
 
-void TreeDoubleSpinPercent::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void TaxRate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
     model->setData(index, cast_editor->value() / HUNDRED);
 }
 
-void TreeDoubleSpinPercent::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void TaxRate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() * HUNDRED };
     if (value == 0)
@@ -47,7 +47,7 @@ void TreeDoubleSpinPercent::paint(QPainter* painter, const QStyleOptionViewItem&
     PaintText(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpinPercent::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize TaxRate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() * HUNDRED };
     return CalculateTextSize(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, option);

@@ -29,13 +29,14 @@
 #include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/color.h"
 #include "delegate/tree/finance/financeforeignr.h"
-#include "delegate/tree/order/ordertotal.h"
+#include "delegate/tree/order/locked.h"
+#include "delegate/tree/order/ordername.h"
 #include "delegate/tree/stakeholder/deadline.h"
 #include "delegate/tree/stakeholder/paymentperiod.h"
+#include "delegate/tree/stakeholder/taxrate.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedatetime.h"
 #include "delegate/tree/treedoublespin.h"
-#include "delegate/tree/treedoublespinpercent.h"
 #include "delegate/tree/treedoublespinr.h"
 #include "delegate/tree/treedoublespinunitr.h"
 #include "delegate/tree/treeplaintext.h"
@@ -675,7 +676,7 @@ void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
 
 void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto* final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
+    auto* final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, false, settings.default_unit, info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kFinalTotal), final_total);
 
     auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
@@ -684,10 +685,10 @@ void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& s
 
 void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 {
-    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
     auto* unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
@@ -702,10 +703,10 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
 {
-    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
 
     auto* price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
@@ -721,7 +722,7 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
     auto* payment_period { new PaymentPeriod(IZERO, IMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
-    auto* tax_rate { new TreeDoubleSpinPercent(settings.amount_decimal, DZERO, DMAX, tree_view) };
+    auto* tax_rate { new TaxRate(settings.amount_decimal, DZERO, DMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
     auto* deadline { new DeadLine(DD, tree_view) };
@@ -737,12 +738,14 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
     auto* rule { new TreeCombo(info.rule_hash, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
-    auto* amount { new OrderTotalR(settings.amount_decimal, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), amount);
 
-    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, tree_view) };
+    auto* discount { new TreeDoubleSpinUnitR(settings.amount_decimal, true, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), discount);
+
+    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
@@ -753,14 +756,14 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
     auto party_unit { info.section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
-    auto* party { new SpecificUnit(stakeholder_tree_model, party_unit, true, UnitFilterMode::kIncludeUnitOnly, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kParty), party);
-    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, party, &SpecificUnit::RUpdateComboModel);
+    auto* name { new OrderName(stakeholder_tree_model, party_unit, UnitFilterMode::kIncludeUnitOnly, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
+    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, name, &OrderName::RUpdateComboModel);
 
     auto* date_time { new TreeDateTime(interface_.date_format, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
-    auto* locked { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    auto* locked { new Locked(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
 }
 

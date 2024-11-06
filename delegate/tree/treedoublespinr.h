@@ -26,12 +26,13 @@
 
 class TreeDoubleSpinR final : public StyledItemDelegate {
 public:
-    TreeDoubleSpinR(const int& decimal, QObject* parent = nullptr);
+    TreeDoubleSpinR(const int& decimal, bool ignore_zero, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
     const int& decimal_ {};
+    bool ignore_zero_ {};
 };
 
 #endif // TREEDOUBLESPINR_H
