@@ -78,6 +78,7 @@ public slots:
 public:
     // Qt's
     // Default implementations
+    QModelIndex parent(const QModelIndex& index) const override;
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;

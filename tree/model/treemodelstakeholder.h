@@ -34,7 +34,6 @@ public slots:
     void RUpdateStakeholderSO(int old_node_id, int new_node_id) override;
 
 public:
-    QModelIndex parent(const QModelIndex& index) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     void sort(int column, Qt::SortOrder order) override;

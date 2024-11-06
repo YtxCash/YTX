@@ -13,6 +13,23 @@ void TreeModel::RRemoveNode(int node_id)
     RemoveNode(row, parent_index);
 }
 
+QModelIndex TreeModel::parent(const QModelIndex& index) const
+{
+    // root_'s index is QModelIndex(), root_'s id == -1
+    if (!index.isValid())
+        return QModelIndex();
+
+    auto* node { GetNodeByIndex(index) };
+    if (node->id == -1)
+        return QModelIndex();
+
+    auto* parent_node { node->parent };
+    if (parent_node->id == -1)
+        return QModelIndex();
+
+    return createIndex(parent_node->parent->children.indexOf(parent_node), 0, parent_node);
+}
+
 QModelIndex TreeModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent))

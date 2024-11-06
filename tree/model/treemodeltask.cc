@@ -83,23 +83,6 @@ void TreeModelTask::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
     emit SUpdateDSpinBox();
 }
 
-QModelIndex TreeModelTask::parent(const QModelIndex& index) const
-{
-    // root_'s index is QModelIndex();
-    if (!index.isValid())
-        return QModelIndex();
-
-    auto* node { GetNodeByIndex(index) };
-    if (node == root_)
-        return QModelIndex();
-
-    auto* parent_node { node->parent };
-    if (parent_node == root_)
-        return QModelIndex();
-
-    return createIndex(parent_node->parent->children.indexOf(parent_node), 0, parent_node);
-}
-
 QVariant TreeModelTask::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)

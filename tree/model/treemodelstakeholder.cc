@@ -29,23 +29,6 @@ void TreeModelStakeholder::RUpdateStakeholderSO(int old_node_id, int new_node_id
     }
 }
 
-QModelIndex TreeModelStakeholder::parent(const QModelIndex& index) const
-{
-    // root_'s index is QModelIndex();
-    if (!index.isValid())
-        return QModelIndex();
-
-    auto* node { GetNodeByIndex(index) };
-    if (node == root_)
-        return QModelIndex();
-
-    auto* parent_node { node->parent };
-    if (parent_node == root_)
-        return QModelIndex();
-
-    return createIndex(parent_node->parent->children.indexOf(parent_node), 0, parent_node);
-}
-
 void TreeModelStakeholder::UpdateNodeFPTS(const Node* tmp_node)
 {
     if (!tmp_node)

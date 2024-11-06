@@ -88,23 +88,6 @@ void TreeModelOrder::RUpdateLocked(int node_id, bool checked)
         coefficient * node->final_total);
 }
 
-QModelIndex TreeModelOrder::parent(const QModelIndex& index) const
-{
-    // root_'s index is QModelIndex();
-    if (!index.isValid())
-        return QModelIndex();
-
-    auto* node { GetNodeByIndex(index) };
-    if (node == root_)
-        return QModelIndex();
-
-    auto* parent_node { node->parent };
-    if (parent_node == root_)
-        return QModelIndex();
-
-    return createIndex(parent_node->parent->children.indexOf(parent_node), 0, parent_node);
-}
-
 void TreeModelOrder::UpdateAncestorValueOrder(Node* node, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     if (!node || node == root_ || node->parent == root_ || !node->parent)

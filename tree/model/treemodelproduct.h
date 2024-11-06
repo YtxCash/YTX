@@ -36,7 +36,6 @@ public slots:
     void RUpdateMultiLeafTotalFPT(const QList<int>& node_list) override;
 
 public:
-    QModelIndex parent(const QModelIndex& index) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     void sort(int column, Qt::SortOrder order) override;
