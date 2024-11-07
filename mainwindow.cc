@@ -1147,7 +1147,8 @@ void MainWindow::SetProductData()
     info.path = PRODUCT_PATH;
     info.transaction = PRODUCT_TRANSACTION;
 
-    QStringList unit_list { {}, tr("POSITION"), tr("BOX"), tr("PIECE"), tr("SET"), tr("SQUARE_FEET") };
+    // POS: Position, PC: Piece, SF: SquareFeet
+    QStringList unit_list { {}, tr("POS"), tr("BOX"), tr("PC"), tr("SET"), tr("SF") };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1172,10 +1173,12 @@ void MainWindow::SetStakeholderData()
     info.path = STAKEHOLDER_PATH;
     info.transaction = STAKEHOLDER_TRANSACTION;
 
-    info.rule_hash.insert(0, tr("Cash"));
-    info.rule_hash.insert(1, tr("Monthly"));
+    // IM：Immediate, MS（Monthly Settlement）
+    info.rule_hash.insert(0, tr("IM"));
+    info.rule_hash.insert(1, tr("MS"));
 
-    QStringList unit_list { tr("EMPLOYEE"), tr("CUSTOMER"), tr("VENDOR"), tr("PRODUCT") };
+    // EMP: EMPLOYEE, CUST: CUSTOMER, VEND: VENDOR, PROD: PRODUCT
+    QStringList unit_list { tr("EMP"), tr("CUST"), tr("VEND"), tr("PROD") };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1204,7 +1207,8 @@ void MainWindow::SetTaskData()
     info.path = TASK_PATH;
     info.transaction = TASK_TRANSACTION;
 
-    QStringList unit_list { {}, tr("PRODUCT"), tr("STAKEHOLDER") };
+    // PROD: PRODUCT, STKH: STAKEHOLDER
+    QStringList unit_list { {}, tr("PROD"), tr("STKH") };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1229,10 +1233,12 @@ void MainWindow::SetSalesData()
     info.path = SALES_PATH;
     info.transaction = SALES_TRANSACTION;
 
-    info.rule_hash.insert(0, tr("Charge"));
-    info.rule_hash.insert(1, tr("Refund"));
+    // SO: SALES ORDER, RO: REFUND ORDER
+    info.rule_hash.insert(0, tr("SO"));
+    info.rule_hash.insert(1, tr("RO"));
 
-    QStringList unit_list { tr("Cash"), tr("Monthly"), tr("Pending") };
+    // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
+    QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
     auto& unit_hash { info.unit_hash };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1260,10 +1266,12 @@ void MainWindow::SetPurchaseData()
     info.path = PURCHASE_PATH;
     info.transaction = PURCHASE_TRANSACTION;
 
-    info.rule_hash.insert(0, tr("Charge"));
-    info.rule_hash.insert(1, tr("Refund"));
+    // PO: PURCHASE ORDER, RO: REFUND ORDER
+    info.rule_hash.insert(0, tr("PO"));
+    info.rule_hash.insert(1, tr("RO"));
 
-    QStringList unit_list { tr("Cash"), tr("Monthly"), tr("Pending") };
+    // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
+    QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
 
     auto& unit_hash { info.unit_hash };
 
