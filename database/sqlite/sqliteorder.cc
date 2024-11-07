@@ -113,6 +113,15 @@ bool SqliteOrder::SearchNode(QList<const Node*>& node_list, const QList<int>& pa
     return true;
 }
 
+bool SqliteOrder::RetriveNode(NodeHash& node_hash, int node_id)
+{
+    auto it = node_hash_buffer_.constFind(node_id);
+    if (it != node_hash_buffer_.constEnd() && it.value())
+        node_hash.insert(node_id, it.value());
+
+    return true;
+}
+
 QString SqliteOrder::ReadNodeQS() const
 {
     return QString(R"(

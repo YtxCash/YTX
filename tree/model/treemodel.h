@@ -176,6 +176,8 @@ public:
         Q_UNUSED(node_id_list);
     };
 
+    virtual void RetriveNodeO(int node_id) { Q_UNUSED(node_id); };
+
     // Core pure virtual functions
     virtual void SetParent(Node* node, int parent_id) const = 0;
     virtual void UpdateDefaultUnit(int default_unit) = 0;

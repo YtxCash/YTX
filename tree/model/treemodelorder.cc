@@ -201,6 +201,22 @@ QString TreeModelOrder::GetPath(int node_id) const
     return {};
 }
 
+void TreeModelOrder::RetriveNodeO(int node_id)
+{
+    if (node_hash_.contains(node_id))
+        return;
+
+    sql_->RetriveNode(node_hash_, node_id);
+    auto* node { node_hash_.value(node_id) };
+    node->parent = root_;
+
+    auto row { root_->children.size() };
+
+    beginInsertRows(QModelIndex(), row, row);
+    root_->children.insert(row, node);
+    endInsertRows();
+}
+
 bool TreeModelOrder::UpdateRuleFPTO(Node* node, bool value)
 {
     if (node->rule == value || node->branch)

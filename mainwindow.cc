@@ -1954,6 +1954,7 @@ void MainWindow::RTreeLocation(int node_id)
     auto* widget { tree_widget_ };
     ui->tabWidget->setCurrentWidget(widget);
 
+    tree_widget_->Model()->RetriveNodeO(node_id);
     auto index { tree_widget_->Model()->GetIndex(node_id) };
     widget->activateWindow();
     widget->View()->setCurrentIndex(index);
