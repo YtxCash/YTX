@@ -331,7 +331,7 @@ bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name) c
 
 void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
 {
-    CString& name { tree_model->Name(node_id) };
+    CString name { tree_model->Name(node_id) };
     auto* sql { data->sql };
     const auto& info { data->info };
     auto section { info.section };
@@ -404,7 +404,6 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
 
 void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id)
 {
-    CString& name { stakeholder_tree_->Model()->Name(party_id) };
     auto* sql { data->sql };
     const auto& info { data->info };
     auto section { info.section };
@@ -426,11 +425,12 @@ void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, 
         break;
     }
 
+    CString name { stakeholder_tree_->Model()->GetPath(party_id) };
     int tab_index { ui->tabWidget->addTab(widget, name) };
     auto* tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
-    tab_bar->setTabToolTip(tab_index, stakeholder_tree_->Model()->GetPath(party_id));
+    tab_bar->setTabToolTip(tab_index, name);
 
     auto view { widget->View() };
     SetView(view);
