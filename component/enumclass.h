@@ -60,6 +60,7 @@ enum class TableEnumOrder {
     kCode,
     kDescription,
     kColor,
+    kNodeID,
     kFirst,
     kSecond,
     kAmount,
