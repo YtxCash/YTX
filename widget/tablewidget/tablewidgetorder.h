@@ -39,7 +39,6 @@ public:
 
 signals:
     void SUpdateLocked(int node_id, bool checked);
-    void SUpdateParty();
 
 public slots:
     void RUpdateComboModel();

@@ -36,7 +36,6 @@ public:
 public slots:
     void RUpdateNodeID(int node_id);
     void RUpdateLocked(int node_id, bool checked);
-    void RUpdateParty();
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

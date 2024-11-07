@@ -9,11 +9,7 @@ TableModelOrder::TableModelOrder(
     , sqlite_stakeholder_ { static_cast<SqliteStakeholder*>(sqlite_stakeholder) }
     , node_shadow_ { node_shadow }
 {
-    if (*node_shadow->party >= 1)
-        RUpdateParty();
 }
-
-void TableModelOrder::RUpdateParty() { sqlite_stakeholder_->ReadTrans(*node_shadow_->party); }
 
 void TableModelOrder::RUpdateNodeID(int node_id)
 {

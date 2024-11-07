@@ -425,12 +425,11 @@ void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, 
         break;
     }
 
-    CString name { stakeholder_tree_->Model()->GetPath(party_id) };
-    int tab_index { ui->tabWidget->addTab(widget, name) };
+    int tab_index { ui->tabWidget->addTab(widget, stakeholder_tree_->Model()->Name(party_id)) };
     auto* tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
-    tab_bar->setTabToolTip(tab_index, name);
+    tab_bar->setTabToolTip(tab_index, stakeholder_tree_->Model()->GetPath(party_id));
 
     auto view { widget->View() };
     SetView(view);
@@ -475,7 +474,6 @@ void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* tabl
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
     connect(widget, &TableWidgetOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
-    connect(widget, &TableWidgetOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 }
 
 void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
@@ -1640,7 +1638,6 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     connect(dialog, &EditNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
     connect(dialog, &EditNodeOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
     connect(dialog, &EditNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
-    connect(dialog, &EditNodeOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 
     dialog_list_->append(dialog);
 

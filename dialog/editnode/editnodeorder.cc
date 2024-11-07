@@ -260,7 +260,6 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
         return;
 
     *node_shadow_->party = party_id;
-    emit SUpdateParty();
 
     if (node_id_ == 0) {
         ui->pBtnSaveOrder->setEnabled(true);
