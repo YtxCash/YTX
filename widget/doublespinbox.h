@@ -49,7 +49,7 @@ protected:
         }
 
         if (cleanText().isEmpty()) {
-            setValue(DZERO);
+            setValue(0.0);
         }
 
         QDoubleSpinBox::keyPressEvent(event);

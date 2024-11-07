@@ -32,7 +32,7 @@ void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakehold
     IniComboWithStringHash(ui->comboUnit, unit_hash);
     IniComboEmployee(stakeholder_tree);
 
-    ui->dSpinPaymentPeriod->setRange(IZERO, IMAX);
+    ui->dSpinPaymentPeriod->setRange(0, IMAX);
     ui->dSpinTaxRate->setRange(0.0, DMAX);
     ui->dSpinTaxRate->setDecimals(amount_decimal);
 

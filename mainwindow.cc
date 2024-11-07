@@ -718,10 +718,10 @@ void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) cons
 
 void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const
 {
-    auto* payment_period { new PaymentPeriod(IZERO, IMAX, tree_view) };
+    auto* payment_period { new PaymentPeriod(0, IMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
-    auto* tax_rate { new TaxRate(settings.amount_decimal, DZERO, DMAX, tree_view) };
+    auto* tax_rate { new TaxRate(settings.amount_decimal, 0.0, DMAX, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
     auto* deadline { new DeadLine(DD, tree_view) };

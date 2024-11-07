@@ -21,17 +21,15 @@
 #define CONSTVALUE_H
 
 // Constants for values
+static constexpr long long BATCH_SIZE = 50;
 static constexpr double DMAX = 1'000'000'000.00;
 static constexpr double DMIN = -1'000'000'000.00;
-static constexpr double DZERO = 0.0;
 static constexpr int HUNDRED = 100;
 static constexpr int IMAX = 1'000'000'000;
 static constexpr int IMIN = -1'000'000'000;
 static constexpr int ROW_HEIGHT = 24;
 static constexpr int THIRTY_ONE = 31;
-static constexpr int IZERO = 0;
 static constexpr int THREE_THOUSAND = 3000;
-static constexpr long long BATCH_SIZE = 50;
 
 // Constants for unit
 static constexpr int UNIT_CASH = 0;
