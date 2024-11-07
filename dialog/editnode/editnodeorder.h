@@ -39,7 +39,7 @@ public:
 
 signals:
     void SUpdateNodeID(int node_id);
-    void SUpdateLocked(int node_id, bool checked);
+    void SUpdateFinished(int node_id, bool checked);
 
 public slots:
     void accept() override;
@@ -57,7 +57,7 @@ private slots:
     void on_comboEmployee_currentIndexChanged(int index);
 
     void on_chkBoxRefund_toggled(bool checked);
-    void on_pBtnLockOrder_toggled(bool checked);
+    void on_pBtnFinishOrder_toggled(bool checked);
     void on_rBtnCash_toggled(bool checked);
     void on_rBtnMonthly_toggled(bool checked);
     void on_rBtnPending_toggled(bool checked);
@@ -71,7 +71,7 @@ private slots:
 private:
     void IniDialog();
     void IniConnect();
-    void LockWidgets(bool locked, bool branch);
+    void LockWidgets(bool finished, bool branch);
     void IniUnit(int unit);
 
 private:

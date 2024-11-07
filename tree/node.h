@@ -55,7 +55,7 @@ struct Node {
     double first {};
     double second {};
     double discount {};
-    bool locked {};
+    bool finished {};
 
     // order and stakeholder
     int employee {};
@@ -83,7 +83,7 @@ inline Node::Node(const Node& other)
     , first(other.first)
     , second(other.second)
     , discount(other.discount)
-    , locked(other.locked)
+    , finished(other.finished)
     , employee(other.employee)
     , party(other.party)
     , final_total(other.final_total)
@@ -108,7 +108,7 @@ inline Node& Node::operator=(const Node& other)
     second = other.second;
     color = other.color;
     discount = other.discount;
-    locked = other.locked;
+    finished = other.finished;
     date_time = other.date_time;
     employee = other.employee;
     party = other.party;
@@ -123,8 +123,8 @@ inline bool Node::operator==(const Node& other) const noexcept
     auto AlmostEqual = [](double a, double b, double tolerance = TOLERANCE) noexcept { return std::abs(a - b) < tolerance; };
 
     // Compare non-floating-point data members
-    bool basic_fields_equal = std::tie(name, id, code, party, employee, locked, date_time, color, description, note, rule, branch, unit, parent, children)
-        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.locked, other.date_time, other.color, other.description, other.note,
+    bool basic_fields_equal = std::tie(name, id, code, party, employee, finished, date_time, color, description, note, rule, branch, unit, parent, children)
+        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.finished, other.date_time, other.color, other.description, other.note,
             other.rule, other.branch, other.unit, other.parent, other.children);
 
     // Compare floating-point data members, considering tolerance
@@ -143,7 +143,7 @@ inline void Node::Reset()
     employee = 0;
     second = 0.0;
     discount = 0.0;
-    locked = false;
+    finished = false;
     first = 0.0;
     date_time.clear();
     description.clear();
@@ -174,7 +174,7 @@ struct NodeShadow {
     double* first {};
     double* second {};
     double* discount {};
-    bool* locked {};
+    bool* finished {};
 
     QString* date_time {};
     QString* color {};
@@ -199,7 +199,7 @@ inline void NodeShadow::Reset()
     first = nullptr;
     second = nullptr;
     discount = nullptr;
-    locked = nullptr;
+    finished = nullptr;
 
     date_time = nullptr;
     color = nullptr;
@@ -225,7 +225,7 @@ inline void NodeShadow::Set(Node* node)
         first = &node->first;
         second = &node->second;
         discount = &node->discount;
-        locked = &node->locked;
+        finished = &node->finished;
 
         date_time = &node->date_time;
         color = &node->color;

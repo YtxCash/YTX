@@ -41,7 +41,7 @@ public slots:
     void RUpdateLeafValueFPTO(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff) override;
 
     void RUpdateStakeholderSO(int old_node_id, int new_node_id) override;
-    void RUpdateLocked(int node_id, bool checked);
+    void RUpdateFinished(int node_id, bool checked);
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -84,7 +84,7 @@ protected:
     void ConstructTree() override;
 
 private:
-    bool UpdateLocked(Node* node, bool value);
+    bool UpdateFinished(Node* node, bool value);
     void UpdateAncestorValueOrder(
         Node* node, double first_diff, double second_diff = 0.0, double amount_diff = 0.0, double discount_diff = 0.0, double settled_diff = 0.0);
 

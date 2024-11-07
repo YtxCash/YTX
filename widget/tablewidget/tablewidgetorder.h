@@ -38,7 +38,7 @@ public:
     ~TableWidgetOrder();
 
 signals:
-    void SUpdateLocked(int node_id, bool checked);
+    void SUpdateFinished(int node_id, bool checked);
     void SUpdateParty(int node_id, int party);
 
 public slots:
@@ -59,7 +59,7 @@ private slots:
     void on_comboEmployee_currentIndexChanged(int index);
 
     void on_chkBoxRefund_toggled(bool checked);
-    void on_pBtnLockOrder_toggled(bool checked);
+    void on_pBtnFinishOrder_toggled(bool checked);
     void on_rBtnCash_toggled(bool checked);
     void on_rBtnMonthly_toggled(bool checked);
     void on_rBtnPending_toggled(bool checked);
@@ -72,7 +72,7 @@ private:
     void IniDialog();
     void IniData();
     void IniDataCombo();
-    void LockWidgets(bool locked);
+    void LockWidgets(bool finished);
     void IniUnit(int unit);
 
 private:

@@ -29,7 +29,7 @@
 #include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/color.h"
 #include "delegate/tree/finance/financeforeignr.h"
-#include "delegate/tree/order/locked.h"
+#include "delegate/tree/order/finished.h"
 #include "delegate/tree/order/ordername.h"
 #include "delegate/tree/stakeholder/deadline.h"
 #include "delegate/tree/stakeholder/paymentperiod.h"
@@ -472,8 +472,8 @@ void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* tabl
     auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
 
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
-    connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
-    connect(widget, &TableWidgetOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
+    connect(widget, &TableWidgetOrder::SUpdateFinished, tree_model_order, &TreeModelOrder::RUpdateFinished);
+    connect(widget, &TableWidgetOrder::SUpdateFinished, table_model, &TableModelOrder::RUpdateFinished);
     connect(widget, &TableWidgetOrder::SUpdateParty, this, &MainWindow::RUpdateParty);
 }
 
@@ -762,8 +762,8 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
     auto* date_time { new TreeDateTime(interface_.date_format, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
-    auto* locked { new Locked(QEvent::MouseButtonDblClick, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kLocked), locked);
+    auto* finished { new Finished(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFinished), finished);
 }
 
 void MainWindow::TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const
@@ -1319,13 +1319,13 @@ void MainWindow::SetHeader()
         tr("DateTime"), tr("Color"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
-        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled"), {} };
+        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled"), {} };
     sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("NodeID"), tr("First"),
         tr("Second"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled"), tr("OutsideProduct") };
     sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
         tr("NodeID"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };
     sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
-        tr("Employee"), tr("DateTime"), {}, tr("First"), tr("Second"), tr("Locked"), tr("Amount"), tr("Discount"), tr("Settled") };
+        tr("Employee"), tr("DateTime"), {}, tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled") };
 
     purchase_data_.info.tree_header = sales_data_.info.tree_header;
     purchase_data_.info.table_header = sales_data_.info.table_header;
@@ -1636,8 +1636,8 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model().data()) && "Model is not TreeModelOrder");
     auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
     connect(tree_model_order, &TreeModelOrder::SUpdateData, dialog, &EditNodeOrder::RUpdateData);
-    connect(dialog, &EditNodeOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
-    connect(dialog, &EditNodeOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
+    connect(dialog, &EditNodeOrder::SUpdateFinished, tree_model_order, &TreeModelOrder::RUpdateFinished);
+    connect(dialog, &EditNodeOrder::SUpdateFinished, table_model, &TableModelOrder::RUpdateFinished);
     connect(dialog, &EditNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
 
     dialog_list_->append(dialog);

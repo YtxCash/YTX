@@ -257,7 +257,7 @@ QString MainwindowSqlite::NodeSales()
         first             NUMERIC,
         second            NUMERIC,
         discount          NUMERIC,
-        locked            BOOLEAN    DEFAULT 0,
+        finished          BOOLEAN    DEFAULT 0,
         amount            NUMERIC,
         settled           NUMERIC,
         removed           BOOLEAN    DEFAULT 0
@@ -283,7 +283,7 @@ QString MainwindowSqlite::NodePurchase()
         first             NUMERIC,
         second            NUMERIC,
         discount          NUMERIC,
-        locked            BOOLEAN    DEFAULT 0,
+        finished          BOOLEAN    DEFAULT 0,
         amount            NUMERIC,
         settled           NUMERIC,
         removed           BOOLEAN    DEFAULT 0

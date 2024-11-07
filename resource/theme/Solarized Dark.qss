@@ -61,7 +61,7 @@ QTabBar::tab, QTreeView#treeViewCommon, QGroupBox#treeWidgetOrder {
     border-bottom: none;
 }
 
-QGroupBox#treeWidgetCommon, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnLockOrder,
+QGroupBox#treeWidgetCommon, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnFinishOrder,
 QPushButton#pBtnSaveOrder {
     border-top: none;
 }
@@ -132,7 +132,7 @@ QHeaderView::section, QTabBar::tab{
     color: #93A1A1;
 }
 
-QToolTip, QRadioButton::checked, QCheckBox::checked, QTabBar::tab:selected, QMenuBar::item:selected, QPushButton#pBtnLockOrder:checked {
+QToolTip, QRadioButton::checked, QCheckBox::checked, QTabBar::tab:selected, QMenuBar::item:selected, QPushButton#pBtnFinishOrder:checked {
     color: #2BB3EB;
 }
 

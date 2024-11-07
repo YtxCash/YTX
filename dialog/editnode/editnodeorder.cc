@@ -24,9 +24,8 @@ EditNodeOrder::EditNodeOrder(
 
     ui->tableViewOrder->setModel(order_table);
     ui->pBtnSaveOrder->setEnabled(false);
-    ui->pBtnLockOrder->setEnabled(false);
+    ui->pBtnFinishOrder->setEnabled(false);
 
-    ui->pBtnLockOrder->setText(tr("Lock"));
     ui->labelParty->setText(tr("Party"));
     ui->comboParty->setFocus();
 
@@ -92,14 +91,14 @@ void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVarian
     case TreeEnumOrder::kDateTime:
         ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), DATE_TIME_FST));
         break;
-    case TreeEnumOrder::kLocked: {
-        bool locked { value.toBool() };
+    case TreeEnumOrder::kFinished: {
+        bool finished { value.toBool() };
 
-        ui->pBtnLockOrder->setChecked(locked);
-        ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
-        LockWidgets(locked, *node_shadow_->branch);
+        ui->pBtnFinishOrder->setChecked(finished);
+        ui->pBtnFinishOrder->setText(finished ? tr("Edit") : tr("Finish"));
+        LockWidgets(finished, *node_shadow_->branch);
 
-        if (locked) {
+        if (finished) {
             ui->pBtnPrint->setFocus();
             ui->pBtnPrint->setDefault(true);
             ui->tableViewOrder->clearSelection();
@@ -179,10 +178,10 @@ void EditNodeOrder::accept()
 
 void EditNodeOrder::IniConnect() { connect(ui->pBtnSaveOrder, &QPushButton::clicked, this, &EditNodeOrder::accept); }
 
-void EditNodeOrder::LockWidgets(bool locked, bool branch)
+void EditNodeOrder::LockWidgets(bool finished, bool branch)
 {
-    bool basic_enable { !locked };
-    bool not_branch_enable { !locked && !branch };
+    bool basic_enable { !finished };
+    bool not_branch_enable { !finished && !branch };
 
     ui->labelParty->setEnabled(basic_enable);
     ui->comboParty->setEnabled(basic_enable);
@@ -214,7 +213,7 @@ void EditNodeOrder::LockWidgets(bool locked, bool branch)
     ui->chkBoxRefund->setEnabled(not_branch_enable);
     ui->lineDescription->setEnabled(basic_enable);
 
-    ui->pBtnPrint->setEnabled(locked && !branch);
+    ui->pBtnPrint->setEnabled(finished && !branch);
 }
 
 void EditNodeOrder::IniUnit(int unit)
@@ -243,7 +242,7 @@ void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
 
     if (node_id_ == 0) {
         ui->pBtnSaveOrder->setEnabled(true);
-        ui->pBtnLockOrder->setEnabled(true);
+        ui->pBtnFinishOrder->setEnabled(true);
     }
 
     if (node_id_ != 0)
@@ -263,7 +262,7 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
 
     if (node_id_ == 0) {
         ui->pBtnSaveOrder->setEnabled(true);
-        ui->pBtnLockOrder->setEnabled(true);
+        ui->pBtnFinishOrder->setEnabled(true);
     }
 
     if (node_id_ != 0)
@@ -370,17 +369,17 @@ void EditNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
         sql_->UpdateField(info_node_, *node_shadow_->date_time, DATE_TIME, node_id_);
 }
 
-void EditNodeOrder::on_pBtnLockOrder_toggled(bool checked)
+void EditNodeOrder::on_pBtnFinishOrder_toggled(bool checked)
 {
     accept();
 
-    *node_shadow_->locked = checked;
+    *node_shadow_->finished = checked;
 
-    sql_->UpdateField(info_node_, checked, LOCKED, node_id_);
+    sql_->UpdateField(info_node_, checked, FINISHED, node_id_);
     if (!(*node_shadow_->branch))
-        emit SUpdateLocked(node_id_, checked);
+        emit SUpdateFinished(node_id_, checked);
 
-    ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
+    ui->pBtnFinishOrder->setText(checked ? tr("Edit") : tr("Finish"));
 
     LockWidgets(checked, *node_shadow_->branch);
 
@@ -401,7 +400,7 @@ void EditNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1
     ui->comboParty->setCurrentIndex(-1);
 
     ui->pBtnSaveOrder->setEnabled(false);
-    ui->pBtnLockOrder->setEnabled(false);
+    ui->pBtnFinishOrder->setEnabled(false);
 
     *node_shadow_->party = 0;
     *node_shadow_->employee = 0;

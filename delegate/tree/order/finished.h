@@ -17,16 +17,16 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef LOCKED_H
-#define LOCKED_H
+#ifndef FINISHED_H
+#define FINISHED_H
 
 #include <QEvent>
 
 #include "delegate/styleditemdelegate.h"
 
-class Locked final : public StyledItemDelegate {
+class Finished final : public StyledItemDelegate {
 public:
-    explicit Locked(QEvent::Type type, QObject* parent = nullptr);
+    explicit Finished(QEvent::Type type, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     inline bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
@@ -34,4 +34,4 @@ private:
     QEvent::Type type_ {};
 };
 
-#endif // LOCKED_H
+#endif // FINISHED_H

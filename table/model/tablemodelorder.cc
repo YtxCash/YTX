@@ -51,7 +51,7 @@ void TableModelOrder::RUpdateNodeID(int node_id)
     emit SUpdateLeafValueFPTO(node_id, first_diff, second_diff, amount_diff, discount_diff, settled_diff);
 }
 
-void TableModelOrder::RUpdateLocked(int node_id, bool checked)
+void TableModelOrder::RUpdateFinished(int node_id, bool checked)
 {
     if (node_id != node_id_ || !checked)
         return;

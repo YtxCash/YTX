@@ -78,8 +78,8 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
         return node->second == 0 ? QVariant() : node->second;
     case TreeEnumSearch::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
-    case TreeEnumSearch::kLocked:
-        return node->locked ? node->locked : QVariant();
+    case TreeEnumSearch::kFinished:
+        return node->finished ? node->finished : QVariant();
     case TreeEnumSearch::kInitialTotal:
         return node->initial_total;
     case TreeEnumSearch::kFinalTotal:
@@ -134,8 +134,8 @@ void SearchNodeModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
         case TreeEnumSearch::kDiscount:
             return (order == Qt::AscendingOrder) ? (lhs->discount < rhs->discount) : (lhs->discount > rhs->discount);
-        case TreeEnumSearch::kLocked:
-            return (order == Qt::AscendingOrder) ? (lhs->locked < rhs->locked) : (lhs->locked > rhs->locked);
+        case TreeEnumSearch::kFinished:
+            return (order == Qt::AscendingOrder) ? (lhs->finished < rhs->finished) : (lhs->finished > rhs->finished);
         case TreeEnumSearch::kFinalTotal:
             return (order == Qt::AscendingOrder) ? (lhs->final_total < rhs->final_total) : (lhs->final_total > rhs->final_total);
         case TreeEnumSearch::kInitialTotal:

@@ -343,7 +343,7 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="-289"/>
-        <location filename="../../dialog/editnode/editnodeorder.cc" line="+30"/>
+        <location filename="../../dialog/editnode/editnodeorder.cc" line="+29"/>
         <source>Party</source>
         <translation>合作</translation>
     </message>
@@ -373,13 +373,19 @@ Rage, rage against the dying of the light.</source>
         <translation></translation>
     </message>
     <message>
+        <location line="+58"/>
+        <location filename="../../dialog/editnode/editnodeorder.cc" line="+69"/>
+        <location line="+284"/>
+        <source>Finish</source>
+        <translation>完成</translation>
+    </message>
+    <message>
         <source>InitialTotal</source>
         <translation type="vanished">实际</translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>&amp;Lock</source>
-        <translation>锁定(&amp;L)</translation>
+        <translation type="vanished">锁定(&amp;L)</translation>
     </message>
     <message>
         <location line="-303"/>
@@ -420,17 +426,12 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">分支</translation>
     </message>
     <message>
-        <location filename="../../dialog/editnode/editnodeorder.cc" line="+69"/>
-        <location line="+282"/>
         <source>UnLock</source>
-        <translation>解锁</translation>
+        <translation type="vanished">解锁</translation>
     </message>
     <message>
-        <location line="-352"/>
-        <location line="+70"/>
-        <location line="+282"/>
         <source>Lock</source>
-        <translation>锁定</translation>
+        <translation type="vanished">锁定</translation>
     </message>
     <message>
         <source>Save Modified</source>
@@ -445,7 +446,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">待定</translation>
     </message>
     <message>
-        <location filename="../../dialog/editnode/editnodeorder.ui" line="-300"/>
+        <location line="-300"/>
         <source>&amp;Branch</source>
         <translation>分支(&amp;B)</translation>
     </message>
@@ -496,6 +497,12 @@ Rage, rage against the dying of the light.</source>
     <message>
         <source>Post</source>
         <translation type="vanished">发布</translation>
+    </message>
+    <message>
+        <location filename="../../dialog/editnode/editnodeorder.cc" line="-284"/>
+        <location line="+284"/>
+        <source>Edit</source>
+        <translation>编辑</translation>
     </message>
 </context>
 <context>
@@ -1251,7 +1258,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">科目</translation>
     </message>
     <message>
-        <location filename="../../mainwindow.cc" line="+1280"/>
+        <location filename="../../mainwindow.cc" line="+1287"/>
         <location line="+1"/>
         <location line="+2"/>
         <location line="+2"/>
@@ -1511,15 +1518,15 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">借-贷+</translation>
     </message>
     <message>
-        <location line="-152"/>
-        <location line="+59"/>
+        <location line="-153"/>
+        <location line="+60"/>
         <location line="+31"/>
         <source>Cash</source>
         <translation>现结</translation>
     </message>
     <message>
-        <location line="-89"/>
-        <location line="+58"/>
+        <location line="-90"/>
+        <location line="+59"/>
         <location line="+31"/>
         <source>Monthly</source>
         <translation>月结</translation>
@@ -1541,7 +1548,7 @@ Rage, rage against the dying of the light.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-313"/>
+        <location line="-314"/>
         <source>Remove %1</source>
         <translation>删除 %1</translation>
     </message>
@@ -1559,7 +1566,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">帐期</translation>
     </message>
     <message>
-        <location line="+302"/>
+        <location line="+303"/>
         <location line="+6"/>
         <source>Deadline</source>
         <translation>止期</translation>
@@ -1689,14 +1696,13 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">内部产品</translation>
     </message>
     <message>
-        <location line="-1"/>
-        <location line="+6"/>
         <source>Locked</source>
-        <translation>锁定</translation>
+        <translation type="vanished">锁定</translation>
     </message>
     <message>
-        <location line="-19"/>
-        <location line="+17"/>
+        <location line="-14"/>
+        <location line="+14"/>
+        <location line="+3"/>
         <source>NodeID</source>
         <translation>节点ID</translation>
     </message>
@@ -1745,8 +1751,8 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="-5"/>
-        <location line="+1"/>
         <location line="+2"/>
+        <location line="+1"/>
         <location line="+3"/>
         <source>Second</source>
         <translation>第二</translation>
@@ -1778,7 +1784,7 @@ Rage, rage against the dying of the light.</source>
         <translation>提成</translation>
     </message>
     <message>
-        <location line="-151"/>
+        <location line="-152"/>
         <source>BOX</source>
         <translation>箱</translation>
     </message>
@@ -1819,9 +1825,15 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="+0"/>
-        <location line="+28"/>
+        <location line="+29"/>
         <source>PRODUCT</source>
         <translation>产品</translation>
+    </message>
+    <message>
+        <location line="+115"/>
+        <location line="+6"/>
+        <source>Finished</source>
+        <translation>完成</translation>
     </message>
     <message>
         <source>Quantity Total</source>
@@ -1832,7 +1844,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">金额</translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="-31"/>
         <location line="+3"/>
         <location line="+14"/>
         <location line="+1"/>
@@ -1945,7 +1957,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">帐期</translation>
     </message>
     <message>
-        <location line="+743"/>
+        <location line="+745"/>
         <source>New</source>
         <translation>新建</translation>
     </message>
@@ -1959,7 +1971,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">位置</translation>
     </message>
     <message>
-        <location line="-734"/>
+        <location line="-736"/>
         <location line="+5"/>
         <location line="+3"/>
         <location line="+6"/>
@@ -2257,7 +2269,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">数据库错误</translation>
     </message>
     <message>
-        <location filename="../../tree/model/treemodelhelper.cc" line="+178"/>
+        <location filename="../../tree/model/treemodelhelper.cc" line="+208"/>
         <source>%1 it has children nodes.</source>
         <translation>%1 有子节点。</translation>
     </message>
@@ -2332,12 +2344,12 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">替换</translation>
     </message>
     <message>
-        <location filename="../../dialog/removenode.cc" line="+31"/>
+        <location filename="../../dialog/removenode.cc" line="+82"/>
         <source>The node has external references, so it can’t be removed directly. Should it be replaced instead?</source>
         <translation>这个节点存在外部引用，无法直接删除，要替换吗？</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="-42"/>
         <source>Remove %1 and all its internal references. Are you sure</source>
         <translation>删除节点 %1 和所有的内部引用，确定吗</translation>
     </message>
@@ -2347,7 +2359,7 @@ Rage, rage against the dying of the light.</source>
         <translation>内部引用和外部经用中所有的 %1 替换为 %2，此操作不可逆，确定吗？</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+24"/>
         <source>Remove %1</source>
         <translation>删除 %1</translation>
     </message>
@@ -2360,7 +2372,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">替换交易</translation>
     </message>
     <message>
-        <location line="-26"/>
+        <location line="-25"/>
         <source>Replace Node</source>
         <translation>替换节点</translation>
     </message>
@@ -2421,7 +2433,7 @@ Rage, rage against the dying of the light.</source>
 <context>
     <name>Search</name>
     <message>
-        <location filename="../../dialog/search.cc" line="+58"/>
+        <location filename="../../dialog/search.cc" line="+61"/>
         <source>Search</source>
         <translation>搜索</translation>
     </message>
@@ -2461,7 +2473,6 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="+45"/>
-        <location filename="../../widget/tablewidget/tablewidgetorder.cc" line="+48"/>
         <source>Party</source>
         <translation>合作</translation>
     </message>
@@ -2495,11 +2506,19 @@ Rage, rage against the dying of the light.</source>
         <translation>优惠</translation>
     </message>
     <message>
+        <location line="+204"/>
+        <location filename="../../widget/tablewidget/tablewidgetorder.cc" line="+37"/>
+        <location line="+73"/>
+        <location line="+257"/>
+        <source>Finish</source>
+        <translation>完成</translation>
+    </message>
+    <message>
         <source>InitialTotal</source>
         <translation type="vanished">初始</translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="-94"/>
         <source>Cash</source>
         <translation>现结</translation>
     </message>
@@ -2543,9 +2562,8 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">保存(&amp;S)</translation>
     </message>
     <message>
-        <location line="+48"/>
         <source>&amp;Lock</source>
-        <translation>锁定(&amp;L)</translation>
+        <translation type="vanished">锁定(&amp;L)</translation>
     </message>
     <message>
         <source>Save Modified</source>
@@ -2556,23 +2574,23 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">有未保存的理性，保存吗？</translation>
     </message>
     <message>
-        <location filename="../../widget/tablewidget/tablewidgetorder.cc" line="-1"/>
-        <location line="+74"/>
-        <location line="+257"/>
         <source>UnLock</source>
-        <translation>解锁</translation>
+        <translation type="vanished">解锁</translation>
     </message>
     <message>
-        <location line="-331"/>
-        <location line="+74"/>
-        <location line="+257"/>
         <source>Lock</source>
-        <translation>锁定</translation>
+        <translation type="vanished">锁定</translation>
     </message>
     <message>
-        <location line="-330"/>
         <source>Branch</source>
-        <translation>分支</translation>
+        <translation type="vanished">分支</translation>
+    </message>
+    <message>
+        <location filename="../../widget/tablewidget/tablewidgetorder.cc" line="-330"/>
+        <location line="+73"/>
+        <location line="+257"/>
+        <source>Edit</source>
+        <translation>编辑</translation>
     </message>
 </context>
 <context>
@@ -2628,14 +2646,14 @@ It is internal referenced.</source>
 <context>
     <name>TreeModelFinance</name>
     <message>
-        <location filename="../../tree/model/treemodelfinance.cc" line="+423"/>
+        <location filename="../../tree/model/treemodelfinance.cc" line="+434"/>
         <location line="+4"/>
         <location line="+4"/>
         <source>Cannot change %1 branch,</source>
         <translation>无法改变 %1 的分支，</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+61"/>
         <source>Cannot change %1 unit,</source>
         <translation>无法改变 %1 的单位，</translation>
     </message>
@@ -2662,7 +2680,7 @@ It is external referenced.</source>
         <translation type="vanished">无法改变 %1 的单位。</translation>
     </message>
     <message>
-        <location filename="../../tree/model/treemodelproduct.cc" line="+226"/>
+        <location filename="../../tree/model/treemodelproduct.cc" line="+237"/>
         <source>%1 it is internal referenced.</source>
         <translation>%1 存在内部引用。</translation>
     </message>
@@ -2702,7 +2720,7 @@ It is external referenced.</source>
         <translation type="vanished">无法改变 %1 的单位。</translation>
     </message>
     <message>
-        <location filename="../../tree/model/treemodelstakeholder.cc" line="+126"/>
+        <location filename="../../tree/model/treemodelstakeholder.cc" line="+153"/>
         <source>%1 it is internal referenced.</source>
         <translation>%1 存在内部引用。</translation>
     </message>
@@ -2728,14 +2746,14 @@ It is external referenced.</source>
 <context>
     <name>TreeModelTask</name>
     <message>
-        <location filename="../../tree/model/treemodeltask.cc" line="+323"/>
+        <location filename="../../tree/model/treemodeltask.cc" line="+327"/>
         <location line="+4"/>
         <location line="+4"/>
         <source>Cannot change %1 branch,</source>
         <translation>无法改变 %1 的分支，</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location line="+143"/>
         <source>%1 it is internal referenced.</source>
         <translation>%1 存在内部引用。</translation>
     </message>

@@ -483,9 +483,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pBtnLockOrder">
+      <widget class="QPushButton" name="pBtnFinishOrder">
        <property name="text">
-        <string>&amp;Lock</string>
+        <string>Finish</string>
        </property>
        <property name="checkable">
         <bool>true</bool>

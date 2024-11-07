@@ -22,7 +22,7 @@ TableWidgetOrder::TableWidgetOrder(
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    bool locked { *node_shadow->locked };
+    bool finished { *node_shadow->finished };
 
     IniDialog();
     IniData();
@@ -33,12 +33,12 @@ TableWidgetOrder::TableWidgetOrder(
 
     ui->chkBoxBranch->setEnabled(false);
 
-    ui->pBtnLockOrder->setChecked(locked);
-    ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
-    if (locked)
+    ui->pBtnFinishOrder->setChecked(finished);
+    ui->pBtnFinishOrder->setText(finished ? tr("Edit") : tr("Finish"));
+    if (finished)
         ui->pBtnPrint->setFocus();
 
-    LockWidgets(locked);
+    LockWidgets(finished);
 }
 
 TableWidgetOrder::~TableWidgetOrder()
@@ -103,14 +103,14 @@ void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVar
     case TreeEnumOrder::kDateTime:
         ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), DATE_TIME_FST));
         break;
-    case TreeEnumOrder::kLocked: {
-        bool locked { value.toBool() };
+    case TreeEnumOrder::kFinished: {
+        bool finished { value.toBool() };
 
-        ui->pBtnLockOrder->setChecked(locked);
-        ui->pBtnLockOrder->setText(locked ? tr("UnLock") : tr("Lock"));
-        LockWidgets(locked);
+        ui->pBtnFinishOrder->setChecked(finished);
+        ui->pBtnFinishOrder->setText(finished ? tr("Edit") : tr("Finish"));
+        LockWidgets(finished);
 
-        if (locked) {
+        if (finished) {
             ui->pBtnPrint->setFocus();
             ui->pBtnPrint->setDefault(true);
             ui->tableViewOrder->clearSelection();
@@ -173,7 +173,7 @@ void TableWidgetOrder::IniData()
     ui->chkBoxBranch->setChecked(*node_shadow_->branch);
     ui->lineDescription->setText(*node_shadow_->description);
     ui->dateTimeEdit->setDateTime(QDateTime::fromString(*node_shadow_->date_time, DATE_TIME_FST));
-    ui->pBtnLockOrder->setChecked(*node_shadow_->locked);
+    ui->pBtnFinishOrder->setChecked(*node_shadow_->finished);
 
     ui->tableViewOrder->setModel(order_table_);
 }
@@ -187,9 +187,9 @@ void TableWidgetOrder::IniDataCombo()
     ui->comboEmployee->setCurrentIndex(employee_index);
 }
 
-void TableWidgetOrder::LockWidgets(bool locked)
+void TableWidgetOrder::LockWidgets(bool finished)
 {
-    const bool enable { !locked };
+    const bool enable { !finished };
 
     ui->labelParty->setEnabled(enable);
     ui->comboParty->setEnabled(enable);
@@ -221,7 +221,7 @@ void TableWidgetOrder::LockWidgets(bool locked)
     ui->chkBoxRefund->setEnabled(enable);
     ui->lineDescription->setEnabled(enable);
 
-    ui->pBtnPrint->setEnabled(locked);
+    ui->pBtnPrint->setEnabled(finished);
 }
 
 void TableWidgetOrder::IniUnit(int unit)
@@ -358,13 +358,13 @@ void TableWidgetOrder::on_lineDescription_editingFinished()
     sql_->UpdateField(info_node_, *node_shadow_->description, DESCRIPTION, node_id_);
 }
 
-void TableWidgetOrder::on_pBtnLockOrder_toggled(bool checked)
+void TableWidgetOrder::on_pBtnFinishOrder_toggled(bool checked)
 {
-    *node_shadow_->locked = checked;
-    sql_->UpdateField(info_node_, checked, LOCKED, node_id_);
-    emit SUpdateLocked(node_id_, checked);
+    *node_shadow_->finished = checked;
+    sql_->UpdateField(info_node_, checked, FINISHED, node_id_);
+    emit SUpdateFinished(node_id_, checked);
 
-    ui->pBtnLockOrder->setText(checked ? tr("UnLock") : tr("Lock"));
+    ui->pBtnFinishOrder->setText(checked ? tr("Edit") : tr("Finish"));
 
     LockWidgets(checked);
 

@@ -104,7 +104,7 @@ enum class TreeEnumOrder {
     kDateTime,
     kFirst,
     kSecond,
-    kLocked,
+    kFinished,
     kAmount,
     kDiscount,
     kSettled
@@ -126,7 +126,7 @@ enum class TreeEnumSearch {
     kFirst,
     kSecond,
     kDiscount,
-    kLocked,
+    kFinished,
     kInitialTotal,
     kFinalTotal
 };

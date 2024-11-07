@@ -125,7 +125,7 @@ bool SqliteOrder::RetriveNode(NodeHash& node_hash, int node_id)
 QString SqliteOrder::ReadNodeQS() const
 {
     return QString(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, amount, settled
+    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled
     FROM %1
     WHERE ((DATE(date_time) BETWEEN :start_date AND :end_date) OR branch = true) AND removed = 0
     )")
@@ -135,8 +135,8 @@ QString SqliteOrder::ReadNodeQS() const
 QString SqliteOrder::WriteNodeQS() const
 {
     return QString(R"(
-    INSERT INTO %1 (name, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, amount, settled)
-    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :locked, :amount, :settled)
+    INSERT INTO %1 (name, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled)
+    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :finished, :amount, :settled)
     )")
         .arg(node_);
 }
@@ -233,7 +233,7 @@ QString SqliteOrder::UpdateTransValueQS() const
 QString SqliteOrder::SearchNodeQS(CString& in_list) const
 {
     return QString(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, amount, settled
+    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled
     FROM %1
     WHERE party IN (%2) AND removed = 0
     )")
@@ -361,7 +361,7 @@ void SqliteOrder::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->first = query.value("first").toInt();
     node->second = query.value("second").toDouble();
     node->discount = query.value("discount").toDouble();
-    node->locked = query.value("locked").toBool();
+    node->finished = query.value("finished").toBool();
     node->initial_total = query.value("amount").toDouble();
     node->final_total = query.value("settled").toDouble();
 }
@@ -381,7 +381,7 @@ void SqliteOrder::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":first", node->first);
     query.bindValue(":second", node->second);
     query.bindValue(":discount", node->discount);
-    query.bindValue(":locked", node->locked);
+    query.bindValue(":finished", node->finished);
     query.bindValue(":amount", node->initial_total);
     query.bindValue(":settled", node->final_total);
 }
