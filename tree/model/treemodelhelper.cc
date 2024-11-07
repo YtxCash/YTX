@@ -192,7 +192,7 @@ bool TreeModelHelper::IsOpenedFPTS(CTableHash& table_hash, int node_id, CString&
     return false;
 }
 
-void TreeModelHelper::SearchNode(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list)
+void TreeModelHelper::SearchNodeFPTS(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list)
 {
     node_list.reserve(node_id_list.size());
 

@@ -71,7 +71,7 @@ public:
     QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
     bool BranchFPTS(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
-    void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
+    void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }

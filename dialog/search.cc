@@ -30,7 +30,7 @@ Search::Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTre
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    search_tree_ = new SearchNodeModel(info_, tree_, sql, this);
+    search_tree_ = new SearchNodeModel(info_, tree_, stakeholder_tree, sql, this);
     search_table_ = new SearchTransModel(&info, sql, this);
 
     TreeViewDelegate(ui->treeView, search_tree_);

@@ -70,7 +70,7 @@ bool SqliteOrder::SearchNode(QList<const Node*>& node_list, const QList<int>& pa
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    const qsizetype batch_size { 50 };
+    const qsizetype batch_size { BATCH_SIZE };
     const auto total_batches { (party_id_list.size() + batch_size - 1) / batch_size };
 
     Node* node {};

@@ -1,12 +1,15 @@
 #include "searchnodemodel.h"
 
 #include "component/enumclass.h"
+#include "database/sqlite/sqliteorder.h"
+#include "tree/model/treemodelstakeholder.h"
 
-SearchNodeModel::SearchNodeModel(CInfo& info, CTreeModel* tree_model, Sqlite* sql, QObject* parent)
+SearchNodeModel::SearchNodeModel(CInfo& info, CTreeModel* tree_model, CTreeModel* stakeholder_tree_model, Sqlite* sql, QObject* parent)
     : QAbstractItemModel { parent }
     , sql_ { sql }
     , info_ { info }
     , tree_model_ { tree_model }
+    , stakeholder_tree_model_ { stakeholder_tree_model }
 {
 }
 
@@ -150,11 +153,15 @@ void SearchNodeModel::sort(int column, Qt::SortOrder order)
 void SearchNodeModel::Query(const QString& text)
 {
     node_list_.clear();
+    auto* stakeholder_tree { static_cast<const TreeModelStakeholder*>(stakeholder_tree_model_) };
 
     beginResetModel();
     switch (info_.section) {
     case Section::kSales:
+        static_cast<SqliteOrder*>(sql_)->SearchNode(node_list_, stakeholder_tree->PartyList(text, UNIT_CUSTOMER));
+        break;
     case Section::kPurchase:
+        static_cast<SqliteOrder*>(sql_)->SearchNode(node_list_, stakeholder_tree->PartyList(text, UNIT_VENDOR));
         break;
     case Section::kFinance:
     case Section::kProduct:

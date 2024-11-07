@@ -83,7 +83,7 @@ public:
     static Node* GetNodeByID(CNodeHash& node_hash, int node_id);
     static bool IsDescendant(Node* lhs, Node* rhs);
     static bool ChildrenEmpty(CNodeHash& node_hash, int node_id);
-    static void SearchNode(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list);
+    static void SearchNodeFPTS(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list);
 
     static void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare);
     static void UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items);

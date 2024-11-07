@@ -75,7 +75,7 @@ public:
     bool BranchFPTS(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
 
-    void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
+    void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
 
 protected:
     bool UpdateRuleFPTO(Node* node, bool value) override;

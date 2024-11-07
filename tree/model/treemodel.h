@@ -170,8 +170,13 @@ public:
         Q_UNUSED(new_separator);
     };
 
+    virtual void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
+    {
+        Q_UNUSED(node_list);
+        Q_UNUSED(node_id_list);
+    };
+
     // Core pure virtual functions
-    virtual void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const = 0;
     virtual void SetParent(Node* node, int parent_id) const = 0;
     virtual void UpdateDefaultUnit(int default_unit) = 0;
 

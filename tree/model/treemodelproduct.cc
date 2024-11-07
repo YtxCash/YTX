@@ -158,9 +158,9 @@ QModelIndex TreeModelProduct::GetIndex(int node_id) const
 
 bool TreeModelProduct::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
 
-void TreeModelProduct::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
+void TreeModelProduct::SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
 {
-    TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
+    TreeModelHelper::SearchNodeFPTS(node_hash_, node_list, node_id_list);
 }
 
 bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)

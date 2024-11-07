@@ -201,11 +201,6 @@ QString TreeModelOrder::GetPath(int node_id) const
     return {};
 }
 
-void TreeModelOrder::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
-{
-    TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
-}
-
 bool TreeModelOrder::UpdateRuleFPTO(Node* node, bool value)
 {
     if (node->rule == value || node->branch)

@@ -413,9 +413,9 @@ QModelIndex TreeModelFinance::GetIndex(int node_id) const
 
 bool TreeModelFinance::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
 
-void TreeModelFinance::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
+void TreeModelFinance::SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
 {
-    TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
+    TreeModelHelper::SearchNodeFPTS(node_hash_, node_list, node_id_list);
 }
 
 Node* TreeModelFinance::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }

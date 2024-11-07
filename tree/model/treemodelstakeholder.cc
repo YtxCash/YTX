@@ -107,9 +107,9 @@ QModelIndex TreeModelStakeholder::GetIndex(int node_id) const
 
 bool TreeModelStakeholder::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
 
-void TreeModelStakeholder::SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const
+void TreeModelStakeholder::SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
 {
-    TreeModelHelper::SearchNode(node_hash_, node_list, node_id_list);
+    TreeModelHelper::SearchNodeFPTS(node_hash_, node_list, node_id_list);
 }
 
 bool TreeModelStakeholder::InsertNode(int row, const QModelIndex& parent, Node* node)
@@ -132,6 +132,17 @@ bool TreeModelStakeholder::InsertNode(int row, const QModelIndex& parent, Node* 
     emit SSearch();
     emit SUpdateComboModel();
     return true;
+}
+
+QList<int> TreeModelStakeholder::PartyList(CString& text, int unit) const
+{
+    QList<int> list {};
+
+    for (auto* node : node_hash_)
+        if (node->unit == unit && node->name.contains(text))
+            list.emplaceBack(node->id);
+
+    return list;
 }
 
 bool TreeModelStakeholder::IsReferencedFPTS(int node_id, CString& message) const

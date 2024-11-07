@@ -73,7 +73,6 @@ public:
     QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
     QString GetPath(int node_id) const override;
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
-    void SearchNode(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
 
 protected:
