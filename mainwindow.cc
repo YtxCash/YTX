@@ -474,6 +474,7 @@ void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* tabl
     connect(tree_model_order, &TreeModelOrder::SUpdateData, widget, &TableWidgetOrder::RUpdateData);
     connect(widget, &TableWidgetOrder::SUpdateLocked, tree_model_order, &TreeModelOrder::RUpdateLocked);
     connect(widget, &TableWidgetOrder::SUpdateLocked, table_model, &TableModelOrder::RUpdateLocked);
+    connect(widget, &TableWidgetOrder::SUpdateParty, this, &MainWindow::RUpdateParty);
 }
 
 void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
@@ -1960,6 +1961,20 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
         CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, id);
 
     SwitchTab(id, trans_id);
+}
+
+void MainWindow::RUpdateParty(int node_id, int party)
+{
+    auto model { stakeholder_tree_->Model() };
+    auto* tab_bar { ui->tabWidget->tabBar() };
+    int count { ui->tabWidget->count() };
+
+    for (int index = 0; index != count; ++index) {
+        if (tab_bar->tabData(index).value<Tab>().node_id == node_id) {
+            tab_bar->setTabText(index, model->Name(party));
+            tab_bar->setTabToolTip(index, model->GetPath(party));
+        }
+    }
 }
 
 void MainWindow::RPreferencesTriggered()
