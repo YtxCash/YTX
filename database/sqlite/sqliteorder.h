@@ -30,6 +30,7 @@ public:
     ~SqliteOrder();
 
     bool ReadNode(NodeHash& node_hash, const QDate& start_date, const QDate& end_date);
+    bool SearchNode(QList<const Node*>& node_list, const QList<int>& party_id_list);
 
 protected:
     // tree
@@ -58,6 +59,9 @@ protected:
     QString RUpdateStakeholderReferenceQS() const override;
     QString SearchTransQS() const override;
     QString UpdateTransValueQS() const override;
+
+private:
+    QString SearchNodeQS(CString& in_list) const;
 
 private:
     CString& node_;

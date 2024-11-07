@@ -62,6 +62,57 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
     return true;
 }
 
+bool SqliteOrder::SearchNode(QList<const Node*>& node_list, const QList<int>& party_id_list)
+{
+    if (party_id_list.empty())
+        return false;
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    const qsizetype batch_size { 50 };
+    const auto total_batches { (party_id_list.size() + batch_size - 1) / batch_size };
+
+    Node* node {};
+    int id {};
+
+    for (int batch_index = 0; batch_index != total_batches; ++batch_index) {
+        int start = batch_index * batch_size;
+        int end = std::min(start + batch_size, party_id_list.size());
+
+        QList<int> current_batch { party_id_list.mid(start, end - start) };
+
+        QStringList placeholder { current_batch.size(), "?" };
+        QString string { SearchNodeQS(placeholder.join(",")) };
+
+        query.prepare(string);
+
+        for (int i = 0; i != current_batch.size(); ++i)
+            query.bindValue(i, current_batch.at(i));
+
+        if (!query.exec()) {
+            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in SearchNode, batch" << batch_index << ": " << query.lastError().text();
+            continue;
+        }
+
+        while (query.next()) {
+            id = query.value("id").toInt();
+
+            if (auto it = node_hash_buffer_.constFind(id); it != node_hash_buffer_.constEnd()) {
+                node_list.emplaceBack(it.value());
+                continue;
+            }
+
+            node = ResourcePool<Node>::Instance().Allocate();
+            ReadNodeQuery(node, query);
+            node_list.emplaceBack(node);
+            node_hash_buffer_.insert(id, node);
+        }
+    }
+
+    return true;
+}
+
 QString SqliteOrder::ReadNodeQS() const
 {
     return QString(R"(
@@ -168,6 +219,16 @@ QString SqliteOrder::UpdateTransValueQS() const
     WHERE id = :trans_id
     )")
         .arg(transaction_);
+}
+
+QString SqliteOrder::SearchNodeQS(CString& in_list) const
+{
+    return QString(R"(
+    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, locked, amount, settled
+    FROM %1
+    WHERE party IN (%2) AND removed = 0
+    )")
+        .arg(node_, in_list);
 }
 
 void SqliteOrder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const

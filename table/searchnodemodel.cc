@@ -152,6 +152,19 @@ void SearchNodeModel::Query(const QString& text)
     node_list_.clear();
 
     beginResetModel();
-    tree_model_->SearchNode(node_list_, sql_->SearchNodeName(text));
+    switch (info_.section) {
+    case Section::kSales:
+    case Section::kPurchase:
+        break;
+    case Section::kFinance:
+    case Section::kProduct:
+    case Section::kTask:
+    case Section::kStakeholder:
+        tree_model_->SearchNodeFPTS(node_list_, sql_->SearchNodeName(text));
+        break;
+    default:
+        break;
+    }
+
     endResetModel();
 }
