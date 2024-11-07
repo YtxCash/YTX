@@ -84,7 +84,7 @@ enum class TreeEnum {
 
 enum class TreeEnumFinance { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kInitialTotal, kFinalTotal };
 
-enum class TreeEnumTask { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kDateTime, kColor, kUnitCost, kQuantity, kAmount };
+enum class TreeEnumTask { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kDateTime, kFinished, kColor, kUnitCost, kQuantity, kAmount };
 
 enum class TreeEnumProduct { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kColor, kUnitPrice, kCommission, kQuantity, kAmount };
 

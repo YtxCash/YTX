@@ -229,6 +229,7 @@ QString MainwindowSqlite::NodeTask()
         rule             BOOLEAN    DEFAULT 0,
         branch           BOOLEAN    DEFAULT 0,
         unit             INTEGER,
+        finished         BOOLEAN    DEFAULT 0,
         date_time        TEXT,
         color            TEXT,
         unit_cost        NUMERIC,

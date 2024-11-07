@@ -115,6 +115,8 @@ QVariant TreeModelTask::data(const QModelIndex& index, int role) const
         return node->color;
     case TreeEnumTask::kDateTime:
         return node->branch ? QVariant() : node->date_time;
+    case TreeEnumTask::kFinished:
+        return node->finished ? node->finished : QVariant();
     case TreeEnumTask::kUnitCost:
         return node->first == 0 ? QVariant() : node->first;
     case TreeEnumTask::kQuantity:
@@ -167,6 +169,9 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
     case TreeEnumTask::kUnitCost:
         TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), UNIT_COST, &Node::first);
         break;
+    case TreeEnumTask::kFinished:
+        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toBool(), FINISHED, &Node::finished);
+        break;
     default:
         return false;
     }
@@ -195,6 +200,8 @@ void TreeModelTask::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
         case TreeEnumTask::kBranch:
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
+        case TreeEnumTask::kFinished:
+            return (order == Qt::AscendingOrder) ? (lhs->finished < rhs->finished) : (lhs->finished > rhs->finished);
         case TreeEnumTask::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
         case TreeEnumTask::kColor:
@@ -225,6 +232,10 @@ Qt::ItemFlags TreeModelTask::flags(const QModelIndex& index) const
     auto flags { QAbstractItemModel::flags(index) };
     const TreeEnumTask kColumn { index.column() };
 
+    const bool finished { index.siblingAtColumn(std::to_underlying(TreeEnumTask::kFinished)).data().toBool() };
+    if (!finished)
+        flags |= Qt::ItemIsEditable;
+
     switch (kColumn) {
     case TreeEnumTask::kName:
         flags |= Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
@@ -233,12 +244,12 @@ Qt::ItemFlags TreeModelTask::flags(const QModelIndex& index) const
     case TreeEnumTask::kQuantity:
     case TreeEnumTask::kAmount:
     case TreeEnumTask::kBranch:
+    case TreeEnumTask::kFinished:
     case TreeEnumTask::kColor:
     case TreeEnumTask::kUnitCost:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:
-        flags |= Qt::ItemIsEditable;
         break;
     }
 

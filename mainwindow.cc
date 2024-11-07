@@ -698,6 +698,9 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 
     auto* date_time { new TreeDateTime(interface_.date_format, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kDateTime), date_time);
+
+    auto* finished { new Finished(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kFinished), finished);
 }
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
@@ -1319,7 +1322,7 @@ void MainWindow::SetHeader()
         tr("Employee"), tr("Deadline"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
     task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("DateTime"),
-        tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
+        tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
     task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("UnitCost"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"), tr("Debit"),
         tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
