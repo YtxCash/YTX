@@ -280,8 +280,8 @@ bool TreeModelTask::dropMimeData(const QMimeData* data, Qt::DropAction action, i
 
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+    emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
-    emit SUpdateName(node);
     emit SUpdateComboModel();
 
     return true;
@@ -302,7 +302,7 @@ void TreeModelTask::UpdateNodeFPTS(const Node* tmp_node)
 
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
-        emit SUpdateName(node);
+        emit SUpdateName(node->id, node->name, node->branch);
         emit SUpdateComboModel();
     }
 
@@ -428,7 +428,7 @@ bool TreeModelTask::RemoveNode(int row, const QModelIndex& parent)
         TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
         branch_path_.remove(node_id);
         sql_->RemoveNode(node_id, true);
-        emit SUpdateName(node);
+        emit SUpdateName(node_id, node->name, branch);
     }
 
     if (!branch) {
@@ -469,6 +469,8 @@ bool TreeModelTask::InsertNode(int row, const QModelIndex& parent, Node* node)
     emit SUpdateComboModel();
     return true;
 }
+
+QSet<int> TreeModelTask::ChildrenSetFPTS(int node_id) const { return TreeModelHelper::ChildrenSetFPTS(node_hash_, node_id); }
 
 bool TreeModelTask::IsReferencedFPTS(int node_id, CString& message) const
 {

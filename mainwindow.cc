@@ -1674,14 +1674,13 @@ void MainWindow::REditDocument()
         data_->sql->UpdateField(data_->info.transaction, document_pointer->join(SEMICOLON), DOCUMENT, trans_id);
 }
 
-void MainWindow::RUpdateName(const Node* node)
+void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
 {
     auto model { tree_widget_->Model() };
-    int node_id { node->id };
     auto* tab_bar { ui->tabWidget->tabBar() };
     int count { ui->tabWidget->count() };
 
-    if (!node->branch) {
+    if (!branch) {
         if (!table_hash_->contains(node_id))
             return;
 
@@ -1689,14 +1688,14 @@ void MainWindow::RUpdateName(const Node* node)
 
         for (int index = 0; index != count; ++index) {
             if (tab_bar->tabData(index).value<Tab>().node_id == node_id) {
-                tab_bar->setTabText(index, node->name);
+                tab_bar->setTabText(index, name);
                 tab_bar->setTabToolTip(index, path);
             }
         }
     }
 
-    if (node->branch) {
-        QSet<int> set { model->ChildrenSetFPTS(node) };
+    if (branch) {
+        QSet<int> set { model->ChildrenSetFPTS(node_id) };
 
         int node_id {};
         QString path {};

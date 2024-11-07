@@ -91,7 +91,7 @@ private slots:
     void REditDocument();
 
     void RUpdateSettings(CSettings& settings, CInterface& interface);
-    void RUpdateName(const Node* node);
+    void RUpdateName(int node_id, CString& name, bool branch);
 
     void RTabCloseRequested(int index);
     void RFreeView(int node_id);

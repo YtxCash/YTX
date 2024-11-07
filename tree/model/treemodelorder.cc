@@ -601,7 +601,6 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
     sql_->DragNode(destination_parent->id, node_id);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kName));
-    emit SUpdateName(node);
 
     return true;
 }

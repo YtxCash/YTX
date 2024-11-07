@@ -42,7 +42,7 @@ void TreeModelStakeholder::UpdateNodeFPTS(const Node* tmp_node)
 
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
-        emit SUpdateName(node);
+        emit SUpdateName(node->id, node->name, node->branch);
         emit SUpdateComboModel();
     }
 
@@ -144,6 +144,8 @@ QList<int> TreeModelStakeholder::PartyList(CString& text, int unit) const
 
     return list;
 }
+
+QSet<int> TreeModelStakeholder::ChildrenSetFPTS(int node_id) const { return TreeModelHelper::ChildrenSetFPTS(node_hash_, node_id); }
 
 bool TreeModelStakeholder::IsReferencedFPTS(int node_id, CString& message) const
 {
@@ -480,7 +482,7 @@ bool TreeModelStakeholder::dropMimeData(const QMimeData* data, Qt::DropAction ac
 
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+    emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumStakeholder::kName));
-
     return true;
 }

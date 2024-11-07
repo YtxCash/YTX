@@ -105,6 +105,7 @@ public:
     static void CopyNodeFPTS(CNodeHash& node_hash, Node* tmp_node, int node_id);
     static void UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff);
     static void ShowTemporaryTooltipFPTS(CString& message, int duration);
+    static QSet<int> ChildrenSetFPTS(CNodeHash& node_hash, int node_id);
 };
 
 #endif // TREEMODELHELPER_H

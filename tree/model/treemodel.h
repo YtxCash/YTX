@@ -54,7 +54,7 @@ signals:
     void SSearch();
 
     // send to Mainwindow
-    void SUpdateName(const Node* node);
+    void SUpdateName(int node_id, CString& name, bool branch);
     void SUpdateDSpinBox();
 
     // send to SpecificUnit delegate, TableCombo delegate, EditNodeOrder and TableWidgetOrder
@@ -175,7 +175,7 @@ public:
     virtual void UpdateNodeFPTS(const Node* tmp_node) { Q_UNUSED(tmp_node); }
     virtual void RetriveNodeO(int node_id) { Q_UNUSED(node_id); };
 
-    QSet<int> ChildrenSetFPTS(const Node* node);
+    virtual QSet<int> ChildrenSetFPTS(int node_id) const { Q_UNUSED(node_id); }
 
     // Core pure virtual functions
     virtual void SetParent(Node* node, int parent_id) const = 0;

@@ -172,6 +172,36 @@ void TreeModelHelper::ShowTemporaryTooltipFPTS(CString& message, int duration)
     QObject::connect(label, &QLabel::destroyed, timer, [timer]() { timer->stop(); });
 }
 
+QSet<int> TreeModelHelper::ChildrenSetFPTS(CNodeHash& node_hash, int node_id)
+{
+    if (node_id <= 0)
+        return {};
+
+    auto it { node_hash.constFind(node_id) };
+    if (it == node_hash.constEnd() || !it.value())
+        return {};
+
+    auto* node { it.value() };
+    if (!node->branch || node->children.isEmpty())
+        return {};
+
+    QQueue<const Node*> queue {};
+    queue.enqueue(node);
+
+    QSet<int> set {};
+    while (!queue.isEmpty()) {
+        auto* queue_node = queue.dequeue();
+
+        if (queue_node->branch)
+            for (const auto* child : queue_node->children)
+                queue.enqueue(child);
+        else
+            set.insert(queue_node->id);
+    }
+
+    return set;
+}
+
 bool TreeModelHelper::HasChildrenFPTS(Node* node, CString& message)
 {
     if (!node->children.isEmpty()) {

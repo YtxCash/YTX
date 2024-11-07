@@ -77,6 +77,7 @@ public:
 
     const QString& Color(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::color); }
     double First(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::first); }
+    QSet<int> ChildrenSetFPTS(int node_id) const override;
 
 protected:
     bool IsReferencedFPTS(int node_id, CString& message) const override;

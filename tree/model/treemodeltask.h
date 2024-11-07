@@ -75,6 +75,7 @@ public:
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
+    QSet<int> ChildrenSetFPTS(int node_id) const override;
 
 protected:
     bool IsReferencedFPTS(int node_id, CString& message) const override;
