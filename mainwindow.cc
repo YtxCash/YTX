@@ -1696,19 +1696,7 @@ void MainWindow::RUpdateName(const Node* node)
     }
 
     if (node->branch) {
-        QQueue<const Node*> queue {};
-        queue.enqueue(node);
-
-        QSet<int> set {};
-        while (!queue.isEmpty()) {
-            auto* queue_node = queue.dequeue();
-
-            if (queue_node->branch)
-                for (const auto* child : queue_node->children)
-                    queue.enqueue(child);
-            else
-                set.insert(queue_node->id);
-        }
+        QSet<int> set { model->ChildrenSetFPTS(node) };
 
         int node_id {};
         QString path {};

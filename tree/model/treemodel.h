@@ -117,7 +117,6 @@ public:
         Q_UNUSED(node_id);
         return {};
     }
-
     virtual QStringList ChildrenNameFPTS(int node_id, int exclude_child) const
     {
         Q_UNUSED(node_id);
@@ -129,7 +128,6 @@ public:
         Q_UNUSED(node_id);
         return {};
     }
-
     virtual void CopyNodeFPTS(Node* tmp_node, int node_id) const
     {
         Q_UNUSED(tmp_node);
@@ -163,20 +161,21 @@ public:
         Q_UNUSED(node_shadow);
         Q_UNUSED(node);
     }
-    virtual void UpdateNodeFPTS(const Node* tmp_node) { Q_UNUSED(tmp_node); }
     virtual void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
     {
         Q_UNUSED(old_separator);
         Q_UNUSED(new_separator);
-    };
-
+    }
     virtual void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
     {
         Q_UNUSED(node_list);
         Q_UNUSED(node_id_list);
-    };
+    }
 
+    virtual void UpdateNodeFPTS(const Node* tmp_node) { Q_UNUSED(tmp_node); }
     virtual void RetriveNodeO(int node_id) { Q_UNUSED(node_id); };
+
+    QSet<int> ChildrenSetFPTS(const Node* node);
 
     // Core pure virtual functions
     virtual void SetParent(Node* node, int parent_id) const = 0;

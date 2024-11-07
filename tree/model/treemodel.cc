@@ -1,5 +1,7 @@
 #include "treemodel.h"
 
+#include <QQueue>
+
 TreeModel::TreeModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
@@ -57,4 +59,26 @@ QMimeData* TreeModel::mimeData(const QModelIndexList& indexes) const
     }
 
     return mime_data;
+}
+
+QSet<int> TreeModel::ChildrenSetFPTS(const Node* node)
+{
+    if (!node->branch || node->children.isEmpty())
+        return {};
+
+    QQueue<const Node*> queue {};
+    queue.enqueue(node);
+
+    QSet<int> set {};
+    while (!queue.isEmpty()) {
+        auto* queue_node = queue.dequeue();
+
+        if (queue_node->branch)
+            for (const auto* child : queue_node->children)
+                queue.enqueue(child);
+        else
+            set.insert(queue_node->id);
+    }
+
+    return set;
 }
