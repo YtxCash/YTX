@@ -104,7 +104,11 @@ protected:
     virtual void ReadNodeQuery(Node* node, const QSqlQuery& query) const = 0;
     virtual void WriteNodeBind(Node* node, QSqlQuery& query) const = 0;
 
-    virtual void UpdateNodeValueBind(const Node* /*node*/, QSqlQuery& /*query*/) const { };
+    virtual void UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
+    {
+        Q_UNUSED(node);
+        Q_UNUSED(query);
+    };
 
     //
     virtual QString RemoveNodeFirstQS() const;
@@ -128,13 +132,29 @@ protected:
 
     virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query) const = 0;
     virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const = 0;
-    virtual void UpdateTransValueBind(const TransShadow* /*trans_shadow*/, QSqlQuery& /*query*/) const { };
-    virtual void UpdateProductReference(int /*old_node_id*/, int /*new_node_id*/) const { }
-    virtual void UpdateStakeholderReference(int /*old_node_id*/, int /*new_node_id*/) const { }
+    virtual void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
+    {
+        Q_UNUSED(trans_shadow);
+        Q_UNUSED(query);
+    }
+    virtual void UpdateProductReference(int old_node_id, int new_node_id) const
+    {
+        Q_UNUSED(old_node_id);
+        Q_UNUSED(new_node_id);
+    }
+    virtual void UpdateStakeholderReference(int old_node_id, int new_node_id) const
+    {
+        Q_UNUSED(old_node_id);
+        Q_UNUSED(new_node_id);
+    }
 
     //
     virtual QString RReplaceNodeQS() const { return {}; }
-    virtual QString ReadTransRangeQS(CString& /*in_list*/) const { return {}; }
+    virtual QString ReadTransRangeQS(CString& in_list) const
+    {
+        Q_UNUSED(in_list);
+        return {};
+    }
     virtual void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
     virtual QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const;
 
