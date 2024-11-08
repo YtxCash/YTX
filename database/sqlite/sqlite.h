@@ -82,7 +82,7 @@ public:
     TransShadow* AllocateTransShadow();
 
     bool RemoveTrans(int trans_id);
-    bool UpdateState(CString& field, Check state) const;
+    bool UpdateState(Check state) const;
     bool SearchTrans(TransList& trans_list, CString& text) const;
 
     // common

@@ -705,7 +705,7 @@ bool Sqlite::UpdateField(CString& table, CVariant& value, CString& field, int id
     return true;
 }
 
-bool Sqlite::UpdateState(CString& field, Check state) const
+bool Sqlite::UpdateState(Check state) const
 {
     QSqlQuery query(*db_);
 
@@ -713,8 +713,8 @@ bool Sqlite::UpdateState(CString& field, Check state) const
     const bool is_not_reverse { state != Check::kReverse };
 
     // 构建 SQL 查询字符串，调整三元运算符顺序，避免重复判断
-    const auto string { is_not_reverse ? QString("UPDATE %1 SET %2 = :value").arg(info_.transaction, field)
-                                       : QString("UPDATE %1 SET %2 = NOT %2").arg(info_.transaction, field) };
+    const auto string { is_not_reverse ? QString("UPDATE %1 SET state = :value").arg(info_.transaction)
+                                       : QString("UPDATE %1 SET state = NOT state").arg(info_.transaction) };
 
     query.prepare(string);
 
