@@ -343,7 +343,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     const TreeEnumStakeholder kColumn { index.column() };
-    bool skip { node->branch || node->unit == UNIT_PRODUCT || node->rule == RULE_CASH };
+    bool skip { node->branch || node->unit == UNIT_PROD || node->rule == RULE_IM };
 
     switch (kColumn) {
     case TreeEnumStakeholder::kName:

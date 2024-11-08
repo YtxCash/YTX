@@ -33,13 +33,13 @@ class TableWidgetOrder final : public TableWidget {
     Q_OBJECT
 
 public:
-    TableWidgetOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, int party_unit,
+    TableWidgetOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, Section section,
         QWidget* parent = nullptr);
     ~TableWidgetOrder();
 
 signals:
     void SUpdateFinished(int node_id, bool checked);
-    void SUpdateParty(int node_id, int party);
+    void SUpdateParty(Section section, int node_id, int party);
 
 public slots:
     void RUpdateComboModel();
@@ -79,16 +79,17 @@ private:
     Ui::TableWidgetOrder* ui;
     NodeShadow* node_shadow_ {};
     Sqlite* sql_ {};
-    int party_unit_ {};
     TableModel* order_table_ {};
     TreeModelStakeholder* stakeholder_tree_ {};
     CSettings* settings_ {};
+    Section section_ {};
 
     QStandardItemModel* combo_model_employee_ {};
     QStandardItemModel* combo_model_party_ {};
 
-    const QString info_node_ {};
     const int node_id_ {};
+    const QString info_node_ {};
+    int party_unit_ {};
 };
 
 #endif // TABLEWIDGETORDER_H

@@ -290,7 +290,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
 
         if (section != Section::kSales && section != Section::kPurchase) {
             const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
-            if (section == Section::kStakeholder && unit == UNIT_PRODUCT)
+            if (section == Section::kStakeholder && unit == UNIT_PROD)
                 return;
 
             CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
@@ -404,26 +404,19 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
 
 void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id)
 {
-    auto* sql { data->sql };
     const auto& info { data->info };
     auto section { info.section };
+
+    if (section != Section::kSales && section != Section::kPurchase)
+        return;
 
     auto* node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadowOrder(node_shadow, node_id);
 
-    TableModelOrder* table_model { new TableModelOrder(sql, true, node_id, info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
-    TableWidgetOrder* widget {};
+    auto* sql { data->sql };
 
-    switch (section) {
-    case Section::kSales:
-        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), settings, UNIT_CUSTOMER, this);
-        break;
-    case Section::kPurchase:
-        widget = new TableWidgetOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), settings, UNIT_VENDOR, this);
-        break;
-    default:
-        break;
-    }
+    TableModelOrder* model { new TableModelOrder(sql, true, node_id, info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
+    TableWidgetOrder* widget { new TableWidgetOrder(node_shadow, sql, model, stakeholder_tree_->Model(), settings, section, this) };
 
     int tab_index { ui->tabWidget->addTab(widget, stakeholder_tree_->Model()->Name(party_id)) };
     auto* tab_bar { ui->tabWidget->tabBar() };
@@ -434,7 +427,7 @@ void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, 
     auto view { widget->View() };
     SetView(view);
 
-    TableConnectOrder(view, table_model, tree_model, widget);
+    TableConnectOrder(view, model, tree_model, widget);
     DelegateOrder(view, settings);
 
     table_hash->insert(node_id, widget);
@@ -548,7 +541,7 @@ void MainWindow::DelegateProduct(PQTableView table_view, CSettings* settings) co
 void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings) const
 {
     auto product_tree_model { product_tree_->Model() };
-    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
@@ -570,7 +563,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PROD, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 }
@@ -578,12 +571,12 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings
 void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
 {
     auto product_tree_model { product_tree_->Model() };
-    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POSITION, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PRODUCT, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PROD, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
 
@@ -730,7 +723,7 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
     auto* deadline { new DeadLine(DD, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 
-    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMP, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
     connect(stakeholder_tree_->Model(), &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 }
@@ -753,11 +746,11 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
-    auto* employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMPLOYEE, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMP, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
-    auto party_unit { info.section == Section::kSales ? UNIT_CUSTOMER : UNIT_VENDOR };
+    auto party_unit { info.section == Section::kSales ? UNIT_CUST : UNIT_VEND };
     auto* name { new OrderName(stakeholder_tree_model, party_unit, UnitFilterMode::kIncludeUnitOnly, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, name, &OrderName::RUpdateComboModel);
@@ -1602,11 +1595,11 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
 
     switch (section) {
     case Section::kSales:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_CUSTOMER, this);
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_CUST, this);
         dialog->setWindowTitle(tr(Sales));
         break;
     case Section::kPurchase:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_VENDOR, this);
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_VEND, this);
         dialog->setWindowTitle(tr(Purchase));
         break;
     default:
@@ -1974,14 +1967,15 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     SwitchTab(id, trans_id);
 }
 
-void MainWindow::RUpdateParty(int node_id, int party)
+void MainWindow::RUpdateParty(Section section, int node_id, int party)
 {
     auto model { stakeholder_tree_->Model() };
     auto* tab_bar { ui->tabWidget->tabBar() };
     int count { ui->tabWidget->count() };
 
     for (int index = 0; index != count; ++index) {
-        if (tab_bar->tabData(index).value<Tab>().node_id == node_id) {
+        const auto& data { tab_bar->tabData(index).value<Tab>() };
+        if (data.section == section && data.node_id == node_id) {
             tab_bar->setTabText(index, model->Name(party));
             tab_bar->setTabToolTip(index, model->GetPath(party));
         }

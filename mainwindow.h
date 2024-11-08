@@ -86,7 +86,7 @@ private slots:
 
     void RTreeLocation(int node_id);
     void RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id);
-    void RUpdateParty(int node_id, int party);
+    void RUpdateParty(Section section, int node_id, int party);
 
     void REditNode();
     void REditDocument();

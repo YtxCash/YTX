@@ -32,17 +32,17 @@ static constexpr int THIRTY_ONE = 31;
 static constexpr int THREE_THOUSAND = 3000;
 
 // Constants for unit
-static constexpr int UNIT_CASH = 0;
-static constexpr int UNIT_MONTHLY = 1;
-static constexpr int UNIT_PENDING = 2;
-static constexpr int UNIT_EMPLOYEE = 0;
-static constexpr int UNIT_CUSTOMER = 1;
-static constexpr int UNIT_VENDOR = 2;
-static constexpr int UNIT_PRODUCT = 3;
-static constexpr int UNIT_POSITION = 1;
+static constexpr int UNIT_IM = 0;
+static constexpr int UNIT_MS = 1;
+static constexpr int UNIT_PEND = 2;
+static constexpr int UNIT_CUST = 0;
+static constexpr int UNIT_EMP = 1;
+static constexpr int UNIT_VEND = 2;
+static constexpr int UNIT_PROD = 3;
+static constexpr int UNIT_POS = 1;
 
-static constexpr int RULE_CASH = 0;
-static constexpr int RULE_MONTHLY = 1;
+static constexpr int RULE_IM = 0;
+static constexpr int RULE_MS = 1;
 
 // Constants for datetime
 static constexpr char DATE_FORMAT[] = "date_format";

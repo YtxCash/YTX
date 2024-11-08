@@ -51,5 +51,5 @@ bool DeadLine::Skip(const QModelIndex& index) const
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
     const bool rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
 
-    return branch || unit == UNIT_PRODUCT || rule == RULE_CASH;
+    return branch || unit == UNIT_PROD || rule == RULE_IM;
 }

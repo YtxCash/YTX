@@ -13,7 +13,7 @@ EditNodeOrder::EditNodeOrder(
     , party_unit_ { party_unit }
     , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_model) }
     , settings_ { settings }
-    , info_node_ { party_unit == UNIT_CUSTOMER ? SALES : PURCHASE }
+    , info_node_ { party_unit == UNIT_CUST ? SALES : PURCHASE }
     , node_id_ { *node_shadow->id }
 {
     ui->setupUi(this);
@@ -46,7 +46,7 @@ void EditNodeOrder::RUpdateComboModel()
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
     stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
 
     ui->comboEmployee->model()->sort(0);
     ui->comboParty->model()->sort(0);
@@ -121,7 +121,7 @@ void EditNodeOrder::RUpdateLeafValueFPTO(int /*node_id*/, double first_diff, dou
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
     ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
     ui->dSpinDiscount->setValue(ui->dSpinDiscount->value() + discount_diff);
-    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + (*node_shadow_->unit == UNIT_CASH ? settled_diff : 0.0));
+    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + (*node_shadow_->unit == UNIT_IM ? settled_diff : 0.0));
 }
 
 QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
@@ -134,7 +134,7 @@ void EditNodeOrder::IniDialog()
     ui->comboParty->setCurrentIndex(-1);
 
     combo_model_employee_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMPLOYEE, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
     ui->comboEmployee->setModel(combo_model_employee_);
     ui->comboEmployee->setCurrentIndex(-1);
 
@@ -219,13 +219,13 @@ void EditNodeOrder::LockWidgets(bool finished, bool branch)
 void EditNodeOrder::IniUnit(int unit)
 {
     switch (unit) {
-    case UNIT_CASH:
+    case UNIT_IM:
         ui->rBtnCash->setChecked(true);
         break;
-    case UNIT_MONTHLY:
+    case UNIT_MS:
         ui->rBtnMonthly->setChecked(true);
         break;
-    case UNIT_PENDING:
+    case UNIT_PEND:
         ui->rBtnPending->setChecked(true);
         break;
     default:
@@ -274,8 +274,8 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     int employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == RULE_CASH);
-    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == RULE_MONTHLY);
+    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == RULE_IM);
+    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == RULE_MS);
 }
 
 void EditNodeOrder::on_chkBoxRefund_toggled(bool checked)
@@ -299,13 +299,13 @@ void EditNodeOrder::on_rBtnCash_toggled(bool checked)
     if (!checked)
         return;
 
-    *node_shadow_->unit = UNIT_CASH;
+    *node_shadow_->unit = UNIT_IM;
 
     *node_shadow_->final_total = *node_shadow_->initial_total - *node_shadow_->discount;
     ui->dSpinSettled->setValue(*node_shadow_->final_total);
 
     if (node_id_ != 0) {
-        sql_->UpdateField(info_node_, UNIT_CASH, UNIT, node_id_);
+        sql_->UpdateField(info_node_, UNIT_IM, UNIT, node_id_);
         sql_->UpdateField(info_node_, *node_shadow_->final_total, SETTLED, node_id_);
     }
 }
@@ -315,13 +315,13 @@ void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
     if (!checked)
         return;
 
-    *node_shadow_->unit = UNIT_MONTHLY;
+    *node_shadow_->unit = UNIT_MS;
 
     *node_shadow_->final_total = 0.0;
     ui->dSpinSettled->setValue(0.0);
 
     if (node_id_ != 0) {
-        sql_->UpdateField(info_node_, UNIT_MONTHLY, UNIT, node_id_);
+        sql_->UpdateField(info_node_, UNIT_MS, UNIT, node_id_);
         sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
     }
 }
@@ -331,13 +331,13 @@ void EditNodeOrder::on_rBtnPending_toggled(bool checked)
     if (!checked)
         return;
 
-    *node_shadow_->unit = UNIT_PENDING;
+    *node_shadow_->unit = UNIT_PEND;
 
     *node_shadow_->final_total = 0.0;
     ui->dSpinSettled->setValue(0.0);
 
     if (node_id_ != 0) {
-        sql_->UpdateField(info_node_, UNIT_PENDING, UNIT, node_id_);
+        sql_->UpdateField(info_node_, UNIT_PEND, UNIT, node_id_);
         sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
     }
 }

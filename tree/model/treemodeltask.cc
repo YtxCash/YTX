@@ -22,7 +22,7 @@ TreeModelTask::~TreeModelTask()
 void TreeModelTask::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
-    if (!node || node == root_ || node->branch || diff == 0.0 || node->unit != UNIT_PRODUCT)
+    if (!node || node == root_ || node->branch || diff == 0.0 || node->unit != UNIT_PROD)
         return;
 
     node->first += (node->rule ? 1 : -1) * diff;

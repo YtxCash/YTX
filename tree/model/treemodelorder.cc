@@ -41,7 +41,7 @@ void TreeModelOrder::RUpdateLeafValueFPTO(int node_id, double first_diff, double
     if (first_diff == 0 && second_diff == 0 && amount_diff == 0 && discount_diff == 0 && settled_diff == 0)
         return;
 
-    double settled { node->unit == UNIT_CASH ? settled_diff : 0.0 };
+    double settled { node->unit == UNIT_IM ? settled_diff : 0.0 };
 
     node->first += first_diff;
     node->second += second_diff;
@@ -253,11 +253,11 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
     node->unit = value;
 
     switch (value) {
-    case UNIT_CASH:
+    case UNIT_IM:
         node->final_total = node->initial_total - node->discount;
         break;
-    case UNIT_PENDING:
-    case UNIT_MONTHLY:
+    case UNIT_PEND:
+    case UNIT_MS:
         node->final_total = 0.0;
         break;
     default:
@@ -591,7 +591,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
         destination_parent->children.insert(begin_row, node);
         node->unit = destination_parent->unit;
         node->parent = destination_parent;
-        node->final_total = node->unit == UNIT_CASH ? node->initial_total - node->discount : 0.0;
+        node->final_total = node->unit == UNIT_IM ? node->initial_total - node->discount : 0.0;
 
         if (node->finished)
             UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
