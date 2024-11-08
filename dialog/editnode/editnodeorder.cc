@@ -1,5 +1,7 @@
 #include "editnodeorder.h"
 
+#include <QTimer>
+
 #include "dialog/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
@@ -39,26 +41,13 @@ void EditNodeOrder::RUpdateComboModel()
     if (*node_shadow_->branch)
         return;
 
-    ui->comboParty->blockSignals(true);
-    ui->comboEmployee->blockSignals(true);
-
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
     stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
     stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
 
-    ui->comboEmployee->model()->sort(0);
-    ui->comboParty->model()->sort(0);
-
-    int index_employee { ui->comboEmployee->findData(employee_id) };
-    ui->comboEmployee->setCurrentIndex(index_employee);
-
-    int index_party { ui->comboParty->findData(party_id) };
-    ui->comboParty->setCurrentIndex(index_party);
-
-    ui->comboParty->blockSignals(false);
-    ui->comboEmployee->blockSignals(false);
+    QTimer::singleShot(50, this, [this, employee_id, party_id]() { IniDataCombo(party_id, employee_id); });
 }
 
 void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
@@ -231,6 +220,21 @@ void EditNodeOrder::IniUnit(int unit)
     default:
         break;
     }
+}
+
+void EditNodeOrder::IniDataCombo(int party, int employee)
+{
+    ui->comboEmployee->blockSignals(true);
+    ui->comboParty->blockSignals(true);
+
+    int party_index { ui->comboParty->findData(party) };
+    ui->comboParty->setCurrentIndex(party_index);
+
+    int employee_index { ui->comboEmployee->findData(employee) };
+    ui->comboEmployee->setCurrentIndex(employee_index);
+
+    ui->comboEmployee->blockSignals(false);
+    ui->comboParty->blockSignals(false);
 }
 
 void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)

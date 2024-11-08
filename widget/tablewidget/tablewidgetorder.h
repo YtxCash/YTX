@@ -71,7 +71,7 @@ private slots:
 private:
     void IniDialog();
     void IniData();
-    void IniDataCombo();
+    void IniDataCombo(int party, int employee);
     void LockWidgets(bool finished);
     void IniUnit(int unit);
 

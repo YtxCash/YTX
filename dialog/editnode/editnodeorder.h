@@ -73,6 +73,7 @@ private:
     void IniConnect();
     void LockWidgets(bool finished, bool branch);
     void IniUnit(int unit);
+    void IniDataCombo(int party, int employee);
 
 private:
     Ui::EditNodeOrder* ui;

@@ -60,7 +60,6 @@ void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
 
     ui->comboEmployee->insertItem(0, QString(), 0);
     ui->comboEmployee->setCurrentIndex(0);
-    ui->comboEmployee->model()->sort(0);
 }
 
 void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::RNameEdited); }

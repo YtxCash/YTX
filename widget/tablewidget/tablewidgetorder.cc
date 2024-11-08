@@ -27,7 +27,7 @@ TableWidgetOrder::TableWidgetOrder(
     IniDialog();
     IniData();
     ui->tableViewOrder->setFocus();
-    QTimer::singleShot(100, this, [this]() { IniDataCombo(); });
+    QTimer::singleShot(50, this, [this]() { IniDataCombo(*node_shadow_->party, *node_shadow_->employee); });
 
     IniUnit(*node_shadow_->unit);
 
@@ -54,23 +54,13 @@ void TableWidgetOrder::RUpdateComboModel()
     if (*node_shadow_->branch)
         return;
 
-    ui->comboParty->blockSignals(true);
-    ui->comboEmployee->blockSignals(true);
-
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
     stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
     stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
 
-    int index_employee { ui->comboEmployee->findData(employee_id) };
-    ui->comboEmployee->setCurrentIndex(index_employee);
-
-    int index_party { ui->comboParty->findData(party_id) };
-    ui->comboParty->setCurrentIndex(index_party);
-
-    ui->comboParty->blockSignals(false);
-    ui->comboEmployee->blockSignals(false);
+    QTimer::singleShot(50, this, [this, employee_id, party_id]() { IniDataCombo(party_id, employee_id); });
 }
 
 void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
@@ -178,13 +168,19 @@ void TableWidgetOrder::IniData()
     ui->tableViewOrder->setModel(order_table_);
 }
 
-void TableWidgetOrder::IniDataCombo()
+void TableWidgetOrder::IniDataCombo(int party, int employee)
 {
-    int party_index { ui->comboParty->findData(*node_shadow_->party) };
+    ui->comboEmployee->blockSignals(true);
+    ui->comboParty->blockSignals(true);
+
+    int party_index { ui->comboParty->findData(party) };
     ui->comboParty->setCurrentIndex(party_index);
 
-    int employee_index { ui->comboEmployee->findData(*node_shadow_->employee) };
+    int employee_index { ui->comboEmployee->findData(employee) };
     ui->comboEmployee->setCurrentIndex(employee_index);
+
+    ui->comboEmployee->blockSignals(false);
+    ui->comboParty->blockSignals(false);
 }
 
 void TableWidgetOrder::LockWidgets(bool finished)
