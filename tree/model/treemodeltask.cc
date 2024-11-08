@@ -22,10 +22,10 @@ TreeModelTask::~TreeModelTask()
 void TreeModelTask::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
-    if (!node || node == root_ || node->branch || diff == 0.0)
+    if (!node || node == root_ || node->branch || diff == 0.0 || node->unit != UNIT_PRODUCT)
         return;
 
-    node->first += diff;
+    node->first += (node->rule ? 1 : -1) * diff;
 
     sql_->UpdateField(info_.node, node->first, node_field, node_id);
 }
@@ -537,6 +537,7 @@ bool TreeModelTask::UpdateRuleFPTO(Node* node, bool value)
 
     node->final_total = -node->final_total;
     node->initial_total = -node->initial_total;
+    node->first = -node->first;
     if (!node->branch) {
         emit SRule(info_.section, node->id, value);
         sql_->UpdateNodeValue(node);

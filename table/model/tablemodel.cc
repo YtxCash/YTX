@@ -213,7 +213,7 @@ bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 
     double lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     double lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValueFPTO(node_id_, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
     double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
@@ -247,7 +247,7 @@ bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 
     double lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     double lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValueFPTO(node_id_, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
     double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
@@ -278,7 +278,7 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
+    emit SUpdateLeafValueFPTO(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
 
     double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
@@ -410,6 +410,9 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
+
+            emit SUpdateLeafValueTO(*trans_shadow->rhs_node, *trans_shadow->unit_price, UNIT_COST);
+            emit SUpdateLeafValueTO(node_id_, *trans_shadow->unit_price, UNIT_COST);
 
             double ratio { *trans_shadow->lhs_ratio };
             double debit { *trans_shadow->lhs_debit };

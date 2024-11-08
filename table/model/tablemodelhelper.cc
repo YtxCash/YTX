@@ -8,7 +8,7 @@ void TableModelHelper::AccumulateSubtotal(QMutex& mutex, QList<TransShadow*>& tr
         return;
 
     // 启动新线程执行累积操作
-    QtConcurrent::run([&, start, rule]() {
+    auto future = QtConcurrent::run([&, start, rule]() {
         QMutexLocker locker(&mutex);
         double previous_subtotal { start >= 1 ? trans_shadow_list.at(start - 1)->subtotal : 0.0 };
 

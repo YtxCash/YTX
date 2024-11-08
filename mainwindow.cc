@@ -1181,7 +1181,7 @@ void MainWindow::SetStakeholderData()
     info.rule_map.insert(1, tr("MS"));
 
     // EMP: EMPLOYEE, CUST: CUSTOMER, VEND: VENDOR, PROD: PRODUCT
-    QStringList unit_list { tr("EMP"), tr("CUST"), tr("VEND"), tr("PROD") };
+    QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
     auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1211,7 +1211,7 @@ void MainWindow::SetTaskData()
     info.transaction = TASK_TRANSACTION;
 
     // PROD: PRODUCT, STKH: STAKEHOLDER
-    QStringList unit_list { {}, tr("PROD"), tr("STKH") };
+    QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
     auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)

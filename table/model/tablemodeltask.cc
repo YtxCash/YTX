@@ -1,5 +1,7 @@
 #include "tablemodeltask.h"
 
+#include <QTimer>
+
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 #include "tablemodelhelper.h"
@@ -104,13 +106,18 @@ bool TableModelTask::removeRows(int row, int /*count*/, const QModelIndex& paren
 
         debit = *trans_shadow->rhs_debit;
         credit = *trans_shadow->rhs_credit;
-        emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, -debit, -credit, -unit_cost * debit, -unit_cost * credit);
+        emit SUpdateLeafValueFPTO(rhs_node_id, -debit, -credit, -unit_cost * debit, -unit_cost * credit);
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
 
         TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
         sql_->RemoveTrans(trans_id);
+
+        QTimer::singleShot(50, this, [this, rhs_node_id, unit_cost]() {
+            emit SUpdateLeafValueTO(rhs_node_id, -unit_cost, UNIT_COST);
+            emit SUpdateLeafValueTO(node_id_, -unit_cost, UNIT_COST);
+        });
     }
 
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
@@ -141,7 +148,7 @@ bool TableModelTask::UpdateDebit(TransShadow* trans_shadow, double value)
     double amount_debit_diff { quantity_debit_diff * unit_cost };
     double amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
+    emit SUpdateLeafValueFPTO(node_id_, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
     emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
 
     return true;
@@ -171,7 +178,7 @@ bool TableModelTask::UpdateCredit(TransShadow* trans_shadow, double value)
     double amount_debit_diff { quantity_debit_diff * unit_cost };
     double amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
+    emit SUpdateLeafValueFPTO(node_id_, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
     emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
 
     return true;
@@ -191,8 +198,10 @@ bool TableModelTask::UpdateRatio(TransShadow* trans_shadow, double value)
 
     sql_->UpdateField(info_.transaction, value, UNIT_COST, *trans_shadow->id);
 
-    emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
+    emit SUpdateLeafValueFPTO(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
     emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * diff, *trans_shadow->rhs_credit * diff);
+
+    emit SUpdateLeafValueTO(*trans_shadow->rhs_node, diff, UNIT_COST);
     emit SUpdateLeafValueTO(node_id_, diff, UNIT_COST);
 
     return true;
