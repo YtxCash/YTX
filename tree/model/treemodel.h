@@ -175,7 +175,11 @@ public:
     virtual void UpdateNodeFPTS(const Node* tmp_node) { Q_UNUSED(tmp_node); }
     virtual void RetriveNodeO(int node_id) { Q_UNUSED(node_id); };
 
-    virtual QSet<int> ChildrenSetFPTS(int node_id) const { Q_UNUSED(node_id); }
+    virtual QSet<int> ChildrenSetFPTS(int node_id) const
+    {
+        Q_UNUSED(node_id);
+        return {};
+    }
 
     // Core pure virtual functions
     virtual void SetParent(Node* node, int parent_id) const = 0;

@@ -55,11 +55,7 @@ void Preferences::IniDialog(CStringMap& unit_map)
     IniCombo(ui->comboOperation, operation_list_);
 }
 
-void Preferences::IniCombo(QComboBox* combo, CStringList& list)
-{
-    combo->addItems(list);
-    combo->model()->sort(0);
-}
+void Preferences::IniCombo(QComboBox* combo, CStringList& list) { combo->addItems(list); }
 
 void Preferences::IniCombo(QComboBox* combo, CStringMap& map)
 {
