@@ -21,7 +21,11 @@
 #define USING_H
 
 #include <QHash>
+#include <QMap>
 #include <QStringList>
+
+using CStringMap = const QMap<int, QString>;
+using StringMap = QMap<int, QString>;
 
 using CStringHash = const QHash<int, QString>;
 using StringHash = QHash<int, QString>;

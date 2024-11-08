@@ -27,7 +27,7 @@
 
 class TreeDoubleSpinUnitR final : public StyledItemDelegate {
 public:
-    TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringHash& unit_symbol_hash, QObject* parent = nullptr);
+    TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringMap& unit_symbol_map, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -37,7 +37,7 @@ private:
 private:
     const int& decimal_ {};
     const int& unit_ {};
-    CStringHash& unit_symbol_hash_;
+    CStringMap& unit_symbol_map_;
     bool ignore_zero_ {};
 };
 

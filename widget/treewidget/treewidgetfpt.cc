@@ -27,7 +27,7 @@ void TreeWidgetFPT::SetStatus()
     int static_node_id { settings_.static_node };
 
     if (model_->Contains(static_node_id)) {
-        ui->dspin_box_static_->setPrefix(info_.unit_symbol_hash.value(model_->Unit(static_node_id), QString()));
+        ui->dspin_box_static_->setPrefix(info_.unit_symbol_map.value(model_->Unit(static_node_id), QString()));
         StaticStatus(static_node_id);
     }
 
@@ -42,7 +42,7 @@ void TreeWidgetFPT::SetStatus()
         int rhs_unit { model_->Unit(dynamic_node_id_rhs) };
         equal_unit = lhs_unit == rhs_unit;
 
-        ui->dspin_box_dynamic_->setPrefix(info_.unit_symbol_hash.value((equal_unit ? lhs_unit : settings_.default_unit), QString()));
+        ui->dspin_box_dynamic_->setPrefix(info_.unit_symbol_map.value((equal_unit ? lhs_unit : settings_.default_unit), QString()));
         DynamicStatus(dynamic_node_id_lhs, dynamic_node_id_rhs);
     }
 }

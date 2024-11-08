@@ -15,7 +15,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
-Search::Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, Sqlite* sql, CStringHash& rule_hash, CSettings& settings,
+Search::Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, Sqlite* sql, CStringMap& rule_map, CSettings& settings,
     QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Search)
@@ -25,7 +25,7 @@ Search::Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTre
     , product_tree_ { product_tree }
     , settings_ { settings }
     , info_ { info }
-    , rule_hash_ { rule_hash }
+    , rule_map_ { rule_map }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
@@ -155,10 +155,10 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
 {
     view->setModel(model);
 
-    auto* unit { new TreeComboR(info_.unit_hash, view) };
+    auto* unit { new TreeComboR(info_.unit_map, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kUnit), unit);
 
-    auto* rule { new TreeComboR(rule_hash_, view) };
+    auto* rule { new TreeComboR(rule_map_, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kRule), rule);
 
     auto* total { new TreeDoubleSpinR(settings_.amount_decimal, true, view) };

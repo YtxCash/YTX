@@ -24,7 +24,7 @@ Preferences::Preferences(CInfo& info, CTreeModel* model, Interface interface, Se
     model_->LeafPathBranchPathFPT(leaf_branch_model_);
 
     IniStringList();
-    IniDialog(info.unit_hash);
+    IniDialog(info.unit_map);
     IniConnect();
 
     // 使用QTimer延迟执行
@@ -34,7 +34,7 @@ Preferences::Preferences(CInfo& info, CTreeModel* model, Interface interface, Se
 
 Preferences::~Preferences() { delete ui; }
 
-void Preferences::IniDialog(CStringHash& unit_hash)
+void Preferences::IniDialog(CStringMap& unit_map)
 {
     ui->listWidget->setCurrentRow(0);
     ui->stackedWidget->setCurrentIndex(0);
@@ -46,7 +46,7 @@ void Preferences::IniDialog(CStringHash& unit_hash)
     IniCombo(ui->comboSeparator, separator_list_);
     IniCombo(ui->comboTheme, theme_list_);
 
-    IniCombo(ui->comboDefaultUnit, unit_hash);
+    IniCombo(ui->comboDefaultUnit, unit_map);
 
     ui->comboStatic->setModel(leaf_branch_model_);
     ui->comboDynamicLhs->setModel(leaf_branch_model_);
@@ -61,12 +61,10 @@ void Preferences::IniCombo(QComboBox* combo, CStringList& list)
     combo->model()->sort(0);
 }
 
-void Preferences::IniCombo(QComboBox* combo, CStringHash& hash)
+void Preferences::IniCombo(QComboBox* combo, CStringMap& map)
 {
-    for (auto it = hash.cbegin(); it != hash.cend(); ++it)
+    for (auto it = map.cbegin(); it != map.cend(); ++it)
         combo->addItem(it.value(), it.key());
-
-    combo->model()->sort(0);
 }
 
 void Preferences::IniConnect()

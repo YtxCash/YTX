@@ -20,7 +20,7 @@
 #ifndef INFO_H
 #define INFO_H
 
-#include <QHash>
+#include <QMap>
 #include <QStringList>
 #include <tuple>
 
@@ -39,9 +39,9 @@ struct Info {
     QStringList search_trans_header {};
     QStringList search_node_header {};
 
-    QHash<int, QString> unit_hash {};
-    QHash<int, QString> unit_symbol_hash {};
-    QHash<int, QString> rule_hash { { 0, "DICD" }, { 1, "DDCI" } };
+    QMap<int, QString> unit_map {};
+    QMap<int, QString> unit_symbol_map {};
+    QMap<int, QString> rule_map { { 0, "DICD" }, { 1, "DDCI" } };
 };
 
 struct Tab {

@@ -2,27 +2,27 @@
 
 #include <widget/combobox.h>
 
-TreeComboR::TreeComboR(CStringHash& hash, QObject* parent)
+TreeComboR::TreeComboR(CStringMap& map, QObject* parent)
     : StyledItemDelegate { parent }
-    , hash_ { hash }
+    , map_ { map }
 {
 }
 
 void TreeComboR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    PaintText(HashValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
+    PaintText(MapValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
 }
 
 QSize TreeComboR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QString text = HashValue(index.data().toInt());
+    const QString text = MapValue(index.data().toInt());
     return CalculateTextSize(text, option);
 }
 
-QString TreeComboR::HashValue(int key) const
+QString TreeComboR::MapValue(int key) const
 {
     static const QString empty_string {};
-    auto it { hash_.constFind(key) };
+    auto it { map_.constFind(key) };
 
-    return (it != hash_.constEnd()) ? it.value() : empty_string;
+    return (it != map_.constEnd()) ? it.value() : empty_string;
 }

@@ -4,7 +4,7 @@
 #include "ui_editnodefinance.h"
 
 EditNodeFinance::EditNodeFinance(
-    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, QWidget* parent)
+    Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
     , node_ { node }
@@ -14,24 +14,22 @@ EditNodeFinance::EditNodeFinance(
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_hash);
+    IniDialog(unit_map);
     IniConnect();
     Data(node, branch_enable, unit_enable);
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }
 
-void EditNodeFinance::IniDialog(CStringHash& unit_hash)
+void EditNodeFinance::IniDialog(CStringMap& unit_map)
 {
     ui->lineName->setFocus();
     ui->lineName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
 
-    for (auto it = unit_hash.cbegin(); it != unit_hash.cend(); ++it)
+    for (auto it = unit_map.cbegin(); it != unit_map.cend(); ++it)
         ui->comboUnit->addItem(it.value(), it.key());
-
-    ui->comboUnit->model()->sort(0);
 }
 
 void EditNodeFinance::IniConnect() { connect(ui->lineName, &QLineEdit::textEdited, this, &EditNodeFinance::RNameEdited); }

@@ -663,22 +663,22 @@ void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
     auto* plain_text { new TreePlainText(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNote), plain_text);
 
-    auto* rule { new TreeCombo(info.rule_hash, false, tree_view) };
+    auto* rule { new TreeCombo(info.rule_map, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
     auto* branch { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
 
-    auto* unit { new TreeCombo(info.unit_hash, false, tree_view) };
+    auto* unit { new TreeCombo(info.unit_map, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
 }
 
 void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto* final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, false, settings.default_unit, info.unit_symbol_hash, tree_view) };
+    auto* final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, false, settings.default_unit, info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kFinalTotal), final_total);
 
-    auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_hash, tree_view) };
+    auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kInitialTotal), initial_total);
 }
 
@@ -687,7 +687,7 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
     auto* quantity { new TreeDoubleSpinR(settings.common_decimal, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
     auto* unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
@@ -708,7 +708,7 @@ void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) cons
     auto* quantity { new TreeDoubleSpinR(settings.common_decimal, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
 
     auto* price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
@@ -737,14 +737,14 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
 
 void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto* rule { new TreeCombo(info.rule_hash, true, tree_view) };
+    auto* rule { new TreeCombo(info.rule_map, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
 
-    auto* discount { new TreeDoubleSpinUnitR(settings.amount_decimal, true, finance_settings_.default_unit, finance_data_.info.unit_symbol_hash, tree_view) };
+    auto* discount { new TreeDoubleSpinUnitR(settings.amount_decimal, true, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), discount);
 
     auto* quantity { new TreeDoubleSpinR(settings.common_decimal, true, tree_view) };
@@ -1121,14 +1121,14 @@ void MainWindow::SetFinanceData()
     info.transaction = FINANCE_TRANSACTION;
 
     QStringList unit_list { "CNY", "HKD", "USD", "GBP", "JPY", "CAD", "AUD", "EUR" };
-    auto& unit_hash { info.unit_hash };
+    auto& unit_map { info.unit_map };
 
     QStringList unit_symbol_list { "¥", "$", "$", "£", "¥", "$", "$", "€" };
-    auto& unit_symbol_hash { info.unit_symbol_hash };
+    auto& unit_symbol_map { info.unit_symbol_map };
 
     for (int i = 0; i != unit_list.size(); ++i) {
-        unit_hash.insert(i, unit_list.at(i));
-        unit_symbol_hash.insert(i, unit_symbol_list.at(i));
+        unit_map.insert(i, unit_list.at(i));
+        unit_symbol_map.insert(i, unit_symbol_list.at(i));
     }
 
     sql_.QuerySettings(finance_settings_, section);
@@ -1152,10 +1152,10 @@ void MainWindow::SetProductData()
 
     // POS: Position, PC: Piece, SF: SquareFeet
     QStringList unit_list { {}, tr("POS"), tr("BOX"), tr("PC"), tr("SET"), tr("SF") };
-    auto& unit_hash { info.unit_hash };
+    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_hash.insert(i, unit_list.at(i));
+        unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(product_settings_, section);
 
@@ -1177,15 +1177,15 @@ void MainWindow::SetStakeholderData()
     info.transaction = STAKEHOLDER_TRANSACTION;
 
     // IM：Immediate, MS（Monthly Settlement）
-    info.rule_hash.insert(0, tr("IM"));
-    info.rule_hash.insert(1, tr("MS"));
+    info.rule_map.insert(0, tr("IM"));
+    info.rule_map.insert(1, tr("MS"));
 
     // EMP: EMPLOYEE, CUST: CUSTOMER, VEND: VENDOR, PROD: PRODUCT
     QStringList unit_list { tr("EMP"), tr("CUST"), tr("VEND"), tr("PROD") };
-    auto& unit_hash { info.unit_hash };
+    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_hash.insert(i, unit_list.at(i));
+        unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(stakeholder_settings_, section);
 
@@ -1212,10 +1212,10 @@ void MainWindow::SetTaskData()
 
     // PROD: PRODUCT, STKH: STAKEHOLDER
     QStringList unit_list { {}, tr("PROD"), tr("STKH") };
-    auto& unit_hash { info.unit_hash };
+    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_hash.insert(i, unit_list.at(i));
+        unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(task_settings_, section);
 
@@ -1237,15 +1237,15 @@ void MainWindow::SetSalesData()
     info.transaction = SALES_TRANSACTION;
 
     // SO: SALES ORDER, RO: REFUND ORDER
-    info.rule_hash.insert(0, tr("SO"));
-    info.rule_hash.insert(1, tr("RO"));
+    info.rule_map.insert(0, tr("SO"));
+    info.rule_map.insert(1, tr("RO"));
 
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
-    auto& unit_hash { info.unit_hash };
+    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_hash.insert(i, unit_list.at(i));
+        unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(sales_settings_, section);
 
@@ -1270,16 +1270,16 @@ void MainWindow::SetPurchaseData()
     info.transaction = PURCHASE_TRANSACTION;
 
     // PO: PURCHASE ORDER, RO: REFUND ORDER
-    info.rule_hash.insert(0, tr("PO"));
-    info.rule_hash.insert(1, tr("RO"));
+    info.rule_map.insert(0, tr("PO"));
+    info.rule_map.insert(1, tr("RO"));
 
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
 
-    auto& unit_hash { info.unit_hash };
+    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_hash.insert(i, unit_list.at(i));
+        unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(purchase_settings_, section);
 
@@ -1496,7 +1496,7 @@ void MainWindow::REditNode()
 void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 {
     auto section { data_->info.section };
-    const auto& unit_hash { data_->info.unit_hash };
+    const auto& unit_map { data_->info.unit_map };
 
     QDialog* dialog {};
     auto model { tree_widget_->Model() };
@@ -1519,18 +1519,18 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, this);
+        dialog = new EditNodeFinance(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, this);
         break;
     case Section::kTask:
-        dialog = new EditNodeFinance(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, this);
+        dialog = new EditNodeFinance(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, this);
         break;
     case Section::kStakeholder:
         unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
-        dialog = new EditNodeStakeholder(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, model, this);
+        dialog = new EditNodeStakeholder(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, model, this);
         break;
     case Section::kProduct:
         unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
-        dialog = new EditNodeProduct(tmp_node, unit_hash, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, this);
+        dialog = new EditNodeProduct(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(tmp_node);
@@ -1557,18 +1557,18 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
 
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, true, this);
+        dialog = new EditNodeFinance(node, info.unit_map, parent_path, name_list, true, true, this);
         break;
     case Section::kTask:
         node->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);
-        dialog = new EditNodeFinance(node, info.unit_hash, parent_path, name_list, true, true, this);
+        dialog = new EditNodeFinance(node, info.unit_map, parent_path, name_list, true, true, this);
         break;
     case Section::kStakeholder:
         node->unit = settings_->default_unit;
-        dialog = new EditNodeStakeholder(node, info.unit_hash, parent_path, name_list, true, true, settings_->common_decimal, tree_model, this);
+        dialog = new EditNodeStakeholder(node, info.unit_map, parent_path, name_list, true, true, settings_->common_decimal, tree_model, this);
         break;
     case Section::kProduct:
-        dialog = new EditNodeProduct(node, info.unit_hash, parent_path, name_list, true, true, settings_->common_decimal, this);
+        dialog = new EditNodeProduct(node, info.unit_map, parent_path, name_list, true, true, settings_->common_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(node);
@@ -1933,7 +1933,7 @@ void MainWindow::RSearchTriggered()
         return;
 
     auto* dialog { new Search(
-        data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), data_->sql, data_->info.rule_hash, *settings_, this) };
+        data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), data_->sql, data_->info.rule_map, *settings_, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);

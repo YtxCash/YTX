@@ -4,7 +4,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_editnodestakeholder.h"
 
-EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
+EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
     int amount_decimal, TreeModel* stakeholder_tree, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
@@ -15,21 +15,21 @@ EditNodeStakeholder::EditNodeStakeholder(Node* node, CStringHash& unit_hash, CSt
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_hash, stakeholder_tree, amount_decimal);
+    IniDialog(unit_map, stakeholder_tree, amount_decimal);
     IniConnect();
     Data(node, branch_enable, unit_enable);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 
-void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int amount_decimal)
+void EditNodeStakeholder::IniDialog(CStringMap& unit_map, TreeModel* stakeholder_tree, int amount_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
 
-    IniComboWithStringHash(ui->comboUnit, unit_hash);
+    IniComboWithStringMap(ui->comboUnit, unit_map);
     IniComboEmployee(stakeholder_tree);
 
     ui->dSpinPaymentPeriod->setRange(0, IMAX);
@@ -41,14 +41,12 @@ void EditNodeStakeholder::IniDialog(CStringHash& unit_hash, TreeModel* stakehold
     ui->deadline->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
 }
 
-void EditNodeStakeholder::IniComboWithStringHash(QComboBox* combo, CStringHash& hash)
+void EditNodeStakeholder::IniComboWithStringMap(QComboBox* combo, CStringMap& map)
 {
     combo->clear();
 
-    for (auto it = hash.cbegin(); it != hash.cend(); ++it)
+    for (auto it = map.cbegin(); it != map.cend(); ++it)
         combo->addItem(it.value(), it.key());
-
-    combo->model()->sort(0);
 }
 
 void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)

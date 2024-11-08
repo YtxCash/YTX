@@ -35,7 +35,7 @@ class EditNodeStakeholder final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeStakeholder(Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
+    EditNodeStakeholder(Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
         int amount_decimal, TreeModel* stakeholder_tree, QWidget* parent = nullptr);
     ~EditNodeStakeholder();
 
@@ -58,8 +58,8 @@ private slots:
     void on_deadline_editingFinished();
 
 private:
-    void IniDialog(CStringHash& unit_hash, TreeModel* stakeholder_tree, int common_decimal);
-    void IniComboWithStringHash(QComboBox* combo, CStringHash& hash);
+    void IniDialog(CStringMap& unit_map, TreeModel* stakeholder_tree, int common_decimal);
+    void IniComboWithStringMap(QComboBox* combo, CStringMap& map);
     void IniComboEmployee(TreeModel* stakeholder_tree);
     void IniConnect();
     void Data(Node* node, bool branch_enable, bool unit_enable);

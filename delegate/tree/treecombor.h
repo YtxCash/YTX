@@ -25,15 +25,15 @@
 
 class TreeComboR final : public StyledItemDelegate {
 public:
-    TreeComboR(CStringHash& hash, QObject* parent = nullptr);
+    TreeComboR(CStringMap& map, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    QString HashValue(int key) const;
+    QString MapValue(int key) const;
 
 private:
-    CStringHash& hash_;
+    CStringMap& map_;
 };
 
 #endif // TREECOMBOR_H

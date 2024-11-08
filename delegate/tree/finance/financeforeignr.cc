@@ -2,11 +2,11 @@
 
 #include "component/enumclass.h"
 
-FinanceForeignR::FinanceForeignR(const int& decimal, const int& default_unit, CStringHash& unit_symbol_hash, QObject* parent)
+FinanceForeignR::FinanceForeignR(const int& decimal, const int& default_unit, CStringMap& unit_symbol_map, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , default_unit_ { default_unit }
-    , unit_symbol_hash_ { unit_symbol_hash }
+    , unit_symbol_map_ { unit_symbol_map }
 {
 }
 
@@ -27,8 +27,8 @@ QString FinanceForeignR::Format(const QModelIndex& index) const
 
     double value { index.data().toDouble() };
 
-    auto it { unit_symbol_hash_.constFind(unit) };
-    auto symbol { (it != unit_symbol_hash_.constEnd()) ? it.value() : empty_string };
+    auto it { unit_symbol_map_.constFind(unit) };
+    auto symbol { (it != unit_symbol_map_.constEnd()) ? it.value() : empty_string };
 
     return symbol + locale_.toString(value, 'f', decimal_);
 }

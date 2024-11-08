@@ -66,9 +66,9 @@ private slots:
     void on_comboSeparator_currentIndexChanged(int index);
 
 private:
-    void IniDialog(CStringHash& unit_hash);
+    void IniDialog(CStringMap& unit_map);
     void IniCombo(QComboBox* combo, CStringList& list);
-    void IniCombo(QComboBox* combo, CStringHash& hash);
+    void IniCombo(QComboBox* combo, CStringMap& map);
 
     void IniConnect();
     void IniStringList();

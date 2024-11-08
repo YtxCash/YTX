@@ -34,7 +34,7 @@ class EditNodeFinance final : public QDialog {
 
 public:
     EditNodeFinance(
-        Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, QWidget* parent = nullptr);
+        Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, QWidget* parent = nullptr);
     ~EditNodeFinance();
 
 private slots:
@@ -52,7 +52,7 @@ private slots:
     void on_plainNote_textChanged();
 
 private:
-    void IniDialog(CStringHash& unit_hash);
+    void IniDialog(CStringMap& unit_map);
     void IniConnect();
     void Data(Node* node, bool branch_enable, bool unit_enable);
 

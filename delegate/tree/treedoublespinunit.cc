@@ -1,10 +1,10 @@
 #include "treedoublespinunitr.h"
 
-TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringHash& unit_symbol_hash, QObject* parent)
+TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringMap& unit_symbol_map, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , unit_ { unit }
-    , unit_symbol_hash_ { unit_symbol_hash }
+    , unit_symbol_map_ { unit_symbol_map }
     , ignore_zero_ { ignore_zero }
 {
 }
@@ -24,8 +24,8 @@ QString TreeDoubleSpinUnitR::Format(const QModelIndex& index) const
 {
     static const QString empty_string {};
 
-    auto it { unit_symbol_hash_.constFind(unit_) };
-    auto symbol { (it != unit_symbol_hash_.constEnd()) ? it.value() : empty_string };
+    auto it { unit_symbol_map_.constFind(unit_) };
+    auto symbol { (it != unit_symbol_map_.constEnd()) ? it.value() : empty_string };
 
     return symbol + locale_.toString(index.data().toDouble(), 'f', decimal_);
 }

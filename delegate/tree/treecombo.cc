@@ -4,19 +4,17 @@
 
 #include "component/enumclass.h"
 
-TreeCombo::TreeCombo(CStringHash& hash, bool skip_branch, QObject* parent)
+TreeCombo::TreeCombo(CStringMap& map, bool skip_branch, QObject* parent)
     : StyledItemDelegate { parent }
-    , hash_ { hash }
+    , map_ { map }
     , skip_branch_ { skip_branch }
 {
     model_ = new QStandardItemModel(this);
-    for (auto it = hash_.cbegin(); it != hash_.cend(); ++it) {
+    for (auto it = map_.cbegin(); it != map_.cend(); ++it) {
         auto* item { new QStandardItem(it.value()) };
         item->setData(it.key(), Qt::UserRole);
         model_->appendRow(item);
     }
-
-    model_->sort(0);
 }
 
 QWidget* TreeCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -55,19 +53,19 @@ void TreeCombo::setModelData(QWidget* editor, QAbstractItemModel* model, const Q
 
 void TreeCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    PaintText(HashValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
+    PaintText(MapValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
 }
 
 QSize TreeCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QString text = HashValue(index.data().toInt());
+    const QString text = MapValue(index.data().toInt());
     return CalculateTextSize(text, option);
 }
 
-QString TreeCombo::HashValue(int key) const
+QString TreeCombo::MapValue(int key) const
 {
     static const QString empty_string {};
-    auto it { hash_.constFind(key) };
+    auto it { map_.constFind(key) };
 
-    return (it != hash_.constEnd()) ? it.value() : empty_string;
+    return (it != map_.constEnd()) ? it.value() : empty_string;
 }

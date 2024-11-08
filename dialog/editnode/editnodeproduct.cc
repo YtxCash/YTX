@@ -5,7 +5,7 @@
 #include "ui_editnodeproduct.h"
 
 EditNodeProduct::EditNodeProduct(
-    Node* node, CStringHash& unit_hash, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, int amount_decimal, QWidget* parent)
+    Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, int amount_decimal, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeProduct)
     , node_ { node }
@@ -15,24 +15,22 @@ EditNodeProduct::EditNodeProduct(
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_hash, amount_decimal);
+    IniDialog(unit_map, amount_decimal);
     IniConnect();
     Data(node, branch_enable, unit_enable);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }
 
-void EditNodeProduct::IniDialog(CStringHash& unit_hash, int amount_decimal)
+void EditNodeProduct::IniDialog(CStringMap& unit_map, int amount_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
 
-    for (auto it = unit_hash.cbegin(); it != unit_hash.cend(); ++it)
+    for (auto it = unit_map.cbegin(); it != unit_map.cend(); ++it)
         ui->comboUnit->addItem(it.value(), it.key());
-
-    ui->comboUnit->model()->sort(0);
 
     ui->dSpinBoxUnitPrice->setRange(0.0, DMAX);
     ui->dSpinBoxCommission->setRange(0.0, DMAX);
