@@ -132,6 +132,6 @@ enum class TreeEnumSearch {
 };
 
 // Enum class defining check options
-enum class Check { kAll, kNone, kReverse };
+enum class Check { kNone, kAll, kReverse };
 
 #endif // ENUMCLASS_H

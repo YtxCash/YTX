@@ -705,26 +705,27 @@ bool Sqlite::UpdateField(CString& table, CVariant& value, CString& field, int id
     return true;
 }
 
-bool Sqlite::UpdateCheckState(CString& column, CVariant& value, Check state) const
+bool Sqlite::UpdateState(CString& field, Check state) const
 {
     QSqlQuery query(*db_);
 
-    auto part = QString(R"(
-    UPDATE %1
-    SET %2 = :value
-)")
-                    .arg(info_.transaction, column);
+    // 使用 is_not_reverse 表示 state != Check::kReverse，避免重复计算
+    const bool is_not_reverse { state != Check::kReverse };
 
-    if (state == Check::kReverse)
-        part = QString("UPDATE %1 "
-                       "SET %2 = NOT %2 ")
-                   .arg(info_.transaction, column);
+    // 构建 SQL 查询字符串，调整三元运算符顺序，避免重复判断
+    const auto string { is_not_reverse ? QString("UPDATE %1 SET %2 = :value").arg(info_.transaction, field)
+                                       : QString("UPDATE %1 SET %2 = NOT %2").arg(info_.transaction, field) };
 
-    query.prepare(part);
-    query.bindValue(":value", value);
+    query.prepare(string);
 
+    // 仅在 is_not_reverse 为 true 时绑定新值
+    if (is_not_reverse) {
+        query.bindValue(":value", (state != Check::kNone));
+    }
+
+    // 执行查询并检查结果
     if (!query.exec()) {
-        qWarning() << "Failed in UpdateCheckState" << query.lastError().text();
+        qWarning() << "Failed in UpdateState" << query.lastError().text();
         return false;
     }
 

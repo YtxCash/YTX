@@ -451,7 +451,7 @@ void TreeModelHelper::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, No
     const bool rule = node->rule;
 
     // 确保所有数据都是通过值传递，避免悬空指针
-    QtConcurrent::run([=, &mutex]() {
+    auto future = QtConcurrent::run([=, &mutex]() {
         // 使用 RAII 方式加锁
         QMutexLocker locker(&mutex);
 

@@ -149,7 +149,7 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
 
 void TableModel::UpdateAllState(Check state)
 {
-    for (auto* trans_shadow : trans_shadow_list_) {
+    auto UpdateState = [state](TransShadow* trans_shadow) {
         switch (state) {
         case Check::kAll:
             *trans_shadow->state = true;
@@ -163,24 +163,29 @@ void TableModel::UpdateAllState(Check state)
         default:
             break;
         }
-    }
+    };
 
-    switch (state) {
-    case Check::kAll:
-        sql_->UpdateCheckState("state", true, state);
-        break;
-    case Check::kNone:
-        sql_->UpdateCheckState("state", false, state);
-        break;
-    case Check::kReverse:
-        sql_->UpdateCheckState("state", true, state);
-        break;
-    default:
-        break;
-    }
+    // 使用 QtConcurrent::map() 并行处理 trans_shadow_list_
+    auto future { QtConcurrent::map(trans_shadow_list_, UpdateState) };
 
-    int column { std::to_underlying(TableEnum::kState) };
-    emit dataChanged(index(0, column), index(rowCount() - 1, column));
+    // 使用 QFutureWatcher 监听并行任务的完成状态
+    auto* watcher { new QFutureWatcher<void>(this) };
+
+    // 连接信号槽，任务完成时刷新视图
+    connect(watcher, &QFutureWatcher<void>::finished, this, [this, state, watcher]() {
+        // 更新数据库
+        sql_->UpdateState(STATE, state);
+
+        // 刷新视图
+        int column { std::to_underlying(TableEnum::kState) };
+        emit dataChanged(index(0, column), index(rowCount() - 1, column));
+
+        // 释放 QFutureWatcher
+        watcher->deleteLater();
+    });
+
+    // 开始监听任务
+    watcher->setFuture(future);
 }
 
 bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
