@@ -1713,6 +1713,9 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
             }
         }
     }
+
+    if (data_->info.section == Section::kStakeholder)
+        UpdateStakeholderReference();
 }
 
 void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
@@ -1831,6 +1834,37 @@ void MainWindow::UpdateTranslate() const
 }
 
 void MainWindow::UpdateRecent() const { shared_interface_->setValue(RECENT_FILE, recent_list_); }
+
+void MainWindow::UpdateStakeholderReference() const
+{
+    auto* widget { ui->tabWidget };
+    auto stakeholder_model { tree_widget_->Model() };
+
+    auto* order_model { static_cast<TreeModelOrder*>(sales_tree_->Model().data()) };
+
+    auto* tab_bar { widget->tabBar() };
+    int count { widget->count() };
+    bool update {};
+    int node_id {};
+    int party {};
+
+    for (int index = 0; index != count; ++index) {
+        const auto& data { tab_bar->tabData(index).value<Tab>() };
+
+        update = data.section == Section::kSales || data.section == Section::kPurchase;
+
+        if (!widget->isTabVisible(index) && update) {
+            node_id = data.node_id;
+            if (node_id == 0)
+                continue;
+
+            party = order_model->Party(node_id);
+
+            tab_bar->setTabText(index, stakeholder_model->Name(party));
+            tab_bar->setTabToolTip(index, stakeholder_model->GetPath(party));
+        }
+    }
+}
 
 void MainWindow::LoadAndInstallTranslator(CString& language)
 {

@@ -195,6 +195,7 @@ private:
     void UpdateInterface(CInterface& interface);
     void UpdateTranslate() const;
     void UpdateRecent() const;
+    void UpdateStakeholderReference() const;
 
     void LoadAndInstallTranslator(CString& language);
     void ResizeColumn(QHeaderView* header, bool table_view = true) const;

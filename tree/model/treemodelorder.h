@@ -75,6 +75,7 @@ public:
     bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
     void RetriveNodeO(int node_id) override;
+    int Party(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::party); };
 
 protected:
     bool UpdateRuleFPTO(Node* node, bool value) override; // charge = 0, refund = 1
