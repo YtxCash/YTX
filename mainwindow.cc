@@ -2,6 +2,7 @@
 
 #include <QDragEnterEvent>
 #include <QFileDialog>
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QLockFile>
 #include <QMessageBox>
@@ -10,6 +11,7 @@
 #include <QQueue>
 #include <QResource>
 #include <QScrollBar>
+#include <QtConcurrent>
 
 #include "component/constvalue.h"
 #include "component/enumclass.h"
@@ -1839,31 +1841,56 @@ void MainWindow::UpdateStakeholderReference() const
 {
     auto* widget { ui->tabWidget };
     auto stakeholder_model { tree_widget_->Model() };
-
     auto* order_model { static_cast<TreeModelOrder*>(sales_tree_->Model().data()) };
-
     auto* tab_bar { widget->tabBar() };
     int count { widget->count() };
-    bool update {};
-    int node_id {};
-    int party {};
 
-    for (int index = 0; index != count; ++index) {
-        const auto& data { tab_bar->tabData(index).value<Tab>() };
+    // 使用 QtConcurrent::run 启动后台线程
+    auto future = QtConcurrent::run([=]() -> QVector<std::tuple<int, QString, QString>> {
+        QVector<std::tuple<int, QString, QString>> updates;
 
-        update = data.section == Section::kSales || data.section == Section::kPurchase;
+        // 遍历所有选项卡，计算需要更新的项
+        for (int index = 0; index != count; ++index) {
+            const auto& data { tab_bar->tabData(index).value<Tab>() };
+            bool update = data.section == Section::kSales || data.section == Section::kPurchase;
 
-        if (!widget->isTabVisible(index) && update) {
-            node_id = data.node_id;
-            if (node_id == 0)
-                continue;
+            if (!widget->isTabVisible(index) && update) {
+                int node_id = data.node_id;
+                if (node_id == 0)
+                    continue;
 
-            party = order_model->Party(node_id);
+                int party = order_model->Party(node_id);
+                QString name = stakeholder_model->Name(party);
+                QString path = stakeholder_model->GetPath(party);
 
-            tab_bar->setTabText(index, stakeholder_model->Name(party));
-            tab_bar->setTabToolTip(index, stakeholder_model->GetPath(party));
+                // 收集需要更新的信息
+                updates.append(std::make_tuple(index, name, path));
+            }
         }
-    }
+
+        return updates;
+    });
+
+    // 创建 QFutureWatcher 用于监控任务完成
+    auto* watcher = new QFutureWatcher<QVector<std::tuple<int, QString, QString>>>();
+
+    // 连接信号槽，监测任务完成
+    connect(watcher, &QFutureWatcher<QVector<std::tuple<int, QString, QString>>>::finished, this, [watcher, tab_bar]() {
+        // 获取后台线程的结果
+        const auto& updates = watcher->result();
+
+        // 更新 UI
+        for (const auto& [index, name, path] : updates) {
+            tab_bar->setTabText(index, name);
+            tab_bar->setTabToolTip(index, path);
+        }
+
+        // 删除 watcher，避免内存泄漏
+        watcher->deleteLater();
+    });
+
+    // 设置未来任务给 watcher
+    watcher->setFuture(future);
 }
 
 void MainWindow::LoadAndInstallTranslator(CString& language)
