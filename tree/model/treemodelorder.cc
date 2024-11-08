@@ -225,11 +225,11 @@ bool TreeModelOrder::UpdateRuleFPTO(Node* node, bool value)
     node->rule = value;
     sql_->UpdateField(info_.node, value, RULE, node->id);
 
-    node->first *= -1;
-    node->second *= -1;
-    node->discount *= -1;
-    node->initial_total *= -1;
-    node->final_total *= -1;
+    node->first = -node->first;
+    node->second = -node->second;
+    node->discount = -node->discount;
+    node->initial_total = -node->initial_total;
+    node->final_total = -node->final_total;
 
     auto index { GetIndex(node->id) };
     emit dataChanged(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFirst)), index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kSettled)));
