@@ -1679,8 +1679,10 @@ void MainWindow::REditDocument()
 void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
 {
     auto model { tree_widget_->Model() };
-    auto* tab_bar { ui->tabWidget->tabBar() };
-    int count { ui->tabWidget->count() };
+    auto* widget { ui->tabWidget };
+
+    auto* tab_bar { widget->tabBar() };
+    int count { widget->count() };
 
     if (!branch) {
         if (!table_hash_->contains(node_id))
@@ -1689,7 +1691,7 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
         auto path { model->GetPath(node_id) };
 
         for (int index = 0; index != count; ++index) {
-            if (tab_bar->tabData(index).value<Tab>().node_id == node_id) {
+            if (widget->isTabVisible(index) && tab_bar->tabData(index).value<Tab>().node_id == node_id) {
                 tab_bar->setTabText(index, name);
                 tab_bar->setTabToolTip(index, path);
             }
@@ -1697,16 +1699,16 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
     }
 
     if (branch) {
-        QSet<int> set { model->ChildrenSetFPTS(node_id) };
+        QSet<int> children { model->ChildrenSetFPTS(node_id) };
 
-        int node_id {};
+        int child {};
         QString path {};
 
         for (int index = 0; index != count; ++index) {
-            node_id = tab_bar->tabData(index).value<Tab>().node_id;
+            child = tab_bar->tabData(index).value<Tab>().node_id;
 
-            if (set.contains(node_id)) {
-                path = model->GetPath(node_id);
+            if (widget->isTabVisible(index) && children.contains(child)) {
+                path = model->GetPath(child);
                 tab_bar->setTabToolTip(index, path);
             }
         }
@@ -1967,15 +1969,15 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     SwitchTab(id, trans_id);
 }
 
-void MainWindow::RUpdateParty(Section section, int node_id, int party)
+void MainWindow::RUpdateParty(int node_id, int party)
 {
     auto model { stakeholder_tree_->Model() };
-    auto* tab_bar { ui->tabWidget->tabBar() };
-    int count { ui->tabWidget->count() };
+    auto* widget { ui->tabWidget };
+    auto* tab_bar { widget->tabBar() };
+    int count { widget->count() };
 
     for (int index = 0; index != count; ++index) {
-        const auto& data { tab_bar->tabData(index).value<Tab>() };
-        if (data.section == section && data.node_id == node_id) {
+        if (widget->isTabVisible(index) && tab_bar->tabData(index).value<Tab>().node_id == node_id) {
             tab_bar->setTabText(index, model->Name(party));
             tab_bar->setTabToolTip(index, model->GetPath(party));
         }

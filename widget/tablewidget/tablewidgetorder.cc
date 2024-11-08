@@ -15,7 +15,6 @@ TableWidgetOrder::TableWidgetOrder(
     , order_table_ { order_table }
     , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_tree) }
     , settings_ { settings }
-    , section_ { section }
     , node_id_ { *node_shadow->id }
     , info_node_ { section == Section::kSales ? SALES : PURCHASE }
     , party_unit_ { section == Section::kSales ? UNIT_CUST : UNIT_VEND }
@@ -262,7 +261,7 @@ void TableWidgetOrder::on_comboParty_currentIndexChanged(int /*index*/)
 
     *node_shadow_->party = party_id;
     sql_->UpdateField(info_node_, party_id, PARTY, node_id_);
-    emit SUpdateParty(section_, node_id_, party_id);
+    emit SUpdateParty(node_id_, party_id);
 
     if (ui->comboEmployee->currentIndex() != -1)
         return;

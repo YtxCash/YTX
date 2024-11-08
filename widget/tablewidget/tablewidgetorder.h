@@ -39,7 +39,7 @@ public:
 
 signals:
     void SUpdateFinished(int node_id, bool checked);
-    void SUpdateParty(Section section, int node_id, int party);
+    void SUpdateParty(int node_id, int party);
 
 public slots:
     void RUpdateComboModel();
@@ -82,7 +82,6 @@ private:
     TableModel* order_table_ {};
     TreeModelStakeholder* stakeholder_tree_ {};
     CSettings* settings_ {};
-    Section section_ {};
 
     QStandardItemModel* combo_model_employee_ {};
     QStandardItemModel* combo_model_party_ {};
