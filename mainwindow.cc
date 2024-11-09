@@ -1686,38 +1686,36 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
     auto* tab_bar { widget->tabBar() };
     int count { widget->count() };
 
+    QSet<int> nodes;
+
     if (!branch) {
         if (!table_hash_->contains(node_id))
             return;
 
-        auto path { model->GetPath(node_id) };
-
-        for (int index = 0; index != count; ++index) {
-            if (widget->isTabVisible(index) && tab_bar->tabData(index).value<Tab>().node_id == node_id) {
-                tab_bar->setTabText(index, name);
-                tab_bar->setTabToolTip(index, path);
-            }
-        }
+        nodes.insert(node_id);
+    } else {
+        nodes = model->ChildrenSetFPTS(node_id);
     }
 
-    if (branch) {
-        QSet<int> children { model->ChildrenSetFPTS(node_id) };
+    int tab_node_id {};
+    QString path {};
 
-        int child {};
-        QString path {};
+    for (int index = 0; index != count; ++index) {
+        tab_node_id = tab_bar->tabData(index).value<Tab>().node_id;
 
-        for (int index = 0; index != count; ++index) {
-            child = tab_bar->tabData(index).value<Tab>().node_id;
+        if (widget->isTabVisible(index) && nodes.contains(tab_node_id)) {
+            path = model->GetPath(tab_node_id);
 
-            if (widget->isTabVisible(index) && children.contains(child)) {
-                path = model->GetPath(child);
-                tab_bar->setTabToolTip(index, path);
+            if (!branch) {
+                tab_bar->setTabText(index, name);
             }
+
+            tab_bar->setTabToolTip(index, path);
         }
     }
 
     if (data_->info.section == Section::kStakeholder)
-        UpdateStakeholderReference(node_id);
+        UpdateStakeholderReference(nodes, branch);
 }
 
 void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
@@ -1837,7 +1835,7 @@ void MainWindow::UpdateTranslate() const
 
 void MainWindow::UpdateRecent() const { shared_interface_->setValue(RECENT_FILE, recent_list_); }
 
-void MainWindow::UpdateStakeholderReference(int stakeholder_node_id) const
+void MainWindow::UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool branch) const
 {
     auto* widget { ui->tabWidget };
     auto stakeholder_model { tree_widget_->Model() };
@@ -1860,7 +1858,7 @@ void MainWindow::UpdateStakeholderReference(int stakeholder_node_id) const
                     continue;
 
                 int order_party = order_model->Party(order_node_id);
-                if (order_party != stakeholder_node_id)
+                if (!stakeholder_nodes.contains(order_party))
                     continue;
 
                 QString name = stakeholder_model->Name(order_party);
@@ -1878,13 +1876,15 @@ void MainWindow::UpdateStakeholderReference(int stakeholder_node_id) const
     auto* watcher = new QFutureWatcher<QVector<std::tuple<int, QString, QString>>>();
 
     // 连接信号槽，监测任务完成
-    connect(watcher, &QFutureWatcher<QVector<std::tuple<int, QString, QString>>>::finished, this, [watcher, tab_bar]() {
+    connect(watcher, &QFutureWatcher<QVector<std::tuple<int, QString, QString>>>::finished, this, [watcher, tab_bar, branch]() {
         // 获取后台线程的结果
         const auto& updates = watcher->result();
 
         // 更新 UI
         for (const auto& [index, name, path] : updates) {
-            tab_bar->setTabText(index, name);
+            if (!branch)
+                tab_bar->setTabText(index, name);
+
             tab_bar->setTabToolTip(index, path);
         }
 

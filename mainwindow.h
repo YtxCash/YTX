@@ -195,7 +195,7 @@ private:
     void UpdateInterface(CInterface& interface);
     void UpdateTranslate() const;
     void UpdateRecent() const;
-    void UpdateStakeholderReference(int stakeholder_node_id) const;
+    void UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool branch) const;
 
     void LoadAndInstallTranslator(CString& language);
     void ResizeColumn(QHeaderView* header, bool table_view = true) const;
