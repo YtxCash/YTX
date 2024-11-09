@@ -1717,7 +1717,7 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
     }
 
     if (data_->info.section == Section::kStakeholder)
-        UpdateStakeholderReference();
+        UpdateStakeholderReference(node_id);
 }
 
 void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
@@ -1837,7 +1837,7 @@ void MainWindow::UpdateTranslate() const
 
 void MainWindow::UpdateRecent() const { shared_interface_->setValue(RECENT_FILE, recent_list_); }
 
-void MainWindow::UpdateStakeholderReference() const
+void MainWindow::UpdateStakeholderReference(int stakeholder_node_id) const
 {
     auto* widget { ui->tabWidget };
     auto stakeholder_model { tree_widget_->Model() };
@@ -1855,13 +1855,16 @@ void MainWindow::UpdateStakeholderReference() const
             bool update = data.section == Section::kSales || data.section == Section::kPurchase;
 
             if (!widget->isTabVisible(index) && update) {
-                int node_id = data.node_id;
-                if (node_id == 0)
+                int order_node_id = data.node_id;
+                if (order_node_id == 0)
                     continue;
 
-                int party = order_model->Party(node_id);
-                QString name = stakeholder_model->Name(party);
-                QString path = stakeholder_model->GetPath(party);
+                int order_party = order_model->Party(order_node_id);
+                if (order_party != stakeholder_node_id)
+                    continue;
+
+                QString name = stakeholder_model->Name(order_party);
+                QString path = stakeholder_model->GetPath(order_party);
 
                 // 收集需要更新的信息
                 updates.append(std::make_tuple(index, name, path));
