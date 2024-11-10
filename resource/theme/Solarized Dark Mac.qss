@@ -1,4 +1,4 @@
-/* solarized_dark.qss */
+/* Solarized Dark Mac.qss */
 
 /*--------------------------------------QWidget---------------------------------------------*/
 
@@ -14,7 +14,7 @@ QWidget QPushButton {
     background-color: transparent;
 }
 
-*:focus { outline: none; }
+*:focus { outline: none !important; }
 
 /*--------------------------------------border-------------------------------------------------*/
 

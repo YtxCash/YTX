@@ -1,7 +1,8 @@
 <RCC>
     <qresource prefix="/theme">
         <file>theme/Solarized Dark.pdf</file>
-        <file>theme/Solarized Dark.qss</file>
+        <file>theme/Solarized Dark Mac.qss</file>
+        <file>theme/Solarized Dark Win.qss</file>
     </qresource>
     <qresource prefix="/I18N">
         <file>I18N/qtbase_zh_CN.qm</file>
