@@ -8,62 +8,88 @@
     alternate-background-color: #073642;
     selection-background-color: #586E75;
     selection-color: #EEE8D5;
+    gridline-color: #93A1A1;
+    placeholder-text-color: #586E75;
 }
 
-QWidget QPushButton {
-    background-color: transparent;
+*:disabled {
+    color: #586E75;
+    gridline-color: #586E75;
 }
 
-*:focus { outline: none; }
+*:focus { outline: none !important; }
+
+*::section, *::tab {
+    color: #93A1A1;
+}
+
+*::checked {
+    color: #2BB3EB;
+}
+
+*::section:disabled, *::checked:disabled {
+    color: #586E75;
+}
 
 /*--------------------------------------border-------------------------------------------------*/
 
 QPushButton, QGroupBox, QComboBox,
-QPlainTextEdit, QLineEdit, QDateTimeEdit,
-QSpinBox, QDoubleSpinBox,
-QTreeView, QTableView, QListView, QHeaderView::section,
-QTabBar::tab, QToolBar, QToolTip {
+QPlainTextEdit, QLineEdit,
+QTreeView, QTableView, QListView,
+QHeaderView::section, QTabBar::tab,
+QToolBar, QToolTip {
     border: 1px solid #93A1A1;
 }
 
 /*-------------------------------------disabled border-----------------------------------------------*/
 
-QPushButton:disabled, QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QDateEdit:disabled {
+QPushButton:disabled, QGroupBox:disabled, QComboBox:disabled,
+QPlainTextEdit:disabled, QLineEdit:disabled,
+QHeaderView::section:disabled {
     border: 1px solid #586E75;
 }
 
 /*-------------------------------------border none-----------------------------------------------*/
 
-QPushButton#pBtnLink, QLineEdit#lineStatic, QLineEdit#lineDynamic,
-QDialog QDoubleSpinBox, QDialog QSpinBox, QDialog QDoubleSpinBox:disabled, QDialog QSpinBox:disabled, QDialog QDateEdit, QDialog QDateEdit:disabled,
-QDoubleSpinBox#dspin_box_static_, QDoubleSpinBox#dspin_box_dynamic_, QLineEdit#lineEditOrder,
-QTableView QComboBox, QTableView QDoubleSpinBox, QTableView QLineEdit, QTableView QDateTimeEdit,
-QTreeView::item,
-QWidget QDateEdit,
-QDialog#Preferences QGroupBox {
+QPushButton#pBtnLink, QDialog#Preferences QGroupBox,
+QTableView QComboBox, QTableView QLineEdit,
+QTreeView::item
+{
     border: none;
 }
 
-QHeaderView::section {
+QSpinBox, QDoubleSpinBox, QDateEdit, QDateTimeEdit,
+QSpinBox:disabled, QDoubleSpinBox:disabled, QDateEdit:disabled, QDateTimeEdit:disabled
+{
+    border: none;
+}
+
+QHeaderView::section, QHeaderView::section:disabled {
     border-top: none;
     border-left: none;
 }
 
-QHeaderView::section:last {
+QHeaderView::section:last, QHeaderView::section:last:disabled {
     border-right: none;
 }
 
-QTabBar::tab, QTreeView#view_, QWidget QGroupBox#groupBoxTreeWidget_2 {
+QPushButton#pBtnRefresh {
+    border-top: none;
     border-bottom: none;
 }
 
-QWidget QGroupBox#groupBoxTreeWidget, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnOkOrder, QPushButton#pBtnSaveOrder {
+QTabBar::tab, QTreeView#treeViewCommon, QGroupBox#treeWidgetOrder {
+    border-bottom: none;
+}
+
+QGroupBox#treeWidgetCommon, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnFinishOrder,
+QPushButton#pBtnSaveOrder {
     border-top: none;
 }
 
 /*-------------------------------------border add-----------------------------------------------*/
 
-QDialog QComboBox, QDialog QLineEdit, QSpinBox#spinValueDecimal, QSpinBox#spinRatioDecimal {
+QDialog QComboBox, QDialog QLineEdit, QSpinBox#spinAmountDecimal, QSpinBox#spinCommonDecimal {
     border: 1px solid #93A1A1;
 }
 
@@ -89,26 +115,24 @@ QToolBar, QMenuBar {
 
 /*--------------------------------------height-------------------------------------------------*/
 
-QTableView QComboBox, QTableView QAbstractItemView::item {
-    height: 23px;
-}
-
-QTreeView QComboBox, QTreeView QAbstractItemView::item {
-    height: 15px;
-}
-
 QTreeView::item {
     height: 16px;
 }
 
-QHeaderView::section:horizontal {
-    height: 24px;
-}
-
 /*--------------------------------------min-width-------------------------------------------------*/
 
-QTabBar::tab, QTableView QComboBox, QTreeView QComboBox {
+QTabBar::tab {
     min-width: 40px;
+}
+
+QComboBox#comboDateTime, DateTimeEdit#dateTimeEdit
+{
+    min-width: 160px;
+}
+
+ DateEdit#dateEditStart,  DateEdit#dateEditEnd
+{
+    min-width: 100px;
 }
 
 /*--------------------------------------background color----------------------------------------*/
@@ -131,35 +155,8 @@ QTreeView::item:selected, QListView::item:selected, QTreeView QCheckBox, QTableV
 
 /*-------------------------------------color---------------------------------------------------*/
 
-QHeaderView::section, QTabBar::tab{
-    color: #93A1A1;
-}
-
-QToolTip, QRadioButton::checked, QCheckBox::checked, QTabBar::tab:selected, QMenuBar::item:selected {
+QToolTip, QTabBar::tab:selected, QMenuBar::item:selected, QPushButton#pBtnFinishOrder:checked {
     color: #2BB3EB;
-}
-
-/*-------------------------------------placeholder color------------------------------------------------------------*/
-
-QLineEdit, QDialog QComboBox {
-    placeholder-text-color: #586E75;
-}
-
-/*-------------------------------------grid line color----------------------------------------------*/
-
-QTableView {
-    gridline-color: #93A1A1;
-}
-
-/*-------------------------------------disabled color-----------------------------------------------*/
-
-QPushButton:disabled, QCheckBox:disabled, QRadioButton:disabled, QHeaderView::section:disabled, QTableView:disabled, QLabel:disabled,
-QDoubleSpinBox:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled {
-    color: #586E75;
-}
-
-QTableView:disabled {
-    gridline-color: #586E75;
 }
 
 /*-------------------------------------------arrow--------------------------------------------------*/
@@ -204,11 +201,6 @@ QTabBar::tab  {
 
 QPushButton {
     padding: 4px 8px;
-}
-
-QLineEdit, QComboBox, QToolTip, QDateTimeEdit {
-    padding-left: 2px;
-    padding-right: 2px;
 }
 
 QMenuBar::item {
@@ -311,22 +303,6 @@ QPushButton#pBtnDocumentDir, QPushButton#pBtnLink {
 QPushButton#pBtnLink:pressed {
     background-color: transparent;
     color: #93A1A1;
-}
-
-/*-------------------------------------QComboBox------------------------------------------------------------*/
-
-QComboBox::down-arrow:on {
-    top: 1px;
-    left: 1px;
-}
-
-QTableView QComboBox QAbstractItemView {
-    margin-top: 3px;
-}
-
-QComboBox#comboDateTime
-{
-    min-width: 160px;
 }
 
 /*-----------------------------------------QScrollBar Horizontal-----------------------------------------------*/
@@ -434,11 +410,15 @@ QScrollBar::add-line:vertical {
 /*-------------------------------------------QHeaderView---------------------------------------------*/
 
 QHeaderView::up-arrow, QHeaderView::down-arrow {
-    subcontrol-origin: padding;
-    subcontrol-position: center right;
-    height: 8px;
-    width: 8px;
-    right: 4px;
+    image: none;
+    width: 0px;
+    height: 0px;
+}
+
+QSpinBox::up-button, QSpinBox::down-button,
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    width: 0px;
+    height: 0px;
 }
 
 /*-------------------------------------QMenuBar------------------------------------------------------------*/
