@@ -4,6 +4,8 @@
 #include <QFontMetrics>
 
 const QLocale StyledItemDelegate::locale_ { QLocale::English, QLocale::UnitedStates };
+std::optional<QFontMetrics> StyledItemDelegate::fm_ = std::nullopt;
+std::optional<int> StyledItemDelegate::text_margin_ = std::nullopt;
 
 StyledItemDelegate::StyledItemDelegate(QObject* parent)
     : QStyledItemDelegate { parent }
@@ -15,16 +17,14 @@ void StyledItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptio
     editor->setGeometry(option.rect);
 }
 
-const QStyle* StyledItemDelegate::GetStyle(const QStyleOptionViewItem& opt) { return opt.widget ? opt.widget->style() : QApplication::style(); }
+void StyledItemDelegate::SetFontMetrics() { fm_ = QFontMetrics(QApplication::font()); }
 
-QSize StyledItemDelegate::CalculateTextSize(CString& text, const QStyleOptionViewItem& option)
+void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, nullptr) + 2; }
+
+QSize StyledItemDelegate::CalculateTextSize(CString& text, const QStyleOptionViewItem& /*option*/)
 {
-    const auto* style { GetStyle(option) };
-    const int text_margin { style->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, option.widget) + 2 };
-
-    const QFontMetrics fm(option.font);
-    const int width { fm.horizontalAdvance(text) + 2 * text_margin };
-    const int height { fm.height() };
+    const int width { fm_->horizontalAdvance(text) + 2 * text_margin_.value() };
+    const int height { fm_->height() };
 
     return QSize(width, height);
 }
@@ -39,8 +39,7 @@ void StyledItemDelegate::PaintText(
 
     opt.text = text;
 
-    auto* style { GetStyle(opt) };
-    style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+    QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
 }
 
 void StyledItemDelegate::PaintCheckBox(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -48,7 +47,7 @@ void StyledItemDelegate::PaintCheckBox(QPainter* painter, const QStyleOptionView
     QStyleOptionViewItem opt { option };
     initStyleOption(&opt, index);
 
-    auto* style { GetStyle(opt) };
+    auto* style { QApplication::style() };
     style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget);
 
     QStyleOptionButton check_box {};

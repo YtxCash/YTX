@@ -1936,6 +1936,11 @@ void MainWindow::SharedInterface(CString& dir_path)
 #endif
 
     qApp->setStyleSheet(theme);
+
+    QTimer::singleShot(0, this, []() {
+        StyledItemDelegate::SetTextMargin();
+        StyledItemDelegate::SetFontMetrics();
+    });
 }
 
 void MainWindow::ExclusiveInterface(CString& dir_path, CString& base_name)
