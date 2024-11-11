@@ -64,7 +64,7 @@ void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
     new_trans_shadow->unit_price = trans_shadow->unit_price;
     new_trans_shadow->discount_price = trans_shadow->discount_price;
     new_trans_shadow->settled = trans_shadow->settled;
-    new_trans_shadow->node_id = trans_shadow->node_id;
+    new_trans_shadow->helper_node = trans_shadow->helper_node;
 
     new_trans_shadow->rhs_ratio = trans_shadow->lhs_ratio;
     new_trans_shadow->rhs_debit = trans_shadow->lhs_debit;

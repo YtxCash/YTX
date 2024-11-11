@@ -34,7 +34,7 @@ void TableModelOrder::RUpdateNodeID(int node_id)
             ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
             endRemoveRows();
         } else {
-            *trans_shadow->node_id = node_id;
+            *trans_shadow->helper_node = node_id;
 
             first_diff += *trans_shadow->lhs_debit;
             second_diff += *trans_shadow->lhs_credit;
@@ -46,7 +46,7 @@ void TableModelOrder::RUpdateNodeID(int node_id)
 
     // 一次向数据库添加多条交易
     if (!trans_shadow_list_.isEmpty())
-        sql_->WriteTransRange(trans_shadow_list_);
+        sql_->WriteTransRangeO(trans_shadow_list_);
 
     emit SUpdateLeafValueFPTO(node_id, first_diff, second_diff, amount_diff, discount_diff, settled_diff);
 }
@@ -97,8 +97,8 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
         return *trans_shadow->description;
     case TableEnumOrder::kColor:
         return *trans_shadow->lhs_node == 0 ? QVariant() : product_tree_->Color(*trans_shadow->lhs_node);
-    case TableEnumOrder::kNodeID:
-        return *trans_shadow->node_id;
+    case TableEnumOrder::kHelperNode:
+        return *trans_shadow->helper_node;
     case TableEnumOrder::kFirst:
         return *trans_shadow->lhs_debit == 0 ? QVariant() : *trans_shadow->lhs_debit;
     case TableEnumOrder::kAmount:
@@ -175,33 +175,33 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
     if (ins_changed) {
         if (old_lhs_node == 0) {
             sql_->WriteTrans(trans_shadow);
-            emit SUpdateLeafValueFPTO(*trans_shadow->node_id, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit, *trans_shadow->rhs_credit,
+            emit SUpdateLeafValueFPTO(*trans_shadow->helper_node, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit, *trans_shadow->rhs_credit,
                 *trans_shadow->rhs_debit, *trans_shadow->settled);
         } else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
     }
 
     if (fir_changed)
-        emit SUpdateLeafValueTO(*trans_shadow->node_id, value.toDouble() - old_first, FIRST);
+        emit SUpdateLeafValueTO(*trans_shadow->helper_node, value.toDouble() - old_first, FIRST);
 
     if (sec_changed) {
         double second_diff { value.toDouble() - old_second };
         double amount_diff { *trans_shadow->rhs_credit - old_amount };
         double discount_diff { *trans_shadow->rhs_debit - old_discount };
         double settled_diff { *trans_shadow->settled - old_settled };
-        emit SUpdateLeafValueFPTO(*trans_shadow->node_id, 0.0, second_diff, amount_diff, discount_diff, settled_diff);
+        emit SUpdateLeafValueFPTO(*trans_shadow->helper_node, 0.0, second_diff, amount_diff, discount_diff, settled_diff);
     }
 
     if (uni_changed) {
         double amount_diff { *trans_shadow->rhs_credit - old_amount };
         double settled_diff { *trans_shadow->settled - old_settled };
-        emit SUpdateLeafValueFPTO(*trans_shadow->node_id, 0.0, 0.0, amount_diff, 0.0, settled_diff);
+        emit SUpdateLeafValueFPTO(*trans_shadow->helper_node, 0.0, 0.0, amount_diff, 0.0, settled_diff);
     }
 
     if (dis_changed) {
         double discount_diff { *trans_shadow->rhs_debit - old_discount };
         double settled_diff { *trans_shadow->settled - old_settled };
-        emit SUpdateLeafValueFPTO(*trans_shadow->node_id, 0.0, 0.0, 0.0, discount_diff, settled_diff);
+        emit SUpdateLeafValueFPTO(*trans_shadow->helper_node, 0.0, 0.0, 0.0, discount_diff, settled_diff);
     }
 
     emit SResizeColumnToContents(index.column());
@@ -276,7 +276,7 @@ bool TableModelOrder::insertRows(int row, int /*count*/, const QModelIndex& pare
 {
     auto* trans_shadow { sql_->AllocateTransShadow() };
 
-    *trans_shadow->node_id = node_id_;
+    *trans_shadow->helper_node = node_id_;
 
     beginInsertRows(parent, row, row);
     trans_shadow_list_.emplaceBack(trans_shadow);
@@ -291,13 +291,13 @@ bool TableModelOrder::removeRows(int row, int /*count*/, const QModelIndex& pare
         return false;
 
     auto* trans_shadow { trans_shadow_list_.at(row) };
-    int node_id { *trans_shadow->node_id };
+    int helper_node { *trans_shadow->helper_node };
 
     beginRemoveRows(parent, row, row);
     trans_shadow_list_.removeAt(row);
     endRemoveRows();
 
-    if (node_id != 0)
+    if (helper_node != 0)
         sql_->RemoveTrans(*trans_shadow->id);
 
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
@@ -355,7 +355,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kSettled));
     update_price_.insert(*trans_shadow->lhs_node, value);
 
-    if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
+    if (*trans_shadow->lhs_node == 0 || *trans_shadow->helper_node == 0)
         return false;
 
     sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
@@ -376,7 +376,7 @@ bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double valu
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kDiscount));
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kSettled));
 
-    if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
+    if (*trans_shadow->lhs_node == 0 || *trans_shadow->helper_node == 0)
         return false;
 
     sql_->UpdateField(info_.transaction, value, DISCOUNT_PRICE, *trans_shadow->id);
@@ -400,7 +400,7 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kDiscount));
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kSettled));
 
-    if (*trans_shadow->lhs_node == 0 || *trans_shadow->node_id == 0)
+    if (*trans_shadow->lhs_node == 0 || *trans_shadow->helper_node == 0)
         return false;
 
     sql_->UpdateTransValue(trans_shadow);

@@ -146,7 +146,7 @@ QString SqliteOrder::RemoveNodeSecondQS() const
     return QString(R"(
     UPDATE %1 SET
         removed = 1
-    WHERE node_id = :node_id
+    WHERE helper_node = :node_id
     )")
         .arg(transaction_);
 }
@@ -155,7 +155,7 @@ QString SqliteOrder::InternalReferenceQS() const
 {
     return QString(R"(
     SELECT COUNT(*) FROM %1
-    WHERE node_id = :node_id AND removed = 0
+    WHERE helper_node = :node_id AND removed = 0
     )")
         .arg(transaction_);
 }
@@ -163,9 +163,9 @@ QString SqliteOrder::InternalReferenceQS() const
 QString SqliteOrder::ReadTransQS() const
 {
     return QString(R"(
-    SELECT id, code, inside_product, unit_price, second, description, node_id, first, amount, discount, settled, outside_product, discount_price
+    SELECT id, code, inside_product, unit_price, second, description, helper_node, first, amount, discount, settled, outside_product, discount_price
     FROM %1
-    WHERE node_id = :node_id AND removed = 0
+    WHERE helper_node = :node_id AND removed = 0
     )")
         .arg(transaction_);
 }
@@ -173,8 +173,8 @@ QString SqliteOrder::ReadTransQS() const
 QString SqliteOrder::WriteTransQS() const
 {
     return QString(R"(
-    INSERT INTO %1 (code, inside_product, unit_price, second, description, node_id, first, amount, discount, settled, outside_product, discount_price)
-    VALUES (:code, :inside_product, :unit_price, :second, :description, :node_id, :first, :amount, :discount, :settled, :outside_product, :discount_price)
+    INSERT INTO %1 (code, inside_product, unit_price, second, description, helper_node, first, amount, discount, settled, outside_product, discount_price)
+    VALUES (:code, :inside_product, :unit_price, :second, :description, :helper_node, :first, :amount, :discount, :settled, :outside_product, :discount_price)
     )")
         .arg(transaction_);
 }
@@ -213,7 +213,7 @@ QString SqliteOrder::RUpdateStakeholderReferenceQS() const
 QString SqliteOrder::SearchTransQS() const
 {
     return QString(R"(
-    SELECT id, code, inside_product, unit_price, second, description, node_id, first, amount, discount, settled, outside_product, discount_price
+    SELECT id, code, inside_product, unit_price, second, description, helper_node, first, amount, discount, settled, outside_product, discount_price
     FROM %1
     WHERE (first = :text OR second = :text OR description LIKE :description) AND removed = 0
     )")
@@ -247,7 +247,7 @@ void SqliteOrder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) co
     query.bindValue(":unit_price", *trans_shadow->unit_price);
     query.bindValue(":second", *trans_shadow->lhs_credit);
     query.bindValue(":description", *trans_shadow->description);
-    query.bindValue(":node_id", *trans_shadow->node_id);
+    query.bindValue(":helper_node", *trans_shadow->helper_node);
     query.bindValue(":first", *trans_shadow->lhs_debit);
     query.bindValue(":amount", *trans_shadow->rhs_credit);
     query.bindValue(":discount", *trans_shadow->rhs_debit);
@@ -264,7 +264,7 @@ void SqliteOrder::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->unit_price = query.value("unit_price").toDouble();
     trans->lhs_credit = query.value("second").toDouble();
     trans->description = query.value("description").toString();
-    trans->node_id = query.value("node_id").toInt();
+    trans->helper_node = query.value("helper_node").toInt();
     trans->lhs_debit = query.value("first").toInt();
     trans->rhs_credit = query.value("amount").toDouble();
     trans->settled = query.value("settled").toDouble();

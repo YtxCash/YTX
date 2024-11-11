@@ -57,7 +57,7 @@ private:
 
         *(trans_shadow->*member) = value;
 
-        if (*trans_shadow->node_id == 0 || *trans_shadow->lhs_node == 0)
+        if (*trans_shadow->helper_node == 0 || *trans_shadow->lhs_node == 0)
             return false;
 
         try {

@@ -507,7 +507,7 @@ void MainWindow::DelegateFinance(PQTableView table_view, CSettings* settings) co
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), amount);
 
-    auto* fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX,false, table_view) };
+    auto* fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), fx_rate);
 
     auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
@@ -516,11 +516,11 @@ void MainWindow::DelegateFinance(PQTableView table_view, CSettings* settings) co
 
 void MainWindow::DelegateTask(PQTableView table_view, CSettings* settings) const
 {
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX,true, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX,false, table_view) };
+    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_cost);
 
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
@@ -529,11 +529,11 @@ void MainWindow::DelegateTask(PQTableView table_view, CSettings* settings) const
 
 void MainWindow::DelegateProduct(PQTableView table_view, CSettings* settings) const
 {
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX,true, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCredit), quantity);
 
-    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, false,table_view) };
+    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), unit_price);
 
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
@@ -547,7 +547,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, CSettings* settings
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
-    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX,false, table_view) };
+    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
     auto* date_time { new TableDateTime(interface_.date_format, table_view) };
@@ -589,11 +589,11 @@ void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) cons
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
 
-    auto* price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX,false, table_view) };
+    auto* price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
 
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX,false, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
 
@@ -1326,10 +1326,10 @@ void MainWindow::SetHeader()
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled"), {} };
-    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("NodeID"), tr("First"),
+    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("Color"), tr("HelperNode"), tr("First"),
         tr("Second"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled"), tr("OutsideProduct") };
     sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
-        tr("NodeID"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };
+        tr("HelperNode"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };
     sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), {}, tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled") };
 

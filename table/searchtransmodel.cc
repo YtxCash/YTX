@@ -64,8 +64,8 @@ QVariant SearchTransModel::data(const QModelIndex& index, int role) const
         return trans->description;
     case TableEnumSearch::kUnitPrice:
         return trans->unit_price == 0 ? QVariant() : trans->unit_price;
-    case TableEnumSearch::kNodeID:
-        return trans->node_id == 0 ? QVariant() : trans->node_id;
+    case TableEnumSearch::kHelperNode:
+        return trans->helper_node == 0 ? QVariant() : trans->helper_node;
     case TableEnumSearch::kDiscountPrice:
         return trans->discount_price == 0 ? QVariant() : trans->discount_price;
     case TableEnumSearch::kSettled:
@@ -132,8 +132,8 @@ void SearchTransModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->document.size() < rhs->document.size()) : (lhs->document.size() > rhs->document.size());
         case TableEnumSearch::kUnitPrice:
             return (order == Qt::AscendingOrder) ? (lhs->unit_price < rhs->unit_price) : (lhs->unit_price > rhs->unit_price);
-        case TableEnumSearch::kNodeID:
-            return (order == Qt::AscendingOrder) ? (lhs->node_id < rhs->node_id) : (lhs->node_id > rhs->node_id);
+        case TableEnumSearch::kHelperNode:
+            return (order == Qt::AscendingOrder) ? (lhs->helper_node < rhs->helper_node) : (lhs->helper_node > rhs->helper_node);
         case TableEnumSearch::kDiscountPrice:
             return (order == Qt::AscendingOrder) ? (lhs->discount_price < rhs->discount_price) : (lhs->discount_price > rhs->discount_price);
         default:

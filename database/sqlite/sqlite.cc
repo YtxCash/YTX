@@ -482,7 +482,7 @@ void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) co
     trans_shadow->code = &trans->code;
     trans_shadow->document = &trans->document;
     trans_shadow->description = &trans->description;
-    trans_shadow->node_id = &trans->node_id;
+    trans_shadow->helper_node = &trans->helper_node;
     trans_shadow->discount_price = &trans->discount_price;
     trans_shadow->unit_price = &trans->unit_price;
     trans_shadow->settled = &trans->settled;
@@ -516,7 +516,7 @@ bool Sqlite::WriteTrans(TransShadow* trans_shadow)
     return true;
 }
 
-bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) const
+bool Sqlite::WriteTransRangeO(const QList<TransShadow*>& list) const
 {
     if (list.isEmpty())
         return false;
@@ -542,7 +542,7 @@ bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) const
     QVariantList unit_price_list {};
     QVariantList description_list {};
     QVariantList second_list {};
-    QVariantList node_id_list {};
+    QVariantList helper_node_list {};
     QVariantList first_list {};
     QVariantList amount_list {};
     QVariantList discount_list {};
@@ -555,7 +555,7 @@ bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) const
     unit_price_list.reserve(size);
     description_list.reserve(size);
     second_list.reserve(size);
-    node_id_list.reserve(size);
+    helper_node_list.reserve(size);
     first_list.reserve(size);
     amount_list.reserve(size);
     discount_list.reserve(size);
@@ -570,7 +570,7 @@ bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) const
         unit_price_list.emplaceBack(*trans_shadow->unit_price);
         description_list.emplaceBack(*trans_shadow->description);
         second_list.emplaceBack(*trans_shadow->lhs_credit);
-        node_id_list.emplaceBack(*trans_shadow->node_id);
+        helper_node_list.emplaceBack(*trans_shadow->helper_node);
         first_list.emplaceBack(*trans_shadow->lhs_debit);
         amount_list.emplaceBack(*trans_shadow->rhs_credit);
         discount_list.emplaceBack(*trans_shadow->rhs_debit);
@@ -585,7 +585,7 @@ bool Sqlite::WriteTransRange(const QList<TransShadow*>& list) const
     query.bindValue(":unit_price", unit_price_list);
     query.bindValue(":description", description_list);
     query.bindValue(":second", second_list);
-    query.bindValue(":node_id", node_id_list);
+    query.bindValue(":helper_node", helper_node_list);
     query.bindValue(":first", first_list);
     query.bindValue(":amount", amount_list);
     query.bindValue(":discount", discount_list);

@@ -118,13 +118,13 @@ void Search::HideTableColumn(QTableView* view, Section section)
     switch (section) {
     case Section::kFinance:
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kUnitPrice), true);
-        view->setColumnHidden(std::to_underlying(TableEnumSearch::kNodeID), true);
+        view->setColumnHidden(std::to_underlying(TableEnumSearch::kHelperNode), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kDiscountPrice), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kSettled), true);
         break;
     case Section::kTask:
     case Section::kProduct:
-        view->setColumnHidden(std::to_underlying(TableEnumSearch::kNodeID), true);
+        view->setColumnHidden(std::to_underlying(TableEnumSearch::kHelperNode), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kDiscountPrice), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kRhsRatio), true);
         view->setColumnHidden(std::to_underlying(TableEnumSearch::kSettled), true);
@@ -285,7 +285,7 @@ void Search::RDoubleClicked(const QModelIndex& index)
         int lhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kLhsNode)).data().toInt() };
         int rhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kRhsNode)).data().toInt() };
         int trans_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kID)).data().toInt() };
-        int node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kNodeID)).data().toInt() };
+        int node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kHelperNode)).data().toInt() };
 
         switch (info_.section) {
         case Section::kStakeholder:

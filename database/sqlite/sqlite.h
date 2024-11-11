@@ -77,7 +77,7 @@ public:
     bool ReadTrans(TransShadowList& trans_shadow_list, int node_id);
     bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
     bool WriteTrans(TransShadow* trans_shadow);
-    bool WriteTransRange(const QList<TransShadow*>& list) const;
+    bool WriteTransRangeO(const QList<TransShadow*>& list) const;
     bool UpdateTransValue(const TransShadow* trans_shadow) const;
     TransShadow* AllocateTransShadow();
 
