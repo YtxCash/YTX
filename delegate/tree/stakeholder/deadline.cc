@@ -43,7 +43,7 @@ void DeadLine::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
     PaintText(date_time, painter, option, index, Qt::AlignCenter);
 }
 
-QSize DeadLine::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const { return CalculateTextSize(DD, option); }
+QSize DeadLine::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const { return CalculateTextSize(DD); }
 
 bool DeadLine::Skip(const QModelIndex& index) const
 {

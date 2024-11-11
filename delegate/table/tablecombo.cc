@@ -54,15 +54,15 @@ void TableCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, co
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize TableCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize TableCombo::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString text = tree_model_->GetPath(index.data().toInt());
-    return CalculateTextSize(text, option);
+    return CalculateTextSize(text);
 }
 
 void TableCombo::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    QSize text_size { CalculateTextSize(index.data().toString(), option) };
+    QSize text_size { CalculateTextSize(index.data().toString()) };
 
     // 取 option.rect 和 text_size 的宽度和高度的最大值
     int width { std::max(option.rect.width(), text_size.width()) };

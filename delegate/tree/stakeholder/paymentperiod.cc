@@ -46,10 +46,10 @@ void PaymentPeriod::paint(QPainter* painter, const QStyleOptionViewItem& option,
     PaintText(locale_.toString(value), painter, option, index, Qt::AlignCenter);
 }
 
-QSize PaymentPeriod::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize PaymentPeriod::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const int value { index.data().toInt() };
-    return CalculateTextSize(locale_.toString(value), option);
+    return CalculateTextSize(locale_.toString(value));
 }
 
 bool PaymentPeriod::Skip(const QModelIndex& index) const

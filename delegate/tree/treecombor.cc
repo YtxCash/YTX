@@ -13,10 +13,10 @@ void TreeComboR::paint(QPainter* painter, const QStyleOptionViewItem& option, co
     PaintText(MapValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
 }
 
-QSize TreeComboR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize TreeComboR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString text = MapValue(index.data().toInt());
-    return CalculateTextSize(text, option);
+    return CalculateTextSize(text);
 }
 
 QString TreeComboR::MapValue(int key) const

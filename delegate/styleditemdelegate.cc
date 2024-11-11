@@ -19,9 +19,9 @@ void StyledItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptio
 
 void StyledItemDelegate::SetFontMetrics() { fm_ = QFontMetrics(QApplication::font()); }
 
-void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, nullptr) + 2; }
+void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 2; }
 
-QSize StyledItemDelegate::CalculateTextSize(CString& text, const QStyleOptionViewItem& /*option*/)
+QSize StyledItemDelegate::CalculateTextSize(CString& text)
 {
     const int width { fm_->horizontalAdvance(text) + 2 * text_margin_.value() };
     const int height { fm_->height() };

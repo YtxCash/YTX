@@ -11,6 +11,6 @@ void SearchPathTableR::paint(QPainter* painter, const QStyleOptionViewItem& opti
     PaintText(GetPath(index), painter, option, index, Qt::AlignLeft | Qt::AlignVCenter);
 }
 
-QSize SearchPathTableR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(GetPath(index), option); }
+QSize SearchPathTableR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const { return CalculateTextSize(GetPath(index)); }
 
 QString SearchPathTableR::GetPath(const QModelIndex& index) const { return model_->GetPath(index.data().toInt()); }

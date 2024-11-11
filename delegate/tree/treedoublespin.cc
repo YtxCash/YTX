@@ -49,8 +49,8 @@ void TreeDoubleSpin::paint(QPainter* painter, const QStyleOptionViewItem& option
     PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpin::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize TreeDoubleSpin::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() };
-    return CalculateTextSize(locale_.toString(value, 'f', decimal_), option);
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_));
 }

@@ -61,10 +61,10 @@ void OrderName::paint(QPainter* painter, const QStyleOptionViewItem& option, con
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize OrderName::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize OrderName::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString& text = index.data().toString() + tree_model_->GetPath(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kParty)).data().toInt());
-    return CalculateTextSize(text, option);
+    return CalculateTextSize(text);
 }
 
 void OrderName::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, unit_filter_mode_); }

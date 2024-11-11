@@ -32,7 +32,7 @@ public:
 
     static void SetFontMetrics();
     static void SetTextMargin();
-    static QSize CalculateTextSize(CString& text, const QStyleOptionViewItem& option);
+    static QSize CalculateTextSize(CString& text);
 
 protected:
     void PaintText(CString& text, QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, Qt::Alignment alignment) const;

@@ -51,15 +51,15 @@ void TreeCombo::paint(QPainter* painter, const QStyleOptionViewItem& option, con
     PaintText(MapValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
 }
 
-QSize TreeCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize TreeCombo::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString text = MapValue(index.data().toInt());
-    return CalculateTextSize(text, option);
+    return CalculateTextSize(text);
 }
 
 void TreeCombo::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    QSize text_size { CalculateTextSize(index.data().toString(), option) };
+    QSize text_size { CalculateTextSize(index.data().toString()) };
 
     // 取 option.rect 和 text_size 的宽度和高度的最大值
     int width { std::max(option.rect.width(), text_size.width()) };

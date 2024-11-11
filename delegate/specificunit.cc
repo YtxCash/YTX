@@ -62,10 +62,10 @@ void SpecificUnit::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString& text = tree_model_->GetPath(index.data().toInt());
-    return CalculateTextSize(text, option);
+    return CalculateTextSize(text);
 }
 
 void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, unit_filter_mode_); }

@@ -18,7 +18,7 @@ void TreeDoubleSpinUnitR::paint(QPainter* painter, const QStyleOptionViewItem& o
     PaintText(Format(index), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const { return CalculateTextSize(Format(index), option); }
+QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const { return CalculateTextSize(Format(index)); }
 
 QString TreeDoubleSpinUnitR::Format(const QModelIndex& index) const
 {
