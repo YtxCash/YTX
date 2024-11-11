@@ -2,11 +2,12 @@
 
 #include "widget/doublespinbox.h"
 
-TableDoubleSpin::TableDoubleSpin(const int& decimal, double min, double max, QObject* parent)
+TableDoubleSpin::TableDoubleSpin(const int& decimal, double min, double max,bool max_width, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , max_ { max }
     , min_ { min }
+    ,max_width_{max_width}
 {
 }
 
@@ -51,6 +52,9 @@ void TableDoubleSpin::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
 QSize TableDoubleSpin::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
+    if(max_width_)
+        return CalculateTextSize(locale_.toString(DMIN, 'f', decimal_));
+
     const double value { index.data().toDouble() };
     return CalculateTextSize(locale_.toString(value, 'f', decimal_));
 }

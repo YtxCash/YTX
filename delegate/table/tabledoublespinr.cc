@@ -1,4 +1,5 @@
 #include "tabledoublespinr.h"
+#include "component/constvalue.h"
 
 TableDoubleSpinR::TableDoubleSpinR(const int& decimal, bool show_zero, QObject* parent)
     : StyledItemDelegate { parent }
@@ -16,8 +17,7 @@ void TableDoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& opti
     PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TableDoubleSpinR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize TableDoubleSpinR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
 {
-    const double value { index.data().toDouble() };
-    return CalculateTextSize(locale_.toString(value, 'f', decimal_));
+    return CalculateTextSize(locale_.toString(DMIN, 'f', decimal_));
 }

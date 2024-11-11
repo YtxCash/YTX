@@ -78,11 +78,11 @@ QPushButton#pBtnRefresh {
     border-bottom: none;
 }
 
-QTabBar::tab, QTreeView#treeViewCommon, QGroupBox#treeWidgetOrder {
+QTabBar::tab, QTreeView#treeViewFPT, QGroupBox#treeWidgetOrder {
     border-bottom: none;
 }
 
-QGroupBox#treeWidgetCommon, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnFinishOrder,
+QGroupBox#treeWidgetFPT, QTableView#tableViewOrder, QPushButton#pBtnCancelOrder, QPushButton#pBtnFinishOrder,
 QPushButton#pBtnSaveOrder {
     border-top: none;
 }
@@ -342,6 +342,18 @@ QScrollBar::sub-line:horizontal:disabled {
 QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
     width: 8px;
     height: 8px;
+}
+
+/*-----------------------------------------Order, Stakeholder QScrollBar Horizontal-----------------------------------------------*/
+
+QTreeView#treeViewStakeholder QScrollBar::handle:horizontal,
+QTreeView#treeViewStakeholder QScrollBar::add-line:horizontal,
+QTreeView#treeViewStakeholder QScrollBar::sub-line:horizontal,
+QTreeView#treeViewOrder QScrollBar::handle:horizontal,
+QTreeView#treeViewOrder QScrollBar::add-line:horizontal,
+QTreeView#treeViewOrder QScrollBar::sub-line:horizontal
+{
+    border-bottom: none;
 }
 
 /*-----------------------------------------QScrollBar Vertical-----------------------------------------------*/

@@ -11,7 +11,7 @@ TreeWidgetFPT::TreeWidgetFPT(TreeModel* model, CInfo& info, CSettings& settings,
     , settings_ { settings }
 {
     ui->setupUi(this);
-    ui->treeViewCommon->setModel(model);
+    ui->treeViewFPT->setModel(model);
     ui->dspin_box_dynamic_->setRange(DMIN, DMAX);
     ui->dspin_box_static_->setRange(DMIN, DMAX);
     SetStatus();
@@ -47,7 +47,7 @@ void TreeWidgetFPT::SetStatus()
     }
 }
 
-QPointer<QTreeView> TreeWidgetFPT::View() const { return ui->treeViewCommon; }
+QPointer<QTreeView> TreeWidgetFPT::View() const { return ui->treeViewFPT; }
 
 void TreeWidgetFPT::RUpdateDSpinBox()
 {

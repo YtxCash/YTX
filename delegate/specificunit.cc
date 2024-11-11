@@ -25,11 +25,6 @@ QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem&
     auto* editor { new ComboBox(parent) };
     editor->setModel(combo_model_);
 
-    int height = option.rect.height();
-    int width = option.rect.width();
-    editor->setFixedHeight(std::max(height, editor->height()));
-    editor->setMinimumWidth(std::max(width, editor->width()));
-
     return editor;
 }
 
@@ -66,6 +61,19 @@ QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& /*option*/, const QMode
 {
     const QString& text = tree_model_->GetPath(index.data().toInt());
     return CalculateTextSize(text);
+}
+
+void SpecificUnit::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+   const QSize text_size { CalculateTextSize( tree_model_->GetPath(index.data().toInt())) };
+
+   const int width { std::max(option.rect.width(), text_size.width()) };
+   const int height { std::max(option.rect.height(), text_size.height()) };
+
+    editor->setFixedHeight(height);
+    editor->setMinimumWidth(width);
+
+    editor->setGeometry(option.rect);
 }
 
 void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, unit_filter_mode_); }
