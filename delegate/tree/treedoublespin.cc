@@ -21,6 +21,10 @@ QWidget* TreeDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewIte
     editor->setMaximum(max_);
     editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
+    int width = option.rect.width();
+    int height = option.rect.height();
+    editor->setFixedSize(width, height);
+
     return editor;
 }
 

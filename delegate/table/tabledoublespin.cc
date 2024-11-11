@@ -21,6 +21,10 @@ QWidget* TableDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewIt
     editor->setMaximum(max_);
     editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
+    int width = option.rect.width();
+    int height = option.rect.height();
+    editor->setFixedSize(width, height);
+
     return editor;
 }
 

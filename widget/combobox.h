@@ -46,8 +46,15 @@ public:
     {
         QSize sz = QComboBox::sizeHint();
 
-        int scroll_bar_width = QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-        sz.setWidth(sz.width() + scroll_bar_width);
+        int indicator_width  = QApplication::style()->pixelMetric(QStyle::PM_MenuButtonIndicator);
+
+#ifdef Q_OS_WIN
+        indicator_width *= 2;  // Windows使用2倍
+#elif defined(Q_OS_MAC)
+        indicator_width *= 1;  // Mac使用1倍
+#endif
+
+        sz.setWidth(sz.width() + indicator_width );
 
         return sz;
     }

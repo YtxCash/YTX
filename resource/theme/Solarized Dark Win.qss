@@ -121,7 +121,7 @@ QTreeView::item {
 
 /*--------------------------------------min-width-------------------------------------------------*/
 
-QTabBar::tab {
+QTabBar::tab, QHeaderView::section:horizontal {
     min-width: 40px;
 }
 
