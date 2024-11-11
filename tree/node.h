@@ -25,7 +25,7 @@
 #include <cmath>
 #include <tuple>
 
-constexpr double TOLERANCE = 1e-9;
+inline constexpr double TOLERANCE = 1e-9;
 
 struct Node {
     Node() = default;

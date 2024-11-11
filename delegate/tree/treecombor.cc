@@ -21,8 +21,6 @@ QSize TreeComboR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelI
 
 QString TreeComboR::MapValue(int key) const
 {
-    static const QString empty_string {};
     auto it { map_.constFind(key) };
-
-    return (it != map_.constEnd()) ? it.value() : empty_string;
+    return (it != map_.constEnd()) ? it.value() : EMPTYSTRING;
 }
