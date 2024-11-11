@@ -11,15 +11,11 @@ TableCombo::TableCombo(CTreeModel* tree_model, int exclude_id, QObject* parent)
     RUpdateComboModel();
 }
 
-QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
 {
     auto* editor { new ComboBox(parent) };
     editor->setModel(combo_model_);
 
-    int height = option.rect.height();
-    int width = option.rect.width();
-    editor->setFixedHeight(std::max(height, editor->height()));
-    editor->setMinimumWidth(std::max(width, editor->width()));
     return editor;
 }
 
@@ -62,6 +58,21 @@ QSize TableCombo::sizeHint(const QStyleOptionViewItem& option, const QModelIndex
 {
     const QString text = tree_model_->GetPath(index.data().toInt());
     return CalculateTextSize(text, option);
+}
+
+void TableCombo::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    QSize text_size { CalculateTextSize(index.data().toString(), option) };
+
+    // 取 option.rect 和 text_size 的宽度和高度的最大值
+    int width { std::max(option.rect.width(), text_size.width()) };
+    int height { std::max(option.rect.height(), text_size.height()) };
+
+    editor->setFixedHeight(height);
+    editor->setMinimumWidth(width);
+
+    // 设置编辑器的几何位置和尺寸
+    editor->setGeometry(option.rect);
 }
 
 void TableCombo::RUpdateComboModel() { tree_model_->LeafPathExcludeIDFPT(combo_model_, exclude_id_); }

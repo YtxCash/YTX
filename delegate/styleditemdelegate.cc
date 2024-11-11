@@ -23,8 +23,8 @@ QSize StyledItemDelegate::CalculateTextSize(CString& text, const QStyleOptionVie
     const int text_margin { style->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, option.widget) + 2 };
 
     const QFontMetrics fm(option.font);
-    const int width { std::max(fm.horizontalAdvance(text) + 2 * text_margin, option.rect.width()) };
-    const int height { std::max(fm.height(), option.rect.height()) };
+    const int width { fm.horizontalAdvance(text) + 2 * text_margin };
+    const int height { fm.height() };
 
     return QSize(width, height);
 }
