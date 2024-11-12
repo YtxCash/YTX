@@ -52,6 +52,15 @@ QSize PaymentPeriod::sizeHint(const QStyleOptionViewItem& /*option*/, const QMod
     return CalculateTextSize(locale_.toString(value));
 }
 
+void PaymentPeriod::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
+{
+    editor->setFixedHeight(option.rect.height());
+    editor->setFixedWidth(option.rect.width());
+
+           // 设置编辑器的几何位置和尺寸
+    editor->setGeometry(option.rect);
+}
+
 bool PaymentPeriod::Skip(const QModelIndex& index) const
 {
     const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool() };

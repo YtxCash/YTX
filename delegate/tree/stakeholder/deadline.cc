@@ -45,6 +45,15 @@ void DeadLine::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
 
 QSize DeadLine::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const { return CalculateTextSize(DD); }
 
+void DeadLine::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
+{
+    editor->setFixedHeight(option.rect.height());
+    editor->setFixedWidth(option.rect.width());
+
+           // 设置编辑器的几何位置和尺寸
+    editor->setGeometry(option.rect);
+}
+
 bool DeadLine::Skip(const QModelIndex& index) const
 {
     const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool() };

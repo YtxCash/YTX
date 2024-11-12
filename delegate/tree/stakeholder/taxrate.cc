@@ -52,3 +52,12 @@ QSize TaxRate::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelInde
     const double value { index.data().toDouble() * HUNDRED };
     return CalculateTextSize(locale_.toString(value, 'f', decimal_) + SFX_PERCENT);
 }
+
+void TaxRate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
+{
+    editor->setFixedHeight(option.rect.height());
+    editor->setFixedWidth(option.rect.width());
+
+           // 设置编辑器的几何位置和尺寸
+    editor->setGeometry(option.rect);
+}

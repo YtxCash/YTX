@@ -44,18 +44,8 @@ public:
 
     QSize sizeHint() const override
     {
-        QSize sz = QComboBox::sizeHint();
-
-        int indicator_width  = QApplication::style()->pixelMetric(QStyle::PM_MenuButtonIndicator);
-
-#ifdef Q_OS_WIN
-        indicator_width *= 2;  // Windows使用2倍
-#elif defined(Q_OS_MAC)
-        indicator_width *= 1;  // Mac使用1倍
-#endif
-
-        sz.setWidth(sz.width() + indicator_width );
-
+        QSize sz { QComboBox::sizeHint()};
+        sz.setWidth(sz.width() + QApplication::style()->pixelMetric(QStyle::PM_MenuButtonIndicator) );
         return sz;
     }
 };
