@@ -23,6 +23,7 @@
 
 #include "component/constvalue.h"
 #include "mainwindow.h"
+#include "component/dpihelper.h"
 
 #ifdef Q_OS_MACOS
 #include "component/application.h"
@@ -70,8 +71,12 @@ int main(int argc, char* argv[])
     }
     // end set database file
 
+     DPIHelper::SetApplicationDPI();
+
     MainWindow w(dir_path);
     w.show();
+
+    DPIHelper::AdjustWidgetDPI(&w);
 
     if (!file_path.isEmpty())
         w.ROpenFile(file_path);
