@@ -24,7 +24,7 @@
 
 class TableDoubleSpin final : public StyledItemDelegate {
 public:
-    TableDoubleSpin(const int& decimal, double min, double max, bool max_width, QObject* parent = nullptr);
+    TableDoubleSpin(const int& decimal, double min, double max, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -35,7 +35,6 @@ private:
     const int& decimal_;
     double max_ {};
     double min_ {};
-    bool max_width_ {};
 };
 
 #endif // TABLEDOUBLESPIN_H

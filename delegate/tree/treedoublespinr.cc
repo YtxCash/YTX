@@ -1,7 +1,5 @@
 #include "treedoublespinr.h"
 
-#include "component/constvalue.h"
-
 TreeDoubleSpinR::TreeDoubleSpinR(const int& decimal, bool ignore_zero, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
@@ -18,7 +16,8 @@ void TreeDoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& optio
     PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpinR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+QSize TreeDoubleSpinR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
-    return CalculateTextSize(locale_.toString(DMIN, 'f', decimal_));
+    const double value { index.data().toDouble() };
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_));
 }

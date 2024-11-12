@@ -1,4 +1,3 @@
-#include "component/constvalue.h"
 #include "treedoublespinunitr.h"
 
 TreeDoubleSpinUnitR::TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringMap& unit_symbol_map, QObject* parent)
@@ -19,10 +18,7 @@ void TreeDoubleSpinUnitR::paint(QPainter* painter, const QStyleOptionViewItem& o
     PaintText(Format(index), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
-{
-    return CalculateTextSize(EMPTYSTRING + locale_.toString(DMIN, 'f', decimal_));
-}
+QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const { return CalculateTextSize(Format(index)); }
 
 QString TreeDoubleSpinUnitR::Format(const QModelIndex& index) const
 {
