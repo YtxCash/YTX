@@ -59,6 +59,7 @@ enum class TableEnumOrder {
     kUnitPrice,
     kCode,
     kDescription,
+    kOutsideProduct,
     kColor,
     kHelperNode,
     kFirst,
@@ -67,7 +68,6 @@ enum class TableEnumOrder {
     kDiscountPrice,
     kDiscount,
     kSettled,
-    kOutsideProduct
 };
 
 // Enum class defining node columns
