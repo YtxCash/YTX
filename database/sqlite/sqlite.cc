@@ -542,7 +542,7 @@ bool Sqlite::WriteTransRangeO(const QList<TransShadow*>& list) const
     QVariantList unit_price_list {};
     QVariantList description_list {};
     QVariantList second_list {};
-    QVariantList helper_node_list {};
+    QVariantList lhs_node_list {};
     QVariantList first_list {};
     QVariantList amount_list {};
     QVariantList discount_list {};
@@ -555,7 +555,7 @@ bool Sqlite::WriteTransRangeO(const QList<TransShadow*>& list) const
     unit_price_list.reserve(size);
     description_list.reserve(size);
     second_list.reserve(size);
-    helper_node_list.reserve(size);
+    lhs_node_list.reserve(size);
     first_list.reserve(size);
     amount_list.reserve(size);
     discount_list.reserve(size);
@@ -566,16 +566,16 @@ bool Sqlite::WriteTransRangeO(const QList<TransShadow*>& list) const
     // 遍历 list 并将每个字段的值添加到相应的 QVariantList 中
     for (const TransShadow* trans_shadow : list) {
         code_list.emplaceBack(*trans_shadow->code);
-        inside_product_list.emplaceBack(*trans_shadow->lhs_node);
+        inside_product_list.emplaceBack(*trans_shadow->rhs_node);
         unit_price_list.emplaceBack(*trans_shadow->unit_price);
         description_list.emplaceBack(*trans_shadow->description);
         second_list.emplaceBack(*trans_shadow->lhs_credit);
-        helper_node_list.emplaceBack(*trans_shadow->helper_node);
+        lhs_node_list.emplaceBack(*trans_shadow->lhs_node);
         first_list.emplaceBack(*trans_shadow->lhs_debit);
         amount_list.emplaceBack(*trans_shadow->rhs_credit);
         discount_list.emplaceBack(*trans_shadow->rhs_debit);
         settled_list.emplaceBack(*trans_shadow->settled);
-        outside_product_list.emplaceBack(*trans_shadow->rhs_node);
+        outside_product_list.emplaceBack(*trans_shadow->helper_node);
         discount_price_list.emplaceBack(*trans_shadow->discount_price);
     }
 
@@ -585,7 +585,7 @@ bool Sqlite::WriteTransRangeO(const QList<TransShadow*>& list) const
     query.bindValue(":unit_price", unit_price_list);
     query.bindValue(":description", description_list);
     query.bindValue(":second", second_list);
-    query.bindValue(":helper_node", helper_node_list);
+    query.bindValue(":lhs_node", lhs_node_list);
     query.bindValue(":first", first_list);
     query.bindValue(":amount", amount_list);
     query.bindValue(":discount", discount_list);

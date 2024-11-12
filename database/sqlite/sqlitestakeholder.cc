@@ -55,13 +55,13 @@ bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int party_i
     for (const auto* trans : trans_hash_) {
         if (is_inside && trans->lhs_node == party_id && trans->rhs_node == product_id) {
             *order_trans_shadow->unit_price = trans->unit_price;
-            *order_trans_shadow->rhs_node = trans->helper_node; // 还没调整过来，等下改order时再调整, rhs -> helper
+            *order_trans_shadow->helper_node = trans->helper_node;
             return true;
         }
 
         if (!is_inside && trans->lhs_node == party_id && trans->helper_node == product_id) {
             *order_trans_shadow->unit_price = trans->unit_price;
-            *order_trans_shadow->lhs_node = trans->rhs_node; // 还没调整过来，等下改order时再调整, lhs -> rhs
+            *order_trans_shadow->rhs_node = trans->rhs_node;
             return true;
         }
     }

@@ -61,7 +61,7 @@ enum class TableEnumOrder {
     kDescription,
     kOutsideProduct,
     kColor,
-    kHelperNode,
+    kLhsNode,
     kFirst,
     kSecond,
     kAmount,
