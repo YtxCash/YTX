@@ -1913,7 +1913,7 @@ void MainWindow::LoadAndInstallTranslator(CString& language)
 void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
 {
     header->setSectionResizeMode(QHeaderView::ResizeToContents);
-    table_view ? header->setSectionResizeMode(std::to_underlying(TableEnumSearch::kDescription), QHeaderView::Stretch)
+    table_view ? header->setSectionResizeMode(std::to_underlying(TableEnum::kDescription), QHeaderView::Stretch)
                : header->setSectionResizeMode(std::to_underlying(TreeEnum::kDescription), QHeaderView::Stretch);
     ;
 }
