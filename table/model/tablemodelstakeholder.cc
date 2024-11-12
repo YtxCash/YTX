@@ -25,13 +25,13 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
         return false;
 
     auto* trans_shadow { trans_shadow_list_.at(row) };
-    int lhs_node_id { *trans_shadow->lhs_node };
+    int rhs_node_id { *trans_shadow->rhs_node };
 
     beginRemoveRows(parent, row, row);
     trans_shadow_list_.removeAt(row);
     endRemoveRows();
 
-    if (lhs_node_id != 0)
+    if (rhs_node_id != 0)
         sql_->RemoveTrans(*trans_shadow->id);
 
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
@@ -43,7 +43,7 @@ int TableModelStakeholder::GetNodeRow(int node_id) const
     int row { 0 };
 
     for (const auto* trans_shadow : trans_shadow_list_) {
-        if (*trans_shadow->lhs_node == node_id) {
+        if (*trans_shadow->rhs_node == node_id) {
             return row;
         }
         ++row;
@@ -66,10 +66,10 @@ bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& tran
 
 bool TableModelStakeholder::UpdateInsideProduct(TransShadow* trans_shadow, int value) const
 {
-    if (*trans_shadow->lhs_node == value)
+    if (*trans_shadow->rhs_node == value)
         return false;
 
-    *trans_shadow->lhs_node = value;
+    *trans_shadow->rhs_node = value;
 
     return true;
 }
@@ -98,9 +98,9 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
     case TableEnumStakeholder::kState:
         return *trans_shadow->state ? *trans_shadow->state : QVariant();
     case TableEnumStakeholder::kInsideProduct:
-        return *trans_shadow->lhs_node == 0 ? QVariant() : *trans_shadow->lhs_node;
-    case TableEnumStakeholder::kOutsideProduct:
         return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
+    case TableEnumStakeholder::kOutsideProduct:
+        return *trans_shadow->helper_node == 0 ? QVariant() : *trans_shadow->helper_node;
     default:
         return QVariant();
     }
@@ -115,9 +115,9 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
     const int kRow { index.row() };
 
     auto* trans_shadow { trans_shadow_list_.at(kRow) };
-    int old_lhs_node { *trans_shadow->lhs_node };
+    int old_rhs_node { *trans_shadow->rhs_node };
 
-    bool lhs_changed { false };
+    bool rhs_changed { false };
 
     switch (kColumn) {
     case TableEnumStakeholder::kDateTime:
@@ -127,7 +127,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnumStakeholder::kInsideProduct:
-        lhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
+        rhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
         break;
     case TableEnumStakeholder::kUnitPrice:
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toDouble(), UNIT_PRICE, &TransShadow::unit_price);
@@ -140,14 +140,14 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnumStakeholder::kOutsideProduct:
-        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::rhs_node);
+        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::helper_node);
         break;
     default:
         return false;
     }
 
-    if (lhs_changed) {
-        if (old_lhs_node == 0)
+    if (rhs_changed) {
+        if (old_rhs_node == 0)
             sql_->WriteTrans(trans_shadow);
         else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
@@ -183,9 +183,9 @@ void TableModelStakeholder::sort(int column, Qt::SortOrder order)
         case TableEnumStakeholder::kState:
             return (order == Qt::AscendingOrder) ? (lhs->state < rhs->state) : (lhs->state > rhs->state);
         case TableEnumStakeholder::kOutsideProduct:
-            return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
+            return (order == Qt::AscendingOrder) ? (*lhs->helper_node < *rhs->helper_node) : (*lhs->helper_node > *rhs->helper_node);
         case TableEnumStakeholder::kInsideProduct:
-            return (order == Qt::AscendingOrder) ? (*lhs->lhs_node < *rhs->lhs_node) : (*lhs->lhs_node > *rhs->lhs_node);
+            return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
         default:
             return false;
         }
@@ -221,7 +221,7 @@ bool TableModelStakeholder::insertRows(int row, int /*count*/, const QModelIndex
 {
     auto* trans_shadow { sql_->AllocateTransShadow() };
 
-    *trans_shadow->helper_node = node_id_;
+    *trans_shadow->lhs_node = node_id_;
     *trans_shadow->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);
 
     beginInsertRows(parent, row, row);

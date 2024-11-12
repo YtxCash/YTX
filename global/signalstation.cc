@@ -57,8 +57,8 @@ void SignalStation::RAppendPrice(Section section, TransShadow* trans_shadow)
     if (!trans_shadow)
         return;
 
-    int helper_node { *trans_shadow->helper_node };
-    const auto* model { FindTableModel(section, helper_node) };
+    int lhs_node { *trans_shadow->lhs_node };
+    const auto* model { FindTableModel(section, lhs_node) };
     if (!model)
         return;
 
