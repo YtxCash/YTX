@@ -31,7 +31,7 @@
 
 int main(int argc, char* argv[])
 {
-    DPIHelper::SetApplicationDPI();
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
 // begin set ini file directory
 #ifdef Q_OS_WIN
@@ -51,6 +51,7 @@ int main(int argc, char* argv[])
     // end set ini file directory
 
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+    DPIHelper::SetApplicationDPI();
 
     // begin set database file, then try to lock it, if false return
     QString file_path {};
