@@ -44,8 +44,14 @@ public:
 
     QSize sizeHint() const override
     {
-        QSize sz { QComboBox::sizeHint()};
-        sz.setWidth(sz.width() + QApplication::style()->pixelMetric(QStyle::PM_MenuButtonIndicator) );
+        QSize sz { QComboBox::sizeHint() };
+        int scrollbar_width { QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent) };
+
+#ifdef Q_OS_WIN
+        scrollbar_width *= 2;
+#endif
+
+        sz.setWidth(sz.width() + scrollbar_width);
         return sz;
     }
 };

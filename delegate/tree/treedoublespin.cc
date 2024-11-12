@@ -10,20 +10,13 @@ TreeDoubleSpin::TreeDoubleSpin(const int& decimal, double min, double max, QObje
 {
 }
 
-QWidget* TreeDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+QWidget* TreeDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
 {
-    Q_UNUSED(option);
-    Q_UNUSED(index);
-
     auto* editor { new DoubleSpinBox(parent) };
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);
     editor->setMaximum(max_);
     editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
-
-    int width = option.rect.width();
-    int height = option.rect.height();
-    editor->setFixedSize(width, height);
 
     return editor;
 }

@@ -1,7 +1,5 @@
 #include "checkboxr.h"
 
-#include <QMouseEvent>
-
 CheckBoxR::CheckBoxR(QObject* parent)
     : StyledItemDelegate { parent }
 {

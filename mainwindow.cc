@@ -1689,10 +1689,13 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
     QSet<int> nodes;
 
     if (!branch) {
+        nodes.insert(node_id);
+        if (data_->info.section == Section::kStakeholder)
+            UpdateStakeholderReference(nodes, branch);
+
         if (!table_hash_->contains(node_id))
             return;
 
-        nodes.insert(node_id);
     } else {
         nodes = model->ChildrenSetFPTS(node_id);
     }

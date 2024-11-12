@@ -207,6 +207,12 @@ QMenuBar::item {
     padding: 2px 4px;
 }
 
+QComboBox, QDoubleSpinBox, QSpinBox,
+QTableView DateTimeEdit, QTableView DateEdit,  QTreeView QDateTimeEdit, QTreeView QDateEdit {
+    padding-left: -8px;    /* 左内边距 */
+    padding-right: -8px;   /* 右内边距 */
+}
+
 /*-------------------------------------------------------------indicator-----------------------------------------------------------*/
 
 *::indicator {

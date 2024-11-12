@@ -166,7 +166,7 @@ QString SqliteStakeholder::InternalReferenceQS() const
 {
     return QStringLiteral(R"(
     SELECT
-    (SELECT COUNT(*) FROM stakeholder_transaction WHERE (node_id = :node_id OR outside_product = :node_id) AND removed = 0) +
+    (SELECT COUNT(*) FROM stakeholder_transaction WHERE (helper_node = :node_id OR outside_product = :node_id) AND removed = 0) +
     (SELECT COUNT(*) FROM stakeholder WHERE employee = :node_id AND removed = 0)
     AS total_count;
     )");

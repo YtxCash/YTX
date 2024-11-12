@@ -58,16 +58,12 @@ QSize TreeCombo::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIn
 
 void TreeCombo::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  const  QSize text_size { CalculateTextSize(index.data().toString()) };
-
-    // 取 option.rect 和 text_size 的宽度和高度的最大值
-  const  int width { std::max(option.rect.width(), text_size.width()) };
-   const int height { std::max(option.rect.height(), text_size.height()) };
+    const QSize text_size { CalculateTextSize(index.data().toString()) };
+    const int width { std::max(option.rect.width(), text_size.width()) };
+    const int height { std::max(option.rect.height(), text_size.height()) };
 
     editor->setFixedHeight(height);
     editor->setMinimumWidth(width);
-
-    // 设置编辑器的几何位置和尺寸
     editor->setGeometry(option.rect);
 }
 

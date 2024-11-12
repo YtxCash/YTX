@@ -22,8 +22,8 @@
 #include <QLockFile>
 
 #include "component/constvalue.h"
-#include "mainwindow.h"
 #include "component/dpihelper.h"
+#include "mainwindow.h"
 
 #ifdef Q_OS_MACOS
 #include "component/application.h"
@@ -31,6 +31,8 @@
 
 int main(int argc, char* argv[])
 {
+    DPIHelper::SetApplicationDPI();
+
 // begin set ini file directory
 #ifdef Q_OS_WIN
     QApplication application(argc, argv);
@@ -71,12 +73,10 @@ int main(int argc, char* argv[])
     }
     // end set database file
 
-     DPIHelper::SetApplicationDPI();
-
     MainWindow w(dir_path);
     w.show();
 
-    DPIHelper::AdjustWidgetDPI(&w);
+    // DPIHelper::AdjustWidgetDPI(&w);
 
     if (!file_path.isEmpty())
         w.ROpenFile(file_path);

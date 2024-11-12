@@ -1,4 +1,5 @@
 #include "tabledoublespinr.h"
+
 #include "component/constvalue.h"
 
 TableDoubleSpinR::TableDoubleSpinR(const int& decimal, bool show_zero, QObject* parent)

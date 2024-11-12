@@ -14,6 +14,8 @@ StyledItemDelegate::StyledItemDelegate(QObject* parent)
 
 void StyledItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
+    editor->setFixedHeight(option.rect.height());
+    editor->setFixedWidth(option.rect.width());
     editor->setGeometry(option.rect);
 }
 

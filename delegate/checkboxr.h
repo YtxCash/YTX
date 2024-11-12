@@ -20,8 +20,6 @@
 #ifndef CHECKBOXR_H
 #define CHECKBOXR_H
 
-#include <QEvent>
-
 #include "delegate/styleditemdelegate.h"
 
 class CheckBoxR final : public StyledItemDelegate {
