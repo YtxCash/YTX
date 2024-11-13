@@ -1925,8 +1925,22 @@ void MainWindow::SharedInterface(CString& dir_path)
     static QSettings shared_interface(dir_path + SLASH + YTX + SFX_INI, QSettings::IniFormat);
     shared_interface_ = &shared_interface;
 
+    QString language_code {};
+
+    switch (QLocale::system().language()) {
+    case QLocale::English:
+        language_code = EN_US;
+        break;
+    case QLocale::Chinese:
+        language_code = ZH_CN;
+        break;
+    default:
+        language_code = EN_US;
+        break;
+    }
+
     shared_interface.beginGroup(INTERFACE);
-    interface_.language = shared_interface.value(LANGUAGE, EN_US).toString();
+    interface_.language = shared_interface.value(LANGUAGE, language_code).toString();
     interface_.theme = shared_interface.value(THEME, SOLARIZED_DARK).toString();
     interface_.date_format = shared_interface.value(DATE_FORMAT, DATE_TIME_FST).toString();
     interface_.separator = shared_interface.value(SEPARATOR, DASH).toString();
