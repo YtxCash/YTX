@@ -38,19 +38,6 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
     return true;
 }
 
-int TableModelStakeholder::GetNodeRow(int node_id) const
-{
-    int row { 0 };
-
-    for (const auto* trans_shadow : trans_shadow_list_) {
-        if (*trans_shadow->rhs_node == node_id) {
-            return row;
-        }
-        ++row;
-    }
-    return -1;
-}
-
 bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
 {
     auto row { trans_shadow_list_.size() };
@@ -215,18 +202,4 @@ Qt::ItemFlags TableModelStakeholder::flags(const QModelIndex& index) const
     }
 
     return flags;
-}
-
-bool TableModelStakeholder::insertRows(int row, int /*count*/, const QModelIndex& parent)
-{
-    auto* trans_shadow { sql_->AllocateTransShadow() };
-
-    *trans_shadow->lhs_node = node_id_;
-    *trans_shadow->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);
-
-    beginInsertRows(parent, row, row);
-    trans_shadow_list_.emplaceBack(trans_shadow);
-    endInsertRows();
-
-    return true;
 }

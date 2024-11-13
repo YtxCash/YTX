@@ -44,10 +44,7 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
     bool removeRows(int row, int, const QModelIndex& parent = QModelIndex()) override;
-
-    int GetNodeRow(int node_id) const override;
 
 private:
     template <typename T>

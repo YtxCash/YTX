@@ -284,19 +284,6 @@ Qt::ItemFlags TableModelOrder::flags(const QModelIndex& index) const
     return flags;
 }
 
-bool TableModelOrder::insertRows(int row, int /*count*/, const QModelIndex& parent)
-{
-    auto* trans_shadow { sql_->AllocateTransShadow() };
-
-    *trans_shadow->lhs_node = node_id_;
-
-    beginInsertRows(parent, row, row);
-    trans_shadow_list_.emplaceBack(trans_shadow);
-    endInsertRows();
-
-    return true;
-}
-
 bool TableModelOrder::removeRows(int row, int /*count*/, const QModelIndex& parent)
 {
     if (row <= -1)
@@ -314,18 +301,6 @@ bool TableModelOrder::removeRows(int row, int /*count*/, const QModelIndex& pare
 
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
     return true;
-}
-
-int TableModelOrder::GetNodeRow(int node_id) const
-{
-    int row { 0 };
-    for (const auto* trans_shadow : trans_shadow_list_) {
-        if (*trans_shadow->rhs_node == node_id) {
-            return row;
-        }
-        ++row;
-    }
-    return -1;
 }
 
 bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
