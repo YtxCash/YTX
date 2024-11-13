@@ -8,7 +8,10 @@ TableModelOrder::TableModelOrder(
     , product_tree_ { static_cast<const TreeModelProduct*>(product_tree) }
     , sqlite_stakeholder_ { static_cast<SqliteStakeholder*>(sqlite_stakeholder) }
     , node_shadow_ { node_shadow }
+    , party_id_ { *node_shadow->party }
 {
+    if (party_id_ >= 1)
+        sqlite_stakeholder_->ReadTrans(party_id_);
 }
 
 void TableModelOrder::RUpdateNodeID(int node_id)
@@ -72,6 +75,15 @@ void TableModelOrder::RUpdateFinished(int node_id, bool checked)
     }
 
     update_price_.clear();
+}
+
+void TableModelOrder::RUpdateParty(int node_id, int party_id)
+{
+    if (node_id_ != node_id)
+        return;
+
+    party_id_ = party_id;
+    sqlite_stakeholder_->ReadTrans(party_id);
 }
 
 QVariant TableModelOrder::data(const QModelIndex& index, int role) const
@@ -167,8 +179,9 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         return false;
     }
 
+    emit SResizeColumnToContents(index.column());
+
     if (node_id_ == 0) {
-        emit SResizeColumnToContents(index.column());
         return false;
     }
 
@@ -204,7 +217,6 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, 0.0, 0.0, 0.0, discount_diff, settled_diff);
     }
 
-    emit SResizeColumnToContents(index.column());
     return true;
 }
 
@@ -316,7 +328,7 @@ int TableModelOrder::GetNodeRow(int node_id) const
     return -1;
 }
 
-bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value) const
+bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
 {
     if (*trans_shadow->rhs_node == value)
         return false;
@@ -324,11 +336,13 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value) 
     *trans_shadow->rhs_node = value;
 
     SearchPrice(trans_shadow, value, true);
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kUnitPrice));
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kOutsideProduct));
 
     return true;
 }
 
-bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value) const
+bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
 {
     if (*trans_shadow->helper_node == value)
         return false;
@@ -338,6 +352,8 @@ bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
     SearchPrice(trans_shadow, value, false);
 
     sql_->UpdateField(info_.transaction, value, OUTSIDE_PRODUCT, *trans_shadow->id);
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kUnitPrice));
+    emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kInsideProduct));
     return true;
 }
 

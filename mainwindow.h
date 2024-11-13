@@ -92,7 +92,7 @@ private slots:
 
     void RUpdateSettings(CSettings& settings, CInterface& interface);
 
-    void RUpdateParty(int node_id, int party);
+    void RUpdateParty(int node_id, int party_id);
     void RUpdateName(int node_id, CString& name, bool branch);
 
     void RTabCloseRequested(int index);

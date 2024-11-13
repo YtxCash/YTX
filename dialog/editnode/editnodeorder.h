@@ -40,6 +40,7 @@ public:
 signals:
     void SUpdateNodeID(int node_id);
     void SUpdateFinished(int node_id, bool checked);
+    void SUpdateParty(int node_id, int party_id);
 
 public slots:
     void accept() override;

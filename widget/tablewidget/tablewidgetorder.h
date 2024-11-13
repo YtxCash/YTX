@@ -39,7 +39,7 @@ public:
 
 signals:
     void SUpdateFinished(int node_id, bool checked);
-    void SUpdateParty(int node_id, int party);
+    void SUpdateParty(int node_id, int party_id);
 
 public slots:
     void RUpdateComboModel();

@@ -470,6 +470,7 @@ void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* tabl
     connect(widget, &TableWidgetOrder::SUpdateFinished, tree_model_order, &TreeModelOrder::RUpdateFinished);
     connect(widget, &TableWidgetOrder::SUpdateFinished, table_model, &TableModelOrder::RUpdateFinished);
     connect(widget, &TableWidgetOrder::SUpdateParty, this, &MainWindow::RUpdateParty);
+    connect(widget, &TableWidgetOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 }
 
 void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, const Data* data) const
@@ -1645,6 +1646,7 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     connect(dialog, &EditNodeOrder::SUpdateFinished, tree_model_order, &TreeModelOrder::RUpdateFinished);
     connect(dialog, &EditNodeOrder::SUpdateFinished, table_model, &TableModelOrder::RUpdateFinished);
     connect(dialog, &EditNodeOrder::SUpdateNodeID, table_model, &TableModelOrder::RUpdateNodeID);
+    connect(dialog, &EditNodeOrder::SUpdateParty, table_model, &TableModelOrder::RUpdateParty);
 
     dialog_list_->append(dialog);
 
@@ -2046,7 +2048,7 @@ void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
     SwitchTab(id, trans_id);
 }
 
-void MainWindow::RUpdateParty(int node_id, int party)
+void MainWindow::RUpdateParty(int node_id, int party_id)
 {
     auto model { stakeholder_tree_->Model() };
     auto* widget { ui->tabWidget };
@@ -2055,8 +2057,8 @@ void MainWindow::RUpdateParty(int node_id, int party)
 
     for (int index = 0; index != count; ++index) {
         if (widget->isTabVisible(index) && tab_bar->tabData(index).value<Tab>().node_id == node_id) {
-            tab_bar->setTabText(index, model->Name(party));
-            tab_bar->setTabToolTip(index, model->GetPath(party));
+            tab_bar->setTabText(index, model->Name(party_id));
+            tab_bar->setTabToolTip(index, model->GetPath(party_id));
         }
     }
 }

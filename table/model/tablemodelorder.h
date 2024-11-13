@@ -36,6 +36,7 @@ public:
 public slots:
     void RUpdateNodeID(int node_id);
     void RUpdateFinished(int node_id, bool checked);
+    void RUpdateParty(int node_id, int party_id);
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -72,8 +73,8 @@ private:
         return true;
     }
 
-    bool UpdateInsideProduct(TransShadow* trans_shadow, int value) const;
-    bool UpdateOutsideProduct(TransShadow* trans_shadow, int value) const;
+    bool UpdateInsideProduct(TransShadow* trans_shadow, int value);
+    bool UpdateOutsideProduct(TransShadow* trans_shadow, int value);
 
     bool UpdateUnitPrice(TransShadow* trans_shadow, double value);
     bool UpdateDiscountPrice(TransShadow* trans_shadow, double value);
@@ -86,6 +87,7 @@ private:
     SqliteStakeholder* sqlite_stakeholder_ {};
     QHash<int, double> update_price_ {}; // inside_product_id, exclusive_price
     const NodeShadow* node_shadow_ {};
+    int party_id_ {};
 };
 
 #endif // TABLEMODELORDER_H
