@@ -1,8 +1,8 @@
-#include "tablemodelhelper.h"
+#include "tablemodelutils.h"
 
 #include <QtConcurrent>
 
-void TableModelHelper::AccumulateSubtotal(QMutex& mutex, QList<TransShadow*>& trans_shadow_list, int start, bool rule)
+void TableModelUtils::AccumulateSubtotal(QMutex& mutex, QList<TransShadow*>& trans_shadow_list, int start, bool rule)
 {
     if (start <= -1 || start >= trans_shadow_list.size() || trans_shadow_list.isEmpty())
         return;
@@ -19,7 +19,7 @@ void TableModelHelper::AccumulateSubtotal(QMutex& mutex, QList<TransShadow*>& tr
     });
 }
 
-bool TableModelHelper::UpdateRhsNode(TransShadow* trans_shadow, int value)
+bool TableModelUtils::UpdateRhsNode(TransShadow* trans_shadow, int value)
 {
     if (*trans_shadow->rhs_node == value)
         return false;

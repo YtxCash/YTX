@@ -5,7 +5,7 @@
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
-#include "tablemodelhelper.h"
+#include "tablemodelutils.h"
 
 TableModel::TableModel(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : QAbstractItemModel(parent)
@@ -83,7 +83,7 @@ void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
     endInsertRows();
 
     double previous_balance { row >= 1 ? trans_shadow_list_.at(row - 1)->subtotal : 0.0 };
-    new_trans_shadow->subtotal = TableModelHelper::Balance(rule_, *new_trans_shadow->lhs_debit, *new_trans_shadow->lhs_credit) + previous_balance;
+    new_trans_shadow->subtotal = TableModelUtils::Balance(rule_, *new_trans_shadow->lhs_debit, *new_trans_shadow->lhs_credit) + previous_balance;
 }
 
 void TableModel::RRemoveOneTrans(int node_id, int trans_id)
@@ -100,7 +100,7 @@ void TableModel::RRemoveOneTrans(int node_id, int trans_id)
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(row));
     endRemoveRows();
 
-    TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
+    TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
 }
 
 void TableModel::RUpdateBalance(int node_id, int trans_id)
@@ -110,7 +110,7 @@ void TableModel::RUpdateBalance(int node_id, int trans_id)
 
     auto index { GetIndex(trans_id) };
     if (index.isValid())
-        TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, index.row(), rule_);
+        TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, index.row(), rule_);
 }
 
 bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
@@ -138,7 +138,7 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
-        TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
+        TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
 
         sql_->RemoveTrans(trans_id);
     }
@@ -375,23 +375,23 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
 
     switch (kColumn) {
     case TableEnum::kDateTime:
-        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), DATE_TIME, &TransShadow::date_time);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), DATE_TIME, &TransShadow::date_time);
         break;
     case TableEnum::kCode:
-        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
         break;
     case TableEnum::kState:
-        TableModelHelper::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnum::kDescription:
-        TableModelHelper::UpdateField(
+        TableModelUtils::UpdateField(
             sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnum::kLhsRatio:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
         break;
     case TableEnum::kRhsNode:
-        rhs_changed = TableModelHelper::UpdateRhsNode(trans_shadow, value.toInt());
+        rhs_changed = TableModelUtils::UpdateRhsNode(trans_shadow, value.toInt());
         break;
     case TableEnum::kDebit:
         deb_changed = UpdateDebit(trans_shadow, value.toDouble());
@@ -406,7 +406,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     if (old_rhs_node == 0) {
         if (rhs_changed) {
             sql_->WriteTrans(trans_shadow);
-            TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, kRow, rule_);
+            TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, kRow, rule_);
 
             emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
@@ -436,7 +436,7 @@ bool TableModel::setData(const QModelIndex& index, const QVariant& value, int ro
     }
 
     if (deb_changed || cre_changed) {
-        TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, kRow, rule_);
+        TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, kRow, rule_);
         emit SResizeColumnToContents(std::to_underlying(TableEnum::kSubtotal));
     }
 
@@ -492,7 +492,7 @@ void TableModel::sort(int column, Qt::SortOrder order)
     std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 
-    TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, 0, rule_);
+    TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, 0, rule_);
 }
 
 Qt::ItemFlags TableModel::flags(const QModelIndex& index) const
@@ -598,7 +598,7 @@ bool TableModel::RemoveMultiTrans(const QSet<int>& trans_id_set)
     }
 
     if (min_row != -1)
-        TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, min_row, rule_);
+        TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, min_row, rule_);
 
     return true;
 }
@@ -613,7 +613,7 @@ bool TableModel::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();
 
-    TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
+    TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
 
     return true;
 }

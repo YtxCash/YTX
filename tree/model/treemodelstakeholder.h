@@ -21,7 +21,7 @@
 #define TREEMODELSTAKEHOLDER_H
 
 #include "tree/model/treemodel.h"
-#include "treemodelhelper.h"
+#include "treemodelutils.h"
 
 class TreeModelStakeholder final : public TreeModel {
     Q_OBJECT
@@ -46,7 +46,7 @@ public:
     }
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
     {
-        return TreeModelHelper::headerData(info_, section, orientation, role);
+        return TreeModelUtils::headerData(info_, section, orientation, role);
     }
 
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
@@ -62,14 +62,14 @@ public:
     QModelIndex GetIndex(int node_id) const override;
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
     bool ChildrenEmpty(int node_id) const override;
-    int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
-    QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
-    bool BranchFPTS(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
-    bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
+    int Unit(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
+    QString Name(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
+    bool BranchFPTS(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::branch); }
+    bool Rule(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
     void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
 
-    int Employee(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::employee); }
+    int Employee(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::employee); }
     QList<int> PartyList(CString& text, int unit) const;
     QSet<int> ChildrenSetFPTS(int node_id) const override;
 

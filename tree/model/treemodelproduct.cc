@@ -9,7 +9,7 @@ TreeModelProduct::TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, C
     , table_hash_ { table_hash }
     , separator_ { separator }
 {
-    TreeModelHelper::InitializeRoot(root_, default_unit);
+    TreeModelUtils::InitializeRoot(root_, default_unit);
     ConstructTree();
 }
 
@@ -22,7 +22,7 @@ TreeModelProduct::~TreeModelProduct()
 void TreeModelProduct::RUpdateLeafValueFPTO(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
-    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
+    auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
     if (!node || node == root_ || node->branch)
         return;
 
@@ -38,7 +38,7 @@ void TreeModelProduct::RUpdateLeafValueFPTO(
     node->final_total += final_diff;
 
     sql_->UpdateNodeValue(node);
-    TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
+    TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -51,7 +51,7 @@ void TreeModelProduct::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
     Node* node {};
 
     for (int node_id : node_list) {
-        node = TreeModelHelper::GetNodeByID(node_hash_, node_id);
+        node = TreeModelUtils::GetNodeByID(node_hash_, node_id);
 
         if (!node || node->branch)
             continue;
@@ -65,7 +65,7 @@ void TreeModelProduct::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
         final_diff = node->final_total - old_final_total;
         initial_diff = node->initial_total - old_initial_total;
 
-        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
+        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -76,7 +76,7 @@ void TreeModelProduct::UpdateNodeFPTS(const Node* tmp_node)
     if (!tmp_node)
         return;
 
-    auto* node { TreeModelHelper::GetNodeByID(node_hash_, tmp_node->id) };
+    auto* node { TreeModelUtils::GetNodeByID(node_hash_, tmp_node->id) };
     if (*node == *tmp_node)
         return;
 
@@ -90,49 +90,49 @@ void TreeModelProduct::UpdateNodeFPTS(const Node* tmp_node)
         emit SUpdateComboModel();
     }
 
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->first, UNIT_PRICE, &Node::first);
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->second, COMMISSION, &Node::second);
-    TreeModelHelper::UpdateField(sql_, node, info_.node, tmp_node->color, COLOR, &Node::color);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->first, UNIT_PRICE, &Node::first);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->second, COMMISSION, &Node::second);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->color, COLOR, &Node::color);
 }
 
 void TreeModelProduct::UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
 {
-    TreeModelHelper::UpdateSeparatorFPTS(leaf_path_, branch_path_, old_separator, new_separator);
+    TreeModelUtils::UpdateSeparatorFPTS(leaf_path_, branch_path_, old_separator, new_separator);
     emit SUpdateComboModel();
 }
 
-void TreeModelProduct::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelHelper::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
+void TreeModelProduct::CopyNodeFPTS(Node* tmp_node, int node_id) const { TreeModelUtils::CopyNodeFPTS(node_hash_, tmp_node, node_id); }
 
-void TreeModelProduct::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, root_, node, parent_id); }
+void TreeModelProduct::SetParent(Node* node, int parent_id) const { TreeModelUtils::SetParent(node_hash_, root_, node, parent_id); }
 
 QStringList TreeModelProduct::ChildrenNameFPTS(int node_id, int exclude_child) const
 {
-    return TreeModelHelper::ChildrenNameFPTS(node_hash_, root_, node_id, exclude_child);
+    return TreeModelUtils::ChildrenNameFPTS(node_hash_, root_, node_id, exclude_child);
 }
 
-QString TreeModelProduct::GetPath(int node_id) const { return TreeModelHelper::GetPathFPTS(leaf_path_, branch_path_, node_id); }
+QString TreeModelProduct::GetPath(int node_id) const { return TreeModelUtils::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
 void TreeModelProduct::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const
 {
-    TreeModelHelper::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
+    TreeModelUtils::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
 }
 
 void TreeModelProduct::LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
 {
-    TreeModelHelper::LeafPathExcludeIDFPT(leaf_path_, combo_model, exclude_id);
+    TreeModelUtils::LeafPathExcludeIDFPT(leaf_path_, combo_model, exclude_id);
 }
 
 void TreeModelProduct::LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
 {
-    TreeModelHelper::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, unit_filter_mode);
+    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, unit_filter_mode);
 }
 
 void TreeModelProduct::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
 {
-    TreeModelHelper::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
+    TreeModelUtils::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
 }
 
 QModelIndex TreeModelProduct::GetIndex(int node_id) const
@@ -156,11 +156,11 @@ QModelIndex TreeModelProduct::GetIndex(int node_id) const
     return createIndex(row, 0, node);
 }
 
-bool TreeModelProduct::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
+bool TreeModelProduct::ChildrenEmpty(int node_id) const { return TreeModelUtils::ChildrenEmpty(node_hash_, node_id); }
 
 void TreeModelProduct::SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
 {
-    TreeModelHelper::SearchNodeFPTS(node_hash_, node_list, node_id_list);
+    TreeModelUtils::SearchNodeFPTS(node_hash_, node_list, node_id_list);
 }
 
 bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
@@ -185,14 +185,14 @@ bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
     endRemoveRows();
 
     if (branch) {
-        TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+        TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
         branch_path_.remove(node_id);
         sql_->RemoveNode(node_id, true);
         emit SUpdateName(node_id, node->name, branch);
     }
 
     if (!branch) {
-        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
+        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
         leaf_path_.remove(node_id);
         sql_->RemoveNode(node_id, false);
     }
@@ -221,7 +221,7 @@ bool TreeModelProduct::InsertNode(int row, const QModelIndex& parent, Node* node
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    QString path { TreeModelHelper::ConstructPathFPTS(root_, node, separator_) };
+    QString path { TreeModelUtils::ConstructPathFPTS(root_, node, separator_) };
     (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
 
     emit SSearch();
@@ -229,17 +229,17 @@ bool TreeModelProduct::InsertNode(int row, const QModelIndex& parent, Node* node
     return true;
 }
 
-QSet<int> TreeModelProduct::ChildrenSetFPTS(int node_id) const { return TreeModelHelper::ChildrenSetFPTS(node_hash_, node_id); }
+QSet<int> TreeModelProduct::ChildrenSetFPTS(int node_id) const { return TreeModelUtils::ChildrenSetFPTS(node_hash_, node_id); }
 
 bool TreeModelProduct::IsReferencedFPTS(int node_id, CString& message) const
 {
     if (sql_->InternalReference(node_id)) {
-        TreeModelHelper::ShowTemporaryTooltipFPTS(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
+        TreeModelUtils::ShowTemporaryTooltipFPTS(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
     if (sql_->ExternalReference(node_id)) {
-        TreeModelHelper::ShowTemporaryTooltipFPTS(tr("%1 it is external referenced.").arg(message), THREE_THOUSAND);
+        TreeModelUtils::ShowTemporaryTooltipFPTS(tr("%1 it is external referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
@@ -256,7 +256,7 @@ bool TreeModelProduct::UpdateUnit(Node* node, int value)
     QString message {};
 
     message = tr("Cannot change %1 unit,").arg(path);
-    if (TreeModelHelper::HasChildrenFPTS(node, message))
+    if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
     message = tr("Cannot change %1 unit,").arg(path);
@@ -269,7 +269,7 @@ bool TreeModelProduct::UpdateUnit(Node* node, int value)
     return true;
 }
 
-Node* TreeModelProduct::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
+Node* TreeModelProduct::GetNodeByIndex(const QModelIndex& index) const { return TreeModelUtils::GetNodeByIndex(root_, index); }
 
 bool TreeModelProduct::UpdateBranchFPTS(Node* node, bool value)
 {
@@ -281,11 +281,11 @@ bool TreeModelProduct::UpdateBranchFPTS(Node* node, bool value)
     QString message {};
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (TreeModelHelper::HasChildrenFPTS(node, message))
+    if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
-    if (TreeModelHelper::IsOpenedFPTS(table_hash_, node_id, message))
+    if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
         return false;
 
     message = tr("Cannot change %1 branch,").arg(path);
@@ -304,7 +304,7 @@ bool TreeModelProduct::UpdateName(Node* node, CString& value)
     node->name = value;
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
-    TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;
@@ -342,14 +342,14 @@ void TreeModelProduct::ConstructTree()
 
     QString path {};
     for (auto* node : const_node_hash) {
-        path = TreeModelHelper::ConstructPathFPTS(root_, node, separator_);
+        path = TreeModelUtils::ConstructPathFPTS(root_, node, separator_);
 
         if (node->branch) {
             branch_path_.insert(node->id, path);
             continue;
         }
 
-        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
+        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
 
         leaf_path_.insert(node->id, path);
     }
@@ -393,7 +393,7 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    TreeModelHelper::SortIterative(root_, Compare);
+    TreeModelUtils::SortIterative(root_, Compare);
     emit layoutChanged();
 }
 
@@ -453,13 +453,13 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
 
     switch (kColumn) {
     case TreeEnumProduct::kCode:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumProduct::kDescription:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumProduct::kNote:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumProduct::kRule:
         UpdateRuleFPTO(node, value.toBool());
@@ -468,16 +468,16 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
         UpdateBranchFPTS(node, value.toBool());
         break;
     case TreeEnumProduct::kColor:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::color);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::color);
         break;
     case TreeEnumProduct::kUnit:
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumProduct::kCommission:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), COMMISSION, &Node::second);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), COMMISSION, &Node::second);
         break;
     case TreeEnumProduct::kUnitPrice:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toDouble(), UNIT_PRICE, &Node::first);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), UNIT_PRICE, &Node::first);
         break;
     default:
         return false;
@@ -528,8 +528,8 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
     if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
-    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
-    if (!node || node->parent == destination_parent || TreeModelHelper::IsDescendant(destination_parent, node))
+    auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
+    if (!node || node->parent == destination_parent || TreeModelUtils::IsDescendant(destination_parent, node))
         return false;
 
     auto begin_row { row == -1 ? destination_parent->children.size() : row };
@@ -538,17 +538,17 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
+        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
 
         destination_parent->children.insert(begin_row, node);
         node->parent = destination_parent;
-        TreeModelHelper::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
+        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
 
         endMoveRows();
     }
 
     sql_->DragNode(destination_parent->id, node_id);
-    TreeModelHelper::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
     emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateComboModel();

@@ -21,7 +21,7 @@
 #define TREEMODELTASK_H
 
 #include "treemodel.h"
-#include "treemodelhelper.h"
+#include "treemodelutils.h"
 
 class TreeModelTask final : public TreeModel {
     Q_OBJECT
@@ -49,7 +49,7 @@ public:
     }
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
     {
-        return TreeModelHelper::headerData(info_, section, orientation, role);
+        return TreeModelUtils::headerData(info_, section, orientation, role);
     }
 
     void UpdateNodeFPTS(const Node* tmp_node) override;
@@ -65,12 +65,12 @@ public:
     QModelIndex GetIndex(int node_id) const override;
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
     bool ChildrenEmpty(int node_id) const override;
-    double InitialTotalFPT(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::initial_total); }
-    double FinalTotalFPT(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::final_total); }
-    int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
-    QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
-    bool BranchFPTS(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::branch); }
-    bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
+    double InitialTotalFPT(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::initial_total); }
+    double FinalTotalFPT(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::final_total); }
+    int Unit(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
+    QString Name(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
+    bool BranchFPTS(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::branch); }
+    bool Rule(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
     void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;

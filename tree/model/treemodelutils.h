@@ -17,8 +17,8 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TREEMODELHELPER_H
-#define TREEMODELHELPER_H
+#ifndef TREEMODELUTILS_H
+#define TREEMODELUTILS_H
 
 #include <QModelIndex>
 #include <QStandardItemModel>
@@ -29,7 +29,7 @@
 #include "tree/node.h"
 #include "widget/tablewidget/tablewidget.h"
 
-class TreeModelHelper {
+class TreeModelUtils {
 public:
     static QVariant headerData(const Info& info, int section, Qt::Orientation orientation, int role)
     {
@@ -108,4 +108,4 @@ public:
     static QSet<int> ChildrenSetFPTS(CNodeHash& node_hash, int node_id);
 };
 
-#endif // TREEMODELHELPER_H
+#endif // TREEMODELUTILS_H

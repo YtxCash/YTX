@@ -4,7 +4,7 @@
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
-#include "tablemodelhelper.h"
+#include "tablemodelutils.h"
 
 TableModelTask::TableModelTask(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
@@ -83,7 +83,7 @@ void TableModelTask::sort(int column, Qt::SortOrder order)
     std::sort(trans_shadow_list_.begin(), trans_shadow_list_.end(), Compare);
     emit layoutChanged();
 
-    TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, 0, rule_);
+    TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, 0, rule_);
 }
 
 bool TableModelTask::removeRows(int row, int /*count*/, const QModelIndex& parent)
@@ -111,7 +111,7 @@ bool TableModelTask::removeRows(int row, int /*count*/, const QModelIndex& paren
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
 
-        TableModelHelper::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
+        TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
         sql_->RemoveTrans(trans_id);
 
         QTimer::singleShot(50, this, [this, rhs_node_id, unit_cost]() {

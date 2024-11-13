@@ -17,8 +17,8 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TABLEMODELHELPER_H
-#define TABLEMODELHELPER_H
+#ifndef TABLEMODELUTILS_H
+#define TABLEMODELUTILS_H
 
 #include <QMutex>
 
@@ -26,7 +26,7 @@
 #include "database/sqlite/sqlite.h"
 #include "table/trans.h"
 
-class TableModelHelper {
+class TableModelUtils {
 public:
     template <typename T>
     static bool UpdateField(Sqlite* sql, TransShadow* trans_shadow, CString& table, const T& value, CString& field, T* TransShadow::* member,
@@ -52,4 +52,4 @@ public:
     static bool UpdateRhsNode(TransShadow* trans_shadow, int value);
 };
 
-#endif // TABLEMODELHELPER_H
+#endif // TABLEMODELUTILS_H

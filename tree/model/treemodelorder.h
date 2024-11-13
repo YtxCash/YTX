@@ -24,7 +24,7 @@
 
 #include "database/sqlite/sqliteorder.h"
 #include "tree/model/treemodel.h"
-#include "treemodelhelper.h"
+#include "treemodelutils.h"
 
 class TreeModelOrder final : public TreeModel {
     Q_OBJECT
@@ -56,7 +56,7 @@ public:
     }
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
     {
-        return TreeModelHelper::headerData(info_, section, orientation, role);
+        return TreeModelUtils::headerData(info_, section, orientation, role);
     }
 
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
@@ -69,13 +69,13 @@ public:
     QModelIndex GetIndex(int node_id) const override;
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
     bool ChildrenEmpty(int node_id) const override;
-    int Unit(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::unit); }
-    QString Name(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::name); }
+    int Unit(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
+    QString Name(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
     QString GetPath(int node_id) const override;
-    bool Rule(int node_id) const override { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::rule); }
+    bool Rule(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
     void RetriveNodeO(int node_id) override;
-    int Party(int node_id) const { return TreeModelHelper::GetValue(node_hash_, node_id, &Node::party); };
+    int Party(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::party); };
 
 protected:
     bool UpdateRuleFPTO(Node* node, bool value) override; // charge = 0, refund = 1

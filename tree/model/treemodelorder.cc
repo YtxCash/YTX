@@ -7,7 +7,7 @@ TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObje
     , sql_ { static_cast<SqliteOrder*>(sql) }
     , info_ { info }
 {
-    TreeModelHelper::InitializeRoot(root_, default_unit);
+    TreeModelUtils::InitializeRoot(root_, default_unit);
     ConstructTree();
 }
 
@@ -118,7 +118,7 @@ void TreeModelOrder::UpdateAncestorValueOrder(Node* node, double first_diff, dou
         emit dataChanged(index(ancestor.first().row(), column_begin), index(ancestor.last().row(), column_end), { Qt::DisplayRole });
 }
 
-Node* TreeModelOrder::GetNodeByIndex(const QModelIndex& index) const { return TreeModelHelper::GetNodeByIndex(root_, index); }
+Node* TreeModelOrder::GetNodeByIndex(const QModelIndex& index) const { return TreeModelUtils::GetNodeByIndex(root_, index); }
 
 void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
 {
@@ -150,7 +150,7 @@ void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
     endResetModel();
 }
 
-void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelHelper::SetParent(node_hash_, root_, node, parent_id); }
+void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelUtils::SetParent(node_hash_, root_, node, parent_id); }
 
 void TreeModelOrder::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
 {
@@ -191,7 +191,7 @@ QModelIndex TreeModelOrder::GetIndex(int node_id) const
     return createIndex(row, 0, node);
 }
 
-bool TreeModelOrder::ChildrenEmpty(int node_id) const { return TreeModelHelper::ChildrenEmpty(node_hash_, node_id); }
+bool TreeModelOrder::ChildrenEmpty(int node_id) const { return TreeModelUtils::ChildrenEmpty(node_hash_, node_id); }
 
 QString TreeModelOrder::GetPath(int node_id) const
 {
@@ -360,7 +360,7 @@ void TreeModelOrder::sort(int column, Qt::SortOrder order)
     };
 
     emit layoutAboutToBeChanged();
-    TreeModelHelper::SortIterative(root_, Compare);
+    TreeModelUtils::SortIterative(root_, Compare);
     emit layoutChanged();
 }
 
@@ -488,13 +488,13 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
 
     switch (kColumn) {
     case TreeEnumOrder::kCode:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
         break;
     case TreeEnumOrder::kDescription:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
         break;
     case TreeEnumOrder::kNote:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
         break;
     case TreeEnumOrder::kRule:
         UpdateRuleFPTO(node, value.toBool());
@@ -503,13 +503,13 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumOrder::kParty:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toInt(), PARTY, &Node::party);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), PARTY, &Node::party);
         break;
     case TreeEnumOrder::kEmployee:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toInt(), EMPLOYEE, &Node::employee);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), EMPLOYEE, &Node::employee);
         break;
     case TreeEnumOrder::kDateTime:
-        TreeModelHelper::UpdateField(sql_, node, info_.node, value.toString(), DATE_TIME, &Node::date_time);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DATE_TIME, &Node::date_time);
         break;
     case TreeEnumOrder::kFinished:
         UpdateFinished(node, value.toBool());
@@ -570,8 +570,8 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
-    auto* node { TreeModelHelper::GetNodeByID(node_hash_, node_id) };
-    if (!node || node->parent == destination_parent || TreeModelHelper::IsDescendant(destination_parent, node))
+    auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
+    if (!node || node->parent == destination_parent || TreeModelUtils::IsDescendant(destination_parent, node))
         return false;
 
     auto begin_row { row == -1 ? destination_parent->children.size() : row };
