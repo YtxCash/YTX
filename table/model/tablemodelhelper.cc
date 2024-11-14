@@ -1,12 +1,66 @@
 #include "tablemodelhelper.h"
 
+#include "component/constvalue.h"
 #include "component/enumclass.h"
+#include "global/resourcepool.h"
+#include "tablemodelutils.h"
 
 TableModelHelper::TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
 {
     if (node_id >= 1)
         sql_->ReadTransHelper(trans_shadow_list_, node_id);
+}
+
+void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
+{
+    if (node_id_ != *trans_shadow->helper_node)
+        return;
+
+    auto* new_trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
+    new_trans_shadow->date_time = trans_shadow->date_time;
+    new_trans_shadow->id = trans_shadow->id;
+    new_trans_shadow->description = trans_shadow->description;
+    new_trans_shadow->code = trans_shadow->code;
+    new_trans_shadow->document = trans_shadow->document;
+    new_trans_shadow->state = trans_shadow->state;
+    new_trans_shadow->unit_price = trans_shadow->unit_price;
+    new_trans_shadow->discount_price = trans_shadow->discount_price;
+    new_trans_shadow->settled = trans_shadow->settled;
+    new_trans_shadow->helper_node = trans_shadow->helper_node;
+
+    new_trans_shadow->lhs_ratio = trans_shadow->lhs_ratio;
+    new_trans_shadow->lhs_debit = trans_shadow->lhs_debit;
+    new_trans_shadow->lhs_credit = trans_shadow->lhs_credit;
+    new_trans_shadow->lhs_node = trans_shadow->lhs_node;
+
+    new_trans_shadow->rhs_node = trans_shadow->rhs_node;
+    new_trans_shadow->rhs_ratio = trans_shadow->rhs_ratio;
+    new_trans_shadow->rhs_debit = trans_shadow->rhs_debit;
+    new_trans_shadow->rhs_credit = trans_shadow->rhs_credit;
+
+    auto row { trans_shadow_list_.size() };
+
+    beginInsertRows(QModelIndex(), row, row);
+    trans_shadow_list_.emplaceBack(new_trans_shadow);
+    endInsertRows();
+
+    // todo 可能需要额外计算
+}
+
+void TableModelHelper::RRemoveHelperTrans(int node_id, int trans_id)
+{
+    if (node_id_ != node_id)
+        return;
+
+    auto idx { GetIndex(trans_id) };
+    if (!idx.isValid())
+        return;
+
+    int row { idx.row() };
+    beginRemoveRows(QModelIndex(), row, row);
+    ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(row));
+    endRemoveRows();
 }
 
 QVariant TableModelHelper::data(const QModelIndex& index, int role) const
@@ -53,7 +107,36 @@ QVariant TableModelHelper::data(const QModelIndex& index, int role) const
     }
 }
 
-bool TableModelHelper::setData(const QModelIndex& index, const QVariant& value, int role) {}
+bool TableModelHelper::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (!index.isValid() || role != Qt::EditRole)
+        return false;
+
+    const TableEnumHelper kColumn { index.column() };
+    const int kRow { index.row() };
+
+    auto* trans_shadow { trans_shadow_list_.at(kRow) };
+
+    switch (kColumn) {
+    case TableEnumHelper::kDateTime:
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), DATE_TIME, &TransShadow::date_time);
+        break;
+    case TableEnumHelper::kCode:
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
+        break;
+    case TableEnumHelper::kState:
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
+        break;
+    case TableEnumHelper::kDescription:
+        TableModelUtils::UpdateField(
+            sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
+        break;
+    default:
+        return false;
+    }
+
+    return true;
+}
 
 void TableModelHelper::sort(int column, Qt::SortOrder order)
 {
@@ -111,11 +194,14 @@ Qt::ItemFlags TableModelHelper::flags(const QModelIndex& index) const
     const TableEnumHelper kColumn { index.column() };
 
     switch (kColumn) {
-    case TableEnumHelper::kID:
-        flags &= ~Qt::ItemIsEditable;
+    case TableEnumHelper::kCode:
+    case TableEnumHelper::kDescription:
+    case TableEnumHelper::kDateTime:
+    case TableEnumHelper::kDocument:
+        flags |= Qt::ItemIsEditable;
         break;
     default:
-        flags |= Qt::ItemIsEditable;
+        flags &= ~Qt::ItemIsEditable;
         break;
     }
 

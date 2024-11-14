@@ -446,6 +446,8 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
     connect(table_model, &TableModel::SRemoveOneTrans, &SignalStation::Instance(), &SignalStation::RRemoveOneTrans);
     connect(table_model, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
     connect(table_model, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
+    connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
+    connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
 
     connect(data->sql, &Sqlite::SRemoveMultiTransFPT, table_model, &TableModel::RRemoveMultiTransFPT);
     connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
@@ -479,6 +481,8 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 
     connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
+    connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
+    connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
 }
 
 void MainWindow::DelegateFPTS(PQTableView table_view) const
@@ -513,6 +517,10 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
 
     auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSubtotal), subtotal);
+
+    // auto* helper_node { new SpecificUnit(tree_model, UNIT_HELPER, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    // table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kHelperNode), helper_node);
+    // connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &SpecificUnit::RUpdateComboModel);
 }
 
 void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
@@ -537,6 +545,10 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
 
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSubtotal), subtotal);
+
+    // auto* helper_node { new SpecificUnit(tree_model, UNIT_HELPER, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
+    // table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kHelperNode), helper_node);
+    // connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &SpecificUnit::RUpdateComboModel);
 }
 
 void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const

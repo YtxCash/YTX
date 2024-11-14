@@ -105,8 +105,10 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     auto* trans_shadow { trans_shadow_list_.at(kRow) };
     int old_rhs_node { *trans_shadow->rhs_node };
+    int old_hel_node { *trans_shadow->helper_node };
 
     bool rhs_changed { false };
+    bool hel_changed { false };
 
     switch (kColumn) {
     case TableEnumStakeholder::kDateTime:
@@ -129,17 +131,28 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnumStakeholder::kOutsideProduct:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::helper_node);
+        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::helper_node);
         break;
     default:
         return false;
     }
 
     if (rhs_changed) {
-        if (old_rhs_node == 0)
+        if (old_rhs_node == 0) {
             sql_->WriteTrans(trans_shadow);
-        else
+
+            if (*trans_shadow->helper_node != 0) {
+                emit SAppendHelperTrans(info_.section, trans_shadow);
+            }
+        } else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
+    }
+
+    if (hel_changed) {
+        if (old_hel_node != 0)
+            emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->helper_node);
+
+        emit SAppendHelperTrans(info_.section, trans_shadow);
     }
 
     if (trans_shadow_list_.size() == 1)

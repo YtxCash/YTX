@@ -48,6 +48,9 @@ signals:
     void SRemoveOneTrans(Section section, int node_id, int trans_id);
     void SUpdateBalance(Section section, int node_id, int trans_id);
 
+    void SAppendHelperTrans(Section section, const TransShadow* trans_shadow);
+    void SRemoveHelperTrans(Section section, int node_id, int trans_id);
+
     // send to its table view
     void SResizeColumnToContents(int column);
 

@@ -40,11 +40,18 @@ signals:
     void SRule(int node_id, bool rule);
     void SAppendPrice(TransShadow* trans_shadow);
 
+    // send to TableModelHelper
+    void SAppendHelperTrans(const TransShadow* trans_shadow);
+    void SRemoveHelperTrans(int node_id, int trans_id);
+
 public slots:
     // receive from TableModel
     void RAppendOneTrans(Section section, const TransShadow* trans_shadow);
     void RRemoveOneTrans(Section section, int node_id, int trans_id);
     void RUpdateBalance(Section section, int node_id, int trans_id);
+
+    void RAppendHelperTrans(Section section, const TransShadow* trans_shadow);
+    void RRemoveHelperTrans(Section section, int node_id, int trans_id);
 
     // receive from SqliteStakeholder
     void RAppendPrice(Section section, TransShadow* trans_shadow);

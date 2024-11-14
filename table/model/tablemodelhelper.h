@@ -27,6 +27,10 @@ class TableModelHelper final : public TableModel {
 public:
     TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
 
+public slots:
+    void RAppendHelperTrans(const TransShadow* trans_shadow);
+    void RRemoveHelperTrans(int node_id, int trans_id);
+
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;

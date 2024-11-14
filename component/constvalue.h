@@ -35,12 +35,15 @@ inline constexpr int THREE_THOUSAND = 3000;
 inline constexpr int UNIT_IM = 0;
 inline constexpr int UNIT_MS = 1;
 inline constexpr int UNIT_PEND = 2;
+
 inline constexpr int UNIT_CUST = 0;
 inline constexpr int UNIT_EMP = 1;
 inline constexpr int UNIT_VEND = 2;
 inline constexpr int UNIT_PROD = 3;
+
 inline constexpr int UNIT_POS = 1;
 
+// Constants for rule
 inline constexpr int RULE_IM = 0;
 inline constexpr int RULE_MS = 1;
 
@@ -112,6 +115,7 @@ inline constexpr char DISCOUNT_PRICE[] = "discount_price";
 inline constexpr char UNIT_COST[] = "unit_cost";
 inline constexpr char INSIDE_PRODUCT[] = "inside_product";
 inline constexpr char OUTSIDE_PRODUCT[] = "outside_product";
+inline constexpr char HELPER_NODE[] = "helper_node";
 
 // Constants for app's state
 inline constexpr char HEADER_STATE[] = "header_state";

@@ -1,5 +1,6 @@
 #include "global/signalstation.h"
 
+#include "table/model/tablemodelhelper.h"
 #include "table/model/tablemodelstakeholder.h"
 
 SignalStation& SignalStation::Instance()
@@ -50,6 +51,31 @@ void SignalStation::RUpdateBalance(Section section, int node_id, int trans_id)
 
     connect(this, &SignalStation::SUpdateBalance, model, &TableModel::RUpdateBalance, Qt::SingleShotConnection);
     emit SUpdateBalance(node_id, trans_id);
+}
+
+void SignalStation::RAppendHelperTrans(Section section, const TransShadow* trans_shadow)
+{
+    if (!trans_shadow)
+        return;
+
+    int helper_node_id { *trans_shadow->helper_node };
+
+    const auto* model { static_cast<const TableModelHelper*>(FindTableModel(section, helper_node_id)) };
+    if (!model)
+        return;
+
+    connect(this, &SignalStation::SAppendHelperTrans, model, &TableModelHelper::RAppendHelperTrans, Qt::SingleShotConnection);
+    emit SAppendHelperTrans(trans_shadow);
+}
+
+void SignalStation::RRemoveHelperTrans(Section section, int node_id, int trans_id)
+{
+    const auto* model { static_cast<const TableModelHelper*>(FindTableModel(section, node_id)) };
+    if (!model)
+        return;
+
+    connect(this, &SignalStation::SRemoveHelperTrans, model, &TableModelHelper::RRemoveHelperTrans, Qt::SingleShotConnection);
+    emit SRemoveHelperTrans(node_id, trans_id);
 }
 
 void SignalStation::RAppendPrice(Section section, TransShadow* trans_shadow)
