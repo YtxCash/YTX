@@ -816,6 +816,9 @@ bool Sqlite::ReadTransHelper(TransShadowList& trans_shadow_list, int node_id)
     query.setForwardOnly(true);
 
     CString& string { ReadTransHelperQS() };
+    if (string.isEmpty())
+        return false;
+
     query.prepare(string);
     query.bindValue(":node_id", node_id);
 
