@@ -28,6 +28,11 @@ class TableModelFinance final : public TableModel {
 public:
     TableModelFinance(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
     ~TableModelFinance() override = default;
+
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    void sort(int column, Qt::SortOrder order) override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
 };
 
 #endif // TABLEMODELFINANCE_H

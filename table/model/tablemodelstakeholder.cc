@@ -9,6 +9,8 @@
 TableModelStakeholder::TableModelStakeholder(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
 {
+    if (node_id >= 1)
+        sql_->ReadTrans(trans_shadow_list_, node_id);
 }
 
 void TableModelStakeholder::RAppendPrice(TransShadow* trans_shadow)
@@ -168,7 +170,7 @@ void TableModelStakeholder::sort(int column, Qt::SortOrder order)
         case TableEnumStakeholder::kDocument:
             return (order == Qt::AscendingOrder) ? (lhs->document->size() < rhs->document->size()) : (lhs->document->size() > rhs->document->size());
         case TableEnumStakeholder::kState:
-            return (order == Qt::AscendingOrder) ? (lhs->state < rhs->state) : (lhs->state > rhs->state);
+            return (order == Qt::AscendingOrder) ? (*lhs->state < *rhs->state) : (*lhs->state > *rhs->state);
         case TableEnumStakeholder::kOutsideProduct:
             return (order == Qt::AscendingOrder) ? (*lhs->helper_node < *rhs->helper_node) : (*lhs->helper_node > *rhs->helper_node);
         case TableEnumStakeholder::kInsideProduct:
