@@ -27,9 +27,33 @@ enum class Section { kFinance, kProduct, kTask, kStakeholder, kSales, kPurchase 
 enum class UnitFilterMode { kIncludeUnitOnly, kExcludeUnitOnly, kIncludeUnitOnlyWithEmpty };
 
 // Enum class defining trans columns
-enum class TableEnum { kID, kDateTime, kCode, kLhsRatio, kDescription, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+enum class TableEnum { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
 
-// Enum class defining search trans columns
+enum class TableEnumFinance { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+
+enum class TableEnumTask { kID, kDateTime, kUnitCost, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+
+enum class TableEnumProduct { kID, kDateTime, kUnitCost, kCode, kDescription, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+
+enum class TableEnumStakeholder { kID, kDateTime, kUnitPrice, kCode, kDescription, kOutsideProduct, kDocument, kState, kInsideProduct };
+
+enum class TableEnumOrder {
+    kID,
+    kInsideProduct,
+    kUnitPrice,
+    kCode,
+    kDescription,
+    kOutsideProduct,
+    kColor,
+    kLhsNode,
+    kFirst,
+    kSecond,
+    kAmount,
+    kDiscountPrice,
+    kDiscount,
+    kSettled,
+};
+
 enum class TableEnumSearch {
     kID,
     kDateTime,
@@ -51,23 +75,22 @@ enum class TableEnumSearch {
     kRhsNode
 };
 
-enum class TableEnumStakeholder { kID, kInsideProduct, kDateTime, kCode, kDescription, kDocument, kState, kOutsideProduct, kUnitPrice };
-
-enum class TableEnumOrder {
+enum class TableEnumHelper {
     kID,
-    kInsideProduct,
-    kUnitPrice,
+    kDateTime,
     kCode,
-    kDescription,
-    kOutsideProduct,
-    kColor,
     kLhsNode,
-    kFirst,
-    kSecond,
-    kAmount,
-    kDiscountPrice,
-    kDiscount,
-    kSettled,
+    kLhsRatio,
+    kLhsDebit,
+    kLhsCredit,
+    kDescription,
+    kUnitPrice,
+    kDocument,
+    kState,
+    kRhsCredit,
+    kRhsDebit,
+    kRhsRatio,
+    kRhsNode
 };
 
 // Enum class defining node columns

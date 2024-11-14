@@ -425,7 +425,6 @@ QString MainwindowSqlite::TransactionProduct()
         lhs_debit      NUMERIC                  CHECK (lhs_debit  >= 0),
         lhs_credit     NUMERIC                  CHECK (lhs_credit >= 0),
         description    TEXT,
-        helper_node    INTEGER,
         unit_cost      NUMERIC,
         document       TEXT,
         state          BOOLEAN    DEFAULT 0,

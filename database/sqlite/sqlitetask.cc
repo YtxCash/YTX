@@ -75,9 +75,18 @@ QString SqliteTask::LeafTotalQS() const
 QString SqliteTask::ReadTransQS() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
     FROM task_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+    )");
+}
+
+QString SqliteTask::ReadTransHelperQS() const
+{
+    return QStringLiteral(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    FROM task_transaction
+    WHERE helper_node = :node_id AND removed = 0
     )");
 }
 
@@ -97,22 +106,23 @@ void SqliteTask::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
     trans->state = query.value("state").toBool();
+    trans->helper_node = query.value("helper_node").toBool();
 }
 
 QString SqliteTask::WriteTransQS() const
 {
     return QStringLiteral(R"(
     INSERT INTO task_transaction
-    (date_time, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document)
+    (date_time, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document)
     VALUES
-    (:date_time, :lhs_node, :unit_cost, :lhs_debit, :lhs_credit, :rhs_node, :rhs_debit, :rhs_credit, :state, :description, :code, :document)
+    (:date_time, :lhs_node, :unit_cost, :lhs_debit, :lhs_credit, :rhs_node, :rhs_debit, :rhs_credit, :state, :description, :helper_node, :code, :document)
     )");
 }
 
 QString SqliteTask::ReadTransRangeQS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
     FROM task_transaction
     WHERE id IN (%1) AND removed = 0
     )")
@@ -147,6 +157,7 @@ void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) con
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":code", *trans_shadow->code);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
+    query.bindValue(":helper_node", *trans_shadow->helper_node);
 
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
     query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
@@ -220,7 +231,7 @@ void SqliteTask::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
 QString SqliteTask::SearchTransQS() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
     FROM task_transaction
     WHERE (lhs_debit = :text OR lhs_credit = :text OR rhs_debit = :text OR rhs_credit = :text OR description LIKE :description) AND removed = 0
     ORDER BY date_time

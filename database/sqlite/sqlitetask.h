@@ -34,6 +34,7 @@ protected:
     QString LeafTotalQS() const override;
 
     QString ReadTransQS() const override;
+    QString ReadTransHelperQS() const override;
     QString WriteTransQS() const override;
     QString ReadTransRangeQS(CString& in_list) const override;
     QString RReplaceNodeQS() const override;

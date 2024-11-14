@@ -810,6 +810,24 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
     return true;
 }
 
+bool Sqlite::ReadTransHelper(TransShadowList& trans_shadow_list, int node_id)
+{
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    CString& string { ReadTransHelperQS() };
+    query.prepare(string);
+    query.bindValue(":node_id", node_id);
+
+    if (!query.exec()) {
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTrans" << query.lastError().text();
+        return false;
+    }
+
+    ReadTransFunction(trans_shadow_list, node_id, query);
+    return true;
+}
+
 TransShadow* Sqlite::AllocateTransShadow()
 {
     last_trans_ = ResourcePool<Trans>::Instance().Allocate();
