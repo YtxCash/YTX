@@ -212,9 +212,9 @@ bool TreeModelUtils::IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString&
     return false;
 }
 
-bool TreeModelUtils::IsHelperReferencedFTS(Sqlite* sql, int node_id, CString& message)
+bool TreeModelUtils::IsHelperReferencedFPTS(Sqlite* sql, int node_id, CString& message)
 {
-    if (sql->HelperReferenceFTS(node_id)) {
+    if (sql->HelperReferenceFPTS(node_id)) {
         TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is helper referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
@@ -242,7 +242,7 @@ bool TreeModelUtils::HasChildrenFPTS(Node* node, CString& message)
     return false;
 }
 
-bool TreeModelUtils::IsBranchFTS(Node* node, CString& message)
+bool TreeModelUtils::IsBranchFPTS(Node* node, CString& message)
 {
     if (node->branch) {
         ShowTemporaryTooltipFPTS(QObject::tr("%1 it is branch.").arg(message), THREE_THOUSAND);
@@ -252,7 +252,7 @@ bool TreeModelUtils::IsBranchFTS(Node* node, CString& message)
     return false;
 }
 
-bool TreeModelUtils::IsHelperFTS(Node* node, CString& message)
+bool TreeModelUtils::IsHelperFPTS(Node* node, CString& message)
 {
     if (node->is_helper) {
         ShowTemporaryTooltipFPTS(QObject::tr("%1 it is helper.").arg(message), THREE_THOUSAND);

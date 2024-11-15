@@ -121,7 +121,7 @@ QString SqliteFinance::InternalReferenceQS() const
     )");
 }
 
-QString SqliteFinance::QSHelperReferenceFTS() const
+QString SqliteFinance::QSHelperReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM finance_transaction
@@ -129,7 +129,7 @@ QString SqliteFinance::QSHelperReferenceFTS() const
     )");
 }
 
-QString SqliteFinance::QSReplaceHelperFTS() const
+QString SqliteFinance::QSReplaceHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET

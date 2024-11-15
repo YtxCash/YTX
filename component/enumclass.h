@@ -27,13 +27,13 @@ enum class Section { kFinance, kProduct, kTask, kStakeholder, kSales, kPurchase 
 enum class Filter { kIncludeSpecific, kExcludeSpecific, kIncludeSpecificWithNone, kIncludeAllWithNone };
 
 // Enum class defining trans columns
-enum class TableEnum { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+enum class TableEnum { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode };
 
 enum class TableEnumFinance { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
 
 enum class TableEnumTask { kID, kDateTime, kUnitCost, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
 
-enum class TableEnumProduct { kID, kDateTime, kUnitCost, kCode, kDescription, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+enum class TableEnumProduct { kID, kDateTime, kUnitCost, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
 
 enum class TableEnumStakeholder { kID, kDateTime, kUnitPrice, kCode, kDescription, kOutsideProduct, kDocument, kState, kInsideProduct };
 
@@ -116,7 +116,7 @@ enum class TreeEnumTask {
     kAmount
 };
 
-enum class TreeEnumProduct { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kColor, kUnitPrice, kCommission, kQuantity, kAmount };
+enum class TreeEnumProduct { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kIsHelper, kColor, kUnitPrice, kCommission, kQuantity, kAmount };
 
 enum class TreeEnumStakeholder { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kIsHelper, kDeadline, kEmployee, kPaymentPeriod, kTaxRate };
 

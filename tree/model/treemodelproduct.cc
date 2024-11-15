@@ -115,10 +115,7 @@ QStringList TreeModelProduct::ChildrenNameFPTS(int node_id, int exclude_child) c
 
 QString TreeModelProduct::GetPath(int node_id) const { return TreeModelUtils::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
-void TreeModelProduct::PathPreferencesFPT(QStandardItemModel* model) const
-{
-    TreeModelUtils::PathPreferencesFPT(node_hash_, leaf_path_, branch_path_, model);
-}
+void TreeModelProduct::PathPreferencesFPT(QStandardItemModel* model) const { TreeModelUtils::PathPreferencesFPT(node_hash_, leaf_path_, branch_path_, model); }
 
 void TreeModelProduct::LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const
 {
@@ -243,6 +240,9 @@ bool TreeModelProduct::UpdateUnit(Node* node, int value)
     if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
         return false;
 
+    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
+        return false;
+
     node->unit = value;
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
@@ -269,6 +269,9 @@ bool TreeModelProduct::UpdateBranchFPTS(Node* node, bool value)
         return false;
 
     if (TreeModelUtils::IsExternalReferencedPS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperFPTS(node, message))
         return false;
 
     node->branch = value;
@@ -334,6 +337,32 @@ void TreeModelProduct::ConstructTree()
     }
 }
 
+bool TreeModelProduct::UpdateHelperFPTS(Node* node, bool value)
+{
+    if (node->is_helper == value)
+        return false;
+
+    const int node_id { node->id };
+    QString message { tr("Cannot change %1 helper,").arg(GetPath(node_id)) };
+
+    if (TreeModelUtils::IsBranchFPTS(node, message))
+        return false;
+
+    if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    node->is_helper = value;
+    sql_->UpdateField(info_.node, value, IS_HELPER, node_id);
+
+    return true;
+}
+
 void TreeModelProduct::sort(int column, Qt::SortOrder order)
 {
     if (column <= -1 || column >= info_.tree_header.size())
@@ -356,6 +385,8 @@ void TreeModelProduct::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumProduct::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
+        case TreeEnumProduct::kIsHelper:
+            return (order == Qt::AscendingOrder) ? (lhs->is_helper < rhs->is_helper) : (lhs->is_helper > rhs->is_helper);
         case TreeEnumProduct::kColor:
             return (order == Qt::AscendingOrder) ? (lhs->color < rhs->color) : (lhs->color > rhs->color);
         case TreeEnumProduct::kCommission:
@@ -396,6 +427,8 @@ QVariant TreeModelProduct::data(const QModelIndex& index, int role) const
         return node->code;
     case TreeEnumProduct::kDescription:
         return node->description;
+    case TreeEnumProduct::kIsHelper:
+        return node->is_helper ? node->is_helper : QVariant();
     case TreeEnumProduct::kNote:
         return node->note;
     case TreeEnumProduct::kRule:
@@ -457,6 +490,9 @@ bool TreeModelProduct::setData(const QModelIndex& index, const QVariant& value, 
         break;
     case TreeEnumProduct::kUnitPrice:
         TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), UNIT_PRICE, &Node::first);
+        break;
+    case TreeEnumProduct::kIsHelper:
+        UpdateHelperFPTS(node, value.toBool());
         break;
     default:
         return false;

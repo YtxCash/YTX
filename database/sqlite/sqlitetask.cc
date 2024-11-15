@@ -43,7 +43,7 @@ QString SqliteTask::InternalReferenceQS() const
     )");
 }
 
-QString SqliteTask::QSHelperReferenceFTS() const
+QString SqliteTask::QSHelperReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM task_transaction
@@ -51,7 +51,7 @@ QString SqliteTask::QSHelperReferenceFTS() const
     )");
 }
 
-QString SqliteTask::QSReplaceHelperFTS() const
+QString SqliteTask::QSReplaceHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE task_transaction SET

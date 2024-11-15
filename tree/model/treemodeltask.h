@@ -76,14 +76,14 @@ public:
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
     QSet<int> ChildrenSetFPTS(int node_id) const override;
-    bool IsHelperFTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
+    bool IsHelperFPTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
 
 protected:
     bool UpdateName(Node* node, CString& value) override;
     bool UpdateRuleFPTO(Node* node, bool value) override;
     void ConstructTree() override;
     Node* GetNodeByIndex(const QModelIndex& index) const override;
-    bool UpdateHelperFTS(Node* node, bool value) override;
+    bool UpdateHelperFPTS(Node* node, bool value) override;
 
     bool UpdateBranchFPTS(Node* node, bool value) override;
     bool UpdateUnit(Node* node, int value) override;

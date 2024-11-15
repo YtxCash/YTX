@@ -193,7 +193,7 @@ QString SqliteStakeholder::ExternalReferenceQS() const
     )");
 }
 
-QString SqliteStakeholder::QSHelperReferenceFTS() const
+QString SqliteStakeholder::QSHelperReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM stakeholder_transaction
@@ -201,7 +201,7 @@ QString SqliteStakeholder::QSHelperReferenceFTS() const
     )");
 }
 
-QString SqliteStakeholder::QSReplaceHelperFTS() const
+QString SqliteStakeholder::QSReplaceHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET

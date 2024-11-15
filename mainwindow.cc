@@ -932,7 +932,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     auto* sql { data_->sql };
     bool interal_reference { sql->InternalReference(node_id) };
     bool exteral_reference { sql->ExternalReference(node_id) };
-    bool helper_reference { sql->HelperReferenceFTS(node_id) };
+    bool helper_reference { sql->HelperReferenceFPTS(node_id) };
 
     if (!interal_reference && !exteral_reference && !helper_reference) {
         RemoveView(model, index, node_id);
@@ -1047,7 +1047,7 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
 
     for (int node_id : list) {
         if (tree_model->Contains(node_id) && !tree_model->BranchFPTS(node_id) && node_id >= 1) {
-            if (tree_model->IsHelperFTS(node_id))
+            if (tree_model->IsHelperFPTS(node_id))
                 CreateTableHelper(tree_model, &table_hash, &data, &settings, node_id);
             else
                 CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
@@ -1409,10 +1409,10 @@ void MainWindow::SetHeader()
     finance_data_.info.helper_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsRatio"), tr("LhsDebit"), tr("LhsCredit"),
         tr("Description"), tr("UnitPrice"), tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsRatio"), tr("RhsNode") };
 
-    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Color"),
-        tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
-    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("D"), tr("S"), tr("RelatedNode"),
-        tr("Debit"), tr("Credit"), tr("Subtotal") };
+    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("IsHelper"),
+        tr("Color"), tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
+    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
+        tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
         tr("UnitCost"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
     product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
@@ -1534,18 +1534,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
 
         target_index = model->index(new_row, std::to_underlying(TableEnum::kDateTime));
     } else {
-        switch (data_->info.section) {
-        case Section::kFinance:
-        case Section::kStakeholder:
-        case Section::kTask:
-            target_index = model->index(empty_row, std::to_underlying(TableEnum::kRhsNode));
-            break;
-        case Section::kProduct:
-            target_index = model->index(empty_row, std::to_underlying(TableEnumProduct::kRhsNode));
-            break;
-        default:
-            break;
-        }
+        target_index = model->index(empty_row, std::to_underlying(TableEnum::kRhsNode));
     }
 
     table_widget->View()->setCurrentIndex(target_index);

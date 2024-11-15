@@ -169,7 +169,7 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
     if (TreeModelUtils::IsExternalReferencedPS(sql_, node_id, message))
         return false;
 
-    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
+    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
         return false;
 
     node->unit = value;
@@ -200,7 +200,7 @@ bool TreeModelStakeholder::UpdateBranchFPTS(Node* node, bool value)
     if (TreeModelUtils::IsExternalReferencedPS(sql_, node_id, message))
         return false;
 
-    if (TreeModelUtils::IsHelperFTS(node, message))
+    if (TreeModelUtils::IsHelperFPTS(node, message))
         return false;
 
     node->branch = value;
@@ -210,7 +210,7 @@ bool TreeModelStakeholder::UpdateBranchFPTS(Node* node, bool value)
     return true;
 }
 
-bool TreeModelStakeholder::UpdateHelperFTS(Node* node, bool value)
+bool TreeModelStakeholder::UpdateHelperFPTS(Node* node, bool value)
 {
     if (node->is_helper == value)
         return false;
@@ -218,7 +218,7 @@ bool TreeModelStakeholder::UpdateHelperFTS(Node* node, bool value)
     const int node_id { node->id };
     QString message { tr("Cannot change %1 helper,").arg(GetPath(node_id)) };
 
-    if (TreeModelUtils::IsBranchFTS(node, message))
+    if (TreeModelUtils::IsBranchFPTS(node, message))
         return false;
 
     if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
@@ -227,7 +227,7 @@ bool TreeModelStakeholder::UpdateHelperFTS(Node* node, bool value)
     if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
         return false;
 
-    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
+    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
         return false;
 
     node->is_helper = value;
@@ -441,7 +441,7 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), TAX_RATE, &Node::second);
         break;
     case TreeEnumStakeholder::kIsHelper:
-        UpdateHelperFTS(node, value.toBool());
+        UpdateHelperFPTS(node, value.toBool());
         break;
     default:
         return false;

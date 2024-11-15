@@ -74,6 +74,7 @@ public:
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
+    bool IsHelperFPTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
 
     const QString& Color(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::color); }
     double First(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::first); }
@@ -87,6 +88,7 @@ protected:
     bool UpdateName(Node* node, CString& value) override;
     bool UpdateRuleFPTO(Node* node, bool value) override;
     void ConstructTree() override;
+    bool UpdateHelperFPTS(Node* node, bool value) override;
 
 private:
     Sqlite* sql_ {};

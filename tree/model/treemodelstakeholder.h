@@ -69,7 +69,7 @@ public:
     bool Rule(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
     void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
-    bool IsHelperFTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
+    bool IsHelperFPTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
 
     int Employee(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::employee); }
     QList<int> PartyList(CString& text, int unit) const;
@@ -80,7 +80,7 @@ protected:
     bool UpdateUnit(Node* node, int value) override;
 
     Node* GetNodeByIndex(const QModelIndex& index) const override;
-    bool UpdateHelperFTS(Node* node, bool value) override;
+    bool UpdateHelperFPTS(Node* node, bool value) override;
     bool UpdateName(Node* node, CString& value) override;
     void ConstructTree() override;
 

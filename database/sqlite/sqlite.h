@@ -69,7 +69,7 @@ public:
     bool DragNode(int destination_node_id, int node_id) const;
     bool InternalReference(int node_id) const;
     bool ExternalReference(int node_id) const;
-    bool HelperReferenceFTS(int node_id) const;
+    bool HelperReferenceFPTS(int node_id) const;
     bool LeafTotal(Node* node) const;
     bool UpdateNodeValue(const Node* node) const;
     QList<int> SearchNodeName(CString& text) const;
@@ -102,8 +102,8 @@ protected:
     virtual QString InternalReferenceQS() const = 0;
     virtual QString SearchTransQS() const = 0;
     virtual QString ExternalReferenceQS() const { return {}; }
-    virtual QString QSHelperReferenceFTS() const { return {}; }
-    virtual QString QSReplaceHelperFTS() const { return {}; }
+    virtual QString QSHelperReferenceFPTS() const { return {}; }
+    virtual QString QSReplaceHelperFPTS() const { return {}; }
     virtual QString LeafTotalQS() const { return {}; }
     virtual QString UpdateNodeValueQS() const { return {}; }
 

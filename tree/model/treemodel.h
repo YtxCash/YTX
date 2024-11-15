@@ -187,7 +187,7 @@ public:
         Q_UNUSED(node_id);
         return {};
     }
-    virtual bool IsHelperFTS(int node_id)
+    virtual bool IsHelperFPTS(int node_id)
     {
         Q_UNUSED(node_id);
         return {};
@@ -223,7 +223,7 @@ protected:
         return {};
     }
 
-    virtual bool UpdateHelperFTS(Node* node, bool value)
+    virtual bool UpdateHelperFPTS(Node* node, bool value)
     {
         Q_UNUSED(node);
         Q_UNUSED(value);

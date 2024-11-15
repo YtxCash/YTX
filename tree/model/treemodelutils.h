@@ -98,8 +98,8 @@ public:
     static void LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node);
     static void LeafPathHelperNodeFTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_node, Filter filter);
     static bool HasChildrenFPTS(Node* node, CString& message);
-    static bool IsBranchFTS(Node* node, CString& message);
-    static bool IsHelperFTS(Node* node, CString& message);
+    static bool IsBranchFPTS(Node* node, CString& message);
+    static bool IsHelperFPTS(Node* node, CString& message);
     static bool IsOpenedFPTS(CTableHash& hash, int node_id, CString& message);
     static QStringList ChildrenNameFPTS(CNodeHash& hash, Node* root, int node_id, int exclude_child);
 
@@ -110,7 +110,7 @@ public:
     static QSet<int> ChildrenSetFPTS(CNodeHash& hash, int node_id);
 
     static bool IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message);
-    static bool IsHelperReferencedFTS(Sqlite* sql, int node_id, CString& message);
+    static bool IsHelperReferencedFPTS(Sqlite* sql, int node_id, CString& message);
     static bool IsExternalReferencedPS(Sqlite* sql, int node_id, CString& message);
 };
 

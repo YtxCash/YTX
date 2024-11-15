@@ -342,7 +342,7 @@ void Sqlite::ReplaceHelper(int old_helper_id, int new_helper_id)
 
     QSqlQuery query(*db_);
 
-    CString& string { QSReplaceHelperFTS() };
+    CString& string { QSReplaceHelperFPTS() };
     if (string.isEmpty())
         return;
 
@@ -495,9 +495,9 @@ bool Sqlite::ExternalReference(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-bool Sqlite::HelperReferenceFTS(int node_id) const
+bool Sqlite::HelperReferenceFPTS(int node_id) const
 {
-    CString& string { QSHelperReferenceFTS() };
+    CString& string { QSHelperReferenceFPTS() };
     if (string.isEmpty() || node_id <= 0)
         return false;
 
@@ -508,7 +508,7 @@ bool Sqlite::HelperReferenceFTS(int node_id) const
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ExternalReference" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in HelperReferenceFPTS" << query.lastError().text();
         return false;
     }
 

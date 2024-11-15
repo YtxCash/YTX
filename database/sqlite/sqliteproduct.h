@@ -33,6 +33,8 @@ protected:
     QString RemoveNodeSecondQS() const override;
     QString InternalReferenceQS() const override;
     QString ExternalReferenceQS() const override;
+    QString QSHelperReferenceFPTS() const override;
+    QString QSReplaceHelperFPTS() const override;
     QString LeafTotalQS() const override;
 
     void WriteNodeBind(Node* node, QSqlQuery& query) const override;

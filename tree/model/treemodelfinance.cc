@@ -247,7 +247,7 @@ bool TreeModelFinance::setData(const QModelIndex& index, const QVariant& value, 
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumFinance::kIsHelper:
-        UpdateHelperFTS(node, value.toBool());
+        UpdateHelperFPTS(node, value.toBool());
         break;
     default:
         return false;
@@ -447,7 +447,7 @@ bool TreeModelFinance::UpdateBranchFPTS(Node* node, bool value)
     if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
         return false;
 
-    if (TreeModelUtils::IsHelperFTS(node, message))
+    if (TreeModelUtils::IsHelperFPTS(node, message))
         return false;
 
     node->branch = value;
@@ -457,7 +457,7 @@ bool TreeModelFinance::UpdateBranchFPTS(Node* node, bool value)
     return true;
 }
 
-bool TreeModelFinance::UpdateHelperFTS(Node* node, bool value)
+bool TreeModelFinance::UpdateHelperFPTS(Node* node, bool value)
 {
     if (node->is_helper == value)
         return false;
@@ -465,7 +465,7 @@ bool TreeModelFinance::UpdateHelperFTS(Node* node, bool value)
     const int node_id { node->id };
     QString message { tr("Cannot change %1 helper,").arg(GetPath(node_id)) };
 
-    if (TreeModelUtils::IsBranchFTS(node, message))
+    if (TreeModelUtils::IsBranchFPTS(node, message))
         return false;
 
     if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
@@ -474,7 +474,7 @@ bool TreeModelFinance::UpdateHelperFTS(Node* node, bool value)
     if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
         return false;
 
-    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
+    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
         return false;
 
     node->is_helper = value;
@@ -538,7 +538,7 @@ bool TreeModelFinance::UpdateUnit(Node* node, int value)
     if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
         return false;
 
-    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
+    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
         return false;
 
     node->unit = value;

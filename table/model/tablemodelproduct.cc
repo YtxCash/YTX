@@ -30,6 +30,8 @@ QVariant TableModelProduct::data(const QModelIndex& index, int role) const
         return *trans_shadow->unit_price == 0 ? QVariant() : *trans_shadow->unit_price;
     case TableEnumProduct::kDescription:
         return *trans_shadow->description;
+    case TableEnumProduct::kHelperNode:
+        return *trans_shadow->helper_node == 0 ? QVariant() : *trans_shadow->helper_node;
     case TableEnumProduct::kRhsNode:
         return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
     case TableEnumProduct::kState:
@@ -57,11 +59,13 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
 
     auto* trans_shadow { trans_shadow_list_.at(kRow) };
     int old_rhs_node { *trans_shadow->rhs_node };
+    int old_hel_node { *trans_shadow->helper_node };
 
     bool rhs_changed { false };
     bool deb_changed { false };
     bool cre_changed { false };
     bool rat_changed { false };
+    bool hel_changed { false };
 
     switch (kColumn) {
     case TableEnumProduct::kDateTime:
@@ -76,6 +80,9 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
     case TableEnumProduct::kDescription:
         TableModelUtils::UpdateField(
             sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
+        break;
+    case TableEnumProduct::kHelperNode:
+        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), HELPER_NODE, &TransShadow::helper_node);
         break;
     case TableEnumProduct::kUnitCost:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
@@ -113,6 +120,10 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
             debit = *trans_shadow->rhs_debit;
             credit = *trans_shadow->rhs_credit;
             emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+
+            if (*trans_shadow->helper_node != 0) {
+                emit SAppendHelperTrans(info_.section, trans_shadow);
+            }
         }
 
         emit SResizeColumnToContents(index.column());
@@ -123,6 +134,13 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
         sql_->UpdateTransValue(trans_shadow);
         emit SSearch();
         emit SUpdateBalance(info_.section, old_rhs_node, *trans_shadow->id);
+    }
+
+    if (hel_changed) {
+        if (old_hel_node != 0)
+            emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->helper_node);
+
+        emit SAppendHelperTrans(info_.section, trans_shadow);
     }
 
     if (deb_changed || cre_changed) {
@@ -163,6 +181,8 @@ void TableModelProduct::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (*lhs->unit_price < *rhs->unit_price) : (*lhs->unit_price > *rhs->unit_price);
         case TableEnumProduct::kDescription:
             return (order == Qt::AscendingOrder) ? (*lhs->description < *rhs->description) : (*lhs->description > *rhs->description);
+        case TableEnumProduct::kHelperNode:
+            return (order == Qt::AscendingOrder) ? (*lhs->helper_node < *rhs->helper_node) : (*lhs->helper_node > *rhs->helper_node);
         case TableEnumProduct::kRhsNode:
             return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
         case TableEnumProduct::kState:

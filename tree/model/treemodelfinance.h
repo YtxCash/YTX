@@ -75,7 +75,7 @@ public:
     QString Name(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
     bool BranchFPTS(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::branch); }
     bool Rule(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
-    bool IsHelperFTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
+    bool IsHelperFPTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
 
     void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
     QSet<int> ChildrenSetFPTS(int node_id) const override;
@@ -84,7 +84,7 @@ protected:
     bool UpdateRuleFPTO(Node* node, bool value) override;
     bool UpdateName(Node* node, CString& value) override;
     Node* GetNodeByIndex(const QModelIndex& index) const override;
-    bool UpdateHelperFTS(Node* node, bool value) override;
+    bool UpdateHelperFPTS(Node* node, bool value) override;
     void ConstructTree() override;
 
     bool UpdateBranchFPTS(Node* node, bool value) override;
