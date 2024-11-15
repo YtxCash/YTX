@@ -187,6 +187,11 @@ public:
         Q_UNUSED(node_id);
         return {};
     }
+    virtual bool IsHelperFTS(int node_id)
+    {
+        Q_UNUSED(node_id);
+        return {};
+    }
 
     // Core pure virtual functions
     virtual void SetParent(Node* node, int parent_id) const = 0;

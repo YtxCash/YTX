@@ -207,3 +207,13 @@ Qt::ItemFlags TableModelHelper::flags(const QModelIndex& index) const
 
     return flags;
 }
+
+QVariant TableModelHelper::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+        return info_.helper_header.at(section);
+
+    return QVariant();
+}
+
+int TableModelHelper::columnCount(const QModelIndex& /*parent*/) const { return info_.helper_header.size(); }

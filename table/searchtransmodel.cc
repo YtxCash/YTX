@@ -31,11 +31,7 @@ int SearchTransModel::rowCount(const QModelIndex& parent) const
     return trans_list_.size();
 }
 
-int SearchTransModel::columnCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return info_->search_trans_header.size();
-}
+int SearchTransModel::columnCount(const QModelIndex& /*parent*/) const { return info_->search_trans_header.size(); }
 
 QVariant SearchTransModel::data(const QModelIndex& index, int role) const
 {

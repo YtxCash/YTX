@@ -35,6 +35,7 @@ struct Info {
 
     QStringList tree_header {};
     QStringList table_header {};
+    QStringList helper_header {};
 
     QStringList search_trans_header {};
     QStringList search_node_header {};

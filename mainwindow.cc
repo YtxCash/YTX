@@ -56,6 +56,7 @@
 #include "global/signalstation.h"
 #include "global/sqlconnection.h"
 #include "table/model/tablemodelfinance.h"
+#include "table/model/tablemodelhelper.h"
 #include "table/model/tablemodelproduct.h"
 #include "table/model/tablemodelstakeholder.h"
 #include "table/model/tablemodeltask.h"
@@ -292,11 +293,12 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
         }
 
         if (section != Section::kSales && section != Section::kPurchase) {
-            const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
-            if (section == Section::kStakeholder && unit == UNIT_PROD)
-                return;
+            const bool is_helper { index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toBool() };
 
-            CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
+            if (is_helper)
+                CreateTableHelper(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
+            else
+                CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
         }
     }
 
@@ -400,6 +402,30 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
     default:
         break;
     }
+
+    table_hash->insert(node_id, widget);
+    SignalStation::Instance().RegisterModel(section, node_id, model);
+}
+
+void MainWindow::CreateTableHelper(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
+{
+    CString name { tree_model->Name(node_id) };
+    auto* sql { data->sql };
+    const auto& info { data->info };
+    auto section { info.section };
+    auto rule { tree_model->Rule(node_id) };
+
+    auto* model { new TableModelHelper(sql, rule, node_id, info, this) };
+    TableWidgetFPTS* widget { new TableWidgetFPTS(model, this) };
+
+    int tab_index { ui->tabWidget->addTab(widget, name) };
+    auto* tab_bar { ui->tabWidget->tabBar() };
+
+    tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
+    tab_bar->setTabToolTip(tab_index, tree_model->GetPath(node_id));
+
+    auto view { widget->View() };
+    SetHelperView(view);
 
     table_hash->insert(node_id, widget);
     SignalStation::Instance().RegisterModel(section, node_id, model);
@@ -1020,8 +1046,12 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
     }
 
     for (int node_id : list) {
-        if (tree_model->Contains(node_id) && !tree_model->BranchFPTS(node_id) && node_id >= 1)
-            CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
+        if (tree_model->Contains(node_id) && !tree_model->BranchFPTS(node_id) && node_id >= 1) {
+            if (tree_model->IsHelperFTS(node_id))
+                CreateTableHelper(tree_model, &table_hash, &data, &settings, node_id);
+            else
+                CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
+        }
     }
 }
 
@@ -1134,6 +1164,29 @@ void MainWindow::SetView(PQTableView view) const
     view->scrollToBottom();
     view->setCurrentIndex(QModelIndex());
     view->sortByColumn(std::to_underlying(TableEnum::kDateTime), Qt::AscendingOrder); // will run function: AccumulateSubtotal while sorting
+}
+
+void MainWindow::SetHelperView(PQTableView view) const
+{
+    view->setSortingEnabled(true);
+    view->setSelectionMode(QAbstractItemView::SingleSelection);
+    view->setSelectionBehavior(QAbstractItemView::SelectRows);
+    view->setAlternatingRowColors(true);
+    view->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::CurrentChanged);
+    view->setColumnHidden(std::to_underlying(TableEnumHelper::kID), false);
+
+    auto* h_header { view->horizontalHeader() };
+    h_header->setSectionResizeMode(QHeaderView::ResizeToContents);
+    h_header->setSectionResizeMode(std::to_underlying(TableEnumHelper::kDescription), QHeaderView::Stretch);
+
+    auto* v_header { view->verticalHeader() };
+    v_header->setDefaultSectionSize(ROW_HEIGHT);
+    v_header->setSectionResizeMode(QHeaderView::Fixed);
+    v_header->setHidden(true);
+
+    view->scrollToBottom();
+    view->setCurrentIndex(QModelIndex());
+    view->sortByColumn(std::to_underlying(TableEnum::kDateTime), Qt::AscendingOrder);
 }
 
 void MainWindow::SetConnect() const
@@ -1353,6 +1406,8 @@ void MainWindow::SetHeader()
         tr("Description"), {}, {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
     finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
         {}, {}, {}, {}, {}, tr("Foreign Total"), tr("Local Total") };
+    finance_data_.info.helper_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsRatio"), tr("LhsDebit"), tr("LhsCredit"),
+        tr("Description"), tr("UnitPrice"), tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsRatio"), tr("RhsNode") };
 
     product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Color"),
         tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
@@ -1371,6 +1426,7 @@ void MainWindow::SetHeader()
         tr("NodeID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("OutsideProduct") };
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {},
         tr("Employee"), tr("Deadline"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
+    stakeholder_data_.info.helper_header = finance_data_.info.helper_header;
 
     task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("IsHelper"),
         tr("DateTime"), tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
@@ -1379,6 +1435,7 @@ void MainWindow::SetHeader()
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
     task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
         tr("DateTime"), tr("Color"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
+    task_data_.info.helper_header = finance_data_.info.helper_header;
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled"), {} };

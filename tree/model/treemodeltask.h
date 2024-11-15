@@ -76,6 +76,7 @@ public:
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
     QSet<int> ChildrenSetFPTS(int node_id) const override;
+    bool IsHelperFTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
 
 protected:
     bool UpdateName(Node* node, CString& value) override;
