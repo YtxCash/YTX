@@ -51,6 +51,7 @@ protected:
     QString RemoveNodeSecondQS() const override;
     QString InternalReferenceQS() const override;
     QString ExternalReferenceQS() const override;
+    QString QSHelperReferenceFTS() const override;
 
     // table
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;

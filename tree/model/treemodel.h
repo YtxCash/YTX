@@ -204,14 +204,14 @@ protected:
     virtual void ConstructTree() = 0;
 
     // Default implementations
-    virtual bool IsReferencedFPTS(int node_id, CString& message) const
+    virtual bool UpdateBranchFPTS(Node* node, bool value)
     {
-        Q_UNUSED(node_id);
-        Q_UNUSED(message);
+        Q_UNUSED(node);
+        Q_UNUSED(value);
         return {};
     }
 
-    virtual bool UpdateBranchFPTS(Node* node, bool value)
+    virtual bool UpdateHelperFTS(Node* node, bool value)
     {
         Q_UNUSED(node);
         Q_UNUSED(value);

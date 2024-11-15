@@ -248,6 +248,9 @@ bool TreeModelFinance::setData(const QModelIndex& index, const QVariant& value, 
     case TreeEnumFinance::kUnit:
         UpdateUnit(node, value.toInt());
         break;
+    case TreeEnumFinance::kIsHelper:
+        UpdateHelperFTS(node, value.toBool());
+        break;
     default:
         return false;
     }
@@ -433,25 +436,50 @@ bool TreeModelFinance::UpdateBranchFPTS(Node* node, bool value)
         return false;
 
     const int node_id { node->id };
-    const QString path { GetPath(node_id) };
-    QString message {};
+    QString message { tr("Cannot change %1 branch,").arg(GetPath(node_id)) };
 
-    message = tr("Cannot change %1 branch,").arg(path);
     if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
-    message = tr("Cannot change %1 branch,").arg(path);
     if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
         return false;
 
-    message = tr("Cannot change %1 branch,").arg(path);
-    if (IsReferencedFPTS(node_id, message))
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperFTS(node, message))
         return false;
 
     node->branch = value;
     sql_->UpdateField(info_.node, value, BRANCH, node_id);
 
     (node->branch) ? branch_path_.insert(node_id, leaf_path_.take(node_id)) : leaf_path_.insert(node_id, branch_path_.take(node_id));
+    return true;
+}
+
+bool TreeModelFinance::UpdateHelperFTS(Node* node, bool value)
+{
+    if (node->is_helper == value)
+        return false;
+
+    const int node_id { node->id };
+    QString message { tr("Cannot change %1 helper,").arg(GetPath(node_id)) };
+
+    if (TreeModelUtils::IsBranchFTS(node, message))
+        return false;
+
+    if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
+        return false;
+
+    node->is_helper = value;
+    sql_->UpdateField(info_.node, value, IS_HELPER, node_id);
+
     return true;
 }
 
@@ -506,7 +534,11 @@ bool TreeModelFinance::UpdateUnit(Node* node, int value)
 
     int node_id { node->id };
     auto message { tr("Cannot change %1 unit,").arg(GetPath(node_id)) };
-    if (IsReferencedFPTS(node_id, message))
+
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
         return false;
 
     node->unit = value;
@@ -527,14 +559,4 @@ bool TreeModelFinance::UpdateName(Node* node, CString& value)
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;
-}
-
-bool TreeModelFinance::IsReferencedFPTS(int node_id, CString& message) const
-{
-    if (sql_->InternalReference(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
-        return true;
-    }
-
-    return false;
 }

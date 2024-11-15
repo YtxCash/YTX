@@ -202,10 +202,60 @@ QSet<int> TreeModelUtils::ChildrenSetFPTS(CNodeHash& node_hash, int node_id)
     return set;
 }
 
+bool TreeModelUtils::IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message)
+{
+    if (sql->InternalReference(node_id)) {
+        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
+        return true;
+    }
+
+    return false;
+}
+
+bool TreeModelUtils::IsHelperReferencedFTS(Sqlite* sql, int node_id, CString& message)
+{
+    if (sql->HelperReferenceFTS(node_id)) {
+        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is helper referenced.").arg(message), THREE_THOUSAND);
+        return true;
+    }
+
+    return false;
+}
+
+bool TreeModelUtils::IsExternalReferencedPS(Sqlite* sql, int node_id, CString& message)
+{
+    if (sql->ExternalReference(node_id)) {
+        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is external referenced.").arg(message), THREE_THOUSAND);
+        return true;
+    }
+
+    return false;
+}
+
 bool TreeModelUtils::HasChildrenFPTS(Node* node, CString& message)
 {
     if (!node->children.isEmpty()) {
         ShowTemporaryTooltipFPTS(QObject::tr("%1 it has children nodes.").arg(message), THREE_THOUSAND);
+        return true;
+    }
+
+    return false;
+}
+
+bool TreeModelUtils::IsBranchFTS(Node* node, CString& message)
+{
+    if (node->branch) {
+        ShowTemporaryTooltipFPTS(QObject::tr("%1 it is branch.").arg(message), THREE_THOUSAND);
+        return true;
+    }
+
+    return false;
+}
+
+bool TreeModelUtils::IsHelperFTS(Node* node, CString& message)
+{
+    if (node->is_helper) {
+        ShowTemporaryTooltipFPTS(QObject::tr("%1 it is helper.").arg(message), THREE_THOUSAND);
         return true;
     }
 

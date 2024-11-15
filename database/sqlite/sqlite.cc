@@ -456,6 +456,27 @@ bool Sqlite::ExternalReference(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
+bool Sqlite::HelperReferenceFTS(int node_id) const
+{
+    CString& string { QSHelperReferenceFTS() };
+    if (string.isEmpty() || node_id <= 0)
+        return false;
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    query.prepare(string);
+    query.bindValue(":node_id", node_id);
+
+    if (!query.exec()) {
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ExternalReference" << query.lastError().text();
+        return false;
+    }
+
+    query.next();
+    return query.value(0).toInt() >= 1;
+}
+
 bool Sqlite::ReadTrans(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);

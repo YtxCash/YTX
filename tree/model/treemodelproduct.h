@@ -80,10 +80,10 @@ public:
     QSet<int> ChildrenSetFPTS(int node_id) const override;
 
 protected:
-    bool IsReferencedFPTS(int node_id, CString& message) const override;
-    bool UpdateUnit(Node* node, int value) override;
-    Node* GetNodeByIndex(const QModelIndex& index) const override;
     bool UpdateBranchFPTS(Node* node, bool value) override;
+    bool UpdateUnit(Node* node, int value) override;
+
+    Node* GetNodeByIndex(const QModelIndex& index) const override;
     bool UpdateName(Node* node, CString& value) override;
     bool UpdateRuleFPTO(Node* node, bool value) override;
     void ConstructTree() override;

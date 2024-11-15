@@ -174,6 +174,9 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
     case TreeEnumTask::kFinished:
         TreeModelUtils::UpdateField(sql_, node, info_.node, value.toBool(), FINISHED, &Node::finished);
         break;
+    case TreeEnumTask::kIsHelper:
+        UpdateHelperFTS(node, value.toBool());
+        break;
     default:
         return false;
     }
@@ -331,25 +334,50 @@ void TreeModelTask::UpdateNodeFPTS(const Node* tmp_node)
 
 Node* TreeModelTask::GetNodeByIndex(const QModelIndex& index) const { return TreeModelUtils::GetNodeByIndex(root_, index); }
 
+bool TreeModelTask::UpdateHelperFTS(Node* node, bool value)
+{
+    if (node->is_helper == value)
+        return false;
+
+    const int node_id { node->id };
+    QString message { tr("Cannot change %1 helper,").arg(GetPath(node_id)) };
+
+    if (TreeModelUtils::IsBranchFTS(node, message))
+        return false;
+
+    if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
+        return false;
+
+    node->is_helper = value;
+    sql_->UpdateField(info_.node, value, IS_HELPER, node_id);
+
+    return true;
+}
+
 bool TreeModelTask::UpdateBranchFPTS(Node* node, bool value)
 {
     if (node->branch == value)
         return false;
 
     const int node_id { node->id };
-    const QString path { GetPath(node_id) };
-    QString message {};
+    QString message { tr("Cannot change %1 branch,").arg(GetPath(node_id)) };
 
-    message = tr("Cannot change %1 branch,").arg(path);
     if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
-    message = tr("Cannot change %1 branch,").arg(path);
     if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
         return false;
 
-    message = tr("Cannot change %1 branch,").arg(path);
-    if (IsReferencedFPTS(node_id, message))
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperFTS(node, message))
         return false;
 
     node->branch = value;
@@ -488,16 +516,6 @@ bool TreeModelTask::InsertNode(int row, const QModelIndex& parent, Node* node)
 
 QSet<int> TreeModelTask::ChildrenSetFPTS(int node_id) const { return TreeModelUtils::ChildrenSetFPTS(node_hash_, node_id); }
 
-bool TreeModelTask::IsReferencedFPTS(int node_id, CString& message) const
-{
-    if (sql_->InternalReference(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
-        return true;
-    }
-
-    return false;
-}
-
 bool TreeModelTask::UpdateName(Node* node, CString& value)
 {
     node->name = value;
@@ -515,15 +533,15 @@ bool TreeModelTask::UpdateUnit(Node* node, int value)
         return false;
 
     const int node_id { node->id };
-    const QString path { GetPath(node_id) };
-    QString message {};
+    QString message { tr("Cannot change %1 unit,").arg(GetPath(node_id)) };
 
-    message = tr("Cannot change %1 unit,").arg(path);
     if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
-    message = tr("Cannot change %1 unit,").arg(path);
-    if (IsReferencedFPTS(node_id, message))
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsHelperReferencedFTS(sql_, node_id, message))
         return false;
 
     node->unit = value;

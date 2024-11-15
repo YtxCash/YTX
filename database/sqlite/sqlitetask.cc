@@ -43,6 +43,14 @@ QString SqliteTask::InternalReferenceQS() const
     )");
 }
 
+QString SqliteTask::QSHelperReferenceFTS() const
+{
+    return QStringLiteral(R"(
+    SELECT COUNT(*) FROM task_transaction
+    WHERE helper_node = :node_id AND removed = 0
+    )");
+}
+
 QString SqliteTask::LeafTotalQS() const
 {
     return QStringLiteral(R"(

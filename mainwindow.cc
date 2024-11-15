@@ -714,6 +714,9 @@ void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& s
 
     auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kInitialTotal), initial_total);
+
+    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kIsHelper), helper);
 }
 
 void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
@@ -735,6 +738,9 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 
     auto* finished { new Finished(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kFinished), finished);
+
+    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kIsHelper), helper);
 }
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
@@ -767,6 +773,9 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
     auto* employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMP, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
     connect(stakeholder_tree_->Model(), &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
+
+    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kIsHelper), helper);
 }
 
 void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const

@@ -121,6 +121,14 @@ QString SqliteFinance::InternalReferenceQS() const
     )");
 }
 
+QString SqliteFinance::QSHelperReferenceFTS() const
+{
+    return QStringLiteral(R"(
+    SELECT COUNT(*) FROM finance_transaction
+    WHERE helper_node = :node_id AND removed = 0
+    )");
+}
+
 QString SqliteFinance::LeafTotalQS() const
 {
     return QStringLiteral(R"(

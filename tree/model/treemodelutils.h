@@ -98,6 +98,8 @@ public:
         CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode);
     static void LeafPathSpecificUnitExcludeIDFPTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, int exclude_id);
     static bool HasChildrenFPTS(Node* node, CString& message);
+    static bool IsBranchFTS(Node* node, CString& message);
+    static bool IsHelperFTS(Node* node, CString& message);
     static bool IsOpenedFPTS(CTableHash& table_hash, int node_id, CString& message);
     static QStringList ChildrenNameFPTS(CNodeHash& node_hash, Node* root, int node_id, int exclude_child);
 
@@ -106,6 +108,10 @@ public:
     static void UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff);
     static void ShowTemporaryTooltipFPTS(CString& message, int duration);
     static QSet<int> ChildrenSetFPTS(CNodeHash& node_hash, int node_id);
+
+    static bool IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message);
+    static bool IsHelperReferencedFTS(Sqlite* sql, int node_id, CString& message);
+    static bool IsExternalReferencedPS(Sqlite* sql, int node_id, CString& message);
 };
 
 #endif // TREEMODELUTILS_H

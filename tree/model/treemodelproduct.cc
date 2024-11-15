@@ -231,36 +231,18 @@ bool TreeModelProduct::InsertNode(int row, const QModelIndex& parent, Node* node
 
 QSet<int> TreeModelProduct::ChildrenSetFPTS(int node_id) const { return TreeModelUtils::ChildrenSetFPTS(node_hash_, node_id); }
 
-bool TreeModelProduct::IsReferencedFPTS(int node_id, CString& message) const
-{
-    if (sql_->InternalReference(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
-        return true;
-    }
-
-    if (sql_->ExternalReference(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(tr("%1 it is external referenced.").arg(message), THREE_THOUSAND);
-        return true;
-    }
-
-    return false;
-}
-
 bool TreeModelProduct::UpdateUnit(Node* node, int value)
 {
     if (node->unit == value)
         return false;
 
     const int node_id { node->id };
-    const QString path { GetPath(node_id) };
-    QString message {};
+    QString message { tr("Cannot change %1 unit,").arg(GetPath(node_id)) };
 
-    message = tr("Cannot change %1 unit,").arg(path);
     if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
-    message = tr("Cannot change %1 unit,").arg(path);
-    if (IsReferencedFPTS(node_id, message))
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
         return false;
 
     node->unit = value;
@@ -277,19 +259,18 @@ bool TreeModelProduct::UpdateBranchFPTS(Node* node, bool value)
         return false;
 
     const int node_id { node->id };
-    const QString path { GetPath(node_id) };
-    QString message {};
+    QString message { tr("Cannot change %1 branch,").arg(GetPath(node_id)) };
 
-    message = tr("Cannot change %1 branch,").arg(path);
     if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
-    message = tr("Cannot change %1 branch,").arg(path);
     if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
         return false;
 
-    message = tr("Cannot change %1 branch,").arg(path);
-    if (IsReferencedFPTS(node_id, message))
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsExternalReferencedPS(sql_, node_id, message))
         return false;
 
     node->branch = value;

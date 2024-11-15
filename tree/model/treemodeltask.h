@@ -53,7 +53,6 @@ public:
     }
 
     void UpdateNodeFPTS(const Node* tmp_node) override;
-    bool UpdateBranchFPTS(Node* node, bool value) override;
     void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator) override;
     void CopyNodeFPTS(Node* tmp_node, int node_id) const override;
     void SetParent(Node* node, int parent_id) const override;
@@ -78,12 +77,14 @@ public:
     QSet<int> ChildrenSetFPTS(int node_id) const override;
 
 protected:
-    bool IsReferencedFPTS(int node_id, CString& message) const override;
     bool UpdateName(Node* node, CString& value) override;
-    bool UpdateUnit(Node* node, int value) override;
     bool UpdateRuleFPTO(Node* node, bool value) override;
     void ConstructTree() override;
     Node* GetNodeByIndex(const QModelIndex& index) const override;
+    bool UpdateHelperFTS(Node* node, bool value) override;
+
+    bool UpdateBranchFPTS(Node* node, bool value) override;
+    bool UpdateUnit(Node* node, int value) override;
 
 private:
     Sqlite* sql_ {};

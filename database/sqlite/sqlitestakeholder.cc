@@ -167,7 +167,7 @@ QString SqliteStakeholder::InternalReferenceQS() const
 {
     return QStringLiteral(R"(
     SELECT
-    (SELECT COUNT(*) FROM stakeholder_transaction WHERE (lhs_node = :node_id OR outside_product = :node_id) AND removed = 0) +
+    (SELECT COUNT(*) FROM stakeholder_transaction WHERE lhs_node = :node_id AND removed = 0) +
     (SELECT COUNT(*) FROM stakeholder WHERE employee = :node_id AND removed = 0)
     AS total_count;
     )");
@@ -182,6 +182,14 @@ QString SqliteStakeholder::ExternalReferenceQS() const
     (SELECT COUNT(*) FROM sales_transaction WHERE outside_product = :node_id AND removed = 0) +
     (SELECT COUNT(*) FROM purchase_transaction WHERE outside_product = :node_id AND removed = 0)
     AS total_count;
+    )");
+}
+
+QString SqliteStakeholder::QSHelperReferenceFTS() const
+{
+    return QStringLiteral(R"(
+    SELECT COUNT(*) FROM stakeholder_transaction
+    WHERE outside_product = :node_id AND removed = 0
     )");
 }
 

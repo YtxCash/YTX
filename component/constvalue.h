@@ -97,6 +97,7 @@ inline constexpr char FINAL_TOTAL[] = "final_total";
 inline constexpr char FIRST[] = "first";
 inline constexpr char INITIAL_TOTAL[] = "initial_total";
 inline constexpr char INITIAL_SUBTOTAL[] = "initial_subtotal";
+inline constexpr char IS_HELPER[] = "is_helper";
 inline constexpr char AMOUNT[] = "amount";
 inline constexpr char NAME[] = "name";
 inline constexpr char NODE_ID[] = "node/id";
