@@ -55,7 +55,7 @@ void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
 
     // 不需要接收更新combo model的信号
     auto* combo_model_ { new QStandardItemModel(this) };
-    stakeholder_tree->LeafPathSpecificUnitPS(combo_model_, UNIT_EMP, UnitFilterMode::kIncludeUnitOnly);
+    stakeholder_tree->LeafPathSpecificUnitPS(combo_model_, UNIT_EMP, FilterMode::kIncludeOnly);
     ui->comboEmployee->setModel(combo_model_);
 
     ui->comboEmployee->insertItem(0, QString(), 0);

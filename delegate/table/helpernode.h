@@ -17,17 +17,17 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECIFICUNIT_H
-#define SPECIFICUNIT_H
+#ifndef HELPERNODE_H
+#define HELPERNODE_H
 
 #include <QStandardItemModel>
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-class SpecificUnit : public StyledItemDelegate {
+class HelperNode : public StyledItemDelegate {
 public:
-    SpecificUnit(CTreeModel* tree_model, int unit, bool skip_branch, FilterMode unit_filter_mode, QObject* parent = nullptr);
+    HelperNode(CTreeModel* tree_model, FilterMode filter_mode, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -41,10 +41,8 @@ public slots:
 private:
     CTreeModel* tree_model_ {};
     const FilterMode filter_mode_ {};
-    const int unit_ {};
-    const bool skip_branch_ {};
 
     QStandardItemModel* combo_model_ {};
 };
 
-#endif // SPECIFICUNIT_H
+#endif // HELPERNODE_H

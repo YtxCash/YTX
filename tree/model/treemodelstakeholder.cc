@@ -74,14 +74,19 @@ QStringList TreeModelStakeholder::ChildrenNameFPTS(int node_id, int exclude_chil
 
 QString TreeModelStakeholder::GetPath(int node_id) const { return TreeModelUtils::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
-void TreeModelStakeholder::LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
+void TreeModelStakeholder::LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, FilterMode filter_mode) const
 {
-    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, unit_filter_mode);
+    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, filter_mode);
 }
 
 void TreeModelStakeholder::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
 {
     TreeModelUtils::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
+}
+
+void TreeModelStakeholder::LeafPathHelperFTS(QStandardItemModel* combo_model, int helper_id, FilterMode filter_mode) const
+{
+    TreeModelUtils::LeafPathHelperFTS(node_hash_, leaf_path_, combo_model, helper_id, filter_mode);
 }
 
 QModelIndex TreeModelStakeholder::GetIndex(int node_id) const

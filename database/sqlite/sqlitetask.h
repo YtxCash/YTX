@@ -32,6 +32,7 @@ protected:
     QString RemoveNodeSecondQS() const override;
     QString InternalReferenceQS() const override;
     QString QSHelperReferenceFTS() const override;
+    QString QSReplaceHelperFTS() const override;
     QString LeafTotalQS() const override;
 
     QString ReadTransQS() const override;

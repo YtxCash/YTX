@@ -117,17 +117,17 @@ QString TreeModelProduct::GetPath(int node_id) const { return TreeModelUtils::Ge
 
 void TreeModelProduct::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const
 {
-    TreeModelUtils::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
+    TreeModelUtils::LeafPathBranchPathFPT(node_hash_, leaf_path_, branch_path_, combo_model);
 }
 
 void TreeModelProduct::LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
 {
-    TreeModelUtils::LeafPathExcludeIDFPT(leaf_path_, combo_model, exclude_id);
+    TreeModelUtils::LeafPathExcludeIDFPT(node_hash_, leaf_path_, combo_model, exclude_id);
 }
 
-void TreeModelProduct::LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
+void TreeModelProduct::LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, FilterMode filter_mode) const
 {
-    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, unit_filter_mode);
+    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, filter_mode);
 }
 
 void TreeModelProduct::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const

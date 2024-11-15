@@ -11,8 +11,16 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 {
 }
 
-void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
+void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
 {
+    emit SFreeView(old_node_id);
+    emit SRemoveNode(old_node_id);
+
+    if (is_helper) {
+        ReplaceHelper(old_node_id, new_node_id);
+        return;
+    }
+
     // begin deal with trans hash
     auto node_trans { ReplaceNodeFunction(old_node_id, new_node_id) };
     auto trans_id_list { node_trans.values(old_node_id) };
@@ -35,19 +43,19 @@ void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id)
         emit SMoveMultiTransFPTS(0, new_node_id, trans_id_list);
 
     emit SUpdateStakeholderSO(old_node_id, new_node_id);
-
-    // SFreeView will mark all referenced transactions for removal. This must occur after SMoveMultiTrans()
-    emit SFreeView(old_node_id);
-    emit SRemoveNode(old_node_id);
 }
 
-void SqliteStakeholder::RRemoveNode(int node_id, bool branch)
+void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
 {
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
     emit SUpdateStakeholderSO(node_id, 0);
 
-    ReplaceNodeFunctionStakeholder(node_id, 0);
+    if (is_helper) {
+        ReplaceHelper(node_id, 0);
+        return;
+    }
+
     RemoveNode(node_id, branch);
 }
 
@@ -158,9 +166,8 @@ QString SqliteStakeholder::RemoveNodeSecondQS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
-        removed = CASE WHEN node_id = :node_id THEN 1 ELSE removed END,
-        outside_product = CASE WHEN outside_product = :node_id THEN 0 ELSE outside_product END
-    WHERE node_id = :node_id OR outside_product = :node_id;
+        removed = 1
+    WHERE lhs_node = :node_id;
     )");
 }
 
@@ -191,6 +198,15 @@ QString SqliteStakeholder::QSHelperReferenceFTS() const
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM stakeholder_transaction
     WHERE outside_product = :node_id AND removed = 0
+    )");
+}
+
+QString SqliteStakeholder::QSReplaceHelperFTS() const
+{
+    return QStringLiteral(R"(
+    UPDATE stakeholder_transaction SET
+        outside_product = :new_helper_id
+    WHERE outside_product = :old_helper_id
     )");
 }
 
@@ -333,16 +349,6 @@ void SqliteStakeholder::WriteTransBind(Trans* trans, QSqlQuery& query) const
     query.bindValue(":document", trans->document.join(SEMICOLON));
     query.bindValue(":inside_product", trans->rhs_node);
     query.bindValue(":outside_product", trans->helper_node);
-}
-
-void SqliteStakeholder::ReplaceNodeFunctionStakeholder(int old_node_id, int new_node_id)
-{
-    const auto& const_trans_hash { std::as_const(trans_hash_) };
-
-    for (auto* trans : const_trans_hash) {
-        if (trans->helper_node == old_node_id)
-            trans->helper_node = new_node_id;
-    }
 }
 
 QMultiHash<int, int> SqliteStakeholder::ReplaceNodeFunction(int old_node_id, int new_node_id) const

@@ -44,8 +44,8 @@ void EditNodeOrder::RUpdateComboModel()
     const int party_id { ui->comboParty->currentData().toInt() };
     const int employee_id { ui->comboEmployee->currentData().toInt() };
 
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, FilterMode::kIncludeOnly);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, FilterMode::kIncludeWithEmpty);
 
     QTimer::singleShot(50, this, [this, employee_id, party_id]() { IniDataCombo(party_id, employee_id); });
 }
@@ -118,12 +118,12 @@ QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
 void EditNodeOrder::IniDialog()
 {
     combo_model_party_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, UnitFilterMode::kIncludeUnitOnly);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, FilterMode::kIncludeOnly);
     ui->comboParty->setModel(combo_model_party_);
     ui->comboParty->setCurrentIndex(-1);
 
     combo_model_employee_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, UnitFilterMode::kIncludeUnitOnlyWithEmpty);
+    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, FilterMode::kIncludeWithEmpty);
     ui->comboEmployee->setModel(combo_model_employee_);
     ui->comboEmployee->setCurrentIndex(-1);
 

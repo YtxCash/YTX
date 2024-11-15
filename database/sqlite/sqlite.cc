@@ -16,12 +16,17 @@ Sqlite::Sqlite(CInfo& info, QObject* parent)
 
 Sqlite::~Sqlite() { qDeleteAll(trans_hash_); }
 
-void Sqlite::RRemoveNode(int node_id, bool branch)
+void Sqlite::RRemoveNode(int node_id, bool branch, bool is_helper)
 {
-    QMultiHash<int, int> node_trans { RemoveNodeFunction(node_id) };
-
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
+
+    if (is_helper) {
+        ReplaceHelper(node_id, 0);
+        return;
+    }
+
+    QMultiHash<int, int> node_trans { RemoveNodeFunction(node_id) };
 
     auto section { info_.section };
     if (section == Section::kFinance || section == Section::kProduct || section == Section::kTask) {
@@ -66,12 +71,19 @@ bool Sqlite::FreeView(int old_node_id, int new_node_id) const
     return true;
 }
 
-void Sqlite::RReplaceNode(int old_node_id, int new_node_id)
+void Sqlite::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
 {
     // finance, product, task
     auto section { info_.section };
     if (section == Section::kPurchase || section == Section::kSales)
         return;
+
+    if (is_helper) {
+        emit SFreeView(old_node_id);
+        emit SRemoveNode(old_node_id);
+        ReplaceHelper(old_node_id, new_node_id);
+        return;
+    }
 
     bool free { FreeView(old_node_id, new_node_id) };
 
@@ -317,6 +329,31 @@ bool Sqlite::RemoveNode(int node_id, bool branch) const
     }
 
     return true;
+}
+
+void Sqlite::ReplaceHelper(int old_helper_id, int new_helper_id)
+{
+    const auto& const_trans_hash { std::as_const(trans_hash_) };
+
+    for (auto* trans : const_trans_hash) {
+        if (trans->helper_node == old_helper_id)
+            trans->helper_node = new_helper_id;
+    }
+
+    QSqlQuery query(*db_);
+
+    CString& string { QSReplaceHelperFTS() };
+    if (string.isEmpty())
+        return;
+
+    query.prepare(string);
+    query.bindValue(":old_helper_id", old_helper_id);
+    query.bindValue(":new_helper_id", new_helper_id);
+
+    if (!query.exec()) {
+        qWarning() << "Failed in ReplaceHelper" << query.lastError().text();
+        return;
+    }
 }
 
 QString Sqlite::RemoveNodeFirstQS() const

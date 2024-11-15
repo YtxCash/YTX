@@ -145,11 +145,17 @@ public:
         Q_UNUSED(unit);
         Q_UNUSED(exclude_id);
     }
-    virtual void LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode) const
+    virtual void LeafPathHelperFTS(QStandardItemModel* combo_model, int exclude_id, FilterMode filter_mode) const
+    {
+        Q_UNUSED(combo_model);
+        Q_UNUSED(exclude_id);
+        Q_UNUSED(filter_mode);
+    }
+    virtual void LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, FilterMode filter_mode) const
     {
         Q_UNUSED(combo_model);
         Q_UNUSED(unit);
-        Q_UNUSED(unit_filter_mode);
+        Q_UNUSED(filter_mode);
     }
     virtual void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
     {

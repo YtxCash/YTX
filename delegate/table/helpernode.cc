@@ -1,26 +1,21 @@
-#include "specificunit.h"
+#include "helpernode.h"
 
 #include <QPainter>
 
 #include "widget/combobox.h"
 
-SpecificUnit::SpecificUnit(CTreeModel* tree_model, int unit, bool skip_branch, FilterMode filter_mode, QObject* parent)
+HelperNode::HelperNode(CTreeModel* tree_model, FilterMode filter_mode, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
     , filter_mode_ { filter_mode }
-    , unit_ { unit }
-    , skip_branch_ { skip_branch }
 {
     combo_model_ = new QStandardItemModel(this);
     RUpdateComboModel();
 }
 
-QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+QWidget* HelperNode::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     Q_UNUSED(option);
-
-    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
-        return nullptr;
 
     auto* editor { new ComboBox(parent) };
     editor->setModel(combo_model_);
@@ -28,7 +23,7 @@ QWidget* SpecificUnit::createEditor(QWidget* parent, const QStyleOptionViewItem&
     return editor;
 }
 
-void SpecificUnit::setEditorData(QWidget* editor, const QModelIndex& index) const
+void HelperNode::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<ComboBox*>(editor) };
     int key { index.data().toInt() };
@@ -36,14 +31,14 @@ void SpecificUnit::setEditorData(QWidget* editor, const QModelIndex& index) cons
     cast_editor->setCurrentIndex(item_index);
 }
 
-void SpecificUnit::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void HelperNode::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<ComboBox*>(editor) };
     int key { cast_editor->currentData().toInt() };
     model->setData(index, key);
 }
 
-void SpecificUnit::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void HelperNode::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString& text { tree_model_->GetPath(index.data().toInt()) };
     if (text.isEmpty())
@@ -57,13 +52,13 @@ void SpecificUnit::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize HelperNode::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString& text = tree_model_->GetPath(index.data().toInt());
     return CalculateTextSize(text);
 }
 
-void SpecificUnit::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void HelperNode::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QSize text_size { CalculateTextSize(tree_model_->GetPath(index.data().toInt())) };
     const int width { std::max(option.rect.width(), text_size.width()) };
@@ -74,4 +69,4 @@ void SpecificUnit::updateEditorGeometry(QWidget* editor, const QStyleOptionViewI
     editor->setGeometry(option.rect);
 }
 
-void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, filter_mode_); }
+void HelperNode::RUpdateComboModel() { tree_model_->LeafPathHelperFTS(combo_model_, 0, filter_mode_); }

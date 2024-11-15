@@ -6,19 +6,20 @@
 #include "dialog/signalblocker.h"
 #include "ui_removenode.h"
 
-RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool branch, bool disable, QWidget* parent)
+RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool branch, bool exteral_reference, bool is_helper, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::RemoveNode)
     , node_id_ { node_id }
     , unit_ { unit }
     , branch_ { branch }
+    , is_helper_ { is_helper }
     , section_ { section }
     , model_ { model }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniData(section, disable);
+    IniData(section, exteral_reference, is_helper);
     IniConnect();
 }
 
@@ -52,18 +53,18 @@ void RemoveNode::RCustomAccept()
 
     if (msg.exec() == QMessageBox::Ok) {
         if (ui->rBtnRemoveRecords->isChecked())
-            emit SRemoveNode(node_id_, branch_);
+            emit SRemoveNode(node_id_, branch_, is_helper_);
 
         if (ui->rBtnReplaceRecords->isChecked()) {
             int new_node_id { ui->comboBox->currentData().toInt() };
-            emit SReplaceNode(node_id_, new_node_id);
+            emit SReplaceNode(node_id_, new_node_id, is_helper_);
         }
 
         accept();
     }
 }
 
-void RemoveNode::IniData(Section section, bool disable_remove)
+void RemoveNode::IniData(Section section, bool exteral_reference, bool is_helper)
 {
     ui->label->setWordWrap(true);
     ui->pBtnCancel->setDefault(true);
@@ -78,14 +79,19 @@ void RemoveNode::IniData(Section section, bool disable_remove)
 
     ui->rBtnReplaceRecords->setChecked(true);
 
-    if (disable_remove) {
+    if (exteral_reference) {
         ui->rBtnRemoveRecords->setDisabled(true);
         ui->label->setText(tr("The node has external references, so it can’t be removed directly. Should it be replaced instead?"));
     }
 
     // 不需要接收更新combo model的信号
     auto* combo_model_ { new QStandardItemModel(this) };
-    model_->LeafPathSpecificUnitExcludeIDFPTS(combo_model_, unit_, node_id_);
+
+    if (is_helper) {
+        model_->LeafPathHelperFTS(combo_model_, node_id_, FilterMode::kExcludeOnly);
+    } else {
+        model_->LeafPathSpecificUnitExcludeIDFPTS(combo_model_, unit_, node_id_);
+    }
 
     ui->comboBox->setModel(combo_model_);
 }

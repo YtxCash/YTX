@@ -359,7 +359,7 @@ void TreeModelUtils::UpdateComboModel(QStandardItemModel* combo_model, const QVe
     combo_model->sort(0);
 }
 
-void TreeModelUtils::LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model)
+void TreeModelUtils::LeafPathBranchPathFPT(CNodeHash& node_hash, CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model)
 {
     if (!combo_model)
         return;
@@ -368,11 +368,21 @@ void TreeModelUtils::LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash& 
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf_path.size() + branch_path.size());
 
-        for (const auto& [id, path] : leaf_path.asKeyValueRange())
-            items.emplaceBack(path, id);
+        auto should_add = [](const Node* node) { return !node->is_helper; };
 
-        for (const auto& [id, path] : branch_path.asKeyValueRange())
-            items.emplaceBack(path, id);
+        for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
+            auto it = node_hash.constFind(id);
+            if (it != node_hash.constEnd() && should_add(it.value())) {
+                items.emplaceBack(path, id);
+            }
+        }
+
+        for (const auto& [id, path] : branch_path.asKeyValueRange()) {
+            auto it = node_hash.constFind(id);
+            if (it != node_hash.constEnd() && should_add(it.value())) {
+                items.emplaceBack(path, id);
+            }
+        }
 
         items.emplaceBack(QString(), 0);
 
@@ -388,18 +398,22 @@ void TreeModelUtils::LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash& 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathExcludeIDFPT(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id)
+void TreeModelUtils::LeafPathExcludeIDFPT(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id)
 {
     if (!combo_model)
         return;
 
-    auto future = QtConcurrent::run([leaf_path, exclude_id]() {
+    auto future = QtConcurrent::run([&, leaf_path, exclude_id]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf_path.size());
 
+        auto should_add = [exclude_id](const Node* node) { return node->id != exclude_id && !node->is_helper; };
+
         for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
-            if (id != exclude_id)
+            auto it = node_hash.constFind(id);
+            if (it != node_hash.constEnd() && should_add(it.value())) {
                 items.emplaceBack(path, id);
+            }
         }
 
         return items;
@@ -414,29 +428,28 @@ void TreeModelUtils::LeafPathExcludeIDFPT(CStringHash& leaf_path, QStandardItemM
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathSpecificUnitPS(
-    CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode)
+void TreeModelUtils::LeafPathSpecificUnitPS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, FilterMode filter_mode)
 {
     if (!combo_model)
         return;
 
-    auto future = QtConcurrent::run([&, unit, unit_filter_mode]() {
+    auto future = QtConcurrent::run([&, unit, filter_mode]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf_path.size());
 
-        auto should_add = [unit, unit_filter_mode](const Node* node) {
-            switch (unit_filter_mode) {
-            case UnitFilterMode::kIncludeUnitOnlyWithEmpty:
-            case UnitFilterMode::kIncludeUnitOnly:
+        auto should_add = [unit, filter_mode](const Node* node) {
+            switch (filter_mode) {
+            case FilterMode::kIncludeWithEmpty:
+            case FilterMode::kIncludeOnly:
                 return node->unit == unit;
-            case UnitFilterMode::kExcludeUnitOnly:
+            case FilterMode::kExcludeOnly:
                 return node->unit != unit;
             default:
-                return true;
+                return false;
             }
         };
 
-        if (unit_filter_mode == UnitFilterMode::kIncludeUnitOnlyWithEmpty) {
+        if (filter_mode == FilterMode::kIncludeWithEmpty) {
             items.emplaceBack(QString(), 0);
         }
 
@@ -469,6 +482,50 @@ void TreeModelUtils::LeafPathSpecificUnitExcludeIDFPTS(CNodeHash& node_hash, CSt
         items.reserve(leaf_path.size());
 
         auto should_add = [unit, exclude_id](const Node* node) { return node->unit == unit && node->id != exclude_id; };
+
+        for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
+            auto it = node_hash.constFind(id);
+            if (it != node_hash.constEnd() && should_add(it.value())) {
+                items.emplaceBack(path, id);
+            }
+        }
+
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(combo_model);
+    QObject::connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, watcher, [watcher, combo_model]() {
+        TreeModelUtils::UpdateComboModel(combo_model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
+}
+
+void TreeModelUtils::LeafPathHelperFTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int helper_id, FilterMode filter_mode)
+{
+    if (!combo_model)
+        return;
+
+    auto future = QtConcurrent::run([&, helper_id]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf_path.size());
+
+        auto should_add = [helper_id, filter_mode](const Node* node) {
+            switch (filter_mode) {
+            case FilterMode::kIncludeWithEmpty:
+            case FilterMode::kIncludeOnly:
+                return node->is_helper;
+            case FilterMode::kExcludeOnly:
+                return node->is_helper && node->id != helper_id;
+            default:
+                return false;
+            }
+        };
+
+        if (filter_mode == FilterMode::kIncludeWithEmpty) {
+            items.emplaceBack(QString(), 0);
+        }
 
         for (const auto& [id, path] : leaf_path.asKeyValueRange()) {
             auto it = node_hash.constFind(id);

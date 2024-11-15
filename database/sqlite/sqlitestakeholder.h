@@ -33,8 +33,8 @@ signals:
     void SAppendPrice(Section section, TransShadow* trans_shadow);
 
 public slots:
-    void RReplaceNode(int old_node_id, int new_node_id) override;
-    void RRemoveNode(int node_id, bool branch) override;
+    void RReplaceNode(int old_node_id, int new_node_id, bool is_helper) override;
+    void RRemoveNode(int node_id, bool branch, bool is_helper) override;
 
 public:
     bool SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const;
@@ -52,6 +52,7 @@ protected:
     QString InternalReferenceQS() const override;
     QString ExternalReferenceQS() const override;
     QString QSHelperReferenceFTS() const override;
+    QString QSReplaceHelperFTS() const override;
 
     // table
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
@@ -77,7 +78,6 @@ private:
     bool UpdateDateTimePrice(CString& date_time, double unit_price, int trans_id);
 
 private:
-    void ReplaceNodeFunctionStakeholder(int old_node_id, int new_node_id);
 };
 
 #endif // SQLITESTAKEHOLDER_H

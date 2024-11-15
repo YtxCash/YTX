@@ -56,8 +56,8 @@ signals:
 
 public slots:
     // receive from remove node dialog
-    virtual void RRemoveNode(int node_id, bool branch);
-    virtual void RReplaceNode(int old_node_id, int new_node_id);
+    virtual void RRemoveNode(int node_id, bool branch, bool is_helper);
+    virtual void RReplaceNode(int old_node_id, int new_node_id, bool is_helper);
     // receive from sql
     void RUpdateProductSO(int old_node_id, int new_node_id);
     void RUpdateStakeholderO(int old_node_id, int new_node_id);
@@ -93,6 +93,7 @@ public:
 protected:
     // QS means QueryString
     bool RemoveNode(int node_id, bool branch) const;
+    void ReplaceHelper(int old_helper_id, int new_helper_id);
 
     // tree
     virtual QString ReadNodeQS() const = 0;
@@ -102,6 +103,7 @@ protected:
     virtual QString SearchTransQS() const = 0;
     virtual QString ExternalReferenceQS() const { return {}; }
     virtual QString QSHelperReferenceFTS() const { return {}; }
+    virtual QString QSReplaceHelperFTS() const { return {}; }
     virtual QString LeafTotalQS() const { return {}; }
     virtual QString UpdateNodeValueQS() const { return {}; }
 

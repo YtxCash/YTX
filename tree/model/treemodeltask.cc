@@ -406,17 +406,22 @@ QString TreeModelTask::GetPath(int node_id) const { return TreeModelUtils::GetPa
 
 void TreeModelTask::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const
 {
-    TreeModelUtils::LeafPathBranchPathFPT(leaf_path_, branch_path_, combo_model);
+    TreeModelUtils::LeafPathBranchPathFPT(node_hash_, leaf_path_, branch_path_, combo_model);
 }
 
 void TreeModelTask::LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
 {
-    TreeModelUtils::LeafPathExcludeIDFPT(leaf_path_, combo_model, exclude_id);
+    TreeModelUtils::LeafPathExcludeIDFPT(node_hash_, leaf_path_, combo_model, exclude_id);
 }
 
 void TreeModelTask::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
 {
     TreeModelUtils::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
+}
+
+void TreeModelTask::LeafPathHelperFTS(QStandardItemModel* combo_model, int helper_id, FilterMode filter_mode) const
+{
+    TreeModelUtils::LeafPathHelperFTS(node_hash_, leaf_path_, combo_model, helper_id, filter_mode);
 }
 
 QModelIndex TreeModelTask::GetIndex(int node_id) const

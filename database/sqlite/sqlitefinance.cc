@@ -53,7 +53,7 @@ void SqliteFinance::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
     trans->state = query.value("state").toBool();
-    trans->helper_node = query.value("helper_node").toBool();
+    trans->helper_node = query.value("helper_node").toInt();
 }
 
 void SqliteFinance::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
@@ -126,6 +126,15 @@ QString SqliteFinance::QSHelperReferenceFTS() const
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM finance_transaction
     WHERE helper_node = :node_id AND removed = 0
+    )");
+}
+
+QString SqliteFinance::QSReplaceHelperFTS() const
+{
+    return QStringLiteral(R"(
+    UPDATE finance_transaction SET
+        helper_node = :new_helper_id
+    WHERE helper_node = :old_helper_id
     )");
 }
 

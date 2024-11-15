@@ -92,11 +92,11 @@ public:
     static QString ConstructPathFPTS(const Node* root, const Node* node, CString& separator);
     static void UpdatePathFPTS(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator);
     static void UpdateSeparatorFPTS(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator);
-    static void LeafPathBranchPathFPT(CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
-    static void LeafPathExcludeIDFPT(CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
-    static void LeafPathSpecificUnitPS(
-        CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, UnitFilterMode unit_filter_mode);
+    static void LeafPathBranchPathFPT(CNodeHash& node_hash, CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
+    static void LeafPathExcludeIDFPT(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
+    static void LeafPathSpecificUnitPS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, FilterMode filter_mode);
     static void LeafPathSpecificUnitExcludeIDFPTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, int exclude_id);
+    static void LeafPathHelperFTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int helper_id, FilterMode filter_mode);
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsBranchFTS(Node* node, CString& message);
     static bool IsHelperFTS(Node* node, CString& message);

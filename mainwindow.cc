@@ -24,6 +24,7 @@
 #include "delegate/line.h"
 #include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
+#include "delegate/table/helpernode.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledatetime.h"
 #include "delegate/table/tabledbclick.h"
@@ -518,9 +519,9 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
     auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSubtotal), subtotal);
 
-    // auto* helper_node { new SpecificUnit(tree_model, UNIT_HELPER, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
-    // table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kHelperNode), helper_node);
-    // connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &SpecificUnit::RUpdateComboModel);
+    auto* helper_node { new HelperNode(tree_model, FilterMode::kIncludeWithEmpty, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kHelperNode), helper_node);
+    connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &HelperNode::RUpdateComboModel);
 }
 
 void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
@@ -546,9 +547,9 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSubtotal), subtotal);
 
-    // auto* helper_node { new SpecificUnit(tree_model, UNIT_HELPER, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
-    // table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kHelperNode), helper_node);
-    // connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &SpecificUnit::RUpdateComboModel);
+    auto* helper_node { new HelperNode(tree_model, FilterMode::kIncludeWithEmpty, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kHelperNode), helper_node);
+    connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &HelperNode::RUpdateComboModel);
 }
 
 void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
@@ -582,7 +583,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
     auto product_tree_model { product_tree_->Model() };
-    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, FilterMode::kExcludeOnly, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
@@ -603,23 +604,22 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PROD, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), outside_product);
-    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
+    auto* helper_node { new HelperNode(tree_model, FilterMode::kIncludeWithEmpty, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), helper_node);
+    connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &HelperNode::RUpdateComboModel);
 }
 
 void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
 {
     auto product_tree_model { product_tree_->Model() };
-    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, UnitFilterMode::kExcludeUnitOnly, table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, FilterMode::kExcludeOnly, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
     connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto* outside_product { new SpecificUnit(stakeholder_tree_model, UNIT_PROD, false, UnitFilterMode::kIncludeUnitOnlyWithEmpty, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), outside_product);
-    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, outside_product, &SpecificUnit::RUpdateComboModel);
+    auto* helper_node { new HelperNode(stakeholder_tree_model, FilterMode::kIncludeWithEmpty, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), helper_node);
+    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, helper_node, &HelperNode::RUpdateComboModel);
 
     auto* color { new ColorR(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);
@@ -770,7 +770,7 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
     auto* deadline { new DeadLine(DD, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 
-    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMP, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMP, true, FilterMode::kIncludeWithEmpty, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
     connect(stakeholder_tree_->Model(), &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
@@ -796,12 +796,12 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
-    auto* employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMP, true, UnitFilterMode::kIncludeUnitOnlyWithEmpty, tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMP, true, FilterMode::kIncludeWithEmpty, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
     auto party_unit { info.section == Section::kSales ? UNIT_CUST : UNIT_VEND };
-    auto* name { new OrderName(stakeholder_tree_model, party_unit, UnitFilterMode::kIncludeUnitOnly, tree_view) };
+    auto* name { new OrderName(stakeholder_tree_model, party_unit, FilterMode::kIncludeOnly, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
     connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, name, &OrderName::RUpdateComboModel);
 
@@ -910,15 +910,27 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     auto* sql { data_->sql };
     bool interal_reference { sql->InternalReference(node_id) };
     bool exteral_reference { sql->ExternalReference(node_id) };
+    bool helper_reference { sql->HelperReferenceFTS(node_id) };
 
-    if (!interal_reference && !exteral_reference) {
+    if (!interal_reference && !exteral_reference && !helper_reference) {
         RemoveView(model, index, node_id);
         return;
     }
 
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
+    bool is_helper { false };
 
-    auto* dialog { new class RemoveNode(model, data_->info.section, node_id, unit, branch, exteral_reference, this) };
+    switch (data_->info.section) {
+    case Section::kFinance:
+    case Section::kStakeholder:
+    case Section::kTask:
+        is_helper = index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toInt();
+        break;
+    default:
+        break;
+    }
+
+    auto* dialog { new class RemoveNode(model, data_->info.section, node_id, unit, branch, exteral_reference, is_helper, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
     connect(dialog, &RemoveNode::SReplaceNode, sql, &Sqlite::RReplaceNode);
     dialog->exec();
