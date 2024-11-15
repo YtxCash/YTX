@@ -1328,8 +1328,8 @@ void MainWindow::SetPurchaseData()
 
 void MainWindow::SetHeader()
 {
-    finance_data_.info.tree_header
-        = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Foreign Total"), tr("Local Total"), {} };
+    finance_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("IsHelper"),
+        tr("Foreign Total"), tr("Local Total"), {} };
     finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("FXRate"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
@@ -1347,7 +1347,7 @@ void MainWindow::SetHeader()
         tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity"), tr("Amount") };
 
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"),
-        tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
+        tr("IsHelper"), tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
     stakeholder_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("OutsideProduct"), tr("D"), tr("S"),
         tr("InsideProduct"), tr("PlaceHolder") };
     stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("InsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
@@ -1355,8 +1355,8 @@ void MainWindow::SetHeader()
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {},
         tr("Employee"), tr("Deadline"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
 
-    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("DateTime"),
-        tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
+    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("IsHelper"),
+        tr("DateTime"), tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
     task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
