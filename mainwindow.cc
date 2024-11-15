@@ -395,7 +395,7 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
         DelegateTask(view, tree_model, settings, node_id);
         break;
     case Section::kStakeholder:
-        DelegateStakeholder(view, tree_model, settings, node_id);
+        DelegateStakeholder(view, tree_model, settings);
         break;
     default:
         break;
@@ -576,12 +576,8 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kSubtotal), subtotal);
 }
 
-void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
+void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
 {
-    auto* node { new TableCombo(tree_model, node_id, Filter::kExcludeSpecific, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kRhsNode), node);
-    connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
-
     auto product_tree_model { product_tree_->Model() };
     auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, Filter::kExcludeSpecific, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);

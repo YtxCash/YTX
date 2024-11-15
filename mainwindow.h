@@ -153,7 +153,7 @@ private:
     void DelegateFinance(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
     void DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
     void DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
-    void DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
+    void DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const;
     void DelegateOrder(PQTableView table_view, CSettings* settings) const;
     void SetView(PQTableView table_view) const;
 
