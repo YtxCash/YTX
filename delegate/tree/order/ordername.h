@@ -27,7 +27,7 @@
 
 class OrderName : public StyledItemDelegate {
 public:
-    OrderName(CTreeModel* tree_model, int unit, FilterMode unit_filter_mode, QObject* parent = nullptr);
+    OrderName(CTreeModel* tree_model, int unit, Filter unit_filter, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -39,7 +39,7 @@ public slots:
 
 private:
     CTreeModel* tree_model_ {};
-    const FilterMode filter_mode_ {};
+    const Filter filter_ {};
     const int unit_ {};
 
     QStandardItemModel* combo_model_ {};

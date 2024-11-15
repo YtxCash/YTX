@@ -24,7 +24,7 @@
 enum class Section { kFinance, kProduct, kTask, kStakeholder, kSales, kPurchase };
 
 // for delegate
-enum class FilterMode { kIncludeOnly, kExcludeOnly, kIncludeWithEmpty };
+enum class Filter { kIncludeSpecific, kExcludeSpecific, kIncludeSpecificWithNone, kIncludeAllWithNone };
 
 // Enum class defining trans columns
 enum class TableEnum { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };

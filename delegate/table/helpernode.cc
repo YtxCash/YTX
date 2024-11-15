@@ -4,10 +4,10 @@
 
 #include "widget/combobox.h"
 
-HelperNode::HelperNode(CTreeModel* tree_model, FilterMode filter_mode, QObject* parent)
+HelperNode::HelperNode(CTreeModel* tree_model, Filter filter, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
-    , filter_mode_ { filter_mode }
+    , filter_ { filter }
 {
     combo_model_ = new QStandardItemModel(this);
     RUpdateComboModel();
@@ -69,4 +69,4 @@ void HelperNode::updateEditorGeometry(QWidget* editor, const QStyleOptionViewIte
     editor->setGeometry(option.rect);
 }
 
-void HelperNode::RUpdateComboModel() { tree_model_->LeafPathHelperFTS(combo_model_, 0, filter_mode_); }
+void HelperNode::RUpdateComboModel() { tree_model_->LeafPathHelperNodeFTS(combo_model_, 0, filter_); }

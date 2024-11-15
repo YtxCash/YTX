@@ -2,9 +2,10 @@
 
 #include "widget/combobox.h"
 
-TableCombo::TableCombo(CTreeModel* tree_model, int exclude_id, QObject* parent)
+TableCombo::TableCombo(CTreeModel* tree_model, int specific_node, Filter filter, QObject* parent)
     : StyledItemDelegate { parent }
-    , exclude_id_ { exclude_id }
+    , specific_node_ { specific_node }
+    , filter_ { filter }
     , tree_model_ { tree_model }
 {
     combo_model_ = new QStandardItemModel(this);
@@ -71,4 +72,4 @@ void TableCombo::updateEditorGeometry(QWidget* editor, const QStyleOptionViewIte
     editor->setGeometry(option.rect);
 }
 
-void TableCombo::RUpdateComboModel() { tree_model_->LeafPathExcludeIDFPT(combo_model_, exclude_id_); }
+void TableCombo::RUpdateComboModel() { tree_model_->LeafPathRhsNodeFPT(combo_model_, specific_node_, filter_); }

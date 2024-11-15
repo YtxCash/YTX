@@ -74,19 +74,19 @@ QStringList TreeModelStakeholder::ChildrenNameFPTS(int node_id, int exclude_chil
 
 QString TreeModelStakeholder::GetPath(int node_id) const { return TreeModelUtils::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
-void TreeModelStakeholder::LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, FilterMode filter_mode) const
+void TreeModelStakeholder::LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const
 {
-    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, combo_model, unit, filter_mode);
+    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, model, specific_unit, filter);
 }
 
-void TreeModelStakeholder::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
+void TreeModelStakeholder::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
 {
-    TreeModelUtils::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
+    TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
 }
 
-void TreeModelStakeholder::LeafPathHelperFTS(QStandardItemModel* combo_model, int helper_id, FilterMode filter_mode) const
+void TreeModelStakeholder::LeafPathHelperNodeFTS(QStandardItemModel* model, int specific_node, Filter filter) const
 {
-    TreeModelUtils::LeafPathHelperFTS(node_hash_, leaf_path_, combo_model, helper_id, filter_mode);
+    TreeModelUtils::LeafPathHelperNodeFTS(node_hash_, leaf_path_, model, specific_node, filter);
 }
 
 QModelIndex TreeModelStakeholder::GetIndex(int node_id) const

@@ -4,10 +4,10 @@
 
 #include "widget/combobox.h"
 
-SpecificUnit::SpecificUnit(CTreeModel* tree_model, int unit, bool skip_branch, FilterMode filter_mode, QObject* parent)
+SpecificUnit::SpecificUnit(CTreeModel* tree_model, int unit, bool skip_branch, Filter filter, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
-    , filter_mode_ { filter_mode }
+    , filter_ { filter }
     , unit_ { unit }
     , skip_branch_ { skip_branch }
 {
@@ -74,4 +74,4 @@ void SpecificUnit::updateEditorGeometry(QWidget* editor, const QStyleOptionViewI
     editor->setGeometry(option.rect);
 }
 
-void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, filter_mode_); }
+void SpecificUnit::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, filter_); }

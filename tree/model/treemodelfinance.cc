@@ -381,24 +381,21 @@ QStringList TreeModelFinance::ChildrenNameFPTS(int node_id, int exclude_child) c
 
 QString TreeModelFinance::GetPath(int node_id) const { return TreeModelUtils::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
-void TreeModelFinance::LeafPathBranchPathFPT(QStandardItemModel* combo_model) const
+void TreeModelFinance::PathPreferencesFPT(QStandardItemModel* model) const { TreeModelUtils::PathPreferencesFPT(node_hash_, leaf_path_, branch_path_, model); }
+
+void TreeModelFinance::LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const
 {
-    TreeModelUtils::LeafPathBranchPathFPT(node_hash_, leaf_path_, branch_path_, combo_model);
+    TreeModelUtils::LeafPathRhsNodeFPT(node_hash_, leaf_path_, model, specific_node, filter);
 }
 
-void TreeModelFinance::LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
+void TreeModelFinance::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
 {
-    TreeModelUtils::LeafPathExcludeIDFPT(node_hash_, leaf_path_, combo_model, exclude_id);
+    TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
 }
 
-void TreeModelFinance::LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
+void TreeModelFinance::LeafPathHelperNodeFTS(QStandardItemModel* model, int specific_node, Filter filter) const
 {
-    TreeModelUtils::LeafPathSpecificUnitExcludeIDFPTS(node_hash_, leaf_path_, combo_model, unit, exclude_id);
-}
-
-void TreeModelFinance::LeafPathHelperFTS(QStandardItemModel* combo_model, int helper_id, FilterMode filter_mode) const
-{
-    TreeModelUtils::LeafPathHelperFTS(node_hash_, leaf_path_, combo_model, helper_id, filter_mode);
+    TreeModelUtils::LeafPathHelperNodeFTS(node_hash_, leaf_path_, model, specific_node, filter);
 }
 
 QModelIndex TreeModelFinance::GetIndex(int node_id) const

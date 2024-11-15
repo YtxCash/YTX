@@ -133,29 +133,30 @@ public:
         Q_UNUSED(tmp_node);
         Q_UNUSED(node_id);
     }
-    virtual void LeafPathBranchPathFPT(QStandardItemModel* combo_model) const { Q_UNUSED(combo_model); }
-    virtual void LeafPathExcludeIDFPT(QStandardItemModel* combo_model, int exclude_id) const
+    virtual void PathPreferencesFPT(QStandardItemModel* model) const { Q_UNUSED(model); }
+    virtual void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const
     {
-        Q_UNUSED(combo_model);
-        Q_UNUSED(exclude_id);
+        Q_UNUSED(model);
+        Q_UNUSED(specific_node);
+        Q_UNUSED(filter);
     }
-    virtual void LeafPathSpecificUnitExcludeIDFPTS(QStandardItemModel* combo_model, int unit, int exclude_id) const
+    virtual void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
     {
-        Q_UNUSED(combo_model);
-        Q_UNUSED(unit);
-        Q_UNUSED(exclude_id);
+        Q_UNUSED(model);
+        Q_UNUSED(specific_unit);
+        Q_UNUSED(exclude_node);
     }
-    virtual void LeafPathHelperFTS(QStandardItemModel* combo_model, int exclude_id, FilterMode filter_mode) const
+    virtual void LeafPathHelperNodeFTS(QStandardItemModel* model, int specific_node, Filter filter) const
     {
-        Q_UNUSED(combo_model);
-        Q_UNUSED(exclude_id);
-        Q_UNUSED(filter_mode);
+        Q_UNUSED(model);
+        Q_UNUSED(specific_node);
+        Q_UNUSED(filter);
     }
-    virtual void LeafPathSpecificUnitPS(QStandardItemModel* combo_model, int unit, FilterMode filter_mode) const
+    virtual void LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const
     {
-        Q_UNUSED(combo_model);
-        Q_UNUSED(unit);
-        Q_UNUSED(filter_mode);
+        Q_UNUSED(model);
+        Q_UNUSED(specific_unit);
+        Q_UNUSED(filter);
     }
     virtual void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
     {

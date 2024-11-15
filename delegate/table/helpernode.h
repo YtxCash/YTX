@@ -27,7 +27,7 @@
 
 class HelperNode : public StyledItemDelegate {
 public:
-    HelperNode(CTreeModel* tree_model, FilterMode filter_mode, QObject* parent = nullptr);
+    HelperNode(CTreeModel* tree_model, Filter filter, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -40,7 +40,7 @@ public slots:
 
 private:
     CTreeModel* tree_model_ {};
-    const FilterMode filter_mode_ {};
+    const Filter filter_ {};
 
     QStandardItemModel* combo_model_ {};
 };

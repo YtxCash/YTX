@@ -27,7 +27,7 @@
 
 class SpecificUnit : public StyledItemDelegate {
 public:
-    SpecificUnit(CTreeModel* tree_model, int unit, bool skip_branch, FilterMode unit_filter_mode, QObject* parent = nullptr);
+    SpecificUnit(CTreeModel* tree_model, int unit, bool skip_branch, Filter filter, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -40,7 +40,7 @@ public slots:
 
 private:
     CTreeModel* tree_model_ {};
-    const FilterMode filter_mode_ {};
+    const Filter filter_ {};
     const int unit_ {};
     const bool skip_branch_ {};
 

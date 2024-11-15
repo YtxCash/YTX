@@ -62,9 +62,9 @@ public:
         return true;
     }
 
-    template <typename T> static const T& GetValue(CNodeHash& node_hash, int node_id, T Node::* member)
+    template <typename T> static const T& GetValue(CNodeHash& hash, int node_id, T Node::* member)
     {
-        if (auto it = node_hash.constFind(node_id); it != node_hash.constEnd())
+        if (auto it = hash.constFind(node_id); it != hash.constEnd())
             return it.value()->*member;
 
         // If the node_id does not exist, return a static empty object to ensure a safe default value
@@ -78,36 +78,36 @@ public:
     }
 
     static void InitializeRoot(Node*& root, int default_unit);
-    static void SetParent(CNodeHash& node_hash, Node* root, Node* node, int parent_id);
+    static void SetParent(CNodeHash& hash, Node* root, Node* node, int parent_id);
 
-    static Node* GetNodeByID(CNodeHash& node_hash, int node_id);
+    static Node* GetNodeByID(CNodeHash& hash, int node_id);
     static bool IsDescendant(Node* lhs, Node* rhs);
-    static bool ChildrenEmpty(CNodeHash& node_hash, int node_id);
-    static void SearchNodeFPTS(CNodeHash& node_hash, QList<const Node*>& node_list, const QList<int>& node_id_list);
+    static bool ChildrenEmpty(CNodeHash& hash, int node_id);
+    static void SearchNodeFPTS(CNodeHash& hash, QList<const Node*>& node_list, const QList<int>& node_id_list);
 
     static void SortIterative(Node* node, std::function<bool(const Node*, const Node*)> Compare);
-    static void UpdateComboModel(QStandardItemModel* combo_model, const QVector<std::pair<QString, int>>& items);
+    static void UpdateComboModel(QStandardItemModel* model, const QVector<std::pair<QString, int>>& items);
 
-    static QString GetPathFPTS(CStringHash& leaf_path, CStringHash& branch_path, int node_id);
+    static QString GetPathFPTS(CStringHash& leaf, CStringHash& branch, int node_id);
     static QString ConstructPathFPTS(const Node* root, const Node* node, CString& separator);
-    static void UpdatePathFPTS(StringHash& leaf_path, StringHash& branch_path, const Node* root, const Node* node, CString& separator);
-    static void UpdateSeparatorFPTS(StringHash& leaf_path, StringHash& branch_path, CString& old_separator, CString& new_separator);
-    static void LeafPathBranchPathFPT(CNodeHash& node_hash, CStringHash& leaf_path, CStringHash& branch_path, QStandardItemModel* combo_model);
-    static void LeafPathExcludeIDFPT(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int exclude_id);
-    static void LeafPathSpecificUnitPS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, FilterMode filter_mode);
-    static void LeafPathSpecificUnitExcludeIDFPTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int unit, int exclude_id);
-    static void LeafPathHelperFTS(CNodeHash& node_hash, CStringHash& leaf_path, QStandardItemModel* combo_model, int helper_id, FilterMode filter_mode);
+    static void UpdatePathFPTS(StringHash& leaf, StringHash& branch, const Node* root, const Node* node, CString& separator);
+    static void UpdateSeparatorFPTS(StringHash& leaf, StringHash& branch, CString& old_separator, CString& new_separator);
+    static void PathPreferencesFPT(CNodeHash& hash, CStringHash& leaf, CStringHash& branch, QStandardItemModel* model);
+    static void LeafPathRhsNodeFPT(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_node, Filter filter);
+    static void LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, Filter filter);
+    static void LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node);
+    static void LeafPathHelperNodeFTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_node, Filter filter);
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsBranchFTS(Node* node, CString& message);
     static bool IsHelperFTS(Node* node, CString& message);
-    static bool IsOpenedFPTS(CTableHash& table_hash, int node_id, CString& message);
-    static QStringList ChildrenNameFPTS(CNodeHash& node_hash, Node* root, int node_id, int exclude_child);
+    static bool IsOpenedFPTS(CTableHash& hash, int node_id, CString& message);
+    static QStringList ChildrenNameFPTS(CNodeHash& hash, Node* root, int node_id, int exclude_child);
 
     static void UpdateBranchUnitF(const Node* root, Node* node);
-    static void CopyNodeFPTS(CNodeHash& node_hash, Node* tmp_node, int node_id);
+    static void CopyNodeFPTS(CNodeHash& hash, Node* tmp_node, int node_id);
     static void UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff);
     static void ShowTemporaryTooltipFPTS(CString& message, int duration);
-    static QSet<int> ChildrenSetFPTS(CNodeHash& node_hash, int node_id);
+    static QSet<int> ChildrenSetFPTS(CNodeHash& hash, int node_id);
 
     static bool IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message);
     static bool IsHelperReferencedFTS(Sqlite* sql, int node_id, CString& message);

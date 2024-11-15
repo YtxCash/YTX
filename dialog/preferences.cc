@@ -21,7 +21,7 @@ Preferences::Preferences(CInfo& info, CTreeModel* model, Interface interface, Se
     SignalBlocker blocker(this);
 
     leaf_branch_model_ = new QStandardItemModel(this);
-    model_->LeafPathBranchPathFPT(leaf_branch_model_);
+    model_->PathPreferencesFPT(leaf_branch_model_);
 
     IniStringList();
     IniDialog(info.unit_map);
