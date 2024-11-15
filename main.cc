@@ -22,7 +22,6 @@
 #include <QLockFile>
 
 #include "component/constvalue.h"
-#include "component/dpihelper.h"
 #include "mainwindow.h"
 
 #ifdef Q_OS_MACOS
@@ -31,8 +30,6 @@
 
 int main(int argc, char* argv[])
 {
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-
 // begin set ini file directory
 #ifdef Q_OS_WIN
     QApplication application(argc, argv);
@@ -51,7 +48,6 @@ int main(int argc, char* argv[])
     // end set ini file directory
 
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
-    DPIHelper::SetApplicationDPI();
 
     // begin set database file, then try to lock it, if false return
     QString file_path {};
@@ -76,8 +72,6 @@ int main(int argc, char* argv[])
 
     MainWindow w(dir_path);
     w.show();
-
-    // DPIHelper::AdjustWidgetDPI(&w);
 
     if (!file_path.isEmpty())
         w.ROpenFile(file_path);
