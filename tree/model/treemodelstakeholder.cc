@@ -333,12 +333,10 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
     if (branch) {
         TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
         branch_path_.remove(node_id);
-        sql_->RemoveNode(node_id, true);
     }
 
     if (!branch) {
         leaf_path_.remove(node_id);
-        sql_->RemoveNode(node_id, false);
     }
 
     emit SSearch();

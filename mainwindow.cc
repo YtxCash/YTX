@@ -918,7 +918,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
 
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
 
-    auto* dialog { new class RemoveNode(model, data_->info.section, node_id, unit, exteral_reference, this) };
+    auto* dialog { new class RemoveNode(model, data_->info.section, node_id, unit, branch, exteral_reference, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
     connect(dialog, &RemoveNode::SReplaceNode, sql, &Sqlite::RReplaceNode);
     dialog->exec();

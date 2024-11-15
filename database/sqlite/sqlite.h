@@ -46,6 +46,7 @@ signals:
     // send to TreeModel
     void SUpdateMultiLeafTotalFPT(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
+    void SRemoveHelperNode(int node_id);
     // send to Mainwindow
     void SFreeView(int node_id);
     // send to sql itsself
@@ -55,7 +56,7 @@ signals:
 
 public slots:
     // receive from remove node dialog
-    virtual void RRemoveNode(int node_id);
+    virtual void RRemoveNode(int node_id, bool branch);
     virtual void RReplaceNode(int old_node_id, int new_node_id);
     // receive from sql
     void RUpdateProductSO(int old_node_id, int new_node_id);
@@ -65,7 +66,6 @@ public:
     // tree
     bool ReadNode(NodeHash& node_hash);
     bool WriteNode(int parent_id, Node* node) const;
-    bool RemoveNode(int node_id, bool branch) const;
     bool DragNode(int destination_node_id, int node_id) const;
     bool InternalReference(int node_id) const;
     bool ExternalReference(int node_id) const;
@@ -92,6 +92,7 @@ public:
 
 protected:
     // QS means QueryString
+    bool RemoveNode(int node_id, bool branch) const;
 
     // tree
     virtual QString ReadNodeQS() const = 0;

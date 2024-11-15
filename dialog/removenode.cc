@@ -6,11 +6,12 @@
 #include "dialog/signalblocker.h"
 #include "ui_removenode.h"
 
-RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool disable, QWidget* parent)
+RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool branch, bool disable, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::RemoveNode)
     , node_id_ { node_id }
     , unit_ { unit }
+    , branch_ { branch }
     , section_ { section }
     , model_ { model }
 {
@@ -51,7 +52,7 @@ void RemoveNode::RCustomAccept()
 
     if (msg.exec() == QMessageBox::Ok) {
         if (ui->rBtnRemoveRecords->isChecked())
-            emit SRemoveNode(node_id_);
+            emit SRemoveNode(node_id_, branch_);
 
         if (ui->rBtnReplaceRecords->isChecked()) {
             int new_node_id { ui->comboBox->currentData().toInt() };

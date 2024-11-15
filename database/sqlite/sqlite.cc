@@ -16,7 +16,7 @@ Sqlite::Sqlite(CInfo& info, QObject* parent)
 
 Sqlite::~Sqlite() { qDeleteAll(trans_hash_); }
 
-void Sqlite::RRemoveNode(int node_id)
+void Sqlite::RRemoveNode(int node_id, bool branch)
 {
     QMultiHash<int, int> node_trans { RemoveNodeFunction(node_id) };
 
@@ -32,6 +32,8 @@ void Sqlite::RRemoveNode(int node_id)
     // Recycle will mark all transactions for removal. This must occur after SRemoveMultiTrans()
     for (int trans_id : node_trans.values())
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
+
+    RemoveNode(node_id, branch);
 }
 
 QMultiHash<int, int> Sqlite::RemoveNodeFunction(int node_id) const

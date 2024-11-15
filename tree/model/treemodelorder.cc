@@ -406,13 +406,10 @@ bool TreeModelOrder::RemoveNode(int row, const QModelIndex& parent)
     parent_node->children.removeOne(node);
     endRemoveRows();
 
-    if (branch) {
-        sql_->RemoveNode(node_id, true);
-    } else {
+    if (!branch) {
         if (node->finished) {
             UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
         }
-        sql_->RemoveNode(node_id, false);
     }
 
     emit SSearch();

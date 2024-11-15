@@ -34,7 +34,7 @@ signals:
 
 public slots:
     void RReplaceNode(int old_node_id, int new_node_id) override;
-    void RRemoveNode(int node_id) override;
+    void RRemoveNode(int node_id, bool branch) override;
 
 public:
     bool SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const;

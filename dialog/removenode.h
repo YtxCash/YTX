@@ -32,12 +32,12 @@ class RemoveNode final : public QDialog {
     Q_OBJECT
 
 public:
-    RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool disable_remove, QWidget* parent = nullptr);
+    RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool branch, bool disable_remove, QWidget* parent = nullptr);
     ~RemoveNode();
 
 signals:
     // send to tree model
-    void SRemoveNode(int node_id);
+    void SRemoveNode(int node_id, bool branch);
     void SReplaceNode(int old_node_id, int new_node_id);
 
 private slots:
@@ -53,6 +53,7 @@ private:
 private:
     int node_id_ {};
     int unit_ {};
+    bool branch_ {};
     Section section_ {};
 
     CTreeModel* model_ {};
