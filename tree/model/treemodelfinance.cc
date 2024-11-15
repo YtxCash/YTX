@@ -207,6 +207,8 @@ QVariant TreeModelFinance::data(const QModelIndex& index, int role) const
         return node->branch ? node->branch : QVariant();
     case TreeEnumFinance::kUnit:
         return node->unit;
+    case TreeEnumFinance::kIsHelper:
+        return node->is_helper ? node->is_helper : QVariant();
     case TreeEnumFinance::kInitialTotal:
         return node->unit == root_->unit ? QVariant() : node->initial_total;
     case TreeEnumFinance::kFinalTotal:
@@ -276,6 +278,8 @@ void TreeModelFinance::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumFinance::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
+        case TreeEnumFinance::kIsHelper:
+            return (order == Qt::AscendingOrder) ? (lhs->is_helper < rhs->is_helper) : (lhs->is_helper > rhs->is_helper);
         case TreeEnumFinance::kInitialTotal:
             return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
         case TreeEnumFinance::kFinalTotal:
@@ -306,6 +310,7 @@ Qt::ItemFlags TreeModelFinance::flags(const QModelIndex& index) const
     case TreeEnumFinance::kInitialTotal:
     case TreeEnumFinance::kFinalTotal:
     case TreeEnumFinance::kBranch:
+    case TreeEnumFinance::kIsHelper:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

@@ -111,6 +111,8 @@ QVariant TreeModelTask::data(const QModelIndex& index, int role) const
         return node->branch ? node->branch : QVariant();
     case TreeEnumTask::kUnit:
         return node->unit;
+    case TreeEnumTask::kIsHelper:
+        return node->is_helper ? node->is_helper : QVariant();
     case TreeEnumTask::kColor:
         return node->color;
     case TreeEnumTask::kDateTime:
@@ -204,6 +206,8 @@ void TreeModelTask::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->finished < rhs->finished) : (lhs->finished > rhs->finished);
         case TreeEnumTask::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
+        case TreeEnumTask::kIsHelper:
+            return (order == Qt::AscendingOrder) ? (lhs->is_helper < rhs->is_helper) : (lhs->is_helper > rhs->is_helper);
         case TreeEnumTask::kColor:
             return (order == Qt::AscendingOrder) ? (lhs->color < rhs->color) : (lhs->color > rhs->color);
         case TreeEnumTask::kDateTime:
@@ -245,6 +249,7 @@ Qt::ItemFlags TreeModelTask::flags(const QModelIndex& index) const
     case TreeEnumTask::kAmount:
     case TreeEnumTask::kBranch:
     case TreeEnumTask::kFinished:
+    case TreeEnumTask::kIsHelper:
     case TreeEnumTask::kColor:
     case TreeEnumTask::kUnitCost:
         flags &= ~Qt::ItemIsEditable;

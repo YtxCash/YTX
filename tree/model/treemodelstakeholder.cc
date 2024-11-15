@@ -273,6 +273,8 @@ void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
         case TreeEnumStakeholder::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
+        case TreeEnumStakeholder::kIsHelper:
+            return (order == Qt::AscendingOrder) ? (lhs->is_helper < rhs->is_helper) : (lhs->is_helper > rhs->is_helper);
         case TreeEnumStakeholder::kDeadline:
             return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
         case TreeEnumStakeholder::kEmployee:
@@ -362,6 +364,8 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return node->branch ? node->branch : QVariant();
     case TreeEnumStakeholder::kUnit:
         return node->unit;
+    case TreeEnumStakeholder::kIsHelper:
+        return node->is_helper ? node->is_helper : QVariant();
     case TreeEnumStakeholder::kDeadline:
         return node->date_time.isEmpty() || skip ? QVariant() : node->date_time;
     case TreeEnumStakeholder::kEmployee:
@@ -439,6 +443,7 @@ Qt::ItemFlags TreeModelStakeholder::flags(const QModelIndex& index) const
         flags &= ~Qt::ItemIsEditable;
         break;
     case TreeEnumStakeholder::kBranch:
+    case TreeEnumStakeholder::kIsHelper:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

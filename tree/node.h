@@ -56,6 +56,7 @@ struct Node {
     double second {};
     double discount {};
     bool finished {};
+    bool is_helper {};
 
     // order and stakeholder
     int employee {};
@@ -84,6 +85,7 @@ inline Node::Node(const Node& other)
     , second(other.second)
     , discount(other.discount)
     , finished(other.finished)
+    , is_helper(other.is_helper)
     , employee(other.employee)
     , party(other.party)
     , final_total(other.final_total)
@@ -109,6 +111,7 @@ inline Node& Node::operator=(const Node& other)
     color = other.color;
     discount = other.discount;
     finished = other.finished;
+    is_helper = other.is_helper;
     date_time = other.date_time;
     employee = other.employee;
     party = other.party;
@@ -123,9 +126,10 @@ inline bool Node::operator==(const Node& other) const noexcept
     auto AlmostEqual = [](double a, double b, double tolerance = TOLERANCE) noexcept { return std::abs(a - b) < tolerance; };
 
     // Compare non-floating-point data members
-    bool basic_fields_equal = std::tie(name, id, code, party, employee, finished, date_time, color, description, note, rule, branch, unit, parent, children)
-        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.finished, other.date_time, other.color, other.description, other.note,
-            other.rule, other.branch, other.unit, other.parent, other.children);
+    bool basic_fields_equal
+        = std::tie(name, id, code, party, employee, finished, is_helper, date_time, color, description, note, rule, branch, unit, parent, children)
+        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.finished, other.is_helper, other.date_time, other.color,
+            other.description, other.note, other.rule, other.branch, other.unit, other.parent, other.children);
 
     // Compare floating-point data members, considering tolerance
     bool floating_fields_equal = AlmostEqual(first, other.first) && AlmostEqual(second, other.second) && AlmostEqual(discount, other.discount)
@@ -144,6 +148,7 @@ inline void Node::Reset()
     second = 0.0;
     discount = 0.0;
     finished = false;
+    is_helper = false;
     first = 0.0;
     date_time.clear();
     description.clear();
@@ -175,6 +180,7 @@ struct NodeShadow {
     double* second {};
     double* discount {};
     bool* finished {};
+    bool* is_helper {};
 
     QString* date_time {};
     QString* color {};
@@ -200,6 +206,7 @@ inline void NodeShadow::Reset()
     second = nullptr;
     discount = nullptr;
     finished = nullptr;
+    is_helper = nullptr;
 
     date_time = nullptr;
     color = nullptr;
@@ -226,6 +233,7 @@ inline void NodeShadow::Set(Node* node)
         second = &node->second;
         discount = &node->discount;
         finished = &node->finished;
+        is_helper = &node->is_helper;
 
         date_time = &node->date_time;
         color = &node->color;

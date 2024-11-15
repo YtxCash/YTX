@@ -167,6 +167,7 @@ QString MainwindowSqlite::NodeFinance()
         rule             BOOLEAN    DEFAULT 0,
         branch           BOOLEAN    DEFAULT 0,
         unit             INTEGER,
+        is_helper        BOOLEAN    DEFAULT 0,
         initial_total    NUMERIC,
         final_total      NUMERIC,
         removed          BOOLEAN    DEFAULT 0
@@ -186,6 +187,7 @@ QString MainwindowSqlite::NodeStakeholder()
         rule              BOOLEAN    DEFAULT 0,
         branch            BOOLEAN    DEFAULT 0,
         unit              INTEGER,
+        is_helper         BOOLEAN    DEFAULT 0,
         deadline          TEXT,
         employee          INTEGER,
         payment_period    INTEGER,
@@ -229,6 +231,7 @@ QString MainwindowSqlite::NodeTask()
         rule             BOOLEAN    DEFAULT 0,
         branch           BOOLEAN    DEFAULT 0,
         unit             INTEGER,
+        is_helper        BOOLEAN    DEFAULT 0,
         finished         BOOLEAN    DEFAULT 0,
         date_time        TEXT,
         color            TEXT,
