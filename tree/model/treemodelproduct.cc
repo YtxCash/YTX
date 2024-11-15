@@ -127,6 +127,11 @@ void TreeModelProduct::LeafPathSpecificUnitPS(QStandardItemModel* model, int spe
     TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, model, specific_unit, filter);
 }
 
+void TreeModelProduct::LeafPathHelperNodeFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
+{
+    TreeModelUtils::LeafPathHelperNodeFTS(node_hash_, leaf_path_, model, specific_node, filter);
+}
+
 void TreeModelProduct::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
 {
     TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);

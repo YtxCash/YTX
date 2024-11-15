@@ -50,6 +50,7 @@ protected:
     QString ReadTransQS() const override;
     QString WriteTransQS() const override;
     QString ReadTransRangeQS(CString& in_list) const override;
+    QString QSReadTransHelperFPTS() const override;
     QString RReplaceNodeQS() const override;
     QString UpdateTransValueQS() const override;
     QString SearchTransQS() const override;

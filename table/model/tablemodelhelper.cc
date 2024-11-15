@@ -9,7 +9,7 @@ TableModelHelper::TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& i
     : TableModel { sql, rule, node_id, info, parent }
 {
     if (node_id >= 1)
-        sql_->ReadTransHelper(trans_shadow_list_, node_id);
+        sql_->ReadTransHelperFPTS(trans_shadow_list_, node_id);
 }
 
 void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)

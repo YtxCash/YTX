@@ -146,7 +146,7 @@ public:
         Q_UNUSED(specific_unit);
         Q_UNUSED(exclude_node);
     }
-    virtual void LeafPathHelperNodeFTS(QStandardItemModel* model, int specific_node, Filter filter) const
+    virtual void LeafPathHelperNodeFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
     {
         Q_UNUSED(model);
         Q_UNUSED(specific_node);

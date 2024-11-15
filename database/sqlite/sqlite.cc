@@ -870,12 +870,12 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
     return true;
 }
 
-bool Sqlite::ReadTransHelper(TransShadowList& trans_shadow_list, int node_id)
+bool Sqlite::ReadTransHelperFPTS(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    CString& string { ReadTransHelperQS() };
+    CString& string { QSReadTransHelperFPTS() };
     if (string.isEmpty())
         return false;
 

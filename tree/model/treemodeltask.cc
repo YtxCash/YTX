@@ -419,7 +419,7 @@ void TreeModelTask::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specif
     TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
 }
 
-void TreeModelTask::LeafPathHelperNodeFTS(QStandardItemModel* model, int specific_node, Filter filter) const
+void TreeModelTask::LeafPathHelperNodeFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
 {
     TreeModelUtils::LeafPathHelperNodeFTS(node_hash_, leaf_path_, model, specific_node, filter);
 }

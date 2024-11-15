@@ -227,6 +227,15 @@ QString SqliteProduct::ReadTransRangeQS(CString& in_list) const
         .arg(in_list);
 }
 
+QString SqliteProduct::QSReadTransHelperFPTS() const
+{
+    return QStringLiteral(R"(
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    FROM product_transaction
+    WHERE helper_node = :node_id AND removed = 0
+    )");
+}
+
 QString SqliteProduct::RReplaceNodeQS() const
 {
     return QStringLiteral(R"(

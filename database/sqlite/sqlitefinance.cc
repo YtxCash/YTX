@@ -176,7 +176,7 @@ QString SqliteFinance::ReadTransQS() const
     )");
 }
 
-QString SqliteFinance::ReadTransHelperQS() const
+QString SqliteFinance::QSReadTransHelperFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time

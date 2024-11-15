@@ -580,6 +580,10 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
 
 void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
+    auto* helper_node { new HelperNode(tree_model, Filter::kIncludeAllWithNone, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kHelperNode), helper_node);
+    connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &HelperNode::RUpdateComboModel);
+
     auto* node { new TableCombo(tree_model, node_id, Filter::kExcludeSpecific, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kRhsNode), node);
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
@@ -779,6 +783,9 @@ void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) cons
 
     auto* color { new Color(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
+
+    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kIsHelper), helper);
 }
 
 void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const
@@ -940,17 +947,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     }
 
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
-    bool is_helper { false };
-
-    switch (data_->info.section) {
-    case Section::kFinance:
-    case Section::kStakeholder:
-    case Section::kTask:
-        is_helper = index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toInt();
-        break;
-    default:
-        break;
-    }
+    const bool is_helper { index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toBool() };
 
     auto* dialog { new class RemoveNode(model, data_->info.section, node_id, unit, branch, exteral_reference, is_helper, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
@@ -1417,6 +1414,7 @@ void MainWindow::SetHeader()
         tr("UnitCost"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
     product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
         tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity"), tr("Amount") };
+    product_data_.info.helper_header = finance_data_.info.helper_header;
 
     stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"),
         tr("IsHelper"), tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };

@@ -69,4 +69,4 @@ void HelperNode::updateEditorGeometry(QWidget* editor, const QStyleOptionViewIte
     editor->setGeometry(option.rect);
 }
 
-void HelperNode::RUpdateComboModel() { tree_model_->LeafPathHelperNodeFTS(combo_model_, 0, filter_); }
+void HelperNode::RUpdateComboModel() { tree_model_->LeafPathHelperNodeFPTS(combo_model_, 0, filter_); }

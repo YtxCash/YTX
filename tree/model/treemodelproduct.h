@@ -60,6 +60,7 @@ public:
     void PathPreferencesFPT(QStandardItemModel* model) const override;
     void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const override;
     void LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const override;
+    void LeafPathHelperNodeFPTS(QStandardItemModel* model, int specific_node, Filter filter) const override;
     void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const override;
     QModelIndex GetIndex(int node_id) const override;
     bool Contains(int node_id) const override { return node_hash_.contains(node_id); }

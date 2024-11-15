@@ -77,7 +77,7 @@ public:
     // table
     bool ReadTrans(TransShadowList& trans_shadow_list, int node_id);
     bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
-    bool ReadTransHelper(TransShadowList& trans_shadow_list, int node_id);
+    bool ReadTransHelperFPTS(TransShadowList& trans_shadow_list, int node_id);
     bool WriteTrans(TransShadow* trans_shadow);
     bool WriteTransRangeO(const QList<TransShadow*>& list) const;
     bool UpdateTransValue(const TransShadow* trans_shadow) const;
@@ -131,7 +131,7 @@ protected:
 
     // table
     virtual QString ReadTransQS() const = 0;
-    virtual QString ReadTransHelperQS() const { return {}; }
+    virtual QString QSReadTransHelperFPTS() const { return {}; }
     virtual QString WriteTransQS() const = 0;
     virtual QString UpdateTransValueQS() const { return {}; }
     virtual QString RUpdateProductReferenceQS() const { return {}; }
