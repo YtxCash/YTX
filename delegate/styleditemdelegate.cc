@@ -21,7 +21,7 @@ void StyledItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptio
 
 void StyledItemDelegate::SetFontMetrics() { fm_ = QFontMetrics(QApplication::font()); }
 
-void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 2; }
+void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 4; }
 
 QSize StyledItemDelegate::CalculateTextSize(CString& text)
 {

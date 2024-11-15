@@ -10,6 +10,7 @@
     selection-color: #EEE8D5;
     gridline-color: #93A1A1;
     placeholder-text-color: #586E75;
+    font-size: 14pt;
 }
 
 *:disabled {
