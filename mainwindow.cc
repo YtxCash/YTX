@@ -256,12 +256,6 @@ void MainWindow::RInsertTriggered()
         return;
 
     if (IsTableWidget(widget)) {
-        auto index { ui->tabWidget->currentIndex() };
-        int node_id { ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id };
-
-        if (tree_widget_->Model()->IsHelperFPTS(node_id))
-            return;
-
         assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
         AppendTrans(static_cast<TableWidget*>(widget));
     }
@@ -1558,6 +1552,9 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
 
     auto model { table_widget->Model() };
     if (!model)
+        return;
+
+    if (tree_widget_->Model()->IsHelperFPTS(model->NodeID()))
         return;
 
     constexpr int ID_ZERO = 0;

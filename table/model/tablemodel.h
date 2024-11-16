@@ -83,6 +83,7 @@ public:
     QStringList* GetDocumentPointer(const QModelIndex& index) const;
 
     void UpdateAllState(Check state);
+    int NodeID() { return node_id_; }
 
 protected:
     // virtual functions
