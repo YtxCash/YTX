@@ -22,6 +22,7 @@
 #include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
 #include "delegate/line.h"
+#include "delegate/search/searchpathtabler.h"
 #include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
 #include "delegate/table/helpernode.h"
@@ -255,6 +256,12 @@ void MainWindow::RInsertTriggered()
         return;
 
     if (IsTableWidget(widget)) {
+        auto index { ui->tabWidget->currentIndex() };
+        int node_id { ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id };
+
+        if (tree_widget_->Model()->IsHelperFPTS(node_id))
+            return;
+
         assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
         AppendTrans(static_cast<TableWidget*>(widget));
     }
@@ -426,6 +433,7 @@ void MainWindow::CreateTableHelper(PTreeModel tree_model, TableHash* table_hash,
 
     auto view { widget->View() };
     SetHelperView(view);
+    DelegateHelper(view, tree_model, settings);
 
     table_hash->insert(node_id, widget);
     SignalStation::Instance().RegisterModel(section, node_id, model);
@@ -1184,6 +1192,38 @@ void MainWindow::SetHelperView(PQTableView view) const
     view->scrollToBottom();
     view->setCurrentIndex(QModelIndex());
     view->sortByColumn(std::to_underlying(TableEnum::kDateTime), Qt::AscendingOrder);
+}
+
+void MainWindow::DelegateHelper(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
+{
+    auto* line { new Line(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kDescription), line);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kCode), line);
+
+    auto* date_time { new TableDateTime(interface_.date_format, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kDateTime), date_time);
+
+    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kState), state);
+
+    auto* document { new TableDbClick(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kDocument), document);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+
+    auto* value { new TableDoubleSpinR(settings->amount_decimal, false, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsDebit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsDebit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsCredit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsCredit), value);
+
+    auto* ratio { new TableDoubleSpinR(settings->common_decimal, false, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsRatio), ratio);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsRatio), ratio);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kUnitPrice), ratio);
+
+    auto* node_name { new SearchPathTableR(tree_model, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsNode), node_name);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsNode), node_name);
 }
 
 void MainWindow::SetConnect() const

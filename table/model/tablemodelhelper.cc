@@ -135,6 +135,7 @@ bool TableModelHelper::setData(const QModelIndex& index, const QVariant& value, 
         return false;
     }
 
+    emit SResizeColumnToContents(index.column());
     return true;
 }
 
@@ -197,7 +198,6 @@ Qt::ItemFlags TableModelHelper::flags(const QModelIndex& index) const
     case TableEnumHelper::kCode:
     case TableEnumHelper::kDescription:
     case TableEnumHelper::kDateTime:
-    case TableEnumHelper::kDocument:
         flags |= Qt::ItemIsEditable;
         break;
     default:
