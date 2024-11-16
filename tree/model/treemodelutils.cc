@@ -529,7 +529,7 @@ void TreeModelUtils::LeafPathHelperNodeFTS(CNodeHash& hash, CStringHash& leaf, Q
             }
         };
 
-        if (filter == Filter::kIncludeSpecificWithNone) {
+        if (filter == Filter::kIncludeSpecificWithNone || filter == Filter::kIncludeAllWithNone) {
             items.emplaceBack(QString(), 0);
         }
 

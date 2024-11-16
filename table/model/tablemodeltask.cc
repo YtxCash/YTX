@@ -145,9 +145,11 @@ bool TableModelTask::setData(const QModelIndex& index, const QVariant& value, in
 
     if (hel_changed) {
         if (old_hel_node != 0)
-            emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->helper_node);
+            emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->id);
 
-        emit SAppendHelperTrans(info_.section, trans_shadow);
+        if (*trans_shadow->helper_node != 0) {
+            emit SAppendHelperTrans(info_.section, trans_shadow);
+        }
     }
 
     if (rhs_changed) {

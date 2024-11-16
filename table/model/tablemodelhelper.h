@@ -39,6 +39,8 @@ public:
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+
+    bool IsHelper() const override { return true; }
 };
 
 #endif // TABLEMODELHELPER_H

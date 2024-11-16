@@ -972,7 +972,7 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
 
     // 2. 获取模型和当前索引
     auto model { table_widget->Model() };
-    if (!model) {
+    if (!model || model->IsHelper()) {
         return;
     }
 
@@ -1551,10 +1551,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
         return;
 
     auto model { table_widget->Model() };
-    if (!model)
-        return;
-
-    if (tree_widget_->Model()->IsHelperFPTS(model->NodeID()))
+    if (!model || model->IsHelper())
         return;
 
     constexpr int ID_ZERO = 0;
