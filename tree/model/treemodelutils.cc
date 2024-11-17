@@ -403,7 +403,7 @@ void TreeModelUtils::LeafPathRhsNodeFPT(CNodeHash& hash, CStringHash& leaf, QSta
     if (!model)
         return;
 
-    auto future = QtConcurrent::run([&, leaf, specific_node, filter]() {
+    auto future = QtConcurrent::run([&, specific_node, filter]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf.size());
 
@@ -514,7 +514,7 @@ void TreeModelUtils::LeafPathHelperNodeFTS(CNodeHash& hash, CStringHash& leaf, Q
     if (!model)
         return;
 
-    auto future = QtConcurrent::run([&, specific_node]() {
+    auto future = QtConcurrent::run([&, specific_node, filter]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf.size());
 
