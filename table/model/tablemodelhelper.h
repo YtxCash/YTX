@@ -28,8 +28,12 @@ public:
     TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
 
 public slots:
+    // receive from TableModel
     void RAppendHelperTrans(const TransShadow* trans_shadow);
     void RRemoveHelperTrans(int node_id, int trans_id);
+
+    // receive from SignalStation
+    void RAppendMultiHelperTransFPTS(int new_node_id, const QList<int>& trans_id_list);
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

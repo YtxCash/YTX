@@ -13,36 +13,35 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 
 void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
 {
+    QList<int> helper_trans {};
+    if (is_helper)
+        helper_trans = HelperTransToMoveFPTS(old_node_id);
+
     emit SFreeView(old_node_id);
     emit SRemoveNode(old_node_id);
+    emit SUpdateStakeholderSO(old_node_id, new_node_id);
 
-    if (is_helper) {
-        ReplaceHelper(old_node_id, new_node_id);
+    if (!is_helper) {
+        RemoveNode(old_node_id, false, is_helper);
         return;
     }
 
-    // begin deal with trans hash
-    auto node_trans { ReplaceNodeFunction(old_node_id, new_node_id) };
-    auto trans_id_list { node_trans.values(old_node_id) };
-    // end deal with trans hash
-
     // begin deal with database
     QSqlQuery query(*db_);
-    CString& string { RReplaceNodeQS() };
+    CString& string { QSReplaceHelperFPTS() };
 
     query.prepare(string);
     query.bindValue(":new_node_id", new_node_id);
     query.bindValue(":old_node_id", old_node_id);
     if (!query.exec()) {
-        qWarning() << "Error in replace node setp" << query.lastError().text();
+        qWarning() << "Error in RReplaceNode" << query.lastError().text();
         return;
     }
     // end deal with database
 
-    if (!trans_id_list.isEmpty())
-        emit SMoveMultiTransFPTS(0, new_node_id, trans_id_list);
-
-    emit SUpdateStakeholderSO(old_node_id, new_node_id);
+    ReplaceHelperFunction(old_node_id, new_node_id);
+    RemoveNode(old_node_id, false, is_helper);
+    emit SMoveMultiHelperTransFPTS(info_.section, new_node_id, helper_trans);
 }
 
 void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
@@ -51,12 +50,11 @@ void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
     emit SRemoveNode(node_id);
     emit SUpdateStakeholderSO(node_id, 0);
 
-    if (is_helper) {
-        ReplaceHelper(node_id, 0);
-        return;
-    }
+    RemoveNode(node_id, branch, is_helper);
 
-    RemoveNode(node_id, branch);
+    if (is_helper) {
+        RemoveHelperFunction(node_id);
+    }
 }
 
 bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const
@@ -205,8 +203,25 @@ QString SqliteStakeholder::QSReplaceHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
-        outside_product = :new_helper_id
-    WHERE outside_product = :old_helper_id
+        outside_product = :new_node_id
+    WHERE outside_product = :old_node_id AND removed = 0
+    )");
+}
+
+QString SqliteStakeholder::QSRemoveHelperFPTS() const
+{
+    return QStringLiteral(R"(
+    UPDATE stakeholder_transaction SET
+        outside_product = 0
+    WHERE outside_product = :node_id AND removed = 0
+    )");
+}
+
+QString SqliteStakeholder::QSHelperTransToMoveFPTS() const
+{
+    return QStringLiteral(R"(
+    SELECT id FROM stakeholder_transaction
+    WHERE outside_product = :helper_id AND removed = 0
     )");
 }
 
@@ -219,10 +234,10 @@ QString SqliteStakeholder::ReadTransQS() const
     )");
 }
 
-QString SqliteStakeholder::QSReadTransHelperFPTS() const
+QString SqliteStakeholder::QSReadHelperTransFPTS() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product
     FROM stakeholder_transaction
     WHERE outside_product = :node_id AND removed = 0
     )");
@@ -238,13 +253,12 @@ QString SqliteStakeholder::WriteTransQS() const
     )");
 }
 
-QString SqliteStakeholder::RReplaceNodeQS() const
+QString SqliteStakeholder::QSReplaceTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
-        lhs_node = CASE WHEN lhs_node = :old_node_id THEN :new_node_id ELSE lhs_node END,
-        outside_product = CASE WHEN outside_product = :old_node_id THEN :new_node_id ELSE outside_product END
-    WHERE node_id = :old_node_id OR outside_product = :old_node_id;
+        lhs_node = :new_node_id
+    WHERE lhs_node = :old_node_id AND removed = 0
     )");
 }
 
@@ -420,6 +434,16 @@ QString SqliteStakeholder::ReadTransRangeQS(CString& in_list) const
     SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product
     FROM stakeholder_transaction
     WHERE id IN (%1) AND removed = 0
+    )")
+        .arg(in_list);
+}
+
+QString SqliteStakeholder::QSReadHelperTransRangeFPTS(CString& in_list) const
+{
+    return QString(R"(
+    SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product
+    FROM stakeholder_transaction
+    WHERE helper_node IN (%1) AND removed = 0
     )")
         .arg(in_list);
 }

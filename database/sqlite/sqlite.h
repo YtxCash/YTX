@@ -42,7 +42,8 @@ signals:
     // send to all TableModel
     void SRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans);
     void SMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
-
+    // send to SignalStation
+    void SMoveMultiHelperTransFPTS(Section section, int new_node_id, const QList<int>& trans_id_list);
     // send to TreeModel
     void SUpdateMultiLeafTotalFPT(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
@@ -65,6 +66,7 @@ public slots:
 public:
     // tree
     bool ReadNode(NodeHash& node_hash);
+    bool RemoveNode(int node_id, bool branch, bool is_helper) const;
     bool WriteNode(int parent_id, Node* node) const;
     bool DragNode(int destination_node_id, int node_id) const;
     bool InternalReference(int node_id) const;
@@ -77,7 +79,8 @@ public:
     // table
     bool ReadTrans(TransShadowList& trans_shadow_list, int node_id);
     bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
-    bool ReadTransHelperFPTS(TransShadowList& trans_shadow_list, int node_id);
+    bool ReadHelperTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
+    bool ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int node_id);
     bool WriteTrans(TransShadow* trans_shadow);
     bool WriteTransRangeO(const QList<TransShadow*>& list) const;
     bool UpdateTransValue(const TransShadow* trans_shadow) const;
@@ -92,8 +95,6 @@ public:
 
 protected:
     // QS means QueryString
-    bool RemoveNode(int node_id, bool branch) const;
-    void ReplaceHelper(int old_helper_id, int new_helper_id);
 
     // tree
     virtual QString ReadNodeQS() const = 0;
@@ -104,8 +105,10 @@ protected:
     virtual QString ExternalReferenceQS() const { return {}; }
     virtual QString QSHelperReferenceFPTS() const { return {}; }
     virtual QString QSReplaceHelperFPTS() const { return {}; }
+    virtual QString QSRemoveHelperFPTS() const { return {}; }
     virtual QString LeafTotalQS() const { return {}; }
     virtual QString UpdateNodeValueQS() const { return {}; }
+    virtual QString QSHelperTransToMoveFPTS() const { return {}; }
 
     virtual void ReadNodeQuery(Node* node, const QSqlQuery& query) const = 0;
     virtual void WriteNodeBind(Node* node, QSqlQuery& query) const = 0;
@@ -118,7 +121,7 @@ protected:
 
     //
     virtual QString RemoveNodeFirstQS() const;
-    QString RemoveNodeBranchQS() const;
+    QString QSRemoveBranch() const;
     QString RemoveNodeThirdQS() const;
     QString DragNodeFirstQS() const;
     QString DragNodeSecondQS() const;
@@ -131,7 +134,8 @@ protected:
 
     // table
     virtual QString ReadTransQS() const = 0;
-    virtual QString QSReadTransHelperFPTS() const { return {}; }
+    virtual QString QSReadHelperTransFPTS() const { return {}; }
+    virtual QString QSFreeViewFPT() const { return {}; }
     virtual QString WriteTransQS() const = 0;
     virtual QString UpdateTransValueQS() const { return {}; }
     virtual QString RUpdateProductReferenceQS() const { return {}; }
@@ -156,8 +160,13 @@ protected:
     }
 
     //
-    virtual QString RReplaceNodeQS() const { return {}; }
+    virtual QString QSReplaceTransFPTS() const { return {}; }
     virtual QString ReadTransRangeQS(CString& in_list) const
+    {
+        Q_UNUSED(in_list);
+        return {};
+    }
+    virtual QString QSReadHelperTransRangeFPTS(CString& in_list) const
     {
         Q_UNUSED(in_list);
         return {};
@@ -167,7 +176,10 @@ protected:
 
     //
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) const;
-    QMultiHash<int, int> RemoveNodeFunction(int node_id) const;
+    QMultiHash<int, int> TransToRemoveFPT(int node_id) const;
+    QList<int> HelperTransToMoveFPTS(int helper_id) const;
+    void RemoveHelperFunction(int helper_id) const;
+    void ReplaceHelperFunction(int old_helper_id, int new_helper_id);
     bool FreeView(int old_node_id, int new_node_id) const;
 
 protected:

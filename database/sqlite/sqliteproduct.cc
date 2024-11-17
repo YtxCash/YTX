@@ -66,8 +66,33 @@ QString SqliteProduct::QSReplaceHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET
-        helper_node = :new_helper_id
-    WHERE helper_node = :old_helper_id
+        helper_node = :new_node_id
+    WHERE helper_node = :old_node_id AND removed = 0
+    )");
+}
+
+QString SqliteProduct::QSRemoveHelperFPTS() const
+{
+    return QStringLiteral(R"(
+    UPDATE product_transaction SET
+        helper_node = 0
+    WHERE helper_node = :node_id AND removed = 0
+    )");
+}
+
+QString SqliteProduct::QSFreeViewFPT() const
+{
+    return QStringLiteral(R"(
+    SELECT COUNT(*) FROM product_transaction
+    WHERE ((lhs_node = :old_node_id AND rhs_node = :new_node_id) OR (rhs_node = :old_node_id AND lhs_node = :new_node_id)) AND removed = 0
+    )");
+}
+
+QString SqliteProduct::QSHelperTransToMoveFPTS() const
+{
+    return QStringLiteral(R"(
+    SELECT id FROM product_transaction
+    WHERE helper_node = :helper_id AND removed = 0
     )");
 }
 
@@ -227,7 +252,17 @@ QString SqliteProduct::ReadTransRangeQS(CString& in_list) const
         .arg(in_list);
 }
 
-QString SqliteProduct::QSReadTransHelperFPTS() const
+QString SqliteProduct::QSReadHelperTransRangeFPTS(CString& in_list) const
+{
+    return QString(R"(
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    FROM product_transaction
+    WHERE helper_node IN (%1) AND removed = 0
+    )")
+        .arg(in_list);
+}
+
+QString SqliteProduct::QSReadHelperTransFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
@@ -236,7 +271,7 @@ QString SqliteProduct::QSReadTransHelperFPTS() const
     )");
 }
 
-QString SqliteProduct::RReplaceNodeQS() const
+QString SqliteProduct::QSReplaceTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET

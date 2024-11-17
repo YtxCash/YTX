@@ -53,6 +53,8 @@ protected:
     QString ExternalReferenceQS() const override;
     QString QSHelperReferenceFPTS() const override;
     QString QSReplaceHelperFPTS() const override;
+    QString QSRemoveHelperFPTS() const override;
+    QString QSHelperTransToMoveFPTS() const override;
 
     // table
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
@@ -62,10 +64,11 @@ protected:
     QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const override;
 
     QString ReadTransRangeQS(CString& in_list) const override;
+    QString QSReadHelperTransRangeFPTS(CString& in_list) const override;
     QString ReadTransQS() const override;
-    QString QSReadTransHelperFPTS() const override;
+    QString QSReadHelperTransFPTS() const override;
     QString WriteTransQS() const override;
-    QString RReplaceNodeQS() const override;
+    QString QSReplaceTransFPTS() const override;
     QString RUpdateProductReferenceQS() const override;
     QString SearchTransQS() const override;
     QString RemoveNodeFirstQS() const override;

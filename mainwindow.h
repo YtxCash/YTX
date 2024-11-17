@@ -193,7 +193,7 @@ private:
 
     void RemoveTrans(TableWidget* table_widget);
     void RemoveNode(TreeWidget* tree_widget);
-    void RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id);
+    void RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id, bool is_helper);
     void RemoveBranch(PTreeModel tree_model, const QModelIndex& index, int node_id);
 
     void UpdateInterface(CInterface& interface);

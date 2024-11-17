@@ -133,8 +133,25 @@ QString SqliteFinance::QSReplaceHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET
-        helper_node = :new_helper_id
-    WHERE helper_node = :old_helper_id
+        helper_node = :new_node_id
+    WHERE helper_node = :old_node_id AND removed = 0
+    )");
+}
+
+QString SqliteFinance::QSRemoveHelperFPTS() const
+{
+    return QStringLiteral(R"(
+    UPDATE finance_transaction SET
+        helper_node = 0
+    WHERE helper_node = :node_id AND removed = 0
+    )");
+}
+
+QString SqliteFinance::QSFreeViewFPT() const
+{
+    return QStringLiteral(R"(
+    SELECT COUNT(*) FROM finance_transaction
+    WHERE ((lhs_node = :old_node_id AND rhs_node = :new_node_id) OR (rhs_node = :old_node_id AND lhs_node = :new_node_id)) AND removed = 0
     )");
 }
 
@@ -167,6 +184,14 @@ QString SqliteFinance::LeafTotalQS() const
     )");
 }
 
+QString SqliteFinance::QSHelperTransToMoveFPTS() const
+{
+    return QStringLiteral(R"(
+    SELECT id FROM finance_transaction
+    WHERE helper_node = :helper_id AND removed = 0
+    )");
+}
+
 QString SqliteFinance::ReadTransQS() const
 {
     return QStringLiteral(R"(
@@ -176,7 +201,7 @@ QString SqliteFinance::ReadTransQS() const
     )");
 }
 
-QString SqliteFinance::QSReadTransHelperFPTS() const
+QString SqliteFinance::QSReadHelperTransFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
@@ -205,7 +230,17 @@ QString SqliteFinance::ReadTransRangeQS(CString& in_list) const
         .arg(in_list);
 }
 
-QString SqliteFinance::RReplaceNodeQS() const
+QString SqliteFinance::QSReadHelperTransRangeFPTS(CString& in_list) const
+{
+    return QString(R"(
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    FROM finance_transaction
+    WHERE helper_node IN (%1) AND removed = 0
+    )")
+        .arg(in_list);
+}
+
+QString SqliteFinance::QSReplaceTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET

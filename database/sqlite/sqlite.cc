@@ -18,89 +18,149 @@ Sqlite::~Sqlite() { qDeleteAll(trans_hash_); }
 
 void Sqlite::RRemoveNode(int node_id, bool branch, bool is_helper)
 {
+    // Notify MainWindow to release the table view
     emit SFreeView(node_id);
+    // Notify TreeModel to remove the node
     emit SRemoveNode(node_id);
 
+    // Mark Trans for removal
+    QMultiHash<int, int> node_trans {};
+
+    if (!is_helper)
+        node_trans = TransToRemoveFPT(node_id);
+
+    // Remove node, path, trans from the sqlite3 database
+    RemoveNode(node_id, branch, is_helper);
+
+    // Process buffered trans
     if (is_helper) {
-        ReplaceHelper(node_id, 0);
+        RemoveHelperFunction(node_id);
         return;
     }
 
-    QMultiHash<int, int> node_trans { RemoveNodeFunction(node_id) };
-
+    // Handle node and trans based on the current section
     auto section { info_.section };
     if (section == Section::kFinance || section == Section::kProduct || section == Section::kTask) {
         emit SRemoveMultiTransFPT(node_trans);
         emit SUpdateMultiLeafTotalFPT(node_trans.uniqueKeys());
     }
 
-    // Recycle will mark all transactions for removal. This must occur after SRemoveMultiTrans()
+    // Recycle trans resources
     for (int trans_id : node_trans.values())
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
-
-    RemoveNode(node_id, branch);
 }
 
-QMultiHash<int, int> Sqlite::RemoveNodeFunction(int node_id) const
+QMultiHash<int, int> Sqlite::TransToRemoveFPT(int node_id) const
 {
-    // finance, product, task
-    const auto& const_trans_hash { std::as_const(trans_hash_) };
     QMultiHash<int, int> hash {};
 
-    for (const auto* trans : const_trans_hash) {
-        if (trans->lhs_node == node_id && trans->rhs_node != node_id)
-            hash.emplace(trans->rhs_node, trans->id);
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
 
-        if (trans->rhs_node == node_id && trans->lhs_node != node_id)
-            hash.emplace(trans->lhs_node, trans->id);
+    CString string { QString(R"(
+    SELECT rhs_node, id FROM %1
+    WHERE lhs_node = :node_id AND removed = 0
+    UNION ALL
+    SELECT lhs_node, id FROM %1
+    WHERE rhs_node = :node_id AND removed = 0
+    )")
+            .arg(info_.transaction) };
+
+    query.prepare(string);
+    query.bindValue(":node_id", node_id);
+    if (!query.exec()) {
+        qWarning() << "Failed in TransToRemoveFPT" << query.lastError().text();
+        return {};
+    }
+
+    while (query.next()) {
+        hash.emplace(query.value(0).toInt(), query.value(1).toInt());
     }
 
     return hash;
 }
 
-bool Sqlite::FreeView(int old_node_id, int new_node_id) const
+QList<int> Sqlite::HelperTransToMoveFPTS(int helper_id) const
+{
+    QList<int> list {};
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    CString string { QSHelperTransToMoveFPTS() };
+
+    query.prepare(string);
+    query.bindValue(":helper_id", helper_id);
+
+    if (!query.exec()) {
+        qWarning() << "Failed in HelperTransToMove" << query.lastError().text();
+        return {};
+    }
+
+    while (query.next()) {
+        list.emplaceBack(query.value(0).toInt());
+    }
+
+    return list;
+}
+
+void Sqlite::RemoveHelperFunction(int helper_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
-    for (const auto* trans : const_trans_hash) {
-        if ((trans->lhs_node == old_node_id && trans->rhs_node == new_node_id) || (trans->rhs_node == old_node_id && trans->lhs_node == new_node_id)) {
-            return false;
+    for (auto* trans : const_trans_hash) {
+        if (trans->helper_node == helper_id) {
+            trans->helper_node = 0;
         }
     }
+}
 
-    return true;
+bool Sqlite::FreeView(int old_node_id, int new_node_id) const
+{
+    QSqlQuery query(*db_);
+    CString string { QSFreeViewFPT() };
+
+    query.prepare(string);
+    query.setForwardOnly(true);
+
+    query.bindValue(":new_node_id", new_node_id);
+    query.bindValue(":old_node_id", old_node_id);
+    if (!query.exec()) {
+        qWarning() << "Failed in RReplaceNode" << query.lastError().text();
+        return false;
+    }
+
+    query.next();
+    return query.value(0).toInt() == 0;
 }
 
 void Sqlite::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
 {
-    // finance, product, task
     auto section { info_.section };
     if (section == Section::kPurchase || section == Section::kSales)
         return;
 
-    if (is_helper) {
-        emit SFreeView(old_node_id);
-        emit SRemoveNode(old_node_id);
-        ReplaceHelper(old_node_id, new_node_id);
-        return;
-    }
-
-    bool free { FreeView(old_node_id, new_node_id) };
-
-    // begin deal with trans hash
-    auto node_trans { ReplaceNodeFunction(old_node_id, new_node_id) };
-    // end deal with trans hash
-
-    if (node_trans.isEmpty())
-        return;
-
     // begin deal with database
     QSqlQuery query(*db_);
-    CString& string { RReplaceNodeQS() };
+
+    QString string { QSReplaceTransFPTS() };
+    if (is_helper)
+        string = QSReplaceHelperFPTS();
+
     if (string.isEmpty())
         return;
 
+    bool free {};
+    QList<int> helper_trans {};
+
+    if (!is_helper)
+        free = FreeView(old_node_id, new_node_id);
+
+    if (is_helper)
+        helper_trans = HelperTransToMoveFPTS(old_node_id);
+
     query.prepare(string);
+
     query.bindValue(":new_node_id", new_node_id);
     query.bindValue(":old_node_id", old_node_id);
     if (!query.exec()) {
@@ -109,16 +169,31 @@ void Sqlite::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
     }
     // end deal with database
 
+    if (is_helper) {
+        emit SFreeView(old_node_id);
+        emit SRemoveNode(old_node_id);
+        emit SMoveMultiHelperTransFPTS(info_.section, new_node_id, helper_trans);
+
+        ReplaceHelperFunction(old_node_id, new_node_id);
+        RemoveNode(old_node_id, false, is_helper);
+
+        return;
+    }
+
+    // begin deal with trans hash
+    auto node_trans { ReplaceNodeFunction(old_node_id, new_node_id) };
+    // end deal with trans hash
+
     emit SMoveMultiTransFPTS(old_node_id, new_node_id, node_trans.values());
     emit SUpdateMultiLeafTotalFPT(QList { old_node_id, new_node_id });
 
     if (section == Section::kProduct)
         emit SUpdateProductSO(old_node_id, new_node_id);
 
-    // SFreeView will mark all referenced transactions for removal. This must occur after SMoveMultiTrans()
     if (free) {
         emit SFreeView(old_node_id);
         emit SRemoveNode(old_node_id);
+        RemoveNode(old_node_id, false, is_helper);
     }
 }
 
@@ -129,6 +204,7 @@ void Sqlite::RUpdateProductSO(int old_node_id, int new_node_id)
         return;
 
     QSqlQuery query(*db_);
+
     query.prepare(string);
     query.bindValue(":old_node_id", old_node_id);
     query.bindValue(":new_node_id", new_node_id);
@@ -147,6 +223,7 @@ void Sqlite::RUpdateStakeholderO(int old_node_id, int new_node_id)
         return;
 
     QSqlQuery query(*db_);
+
     query.prepare(string);
     query.bindValue(":old_node_id", old_node_id);
     query.bindValue(":new_node_id", new_node_id);
@@ -284,17 +361,19 @@ QList<int> Sqlite::SearchNodeName(CString& text) const
     return node_list;
 }
 
-bool Sqlite::RemoveNode(int node_id, bool branch) const
+bool Sqlite::RemoveNode(int node_id, bool branch, bool is_helper) const
 {
     QSqlQuery query(*db_);
 
     CString& string_frist { RemoveNodeFirstQS() };
-
     QString string_second { RemoveNodeSecondQS() };
-    if (branch)
-        string_second = RemoveNodeBranchQS();
-
     CString& string_third { RemoveNodeThirdQS() };
+
+    if (branch)
+        string_second = QSRemoveBranch();
+
+    if (is_helper)
+        string_second = QSRemoveHelperFPTS();
 
     if (!DBTransaction([&]() {
             query.prepare(string_frist);
@@ -331,28 +410,14 @@ bool Sqlite::RemoveNode(int node_id, bool branch) const
     return true;
 }
 
-void Sqlite::ReplaceHelper(int old_helper_id, int new_helper_id)
+void Sqlite::ReplaceHelperFunction(int old_helper_id, int new_helper_id)
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->helper_node == old_helper_id)
+        if (trans->helper_node == old_helper_id) {
             trans->helper_node = new_helper_id;
-    }
-
-    QSqlQuery query(*db_);
-
-    CString& string { QSReplaceHelperFPTS() };
-    if (string.isEmpty())
-        return;
-
-    query.prepare(string);
-    query.bindValue(":old_helper_id", old_helper_id);
-    query.bindValue(":new_helper_id", new_helper_id);
-
-    if (!query.exec()) {
-        qWarning() << "Failed in ReplaceHelper" << query.lastError().text();
-        return;
+        }
     }
 }
 
@@ -366,7 +431,7 @@ QString Sqlite::RemoveNodeFirstQS() const
         .arg(info_.node);
 }
 
-QString Sqlite::RemoveNodeBranchQS() const
+QString Sqlite::QSRemoveBranch() const
 {
     return QString(R"(
             WITH related_nodes AS (
@@ -870,12 +935,49 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
     return true;
 }
 
-bool Sqlite::ReadTransHelperFPTS(TransShadowList& trans_shadow_list, int node_id)
+bool Sqlite::ReadHelperTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
+{
+    if (trans_id_list.empty() || node_id <= 0)
+        return false;
+
+    QSqlQuery query(*db_);
+    query.setForwardOnly(true);
+
+    const qsizetype batch_size { BATCH_SIZE };
+    const auto total_batches { (trans_id_list.size() + batch_size - 1) / batch_size };
+
+    for (int batch_index = 0; batch_index != total_batches; ++batch_index) {
+        int start = batch_index * batch_size;
+        int end = std::min(start + batch_size, trans_id_list.size());
+
+        QList<int> current_batch { trans_id_list.mid(start, end - start) };
+
+        QStringList placeholder { current_batch.size(), "?" };
+        QString string { ReadTransRangeQS(placeholder.join(",")) };
+
+        query.prepare(string);
+
+        for (int i = 0; i != current_batch.size(); ++i)
+            query.bindValue(i, current_batch.at(i));
+
+        if (!query.exec()) {
+            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadHelperTransRange, batch" << batch_index << ": "
+                       << query.lastError().text();
+            continue;
+        }
+
+        ReadTransFunction(trans_shadow_list, node_id, query);
+    }
+
+    return true;
+}
+
+bool Sqlite::ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    CString& string { QSReadTransHelperFPTS() };
+    CString& string { QSReadHelperTransFPTS() };
     if (string.isEmpty())
         return false;
 

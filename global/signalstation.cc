@@ -58,23 +58,23 @@ void SignalStation::RAppendHelperTrans(Section section, const TransShadow* trans
     if (!trans_shadow)
         return;
 
-    int helper_node_id { *trans_shadow->helper_node };
-
-    const auto* model { static_cast<const TableModelHelper*>(FindTableModel(section, helper_node_id)) };
+    const auto* model { FindTableModel(section, *trans_shadow->helper_node) };
     if (!model)
         return;
 
-    connect(this, &SignalStation::SAppendHelperTrans, model, &TableModelHelper::RAppendHelperTrans, Qt::SingleShotConnection);
+    const auto* cast_model { static_cast<const TableModelHelper*>(model) };
+    connect(this, &SignalStation::SAppendHelperTrans, cast_model, &TableModelHelper::RAppendHelperTrans, Qt::SingleShotConnection);
     emit SAppendHelperTrans(trans_shadow);
 }
 
 void SignalStation::RRemoveHelperTrans(Section section, int node_id, int trans_id)
 {
-    const auto* model { static_cast<const TableModelHelper*>(FindTableModel(section, node_id)) };
+    const auto* model { FindTableModel(section, node_id) };
     if (!model)
         return;
 
-    connect(this, &SignalStation::SRemoveHelperTrans, model, &TableModelHelper::RRemoveHelperTrans, Qt::SingleShotConnection);
+    const auto* cast_model { static_cast<const TableModelHelper*>(model) };
+    connect(this, &SignalStation::SRemoveHelperTrans, cast_model, &TableModelHelper::RRemoveHelperTrans, Qt::SingleShotConnection);
     emit SRemoveHelperTrans(node_id, trans_id);
 }
 
@@ -101,4 +101,15 @@ void SignalStation::RRule(Section section, int node_id, bool rule)
 
     connect(this, &SignalStation::SRule, model, &TableModel::RRule, Qt::SingleShotConnection);
     emit SRule(node_id, rule);
+}
+
+void SignalStation::RMoveMultiHelperTransFPTS(Section section, int new_node_id, const QList<int>& trans_id_list)
+{
+    const auto* model { FindTableModel(section, new_node_id) };
+    if (!model)
+        return;
+
+    const auto* cast_model { static_cast<const TableModelHelper*>(model) };
+    connect(this, &SignalStation::SAppendMultiHelperTransFPTS, cast_model, &TableModelHelper::RAppendMultiHelperTransFPTS, Qt::SingleShotConnection);
+    emit SAppendMultiHelperTransFPTS(new_node_id, trans_id_list);
 }

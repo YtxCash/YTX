@@ -928,6 +928,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
     const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
+    const bool is_helper { index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toBool() };
 
     if (branch) {
         if (model->ChildrenEmpty(node_id))
@@ -944,12 +945,11 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     bool helper_reference { sql->HelperReferenceFPTS(node_id) };
 
     if (!interal_reference && !exteral_reference && !helper_reference) {
-        RemoveView(model, index, node_id);
+        RemoveView(model, index, node_id, is_helper);
         return;
     }
 
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
-    const bool is_helper { index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toBool() };
 
     auto* dialog { new class RemoveNode(model, data_->info.section, node_id, unit, branch, exteral_reference, is_helper, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
@@ -1004,9 +1004,10 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
         view->setCurrentIndex(new_index);
 }
 
-void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id)
+void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id, bool is_helper)
 {
     tree_model->RemoveNode(index.row(), index.parent());
+    data_->sql->RemoveNode(node_id, false, is_helper);
     auto* widget { table_hash_->value(node_id) };
 
     if (widget) {
@@ -1272,6 +1273,8 @@ void MainWindow::SetFinanceData()
 
     auto* model { new TreeModelFinance(sql, info, finance_settings_.default_unit, finance_table_hash_, interface_.separator, this) };
     finance_tree_ = new TreeWidgetFPT(model, info, finance_settings_, this);
+
+    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
 }
 
 void MainWindow::SetProductData()
@@ -1298,6 +1301,8 @@ void MainWindow::SetProductData()
 
     auto* model { new TreeModelProduct(sql, info, product_settings_.default_unit, product_table_hash_, interface_.separator, this) };
     product_tree_ = new TreeWidgetFPT(model, info, product_settings_, this);
+
+    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
 }
 
 void MainWindow::SetStakeholderData()
@@ -1332,6 +1337,7 @@ void MainWindow::SetStakeholderData()
     connect(product_data_.sql, &Sqlite::SUpdateProductSO, sql, &Sqlite::RUpdateProductSO);
     connect(sql, &Sqlite::SUpdateStakeholderSO, model, &TreeModel::RUpdateStakeholderSO);
     connect(static_cast<SqliteStakeholder*>(sql), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
+    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
 }
 
 void MainWindow::SetTaskData()
@@ -1358,6 +1364,7 @@ void MainWindow::SetTaskData()
 
     auto* model { new TreeModelTask(sql, info, task_settings_.default_unit, task_table_hash_, interface_.separator, this) };
     task_tree_ = new TreeWidgetFPT(model, info, task_settings_, this);
+    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
 }
 
 void MainWindow::SetSalesData()

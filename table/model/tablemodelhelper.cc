@@ -9,7 +9,7 @@ TableModelHelper::TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& i
     : TableModel { sql, rule, node_id, info, parent }
 {
     if (node_id >= 1)
-        sql_->ReadTransHelperFPTS(trans_shadow_list_, node_id);
+        sql_->ReadHelperTransFPTS(trans_shadow_list_, node_id);
 }
 
 void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
@@ -61,6 +61,20 @@ void TableModelHelper::RRemoveHelperTrans(int node_id, int trans_id)
     beginRemoveRows(QModelIndex(), row, row);
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(row));
     endRemoveRows();
+}
+
+void TableModelHelper::RAppendMultiHelperTransFPTS(int node_id, const QList<int>& trans_id_list)
+{
+    if (node_id_ != node_id)
+        return;
+
+    auto row { trans_shadow_list_.size() };
+    TransShadowList trans_shadow_list {};
+
+    sql_->ReadHelperTransRange(trans_shadow_list, node_id, trans_id_list);
+    beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
+    trans_shadow_list_.append(trans_shadow_list);
+    endInsertRows();
 }
 
 QVariant TableModelHelper::data(const QModelIndex& index, int role) const
