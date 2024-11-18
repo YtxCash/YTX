@@ -33,8 +33,12 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
     trans_shadow_list_.removeAt(row);
     endRemoveRows();
 
-    if (rhs_node_id != 0)
+    if (rhs_node_id != 0) {
+        if (int helper_id = *trans_shadow->helper_node; helper_id != 0)
+            emit SRemoveHelperTrans(info_.section, helper_id, *trans_shadow->id);
+
         sql_->RemoveTrans(*trans_shadow->id);
+    }
 
     ResourcePool<TransShadow>::Instance().Recycle(trans_shadow);
     return true;

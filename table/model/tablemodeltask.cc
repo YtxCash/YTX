@@ -258,6 +258,10 @@ bool TableModelTask::removeRows(int row, int /*count*/, const QModelIndex& paren
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
 
         TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
+
+        if (int helper_id = *trans_shadow->helper_node; helper_id != 0)
+            emit SRemoveHelperTrans(info_.section, helper_id, *trans_shadow->id);
+
         sql_->RemoveTrans(trans_id);
 
         QTimer::singleShot(50, this, [this, rhs_node_id, unit_cost]() {
