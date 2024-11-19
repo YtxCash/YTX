@@ -431,6 +431,8 @@ void MainWindow::CreateTableHelper(PTreeModel tree_model, TableHash* table_hash,
 
     table_hash->insert(node_id, widget);
     SignalStation::Instance().RegisterModel(section, node_id, model);
+
+    connect(data->sql, &Sqlite::SRemoveMultiTransFPTS, model, &TableModel::RRemoveMultiTransFPTS);
 }
 
 void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id)
@@ -478,7 +480,7 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
     connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
     connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
 
-    connect(data->sql, &Sqlite::SRemoveMultiTransFPT, table_model, &TableModel::RRemoveMultiTransFPT);
+    connect(data->sql, &Sqlite::SRemoveMultiTransFPTS, table_model, &TableModel::RRemoveMultiTransFPTS);
     connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
 }
 
@@ -510,6 +512,8 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 
     connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
+    connect(data->sql, &Sqlite::SRemoveMultiTransFPTS, table_model, &TableModel::RRemoveMultiTransFPTS);
+
     connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
     connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
 }

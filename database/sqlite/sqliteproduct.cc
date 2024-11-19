@@ -96,6 +96,25 @@ QString SqliteProduct::QSHelperTransToMoveFPTS() const
     )");
 }
 
+QString SqliteProduct::QSNodeTransToRemove() const
+{
+    return QStringLiteral(R"(
+    SELECT rhs_node, id FROM product_transaction
+    WHERE lhs_node = :node_id AND removed = 0
+    UNION ALL
+    SELECT lhs_node, id FROM product_transaction
+    WHERE rhs_node = :node_id AND removed = 0
+    )");
+}
+
+QString SqliteProduct::QSHelperTransToRemoveFPTS() const
+{
+    return QStringLiteral(R"(
+    SELECT helper_node, id FROM product_transaction
+    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+    )");
+}
+
 QString SqliteProduct::LeafTotalQS() const
 {
     return QStringLiteral(R"(

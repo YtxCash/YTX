@@ -192,6 +192,25 @@ QString SqliteFinance::QSHelperTransToMoveFPTS() const
     )");
 }
 
+QString SqliteFinance::QSNodeTransToRemove() const
+{
+    return QStringLiteral(R"(
+    SELECT rhs_node, id FROM finance_transaction
+    WHERE lhs_node = :node_id AND removed = 0
+    UNION ALL
+    SELECT lhs_node, id FROM finance_transaction
+    WHERE rhs_node = :node_id AND removed = 0
+    )");
+}
+
+QString SqliteFinance::QSHelperTransToRemoveFPTS() const
+{
+    return QStringLiteral(R"(
+    SELECT helper_node, id FROM finance_transaction
+    WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
+    )");
+}
+
 QString SqliteFinance::ReadTransQS() const
 {
     return QStringLiteral(R"(

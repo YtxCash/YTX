@@ -55,6 +55,7 @@ protected:
     QString QSReplaceHelperFPTS() const override;
     QString QSRemoveHelperFPTS() const override;
     QString QSHelperTransToMoveFPTS() const override;
+    QString QSHelperTransToRemoveFPTS() const override;
 
     // table
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
@@ -72,6 +73,7 @@ protected:
     QString RUpdateProductReferenceQS() const override;
     QString SearchTransQS() const override;
     QString RemoveNodeFirstQS() const override;
+    QString QSNodeTransToRemove() const override;
 
 private:
     void ReadTransFunction(QSqlQuery& query);

@@ -24,10 +24,14 @@ void Sqlite::RRemoveNode(int node_id, bool branch, bool is_helper)
     emit SRemoveNode(node_id);
 
     // Mark Trans for removal
-    QMultiHash<int, int> node_trans {};
 
-    if (!is_helper)
-        node_trans = TransToRemoveFPT(node_id);
+    QMultiHash<int, int> node_trans {};
+    QMultiHash<int, int> helper_trans {};
+
+    if (!is_helper) {
+        node_trans = TransToRemove(node_id, false);
+        helper_trans = TransToRemove(node_id, true);
+    }
 
     // Remove node, path, trans from the sqlite3 database
     RemoveNode(node_id, branch, is_helper);
@@ -39,37 +43,35 @@ void Sqlite::RRemoveNode(int node_id, bool branch, bool is_helper)
     }
 
     // Handle node and trans based on the current section
-    auto section { info_.section };
-    if (section == Section::kFinance || section == Section::kProduct || section == Section::kTask) {
-        emit SRemoveMultiTransFPT(node_trans);
-        emit SUpdateMultiLeafTotalFPT(node_trans.uniqueKeys());
-    }
+
+    emit SRemoveMultiTransFPTS(node_trans);
+    emit SUpdateMultiLeafTotalFPT(node_trans.uniqueKeys());
+
+    if (!helper_trans.isEmpty())
+        emit SRemoveMultiTransFPTS(helper_trans);
 
     // Recycle trans resources
-    for (int trans_id : node_trans.values())
+    const auto trans { node_trans.values() };
+
+    for (int trans_id : trans)
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
 }
 
-QMultiHash<int, int> Sqlite::TransToRemoveFPT(int node_id) const
+QMultiHash<int, int> Sqlite::TransToRemove(int node_id, bool is_helper) const
 {
     QMultiHash<int, int> hash {};
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    CString string { QString(R"(
-    SELECT rhs_node, id FROM %1
-    WHERE lhs_node = :node_id AND removed = 0
-    UNION ALL
-    SELECT lhs_node, id FROM %1
-    WHERE rhs_node = :node_id AND removed = 0
-    )")
-            .arg(info_.transaction) };
+    QString string { QSNodeTransToRemove() };
+    if (is_helper)
+        string = QSHelperTransToRemoveFPTS();
 
     query.prepare(string);
     query.bindValue(":node_id", node_id);
     if (!query.exec()) {
-        qWarning() << "Failed in TransToRemoveFPT" << query.lastError().text();
+        qWarning() << "Failed in TransToRemove" << query.lastError().text();
         return {};
     }
 

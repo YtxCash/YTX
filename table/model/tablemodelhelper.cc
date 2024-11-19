@@ -231,3 +231,23 @@ QVariant TableModelHelper::headerData(int section, Qt::Orientation orientation, 
 }
 
 int TableModelHelper::columnCount(const QModelIndex& /*parent*/) const { return info_.helper_header.size(); }
+
+bool TableModelHelper::RemoveMultiTrans(const QList<int>& trans_id_list)
+{
+    if (trans_id_list.isEmpty())
+        return false;
+
+    int trans_id {};
+
+    for (int i = trans_shadow_list_.size() - 1; i >= 0; --i) {
+        trans_id = *trans_shadow_list_.at(i)->id;
+
+        if (trans_id_list.contains(trans_id)) {
+            beginRemoveRows(QModelIndex(), i, i);
+            ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
+            endRemoveRows();
+        }
+    }
+
+    return true;
+}

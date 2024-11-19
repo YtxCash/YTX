@@ -57,6 +57,26 @@ bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& tran
     return true;
 }
 
+bool TableModelStakeholder::RemoveMultiTrans(const QList<int>& trans_id_list)
+{
+    if (trans_id_list.isEmpty())
+        return false;
+
+    int trans_id {};
+
+    for (int i = trans_shadow_list_.size() - 1; i >= 0; --i) {
+        trans_id = *trans_shadow_list_.at(i)->id;
+
+        if (trans_id_list.contains(trans_id)) {
+            beginRemoveRows(QModelIndex(), i, i);
+            ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_.takeAt(i));
+            endRemoveRows();
+        }
+    }
+
+    return true;
+}
+
 bool TableModelStakeholder::UpdateInsideProduct(TransShadow* trans_shadow, int value) const
 {
     if (*trans_shadow->rhs_node == value)

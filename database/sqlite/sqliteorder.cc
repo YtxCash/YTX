@@ -122,6 +122,26 @@ bool SqliteOrder::RetriveNode(NodeHash& node_hash, int node_id)
     return true;
 }
 
+void SqliteOrder::RRemoveNode(int node_id, bool branch, bool /*is_helper*/)
+{
+    // Notify MainWindow to release the table view
+    emit SFreeView(node_id);
+    // Notify TreeModel to remove the node
+    emit SRemoveNode(node_id);
+
+    // Mark Trans for removal
+
+    const QMultiHash<int, int> node_trans { TransToRemove(node_id, false) };
+    const auto trans { node_trans.values() };
+
+    // Remove node, path, trans from the sqlite3 database
+    RemoveNode(node_id, branch, false);
+
+    // Recycle trans resources
+    for (int trans_id : trans)
+        ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
+}
+
 QString SqliteOrder::ReadNodeQS() const
 {
     return QString(R"(
@@ -226,6 +246,15 @@ QString SqliteOrder::UpdateTransValueQS() const
     UPDATE %1 SET
         second = :second, amount = :amount, discount = :discount, settled = :settled
     WHERE id = :trans_id
+    )")
+        .arg(transaction_);
+}
+
+QString SqliteOrder::QSNodeTransToRemove() const
+{
+    return QString(R"(
+    SELECT lhs_node, id FROM %1
+    WHERE lhs_node = :node_id AND removed = 0
     )")
         .arg(transaction_);
 }

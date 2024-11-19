@@ -38,6 +38,9 @@ protected:
     QString QSFreeViewFPT() const override;
     QString QSHelperTransToMoveFPTS() const override;
 
+    QString QSNodeTransToRemove() const override;
+    QString QSHelperTransToRemoveFPTS() const override;
+
     QString ReadTransQS() const override;
     QString QSReadHelperTransFPTS() const override;
     QString WriteTransQS() const override;

@@ -45,6 +45,9 @@ public:
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
     bool IsHelper() const override { return true; }
+
+protected:
+    bool RemoveMultiTrans(const QList<int>& trans_id_list) override;
 };
 
 #endif // TABLEMODELHELPER_H

@@ -44,6 +44,8 @@ protected:
     QString QSFreeViewFPT() const override;
     QString LeafTotalQS() const override;
     QString QSHelperTransToMoveFPTS() const override;
+    QString QSNodeTransToRemove() const override;
+    QString QSHelperTransToRemoveFPTS() const override;
 
     QString UpdateNodeValueQS() const override;
     void UpdateNodeValueBind(const Node* node, QSqlQuery& query) const override;

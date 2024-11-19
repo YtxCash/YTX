@@ -33,6 +33,9 @@ public:
     bool SearchNode(QList<const Node*>& node_list, const QList<int>& party_id_list);
     bool RetriveNode(NodeHash& node_hash, int node_id);
 
+public slots:
+    void RRemoveNode(int node_id, bool branch, bool is_helper) override;
+
 protected:
     // tree
     void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;
@@ -60,6 +63,7 @@ protected:
     QString RUpdateStakeholderReferenceQS() const override;
     QString SearchTransQS() const override;
     QString UpdateTransValueQS() const override;
+    QString QSNodeTransToRemove() const override;
 
 private:
     QString SearchNodeQS(CString& in_list) const;

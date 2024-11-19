@@ -50,11 +50,24 @@ void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
     emit SRemoveNode(node_id);
     emit SUpdateStakeholderSO(node_id, 0);
 
+    const QMultiHash<int, int> node_trans { TransToRemove(node_id, false) };
+    const QMultiHash<int, int> helper_trans { TransToRemove(node_id, true) };
+
     RemoveNode(node_id, branch, is_helper);
 
     if (is_helper) {
         RemoveHelperFunction(node_id);
+        return;
     }
+
+    if (!helper_trans.isEmpty())
+        emit SRemoveMultiTransFPTS(helper_trans);
+
+    // Recycle trans resources
+    const auto trans { node_trans.values() };
+
+    for (int trans_id : trans)
+        ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
 }
 
 bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const
@@ -225,6 +238,14 @@ QString SqliteStakeholder::QSHelperTransToMoveFPTS() const
     )");
 }
 
+QString SqliteStakeholder::QSHelperTransToRemoveFPTS() const
+{
+    return QStringLiteral(R"(
+    SELECT outside_product, id FROM stakeholder_transaction
+    WHERE lhs_node = :node_id AND removed = 0
+    )");
+}
+
 QString SqliteStakeholder::ReadTransQS() const
 {
     return QStringLiteral(R"(
@@ -289,6 +310,14 @@ QString SqliteStakeholder::RemoveNodeFirstQS() const
         removed = CASE WHEN id = :node_id THEN 1 ELSE removed END,
         employee = CASE WHEN employee = :node_id THEN NULL ELSE employee END
     WHERE id = :node_id OR employee = :node_id;
+    )");
+}
+
+QString SqliteStakeholder::QSNodeTransToRemove() const
+{
+    return QStringLiteral(R"(
+    SELECT lhs_node, id FROM stakeholder_transaction
+    WHERE lhs_node = :node_id AND removed = 0
     )");
 }
 

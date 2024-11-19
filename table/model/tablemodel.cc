@@ -16,19 +16,18 @@ TableModel::TableModel(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject
 
 TableModel::~TableModel() { ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_); }
 
-void TableModel::RRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans)
+void TableModel::RRemoveMultiTransFPTS(const QMultiHash<int, int>& node_trans)
 {
     if (!node_trans.contains(node_id_))
         return;
 
-    const auto& trans_id_list { node_trans.values(node_id_) };
-    RemoveMultiTrans(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
+    RemoveMultiTrans(node_trans.values(node_id_));
 }
 
 void TableModel::RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
 {
     if (node_id_ == old_node_id)
-        RemoveMultiTrans(QSet(trans_id_list.cbegin(), trans_id_list.cend()));
+        RemoveMultiTrans(trans_id_list);
 
     if (node_id_ == new_node_id)
         AppendMultiTrans(node_id_, trans_id_list);
@@ -366,9 +365,9 @@ bool TableModel::insertRows(int row, int /*count*/, const QModelIndex& parent)
     return true;
 }
 
-bool TableModel::RemoveMultiTrans(const QSet<int>& trans_id_set)
+bool TableModel::RemoveMultiTrans(const QList<int>& trans_id_list)
 {
-    if (trans_id_set.isEmpty())
+    if (trans_id_list.isEmpty())
         return false;
 
     int min_row { -1 };
@@ -377,7 +376,7 @@ bool TableModel::RemoveMultiTrans(const QSet<int>& trans_id_set)
     for (int i = trans_shadow_list_.size() - 1; i >= 0; --i) {
         trans_id = *trans_shadow_list_.at(i)->id;
 
-        if (trans_id_set.contains(trans_id)) {
+        if (trans_id_list.contains(trans_id)) {
             if (min_row == -1 || i < min_row)
                 min_row = i;
 

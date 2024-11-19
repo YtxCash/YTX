@@ -40,10 +40,10 @@ protected:
 
 signals:
     // send to all TableModel
-    void SRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans);
+    void SRemoveMultiTransFPTS(const QMultiHash<int, int>& node_trans);
     void SMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
     // send to SignalStation
-    void SMoveMultiHelperTransFPTS(Section section, int new_node_id, const QList<int>& trans_id_list);
+    void SMoveMultiHelperTransFPTS(Section section, int new_helper_id, const QList<int>& trans_id_list);
     // send to TreeModel
     void SUpdateMultiLeafTotalFPT(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
@@ -79,8 +79,8 @@ public:
     // table
     bool ReadTrans(TransShadowList& trans_shadow_list, int node_id);
     bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
-    bool ReadHelperTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
-    bool ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int node_id);
+    bool ReadHelperTransRange(TransShadowList& trans_shadow_list, int helper_id, const QList<int>& trans_id_list);
+    bool ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int helper_id);
     bool WriteTrans(TransShadow* trans_shadow);
     bool WriteTransRangeO(const QList<TransShadow*>& list) const;
     bool UpdateTransValue(const TransShadow* trans_shadow) const;
@@ -141,6 +141,9 @@ protected:
     virtual QString RUpdateProductReferenceQS() const { return {}; }
     virtual QString RUpdateStakeholderReferenceQS() const { return {}; }
 
+    virtual QString QSNodeTransToRemove() const = 0;
+    virtual QString QSHelperTransToRemoveFPTS() const { return {}; }
+
     virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query) const = 0;
     virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const = 0;
     virtual void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
@@ -176,7 +179,7 @@ protected:
 
     //
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) const;
-    QMultiHash<int, int> TransToRemoveFPT(int node_id) const;
+    QMultiHash<int, int> TransToRemove(int node_id, bool is_helper) const;
     QList<int> HelperTransToMoveFPTS(int helper_id) const;
     void RemoveHelperFunction(int helper_id) const;
     void ReplaceHelperFunction(int old_helper_id, int new_helper_id);

@@ -56,7 +56,7 @@ signals:
 
 public slots:
     // receive from Sqlite
-    void RRemoveMultiTransFPT(const QMultiHash<int, int>& node_trans);
+    void RRemoveMultiTransFPTS(const QMultiHash<int, int>& node_trans);
     void RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
     // receive from SignalStation
@@ -91,7 +91,7 @@ protected:
     virtual bool UpdateCredit(TransShadow* trans_shadow, double value);
     virtual bool UpdateRatio(TransShadow* trans_shadow, double value);
 
-    virtual bool RemoveMultiTrans(const QSet<int>& trans_id_list); // just remove trnas_shadow, keep trans
+    virtual bool RemoveMultiTrans(const QList<int>& trans_id_list); // just remove trnas_shadow, keep trans
     virtual bool AppendMultiTrans(int node_id, const QList<int>& trans_id_list);
 
 protected:
