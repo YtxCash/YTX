@@ -10,7 +10,7 @@
     selection-color: #EEE8D5;
     gridline-color: #93A1A1;
     placeholder-text-color: #586E75;
-    font-size: 14pt;
+    font-size: 12pt;
 }
 
 *:disabled {
@@ -206,12 +206,6 @@ QPushButton {
 
 QMenuBar::item {
     padding: 2px 4px;
-}
-
-QComboBox, QDoubleSpinBox, QSpinBox,
-QTableView DateTimeEdit, QTableView DateEdit,  QTreeView QDateTimeEdit, QTreeView QDateEdit {
-    padding-left: -8px;    /* 左内边距 */
-    padding-right: -8px;   /* 右内边距 */
 }
 
 /*-------------------------------------------------------------indicator-----------------------------------------------------------*/

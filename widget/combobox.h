@@ -42,6 +42,7 @@ public:
         setSizeAdjustPolicy(QComboBox::AdjustToContents);
     }
 
+protected:
     QSize sizeHint() const override
     {
         QSize sz { QComboBox::sizeHint() };

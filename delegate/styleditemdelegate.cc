@@ -21,11 +21,11 @@ void StyledItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptio
 
 void StyledItemDelegate::SetFontMetrics() { fm_ = QFontMetrics(QApplication::font()); }
 
-void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 2; }
+void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + coefficient_; }
 
 QSize StyledItemDelegate::CalculateTextSize(CString& text)
 {
-    const int width { fm_->horizontalAdvance(text) + 3 * text_margin_.value() };
+    const int width { fm_->horizontalAdvance(text) + coefficient_ * text_margin_.value() };
     const int height { fm_->height() };
 
     return QSize(width, height);

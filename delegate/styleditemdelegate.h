@@ -42,6 +42,16 @@ protected:
     static const QLocale locale_;
     static std::optional<QFontMetrics> fm_;
     static std::optional<int> text_margin_;
+
+private:
+    static constexpr int coefficient_ =
+#ifdef Q_OS_WIN
+        6;
+#elif defined(Q_OS_MACOS)
+        3;
+#else
+        1;
+#endif
 };
 
 #endif // STYLEDITEMDELEGATE_H

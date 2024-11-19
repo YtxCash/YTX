@@ -1526,6 +1526,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
     tree_view->setSortingEnabled(true);
     tree_view->setContextMenuPolicy(Qt::CustomContextMenu);
     tree_view->setExpandsOnDoubleClick(true);
+    tree_view->setColumnHidden(std::to_underlying(TreeEnum::kID), false);
 
     auto* header { tree_view->header() };
     header->setSectionResizeMode(QHeaderView::ResizeToContents);

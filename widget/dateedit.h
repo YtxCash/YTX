@@ -20,7 +20,9 @@
 #ifndef DATEEDIT_H
 #define DATEEDIT_H
 
+#include <QApplication>
 #include <QDateEdit>
+#include <QStyle>
 
 class DateEdit final : public QDateEdit {
     Q_OBJECT
@@ -30,6 +32,21 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+
+    QSize sizeHint() const override
+    {
+        QSize sz { QDateEdit::sizeHint() };
+        int scrollbar_width { QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent) };
+
+#ifdef Q_OS_WIN
+        scrollbar_width *= 2;
+#elif defined(Q_OS_MACOS)
+        scrollbar_width *= 0;
+#endif
+
+        sz.setWidth(sz.width() + scrollbar_width);
+        return sz;
+    }
 
 private:
     bool LastMonthEnd(QDate& date);
