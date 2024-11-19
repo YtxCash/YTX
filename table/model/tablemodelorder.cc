@@ -125,7 +125,7 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
     case TableEnumOrder::kDiscountPrice:
         return *trans_shadow->discount_price == 0 ? QVariant() : *trans_shadow->discount_price;
     case TableEnumOrder::kOutsideProduct:
-        return *trans_shadow->helper_node == 0 ? QVariant() : *trans_shadow->helper_node;
+        return *trans_shadow->helper_id == 0 ? QVariant() : *trans_shadow->helper_id;
     default:
         return QVariant();
     }
@@ -250,7 +250,7 @@ void TableModelOrder::sort(int column, Qt::SortOrder order)
         case TableEnumOrder::kDiscountPrice:
             return (order == Qt::AscendingOrder) ? (*lhs->discount_price < *rhs->discount_price) : (*lhs->discount_price > *rhs->discount_price);
         case TableEnumOrder::kOutsideProduct:
-            return (order == Qt::AscendingOrder) ? (*lhs->helper_node < *rhs->helper_node) : (*lhs->helper_node > *rhs->helper_node);
+            return (order == Qt::AscendingOrder) ? (*lhs->helper_id < *rhs->helper_id) : (*lhs->helper_id > *rhs->helper_id);
         case TableEnumOrder::kSettled:
             return (order == Qt::AscendingOrder) ? (*lhs->settled < *rhs->settled) : (*lhs->settled > *rhs->settled);
         default:
@@ -322,10 +322,10 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
 
 bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
 {
-    if (*trans_shadow->helper_node == value)
+    if (*trans_shadow->helper_id == value)
         return false;
 
-    *trans_shadow->helper_node = value;
+    *trans_shadow->helper_id = value;
 
     SearchPrice(trans_shadow, value, false);
 
@@ -410,5 +410,5 @@ void TableModelOrder::SearchPrice(TransShadow* trans_shadow, int product_id, boo
         return;
 
     *trans_shadow->unit_price = is_inside ? product_tree_->First(product_id) : 0.0;
-    is_inside ? * trans_shadow->helper_node = 0 : * trans_shadow->rhs_node = 0;
+    is_inside ? * trans_shadow->helper_id = 0 : * trans_shadow->rhs_node = 0;
 }

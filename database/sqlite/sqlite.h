@@ -78,9 +78,8 @@ public:
 
     // table
     bool ReadNodeTrans(TransShadowList& trans_shadow_list, int node_id);
-    bool ReadNodeTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
-    bool ReadHelperTransRange(TransShadowList& trans_shadow_list, int helper_id, const QList<int>& trans_id_list);
     bool ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int helper_id);
+    bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
     bool WriteTrans(TransShadow* trans_shadow);
     bool WriteTransRangeO(const QList<TransShadow*>& list) const;
     bool UpdateTransValue(const TransShadow* trans_shadow) const;
@@ -140,7 +139,7 @@ protected:
     virtual QString QSHelperTransToRemoveFPTS() const { return {}; }
     virtual QString QSReplaceNodeTransFPTS() const { return {}; }
     virtual QString QSReplaceHelperTransFPTS() const { return {}; }
-    virtual QString QSReadNodeTransRangeFPTS(CString& in_list) const
+    virtual QString QSReadTransRangeFPTS(CString& in_list) const
     {
         Q_UNUSED(in_list);
         return {};

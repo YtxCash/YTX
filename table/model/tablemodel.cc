@@ -59,7 +59,7 @@ void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
     new_trans_shadow->unit_price = trans_shadow->unit_price;
     new_trans_shadow->discount_price = trans_shadow->discount_price;
     new_trans_shadow->settled = trans_shadow->settled;
-    new_trans_shadow->helper_node = trans_shadow->helper_node;
+    new_trans_shadow->helper_id = trans_shadow->helper_id;
 
     new_trans_shadow->rhs_ratio = trans_shadow->lhs_ratio;
     new_trans_shadow->rhs_debit = trans_shadow->lhs_debit;
@@ -135,7 +135,7 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
         TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
 
-        if (int helper_id = *trans_shadow->helper_node; helper_id != 0)
+        if (int helper_id = *trans_shadow->helper_id; helper_id != 0)
             emit SRemoveHelperTrans(info_.section, helper_id, *trans_shadow->id);
 
         sql_->RemoveTrans(trans_id);
@@ -397,7 +397,7 @@ bool TableModel::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
 
-    sql_->ReadNodeTransRange(trans_shadow_list, node_id, trans_id_list);
+    sql_->ReadTransRange(trans_shadow_list, node_id, trans_id_list);
     beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();

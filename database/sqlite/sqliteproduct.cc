@@ -58,7 +58,7 @@ QString SqliteProduct::QSHelperReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM product_transaction
-    WHERE helper_node = :helper_id AND removed = 0
+    WHERE helper_id = :helper_id AND removed = 0
     )");
 }
 
@@ -66,8 +66,8 @@ QString SqliteProduct::QSReplaceHelperTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET
-        helper_node = :new_node_id
-    WHERE helper_node = :old_node_id AND removed = 0
+        helper_id = :new_node_id
+    WHERE helper_id = :old_node_id AND removed = 0
     )");
 }
 
@@ -75,8 +75,8 @@ QString SqliteProduct::QSRemoveHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE product_transaction SET
-        helper_node = 0
-    WHERE helper_node = :node_id AND removed = 0
+        helper_id = 0
+    WHERE helper_id = :node_id AND removed = 0
     )");
 }
 
@@ -92,7 +92,7 @@ QString SqliteProduct::QSHelperTransToMoveFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id FROM product_transaction
-    WHERE helper_node = :helper_id AND removed = 0
+    WHERE helper_id = :helper_id AND removed = 0
     )");
 }
 
@@ -110,7 +110,7 @@ QString SqliteProduct::QSNodeTransToRemove() const
 QString SqliteProduct::QSHelperTransToRemoveFPTS() const
 {
     return QStringLiteral(R"(
-    SELECT helper_node, id FROM product_transaction
+    SELECT helper_id, id FROM product_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
 }
@@ -193,7 +193,7 @@ void SqliteProduct::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
     trans->state = query.value("state").toBool();
-    trans->helper_node = query.value("helper_node").toInt();
+    trans->helper_id = query.value("helper_id").toInt();
 }
 
 void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
@@ -202,7 +202,7 @@ void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) 
     query.bindValue(":unit_cost", *trans_shadow->unit_price);
     query.bindValue(":state", *trans_shadow->state);
     query.bindValue(":description", *trans_shadow->description);
-    query.bindValue(":helper_node", *trans_shadow->helper_node);
+    query.bindValue(":helper_id", *trans_shadow->helper_id);
     query.bindValue(":code", *trans_shadow->code);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
 
@@ -229,7 +229,7 @@ void SqliteProduct::UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QS
 QString SqliteProduct::QSReadNodeTrans() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM product_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
@@ -255,16 +255,16 @@ QString SqliteProduct::QSWriteNodeTrans() const
 {
     return QStringLiteral(R"(
     INSERT INTO product_transaction
-    (date_time, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document)
+    (date_time, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document)
     VALUES
-    (:date_time, :lhs_node, :unit_cost, :lhs_debit, :lhs_credit, :rhs_node, :rhs_debit, :rhs_credit, :state, :description, :helper_node, :code, :document)
+    (:date_time, :lhs_node, :unit_cost, :lhs_debit, :lhs_credit, :rhs_node, :rhs_debit, :rhs_credit, :state, :description, :helper_id, :code, :document)
     )");
 }
 
-QString SqliteProduct::QSReadNodeTransRangeFPTS(CString& in_list) const
+QString SqliteProduct::QSReadTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM product_transaction
     WHERE id IN (%1) AND removed = 0
     )")
@@ -274,9 +274,9 @@ QString SqliteProduct::QSReadNodeTransRangeFPTS(CString& in_list) const
 QString SqliteProduct::QSReadHelperTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM product_transaction
-    WHERE helper_node IN (%1) AND removed = 0
+    WHERE helper_id IN (%1) AND removed = 0
     )")
         .arg(in_list);
 }
@@ -284,9 +284,9 @@ QString SqliteProduct::QSReadHelperTransRangeFPTS(CString& in_list) const
 QString SqliteProduct::QSReadHelperTransFPTS() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM product_transaction
-    WHERE helper_node = :node_id AND removed = 0
+    WHERE helper_id = :node_id AND removed = 0
     )");
 }
 
@@ -313,7 +313,7 @@ QString SqliteProduct::QSUpdateTransValueFPTO() const
 QString SqliteProduct::QSSearchTrans() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM product_transaction
     WHERE (lhs_debit = :text OR lhs_credit = :text OR rhs_debit = :text OR rhs_credit = :text OR description LIKE :description) AND removed = 0
     ORDER BY date_time

@@ -47,7 +47,7 @@ QString SqliteTask::QSHelperReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM task_transaction
-    WHERE helper_node = :helper_id AND removed = 0
+    WHERE helper_id = :helper_id AND removed = 0
     )");
 }
 
@@ -55,8 +55,8 @@ QString SqliteTask::QSReplaceHelperTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE task_transaction SET
-        helper_node = :new_node_id
-    WHERE helper_node = :old_node_id AND removed = 0
+        helper_id = :new_node_id
+    WHERE helper_id = :old_node_id AND removed = 0
     )");
 }
 
@@ -64,8 +64,8 @@ QString SqliteTask::QSRemoveHelperFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE task_transaction SET
-        helper_node = 0
-    WHERE helper_node = :node_id AND removed = 0
+        helper_id = 0
+    WHERE helper_id = :node_id AND removed = 0
     )");
 }
 
@@ -110,7 +110,7 @@ QString SqliteTask::QSHelperTransToMoveFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id FROM task_transaction
-    WHERE helper_node = :helper_id AND removed = 0
+    WHERE helper_id = :helper_id AND removed = 0
     )");
 }
 
@@ -128,7 +128,7 @@ QString SqliteTask::QSNodeTransToRemove() const
 QString SqliteTask::QSHelperTransToRemoveFPTS() const
 {
     return QStringLiteral(R"(
-    SELECT helper_node, id FROM task_transaction
+    SELECT helper_id, id FROM task_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
 }
@@ -136,7 +136,7 @@ QString SqliteTask::QSHelperTransToRemoveFPTS() const
 QString SqliteTask::QSReadNodeTrans() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM task_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
@@ -145,9 +145,9 @@ QString SqliteTask::QSReadNodeTrans() const
 QString SqliteTask::QSReadHelperTransFPTS() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM task_transaction
-    WHERE helper_node = :node_id AND removed = 0
+    WHERE helper_id = :node_id AND removed = 0
     )");
 }
 
@@ -167,23 +167,23 @@ void SqliteTask::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
     trans->state = query.value("state").toBool();
-    trans->helper_node = query.value("helper_node").toInt();
+    trans->helper_id = query.value("helper_id").toInt();
 }
 
 QString SqliteTask::QSWriteNodeTrans() const
 {
     return QStringLiteral(R"(
     INSERT INTO task_transaction
-    (date_time, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document)
+    (date_time, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document)
     VALUES
-    (:date_time, :lhs_node, :unit_cost, :lhs_debit, :lhs_credit, :rhs_node, :rhs_debit, :rhs_credit, :state, :description, :helper_node, :code, :document)
+    (:date_time, :lhs_node, :unit_cost, :lhs_debit, :lhs_credit, :rhs_node, :rhs_debit, :rhs_credit, :state, :description, :helper_id, :code, :document)
     )");
 }
 
-QString SqliteTask::QSReadNodeTransRangeFPTS(CString& in_list) const
+QString SqliteTask::QSReadTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM task_transaction
     WHERE id IN (%1) AND removed = 0
     )")
@@ -193,9 +193,9 @@ QString SqliteTask::QSReadNodeTransRangeFPTS(CString& in_list) const
 QString SqliteTask::QSReadHelperTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM task_transaction
-    WHERE helper_node IN (%1) AND removed = 0
+    WHERE helper_id IN (%1) AND removed = 0
     )")
         .arg(in_list);
 }
@@ -228,7 +228,7 @@ void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) con
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":code", *trans_shadow->code);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
-    query.bindValue(":helper_node", *trans_shadow->helper_node);
+    query.bindValue(":helper_id", *trans_shadow->helper_id);
 
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
     query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
@@ -304,7 +304,7 @@ void SqliteTask::UpdateNodeValueBindFPTO(const Node* node, QSqlQuery& query) con
 QString SqliteTask::QSSearchTrans() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
+    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
     FROM task_transaction
     WHERE (lhs_debit = :text OR lhs_credit = :text OR rhs_debit = :text OR rhs_credit = :text OR description LIKE :description) AND removed = 0
     ORDER BY date_time

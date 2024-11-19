@@ -111,8 +111,8 @@ void Sqlite::RemoveHelperFunction(int helper_id) const
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->helper_node == helper_id) {
-            trans->helper_node = 0;
+        if (trans->helper_id == helper_id) {
+            trans->helper_id = 0;
         }
     }
 }
@@ -417,8 +417,8 @@ void Sqlite::ReplaceHelperFunction(int old_helper_id, int new_helper_id)
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->helper_node == old_helper_id) {
-            trans->helper_node = new_helper_id;
+        if (trans->helper_id == old_helper_id) {
+            trans->helper_id = new_helper_id;
         }
     }
 }
@@ -609,7 +609,7 @@ void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) co
     trans_shadow->code = &trans->code;
     trans_shadow->document = &trans->document;
     trans_shadow->description = &trans->description;
-    trans_shadow->helper_node = &trans->helper_node;
+    trans_shadow->helper_id = &trans->helper_id;
     trans_shadow->discount_price = &trans->discount_price;
     trans_shadow->unit_price = &trans->unit_price;
     trans_shadow->settled = &trans->settled;
@@ -702,7 +702,7 @@ bool Sqlite::WriteTransRangeO(const QList<TransShadow*>& list) const
         amount_list.emplaceBack(*trans_shadow->rhs_credit);
         discount_list.emplaceBack(*trans_shadow->rhs_debit);
         settled_list.emplaceBack(*trans_shadow->settled);
-        outside_product_list.emplaceBack(*trans_shadow->helper_node);
+        outside_product_list.emplaceBack(*trans_shadow->helper_id);
         discount_price_list.emplaceBack(*trans_shadow->discount_price);
     }
 
@@ -900,7 +900,7 @@ bool Sqlite::SearchTrans(TransList& trans_list, CString& text) const
     return true;
 }
 
-bool Sqlite::ReadNodeTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
+bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
 {
     if (trans_id_list.empty() || node_id <= 0)
         return false;
@@ -918,7 +918,7 @@ bool Sqlite::ReadNodeTransRange(TransShadowList& trans_shadow_list, int node_id,
         QList<int> current_batch { trans_id_list.mid(start, end - start) };
 
         QStringList placeholder { current_batch.size(), "?" };
-        QString string { QSReadNodeTransRangeFPTS(placeholder.join(",")) };
+        QString string { QSReadTransRangeFPTS(placeholder.join(",")) };
 
         query.prepare(string);
 
@@ -926,49 +926,12 @@ bool Sqlite::ReadNodeTransRange(TransShadowList& trans_shadow_list, int node_id,
             query.bindValue(i, current_batch.at(i));
 
         if (!query.exec()) {
-            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadNodeTransRange, batch" << batch_index << ": "
+            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTransRange, batch" << batch_index << ": "
                        << query.lastError().text();
             continue;
         }
 
         ReadTransFunction(trans_shadow_list, node_id, query);
-    }
-
-    return true;
-}
-
-bool Sqlite::ReadHelperTransRange(TransShadowList& trans_shadow_list, int helper_id, const QList<int>& trans_id_list)
-{
-    if (trans_id_list.empty() || helper_id <= 0)
-        return false;
-
-    QSqlQuery query(*db_);
-    query.setForwardOnly(true);
-
-    const qsizetype batch_size { BATCH_SIZE };
-    const auto total_batches { (trans_id_list.size() + batch_size - 1) / batch_size };
-
-    for (int batch_index = 0; batch_index != total_batches; ++batch_index) {
-        int start = batch_index * batch_size;
-        int end = std::min(start + batch_size, trans_id_list.size());
-
-        QList<int> current_batch { trans_id_list.mid(start, end - start) };
-
-        QStringList placeholder { current_batch.size(), "?" };
-        QString string { QSReadHelperTransRangeFPTS(placeholder.join(",")) };
-
-        query.prepare(string);
-
-        for (int i = 0; i != current_batch.size(); ++i)
-            query.bindValue(i, current_batch.at(i));
-
-        if (!query.exec()) {
-            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadHelperTransRange, batch" << batch_index << ": "
-                       << query.lastError().text();
-            continue;
-        }
-
-        ReadTransFunction(trans_shadow_list, helper_id, query);
     }
 
     return true;

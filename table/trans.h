@@ -39,7 +39,7 @@ struct Trans {
     int rhs_node {};
 
     // order
-    int helper_node {};
+    int helper_id {};
     double discount_price {};
     double unit_price {};
     double settled {};
@@ -60,7 +60,7 @@ struct Trans {
         rhs_credit = 0.0;
         state = false;
         document.clear();
-        helper_node = 0;
+        helper_id = 0;
         discount_price = 0.0;
         unit_price = 0.0;
         settled = 0.0;
@@ -82,7 +82,7 @@ struct TransShadow {
     double* rhs_debit {};
     double* rhs_ratio {};
     int* rhs_node {};
-    int* helper_node {};
+    int* helper_id {};
     double* discount_price {};
     double* unit_price {};
     double* settled {};
@@ -105,7 +105,7 @@ struct TransShadow {
         rhs_credit = nullptr;
         state = nullptr;
         document = nullptr;
-        helper_node = nullptr;
+        helper_id = nullptr;
         discount_price = nullptr;
         unit_price = nullptr;
         settled = nullptr;

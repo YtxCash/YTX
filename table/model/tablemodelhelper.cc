@@ -14,7 +14,7 @@ TableModelHelper::TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& i
 
 void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
 {
-    if (node_id_ != *trans_shadow->helper_node)
+    if (node_id_ != *trans_shadow->helper_id)
         return;
 
     auto* new_trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
@@ -27,7 +27,7 @@ void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
     new_trans_shadow->unit_price = trans_shadow->unit_price;
     new_trans_shadow->discount_price = trans_shadow->discount_price;
     new_trans_shadow->settled = trans_shadow->settled;
-    new_trans_shadow->helper_node = trans_shadow->helper_node;
+    new_trans_shadow->helper_id = trans_shadow->helper_id;
 
     new_trans_shadow->lhs_ratio = trans_shadow->lhs_ratio;
     new_trans_shadow->lhs_debit = trans_shadow->lhs_debit;
@@ -71,7 +71,7 @@ void TableModelHelper::RAppendMultiHelperTransFPTS(int helper_id, const QList<in
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
 
-    sql_->ReadHelperTransRange(trans_shadow_list, helper_id, trans_id_list);
+    sql_->ReadTransRange(trans_shadow_list, helper_id, trans_id_list);
     beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();

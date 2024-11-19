@@ -58,7 +58,7 @@ void SignalStation::RAppendHelperTrans(Section section, const TransShadow* trans
     if (!trans_shadow)
         return;
 
-    const auto* model { FindTableModel(section, *trans_shadow->helper_node) };
+    const auto* model { FindTableModel(section, *trans_shadow->helper_id) };
     if (!model)
         return;
 

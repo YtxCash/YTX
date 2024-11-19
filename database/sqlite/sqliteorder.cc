@@ -281,7 +281,7 @@ void SqliteOrder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) co
     query.bindValue(":amount", *trans_shadow->rhs_credit);
     query.bindValue(":discount", *trans_shadow->rhs_debit);
     query.bindValue(":settled", *trans_shadow->settled);
-    query.bindValue(":outside_product", *trans_shadow->helper_node);
+    query.bindValue(":outside_product", *trans_shadow->helper_id);
     query.bindValue(":discount_price", *trans_shadow->discount_price);
     query.bindValue(":description", *trans_shadow->description);
 }
@@ -298,7 +298,7 @@ void SqliteOrder::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->rhs_credit = query.value("amount").toDouble();
     trans->settled = query.value("settled").toDouble();
     trans->rhs_debit = query.value("discount").toDouble();
-    trans->helper_node = query.value("outside_product").toInt();
+    trans->helper_id = query.value("outside_product").toInt();
     trans->discount_price = query.value("discount_price").toDouble();
     trans->description = query.value("description").toString();
 }
@@ -341,8 +341,8 @@ void SqliteOrder::UpdateStakeholderReferenceO(int old_node_id, int new_node_id) 
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->helper_node == old_node_id)
-            trans->helper_node = new_node_id;
+        if (trans->helper_id == old_node_id)
+            trans->helper_id = new_node_id;
     }
 }
 

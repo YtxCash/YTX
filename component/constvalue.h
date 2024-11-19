@@ -116,7 +116,7 @@ inline constexpr char DISCOUNT_PRICE[] = "discount_price";
 inline constexpr char UNIT_COST[] = "unit_cost";
 inline constexpr char INSIDE_PRODUCT[] = "inside_product";
 inline constexpr char OUTSIDE_PRODUCT[] = "outside_product";
-inline constexpr char HELPER_NODE[] = "helper_node";
+inline constexpr char HELPER_ID[] = "helper_id";
 
 // Constants for app's state
 inline constexpr char HEADER_STATE[] = "header_state";
