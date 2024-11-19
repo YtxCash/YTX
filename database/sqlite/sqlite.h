@@ -144,11 +144,6 @@ protected:
         Q_UNUSED(in_list);
         return {};
     }
-    virtual QString QSReadHelperTransRangeFPTS(CString& in_list) const
-    {
-        Q_UNUSED(in_list);
-        return {};
-    }
 
     virtual QString QSUpdateTransValueFPTO() const { return {}; }
     virtual QString QSFreeViewFPT() const { return {}; }

@@ -472,16 +472,6 @@ QString SqliteStakeholder::QSReadTransRangeFPTS(CString& in_list) const
         .arg(in_list);
 }
 
-QString SqliteStakeholder::QSReadHelperTransRangeFPTS(CString& in_list) const
-{
-    return QString(R"(
-    SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product
-    FROM stakeholder_transaction
-    WHERE outside_product IN (%1) AND removed = 0
-    )")
-        .arg(in_list);
-}
-
 void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query) const
 {
     node->id = query.value("id").toInt();

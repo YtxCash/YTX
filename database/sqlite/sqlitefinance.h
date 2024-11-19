@@ -54,7 +54,6 @@ protected:
     QString QSReadHelperTransFPTS() const override;
     QString QSWriteNodeTrans() const override;
     QString QSReadTransRangeFPTS(CString& in_list) const override;
-    QString QSReadHelperTransRangeFPTS(CString& in_list) const override;
     QString QSReplaceNodeTransFPTS() const override;
     QString QSUpdateTransValueFPTO() const override;
     QString QSSearchTrans() const override;

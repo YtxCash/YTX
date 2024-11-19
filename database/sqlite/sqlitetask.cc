@@ -190,16 +190,6 @@ QString SqliteTask::QSReadTransRangeFPTS(CString& in_list) const
         .arg(in_list);
 }
 
-QString SqliteTask::QSReadHelperTransRangeFPTS(CString& in_list) const
-{
-    return QString(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
-    FROM task_transaction
-    WHERE helper_id IN (%1) AND removed = 0
-    )")
-        .arg(in_list);
-}
-
 QString SqliteTask::QSReplaceNodeTransFPTS() const
 {
     return QStringLiteral(R"(

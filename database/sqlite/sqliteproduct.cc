@@ -271,16 +271,6 @@ QString SqliteProduct::QSReadTransRangeFPTS(CString& in_list) const
         .arg(in_list);
 }
 
-QString SqliteProduct::QSReadHelperTransRangeFPTS(CString& in_list) const
-{
-    return QString(R"(
-    SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
-    FROM product_transaction
-    WHERE helper_id IN (%1) AND removed = 0
-    )")
-        .arg(in_list);
-}
-
 QString SqliteProduct::QSReadHelperTransFPTS() const
 {
     return QStringLiteral(R"(

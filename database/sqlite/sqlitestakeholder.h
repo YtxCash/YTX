@@ -65,7 +65,6 @@ protected:
     QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const override;
 
     QString QSReadTransRangeFPTS(CString& in_list) const override;
-    QString QSReadHelperTransRangeFPTS(CString& in_list) const override;
     QString QSReadNodeTrans() const override;
     QString QSReadHelperTransFPTS() const override;
     QString QSWriteNodeTrans() const override;
