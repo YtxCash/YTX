@@ -37,10 +37,10 @@ signals:
     void SUpdateData(int node_id, TreeEnumOrder column, const QVariant& value);
 
 public slots:
-    void RUpdateLeafValueTO(int node_id, double diff, CString& node_field) override; // first
-    void RUpdateLeafValueFPTO(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff) override;
+    void RUpdateLeafValueOne(int node_id, double diff, CString& node_field) override; // first
+    void RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff) override;
 
-    void RUpdateStakeholderSO(int old_node_id, int new_node_id) override;
+    void RUpdateStakeholder(int old_node_id, int new_node_id) override;
     void RUpdateFinished(int node_id, bool checked);
 
 public:

@@ -63,17 +63,17 @@ signals:
 public slots:
     // receive from Sqlite
     void RRemoveNode(int node_id);
-    virtual void RUpdateMultiLeafTotalFPT(const QList<int>& /*node_list*/) { }
+    virtual void RUpdateMultiLeafTotal(const QList<int>& /*node_list*/) { }
 
     // receive from  TableModel
     void RSearch() { emit SSearch(); }
-    virtual void RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
+    virtual void RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
     {
         Q_UNUSED(node_id);
         Q_UNUSED(diff);
         Q_UNUSED(node_field);
     }
-    virtual void RUpdateLeafValueFPTO(
+    virtual void RUpdateLeafValue(
         int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff)
     {
         Q_UNUSED(node_id);
@@ -84,7 +84,7 @@ public slots:
         Q_UNUSED(settled_diff);
     }
 
-    virtual void RUpdateStakeholderSO(int old_node_id, int new_node_id)
+    virtual void RUpdateStakeholder(int old_node_id, int new_node_id)
     {
         Q_UNUSED(old_node_id);
         Q_UNUSED(new_node_id);

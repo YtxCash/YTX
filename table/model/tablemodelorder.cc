@@ -54,7 +54,7 @@ void TableModelOrder::RUpdateNodeID(int node_id)
     if (!trans_shadow_list_.isEmpty())
         sql_->WriteTransRangeO(trans_shadow_list_);
 
-    emit SUpdateLeafValueFPTO(node_id, first_diff, second_diff, amount_diff, discount_diff, settled_diff);
+    emit SUpdateLeafValue(node_id, first_diff, second_diff, amount_diff, discount_diff, settled_diff);
 }
 
 void TableModelOrder::RUpdateFinished(int node_id, bool checked)
@@ -191,33 +191,33 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
     if (ins_changed) {
         if (old_rhs_node == 0) {
             sql_->WriteTrans(trans_shadow);
-            emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit, *trans_shadow->rhs_credit,
+            emit SUpdateLeafValue(*trans_shadow->lhs_node, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit, *trans_shadow->rhs_credit,
                 *trans_shadow->rhs_debit, *trans_shadow->settled);
         } else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
     }
 
     if (fir_changed)
-        emit SUpdateLeafValueTO(*trans_shadow->lhs_node, value.toDouble() - old_first, FIRST);
+        emit SUpdateLeafValueOne(*trans_shadow->lhs_node, value.toDouble() - old_first, FIRST);
 
     if (sec_changed) {
         double second_diff { value.toDouble() - old_second };
         double amount_diff { *trans_shadow->rhs_credit - old_amount };
         double discount_diff { *trans_shadow->rhs_debit - old_discount };
         double settled_diff { *trans_shadow->settled - old_settled };
-        emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, 0.0, second_diff, amount_diff, discount_diff, settled_diff);
+        emit SUpdateLeafValue(*trans_shadow->lhs_node, 0.0, second_diff, amount_diff, discount_diff, settled_diff);
     }
 
     if (uni_changed) {
         double amount_diff { *trans_shadow->rhs_credit - old_amount };
         double settled_diff { *trans_shadow->settled - old_settled };
-        emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, 0.0, 0.0, amount_diff, 0.0, settled_diff);
+        emit SUpdateLeafValue(*trans_shadow->lhs_node, 0.0, 0.0, amount_diff, 0.0, settled_diff);
     }
 
     if (dis_changed) {
         double discount_diff { *trans_shadow->rhs_debit - old_discount };
         double settled_diff { *trans_shadow->settled - old_settled };
-        emit SUpdateLeafValueFPTO(*trans_shadow->lhs_node, 0.0, 0.0, 0.0, discount_diff, settled_diff);
+        emit SUpdateLeafValue(*trans_shadow->lhs_node, 0.0, 0.0, 0.0, discount_diff, settled_diff);
     }
 
     return true;

@@ -107,18 +107,15 @@ bool TableModelFinance::setData(const QModelIndex& index, const QVariant& value,
             emit SResizeColumnToContents(std::to_underlying(TableEnumFinance::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
 
-            emit SUpdateLeafValueTO(*trans_shadow->rhs_node, *trans_shadow->unit_price, UNIT_COST);
-            emit SUpdateLeafValueTO(node_id_, *trans_shadow->unit_price, UNIT_COST);
-
             double ratio { *trans_shadow->lhs_ratio };
             double debit { *trans_shadow->lhs_debit };
             double credit { *trans_shadow->lhs_credit };
-            emit SUpdateLeafValueFPTO(node_id_, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafValue(node_id_, debit, credit, ratio * debit, ratio * credit);
 
             ratio = *trans_shadow->rhs_ratio;
             debit = *trans_shadow->rhs_debit;
             credit = *trans_shadow->rhs_credit;
-            emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
 
             if (*trans_shadow->helper_node != 0) {
                 emit SAppendHelperTrans(info_.section, trans_shadow);
@@ -157,8 +154,8 @@ bool TableModelFinance::setData(const QModelIndex& index, const QVariant& value,
         double ratio { *trans_shadow->rhs_ratio };
         double debit { *trans_shadow->rhs_debit };
         double credit { *trans_shadow->rhs_credit };
-        emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
-        emit SUpdateLeafValueFPTO(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+        emit SUpdateLeafValue(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
     }
 
     emit SResizeColumnToContents(index.column());

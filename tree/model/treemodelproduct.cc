@@ -19,7 +19,7 @@ TreeModelProduct::~TreeModelProduct()
     delete root_;
 }
 
-void TreeModelProduct::RUpdateLeafValueFPTO(
+void TreeModelProduct::RUpdateLeafValue(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
     auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
@@ -42,7 +42,7 @@ void TreeModelProduct::RUpdateLeafValueFPTO(
     emit SUpdateDSpinBox();
 }
 
-void TreeModelProduct::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
+void TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};

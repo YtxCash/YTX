@@ -19,7 +19,7 @@ TreeModelStakeholder::~TreeModelStakeholder()
     delete root_;
 }
 
-void TreeModelStakeholder::RUpdateStakeholderSO(int old_node_id, int new_node_id)
+void TreeModelStakeholder::RUpdateStakeholder(int old_node_id, int new_node_id)
 {
     const auto& const_node_hash { std::as_const(node_hash_) };
 

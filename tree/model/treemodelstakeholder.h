@@ -31,7 +31,7 @@ public:
     ~TreeModelStakeholder() override;
 
 public slots:
-    void RUpdateStakeholderSO(int old_node_id, int new_node_id) override;
+    void RUpdateStakeholder(int old_node_id, int new_node_id) override;
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

@@ -19,7 +19,7 @@ void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, bool is_h
 
     emit SFreeView(old_node_id);
     emit SRemoveNode(old_node_id);
-    emit SUpdateStakeholderSO(old_node_id, new_node_id);
+    emit SUpdateStakeholder(old_node_id, new_node_id);
 
     if (!is_helper) {
         RemoveNode(old_node_id, false, is_helper);
@@ -28,7 +28,7 @@ void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, bool is_h
 
     // begin deal with database
     QSqlQuery query(*db_);
-    CString& string { QSReplaceHelperFPTS() };
+    CString& string { QSReplaceHelperTransFPTS() };
 
     query.prepare(string);
     query.bindValue(":new_node_id", new_node_id);
@@ -48,7 +48,7 @@ void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
 {
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
-    emit SUpdateStakeholderSO(node_id, 0);
+    emit SUpdateStakeholder(node_id, 0);
 
     const QMultiHash<int, int> node_trans { TransToRemove(node_id, false) };
     const QMultiHash<int, int> helper_trans { TransToRemove(node_id, true) };
@@ -61,7 +61,7 @@ void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
     }
 
     if (!helper_trans.isEmpty())
-        emit SRemoveMultiTransFPTS(helper_trans);
+        emit SRemoveMultiTrans(helper_trans);
 
     // Recycle trans resources
     const auto trans { node_trans.values() };
@@ -127,7 +127,7 @@ bool SqliteStakeholder::ReadTrans(int node_id)
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    CString& string { ReadTransQS() };
+    CString& string { QSReadNodeTrans() };
     query.prepare(string);
     query.bindValue(":node_id", node_id);
 
@@ -140,7 +140,7 @@ bool SqliteStakeholder::ReadTrans(int node_id)
     return true;
 }
 
-QString SqliteStakeholder::ReadNodeQS() const
+QString SqliteStakeholder::QSReadNode() const
 {
     return QStringLiteral(R"(
     SELECT name, id, code, description, note, rule, branch, unit, is_helper, employee, deadline, payment_period, tax_rate
@@ -149,7 +149,7 @@ QString SqliteStakeholder::ReadNodeQS() const
     )");
 }
 
-QString SqliteStakeholder::WriteNodeQS() const
+QString SqliteStakeholder::QSWriteNode() const
 {
     return QStringLiteral(R"(
     INSERT INTO stakeholder (name, code, description, note, rule, branch, unit, is_helper, employee, deadline, payment_period, tax_rate)
@@ -173,7 +173,7 @@ void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":tax_rate", node->second);
 }
 
-QString SqliteStakeholder::RemoveNodeSecondQS() const
+QString SqliteStakeholder::QSRemoveNodeSecond() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
@@ -182,7 +182,7 @@ QString SqliteStakeholder::RemoveNodeSecondQS() const
     )");
 }
 
-QString SqliteStakeholder::InternalReferenceQS() const
+QString SqliteStakeholder::QSInternalReference() const
 {
     return QStringLiteral(R"(
     SELECT
@@ -192,7 +192,7 @@ QString SqliteStakeholder::InternalReferenceQS() const
     )");
 }
 
-QString SqliteStakeholder::ExternalReferenceQS() const
+QString SqliteStakeholder::QSExternalReferencePS() const
 {
     return QStringLiteral(R"(
     SELECT
@@ -212,7 +212,7 @@ QString SqliteStakeholder::QSHelperReferenceFPTS() const
     )");
 }
 
-QString SqliteStakeholder::QSReplaceHelperFPTS() const
+QString SqliteStakeholder::QSReplaceHelperTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
@@ -246,7 +246,7 @@ QString SqliteStakeholder::QSHelperTransToRemoveFPTS() const
     )");
 }
 
-QString SqliteStakeholder::ReadTransQS() const
+QString SqliteStakeholder::QSReadNodeTrans() const
 {
     return QStringLiteral(R"(
     SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product
@@ -264,7 +264,7 @@ QString SqliteStakeholder::QSReadHelperTransFPTS() const
     )");
 }
 
-QString SqliteStakeholder::WriteTransQS() const
+QString SqliteStakeholder::QSWriteNodeTrans() const
 {
     return QStringLiteral(R"(
     INSERT INTO stakeholder_transaction
@@ -274,7 +274,7 @@ QString SqliteStakeholder::WriteTransQS() const
     )");
 }
 
-QString SqliteStakeholder::QSReplaceTransFPTS() const
+QString SqliteStakeholder::QSReplaceNodeTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
@@ -283,7 +283,7 @@ QString SqliteStakeholder::QSReplaceTransFPTS() const
     )");
 }
 
-QString SqliteStakeholder::RUpdateProductReferenceQS() const
+QString SqliteStakeholder::QSUpdateProductReferenceSO() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
@@ -292,7 +292,7 @@ QString SqliteStakeholder::RUpdateProductReferenceQS() const
     )");
 }
 
-QString SqliteStakeholder::SearchTransQS() const
+QString SqliteStakeholder::QSSearchTrans() const
 {
     return QStringLiteral(R"(
     SELECT  id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product
@@ -302,7 +302,7 @@ QString SqliteStakeholder::SearchTransQS() const
     )");
 }
 
-QString SqliteStakeholder::RemoveNodeFirstQS() const
+QString SqliteStakeholder::QSRemoveNodeFirst() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder
@@ -343,7 +343,7 @@ void SqliteStakeholder::ReadTransFunction(QSqlQuery& query)
 bool SqliteStakeholder::WriteTrans(Trans* trans)
 {
     QSqlQuery query(*db_);
-    CString& string { WriteTransQS() };
+    CString& string { QSWriteNodeTrans() };
 
     query.prepare(string);
     WriteTransBind(trans, query);
@@ -426,7 +426,7 @@ void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& que
     query.bindValue(":outside_product", *trans_shadow->helper_node);
 }
 
-void SqliteStakeholder::UpdateProductReference(int old_node_id, int new_node_id) const
+void SqliteStakeholder::UpdateProductReferenceSO(int old_node_id, int new_node_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
@@ -457,7 +457,7 @@ void SqliteStakeholder::ReadTransFunction(TransShadowList& trans_shadow_list, in
     }
 }
 
-QString SqliteStakeholder::ReadTransRangeQS(CString& in_list) const
+QString SqliteStakeholder::QSReadTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product

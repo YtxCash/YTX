@@ -19,7 +19,7 @@ TreeModelTask::~TreeModelTask()
     delete root_;
 }
 
-void TreeModelTask::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
+void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch || diff == 0.0 || node->unit != UNIT_PROD)
@@ -30,7 +30,7 @@ void TreeModelTask::RUpdateLeafValueTO(int node_id, double diff, CString& node_f
     sql_->UpdateField(info_.node, node->first, node_field, node_id);
 }
 
-void TreeModelTask::RUpdateLeafValueFPTO(
+void TreeModelTask::RUpdateLeafValue(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
     auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
@@ -54,7 +54,7 @@ void TreeModelTask::RUpdateLeafValueFPTO(
     emit SUpdateDSpinBox();
 }
 
-void TreeModelTask::RUpdateMultiLeafTotalFPT(const QList<int>& node_list)
+void TreeModelTask::RUpdateMultiLeafTotal(const QList<int>& node_list)
 {
     double old_final_total {};
     double old_initial_total {};
@@ -404,10 +404,7 @@ QStringList TreeModelTask::ChildrenNameFPTS(int node_id, int exclude_child) cons
 
 QString TreeModelTask::GetPath(int node_id) const { return TreeModelUtils::GetPathFPTS(leaf_path_, branch_path_, node_id); }
 
-void TreeModelTask::PathPreferencesFPT(QStandardItemModel* model) const
-{
-    TreeModelUtils::PathPreferencesFPT(node_hash_, leaf_path_, branch_path_, model);
-}
+void TreeModelTask::PathPreferencesFPT(QStandardItemModel* model) const { TreeModelUtils::PathPreferencesFPT(node_hash_, leaf_path_, branch_path_, model); }
 
 void TreeModelTask::LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const
 {

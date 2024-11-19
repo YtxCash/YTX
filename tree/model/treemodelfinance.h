@@ -31,9 +31,9 @@ public:
     ~TreeModelFinance() override;
 
 public slots:
-    void RUpdateLeafValueFPTO(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,
+    void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,
         double settled_diff = 0.0) override;
-    void RUpdateMultiLeafTotalFPT(const QList<int>& node_list) override;
+    void RUpdateMultiLeafTotal(const QList<int>& node_list) override;
 
 public:
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;

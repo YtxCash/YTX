@@ -74,7 +74,7 @@ void SqliteFinance::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) 
     query.bindValue(":helper_node", *trans_shadow->helper_node);
 }
 
-void SqliteFinance::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
+void SqliteFinance::UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
     query.bindValue(":lhs_ratio", *trans_shadow->lhs_ratio);
@@ -87,7 +87,7 @@ void SqliteFinance::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQu
     query.bindValue(":trans_id", *trans_shadow->id);
 }
 
-QString SqliteFinance::ReadNodeQS() const
+QString SqliteFinance::QSReadNode() const
 {
     return QStringLiteral(R"(
     SELECT name, id, code, description, note, rule, branch, unit, is_helper, initial_total, final_total
@@ -96,7 +96,7 @@ QString SqliteFinance::ReadNodeQS() const
     )");
 }
 
-QString SqliteFinance::WriteNodeQS() const
+QString SqliteFinance::QSWriteNode() const
 {
     return QStringLiteral(R"(
     INSERT INTO finance (name, code, description, note, rule, branch, unit, is_helper)
@@ -104,7 +104,7 @@ QString SqliteFinance::WriteNodeQS() const
     )");
 }
 
-QString SqliteFinance::RemoveNodeSecondQS() const
+QString SqliteFinance::QSRemoveNodeSecond() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET
@@ -113,7 +113,7 @@ QString SqliteFinance::RemoveNodeSecondQS() const
     )");
 }
 
-QString SqliteFinance::InternalReferenceQS() const
+QString SqliteFinance::QSInternalReference() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM finance_transaction
@@ -129,7 +129,7 @@ QString SqliteFinance::QSHelperReferenceFPTS() const
     )");
 }
 
-QString SqliteFinance::QSReplaceHelperFPTS() const
+QString SqliteFinance::QSReplaceHelperTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET
@@ -155,7 +155,7 @@ QString SqliteFinance::QSFreeViewFPT() const
     )");
 }
 
-QString SqliteFinance::LeafTotalQS() const
+QString SqliteFinance::QSLeafTotalFPT() const
 {
     return QStringLiteral(R"(
     WITH node_balance AS (
@@ -211,7 +211,7 @@ QString SqliteFinance::QSHelperTransToRemoveFPTS() const
     )");
 }
 
-QString SqliteFinance::ReadTransQS() const
+QString SqliteFinance::QSReadNodeTrans() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
@@ -229,7 +229,7 @@ QString SqliteFinance::QSReadHelperTransFPTS() const
     )");
 }
 
-QString SqliteFinance::WriteTransQS() const
+QString SqliteFinance::QSWriteNodeTrans() const
 {
     return QStringLiteral(R"(
     INSERT INTO finance_transaction
@@ -239,7 +239,7 @@ QString SqliteFinance::WriteTransQS() const
     )");
 }
 
-QString SqliteFinance::ReadTransRangeQS(CString& in_list) const
+QString SqliteFinance::QSReadTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
@@ -259,7 +259,7 @@ QString SqliteFinance::QSReadHelperTransRangeFPTS(CString& in_list) const
         .arg(in_list);
 }
 
-QString SqliteFinance::QSReplaceTransFPTS() const
+QString SqliteFinance::QSReplaceNodeTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET
@@ -269,7 +269,7 @@ QString SqliteFinance::QSReplaceTransFPTS() const
     )");
 }
 
-QString SqliteFinance::UpdateTransValueQS() const
+QString SqliteFinance::QSUpdateTransValueFPTO() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET
@@ -279,7 +279,7 @@ QString SqliteFinance::UpdateTransValueQS() const
     )");
 }
 
-QString SqliteFinance::UpdateNodeValueQS() const
+QString SqliteFinance::QSUpdateNodeValueFPTO() const
 {
     return QStringLiteral(R"(
     UPDATE finance SET
@@ -288,14 +288,14 @@ QString SqliteFinance::UpdateNodeValueQS() const
     )");
 }
 
-void SqliteFinance::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
+void SqliteFinance::UpdateNodeValueBindFPTO(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":initial_total", node->initial_total);
     query.bindValue(":final_total", node->final_total);
     query.bindValue(":node_id", node->id);
 }
 
-QString SqliteFinance::SearchTransQS() const
+QString SqliteFinance::QSSearchTrans() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time

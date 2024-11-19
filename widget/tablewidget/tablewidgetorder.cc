@@ -112,9 +112,9 @@ void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVar
     }
 }
 
-void TableWidgetOrder::RUpdateLeafValueTO(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
+void TableWidgetOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void TableWidgetOrder::RUpdateLeafValueFPTO(
+void TableWidgetOrder::RUpdateLeafValue(
     int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);

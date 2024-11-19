@@ -46,13 +46,13 @@ protected:
     void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;
     void WriteNodeBind(Node* node, QSqlQuery& query) const override;
 
-    QString ReadNodeQS() const override;
-    QString WriteNodeQS() const override;
-    QString RemoveNodeSecondQS() const override;
-    QString InternalReferenceQS() const override;
-    QString ExternalReferenceQS() const override;
+    QString QSReadNode() const override;
+    QString QSWriteNode() const override;
+    QString QSRemoveNodeSecond() const override;
+    QString QSInternalReference() const override;
+    QString QSExternalReferencePS() const override;
     QString QSHelperReferenceFPTS() const override;
-    QString QSReplaceHelperFPTS() const override;
+    QString QSReplaceHelperTransFPTS() const override;
     QString QSRemoveHelperFPTS() const override;
     QString QSHelperTransToMoveFPTS() const override;
     QString QSHelperTransToRemoveFPTS() const override;
@@ -60,19 +60,19 @@ protected:
     // table
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
     void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const override;
-    void UpdateProductReference(int old_node_id, int new_node_id) const override;
+    void UpdateProductReferenceSO(int old_node_id, int new_node_id) const override;
     void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query) override;
     QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const override;
 
-    QString ReadTransRangeQS(CString& in_list) const override;
+    QString QSReadTransRangeFPTS(CString& in_list) const override;
     QString QSReadHelperTransRangeFPTS(CString& in_list) const override;
-    QString ReadTransQS() const override;
+    QString QSReadNodeTrans() const override;
     QString QSReadHelperTransFPTS() const override;
-    QString WriteTransQS() const override;
-    QString QSReplaceTransFPTS() const override;
-    QString RUpdateProductReferenceQS() const override;
-    QString SearchTransQS() const override;
-    QString RemoveNodeFirstQS() const override;
+    QString QSWriteNodeTrans() const override;
+    QString QSReplaceNodeTransFPTS() const override;
+    QString QSUpdateProductReferenceSO() const override;
+    QString QSSearchTrans() const override;
+    QString QSRemoveNodeFirst() const override;
     QString QSNodeTransToRemove() const override;
 
 private:

@@ -28,13 +28,13 @@ public:
 
 protected:
     // tree
-    QString ReadNodeQS() const override;
-    QString WriteNodeQS() const override;
-    QString RemoveNodeSecondQS() const override;
-    QString InternalReferenceQS() const override;
-    QString ExternalReferenceQS() const override;
+    QString QSReadNode() const override;
+    QString QSWriteNode() const override;
+    QString QSRemoveNodeSecond() const override;
+    QString QSInternalReference() const override;
+    QString QSExternalReferencePS() const override;
     QString QSHelperReferenceFPTS() const override;
-    QString QSReplaceHelperFPTS() const override;
+    QString QSReplaceHelperTransFPTS() const override;
     QString QSRemoveHelperFPTS() const override;
     QString QSFreeViewFPT() const override;
     QString QSHelperTransToMoveFPTS() const override;
@@ -42,26 +42,26 @@ protected:
     QString QSNodeTransToRemove() const override;
     QString QSHelperTransToRemoveFPTS() const override;
 
-    QString LeafTotalQS() const override;
+    QString QSLeafTotalFPT() const override;
 
     void WriteNodeBind(Node* node, QSqlQuery& query) const override;
     void ReadNodeQuery(Node* node, const QSqlQuery& query) const override;
 
     void ReadTransQuery(Trans* trans, const QSqlQuery& query) const override;
     void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const override;
-    void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const override;
+    void UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QSqlQuery& query) const override;
 
-    QString UpdateNodeValueQS() const override;
-    void UpdateNodeValueBind(const Node* node, QSqlQuery& query) const override;
+    QString QSUpdateNodeValueFPTO() const override;
+    void UpdateNodeValueBindFPTO(const Node* node, QSqlQuery& query) const override;
 
-    QString ReadTransQS() const override;
-    QString WriteTransQS() const override;
-    QString ReadTransRangeQS(CString& in_list) const override;
+    QString QSReadNodeTrans() const override;
+    QString QSWriteNodeTrans() const override;
+    QString QSReadTransRangeFPTS(CString& in_list) const override;
     QString QSReadHelperTransRangeFPTS(CString& in_list) const override;
     QString QSReadHelperTransFPTS() const override;
-    QString QSReplaceTransFPTS() const override;
-    QString UpdateTransValueQS() const override;
-    QString SearchTransQS() const override;
+    QString QSReplaceNodeTransFPTS() const override;
+    QString QSUpdateTransValueFPTO() const override;
+    QString QSSearchTrans() const override;
 };
 
 #endif // SQLITEPRODUCT_H

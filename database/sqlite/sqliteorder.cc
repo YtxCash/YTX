@@ -18,7 +18,7 @@ SqliteOrder::~SqliteOrder() { qDeleteAll(node_hash_buffer_); }
 
 bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const QDate& end_date)
 {
-    CString& string { ReadNodeQS() };
+    CString& string { QSReadNode() };
     if (string.isEmpty())
         return false;
 
@@ -142,7 +142,7 @@ void SqliteOrder::RRemoveNode(int node_id, bool branch, bool /*is_helper*/)
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
 }
 
-QString SqliteOrder::ReadNodeQS() const
+QString SqliteOrder::QSReadNode() const
 {
     return QString(R"(
     SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled
@@ -152,7 +152,7 @@ QString SqliteOrder::ReadNodeQS() const
         .arg(node_);
 }
 
-QString SqliteOrder::WriteNodeQS() const
+QString SqliteOrder::QSWriteNode() const
 {
     return QString(R"(
     INSERT INTO %1 (name, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled)
@@ -161,7 +161,7 @@ QString SqliteOrder::WriteNodeQS() const
         .arg(node_);
 }
 
-QString SqliteOrder::RemoveNodeSecondQS() const
+QString SqliteOrder::QSRemoveNodeSecond() const
 {
     return QString(R"(
     UPDATE %1 SET
@@ -171,7 +171,7 @@ QString SqliteOrder::RemoveNodeSecondQS() const
         .arg(transaction_);
 }
 
-QString SqliteOrder::InternalReferenceQS() const
+QString SqliteOrder::QSInternalReference() const
 {
     return QString(R"(
     SELECT COUNT(*) FROM %1
@@ -180,7 +180,7 @@ QString SqliteOrder::InternalReferenceQS() const
         .arg(transaction_);
 }
 
-QString SqliteOrder::ReadTransQS() const
+QString SqliteOrder::QSReadNodeTrans() const
 {
     return QString(R"(
     SELECT id, code, inside_product, unit_price, second, description, lhs_node, first, amount, discount, settled, outside_product, discount_price
@@ -190,7 +190,7 @@ QString SqliteOrder::ReadTransQS() const
         .arg(transaction_);
 }
 
-QString SqliteOrder::WriteTransQS() const
+QString SqliteOrder::QSWriteNodeTrans() const
 {
     return QString(R"(
     INSERT INTO %1 (code, inside_product, unit_price, second, description, lhs_node, first, amount, discount, settled, outside_product, discount_price)
@@ -199,7 +199,7 @@ QString SqliteOrder::WriteTransQS() const
         .arg(transaction_);
 }
 
-QString SqliteOrder::RUpdateProductReferenceQS() const
+QString SqliteOrder::QSUpdateProductReferenceSO() const
 {
     return QString(R"(
     UPDATE %1 SET
@@ -209,7 +209,7 @@ QString SqliteOrder::RUpdateProductReferenceQS() const
         .arg(transaction_);
 }
 
-QString SqliteOrder::RUpdateStakeholderReferenceQS() const
+QString SqliteOrder::QSUpdateStakeholderReferenceO() const
 {
     return QString(R"(
     BEGIN TRANSACTION;
@@ -230,7 +230,7 @@ QString SqliteOrder::RUpdateStakeholderReferenceQS() const
         .arg(node_, transaction_);
 }
 
-QString SqliteOrder::SearchTransQS() const
+QString SqliteOrder::QSSearchTrans() const
 {
     return QString(R"(
     SELECT id, code, inside_product, unit_price, second, description, lhs_node, first, amount, discount, settled, outside_product, discount_price
@@ -240,7 +240,7 @@ QString SqliteOrder::SearchTransQS() const
         .arg(transaction_);
 }
 
-QString SqliteOrder::UpdateTransValueQS() const
+QString SqliteOrder::QSUpdateTransValueFPTO() const
 {
     return QString(R"(
     UPDATE %1 SET
@@ -325,7 +325,7 @@ void SqliteOrder::ReadTransFunction(TransShadowList& trans_shadow_list, int /*no
     }
 }
 
-void SqliteOrder::UpdateProductReference(int old_node_id, int new_node_id) const
+void SqliteOrder::UpdateProductReferenceSO(int old_node_id, int new_node_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
@@ -335,7 +335,7 @@ void SqliteOrder::UpdateProductReference(int old_node_id, int new_node_id) const
     }
 }
 
-void SqliteOrder::UpdateStakeholderReference(int old_node_id, int new_node_id) const
+void SqliteOrder::UpdateStakeholderReferenceO(int old_node_id, int new_node_id) const
 {
     // for party's product reference
     const auto& const_trans_hash { std::as_const(trans_hash_) };
@@ -346,7 +346,7 @@ void SqliteOrder::UpdateStakeholderReference(int old_node_id, int new_node_id) c
     }
 }
 
-void SqliteOrder::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
+void SqliteOrder::UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":second", *trans_shadow->lhs_credit);
     query.bindValue(":amount", *trans_shadow->rhs_credit);
@@ -355,7 +355,7 @@ void SqliteOrder::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuer
     query.bindValue(":trans_id", *trans_shadow->id);
 }
 
-QString SqliteOrder::UpdateNodeValueQS() const
+QString SqliteOrder::QSUpdateNodeValueFPTO() const
 {
     return QString(R"(
     UPDATE %1 SET
@@ -365,7 +365,7 @@ QString SqliteOrder::UpdateNodeValueQS() const
         .arg(node_);
 }
 
-void SqliteOrder::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
+void SqliteOrder::UpdateNodeValueBindFPTO(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":amount", node->initial_total);
     query.bindValue(":second", node->second);

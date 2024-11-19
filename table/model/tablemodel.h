@@ -38,8 +38,8 @@ protected:
 
 signals:
     // send to TreeModel
-    void SUpdateLeafValueTO(int node_id, double diff, CString& node_field);
-    void SUpdateLeafValueFPTO(
+    void SUpdateLeafValueOne(int node_id, double diff, CString& node_field);
+    void SUpdateLeafValue(
         int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double settled_diff = 0.0);
     void SSearch();
 
@@ -56,8 +56,8 @@ signals:
 
 public slots:
     // receive from Sqlite
-    void RRemoveMultiTransFPTS(const QMultiHash<int, int>& node_trans);
-    void RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
+    void RRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
+    void RMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
 
     // receive from SignalStation
     void RAppendOneTrans(const TransShadow* trans_shadow);

@@ -99,9 +99,9 @@ void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVarian
     }
 }
 
-void EditNodeOrder::RUpdateLeafValueTO(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
+void EditNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void EditNodeOrder::RUpdateLeafValueFPTO(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     if (*node_shadow_->branch)
         return;

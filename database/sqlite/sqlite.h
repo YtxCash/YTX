@@ -40,28 +40,28 @@ protected:
 
 signals:
     // send to all TableModel
-    void SRemoveMultiTransFPTS(const QMultiHash<int, int>& node_trans);
-    void SMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
+    void SRemoveMultiTrans(const QMultiHash<int, int>& node_trans);
+    void SMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list);
     // send to SignalStation
     void SMoveMultiHelperTransFPTS(Section section, int new_helper_id, const QList<int>& trans_id_list);
     // send to TreeModel
-    void SUpdateMultiLeafTotalFPT(const QList<int>& node_id_list);
+    void SUpdateMultiLeafTotal(const QList<int>& node_id_list);
     void SRemoveNode(int node_id);
     void SRemoveHelperNode(int node_id);
     // send to Mainwindow
     void SFreeView(int node_id);
     // send to sql itsself
-    void SUpdateProductSO(int old_node_id, int new_node_id);
+    void SUpdateProduct(int old_node_id, int new_node_id);
     // send to sql itsself and treemodel
-    void SUpdateStakeholderSO(int old_node_id, int new_node_id);
+    void SUpdateStakeholder(int old_node_id, int new_node_id);
 
 public slots:
     // receive from remove node dialog
     virtual void RRemoveNode(int node_id, bool branch, bool is_helper);
     virtual void RReplaceNode(int old_node_id, int new_node_id, bool is_helper);
     // receive from sql
-    void RUpdateProductSO(int old_node_id, int new_node_id);
-    void RUpdateStakeholderO(int old_node_id, int new_node_id);
+    void RUpdateProduct(int old_node_id, int new_node_id);
+    void RUpdateStakeholder(int old_node_id, int new_node_id);
 
 public:
     // tree
@@ -95,36 +95,35 @@ public:
 
 protected:
     // QS means QueryString
-
     // tree
-    virtual QString ReadNodeQS() const = 0;
-    virtual QString WriteNodeQS() const = 0;
-    virtual QString RemoveNodeSecondQS() const = 0;
-    virtual QString InternalReferenceQS() const = 0;
-    virtual QString SearchTransQS() const = 0;
-    virtual QString ExternalReferenceQS() const { return {}; }
+    virtual QString QSReadNode() const = 0;
+    virtual QString QSWriteNode() const = 0;
+    virtual QString QSRemoveNodeSecond() const = 0;
+    virtual QString QSInternalReference() const = 0;
+    virtual QString QSSearchTrans() const = 0;
+
+    virtual QString QSExternalReferencePS() const { return {}; }
     virtual QString QSHelperReferenceFPTS() const { return {}; }
-    virtual QString QSReplaceHelperFPTS() const { return {}; }
     virtual QString QSRemoveHelperFPTS() const { return {}; }
-    virtual QString LeafTotalQS() const { return {}; }
-    virtual QString UpdateNodeValueQS() const { return {}; }
+    virtual QString QSLeafTotalFPT() const { return {}; }
+    virtual QString QSUpdateNodeValueFPTO() const { return {}; }
     virtual QString QSHelperTransToMoveFPTS() const { return {}; }
+    virtual QString QSRemoveNodeFirst() const;
 
     virtual void ReadNodeQuery(Node* node, const QSqlQuery& query) const = 0;
     virtual void WriteNodeBind(Node* node, QSqlQuery& query) const = 0;
 
-    virtual void UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
+    virtual void UpdateNodeValueBindFPTO(const Node* node, QSqlQuery& query) const
     {
         Q_UNUSED(node);
         Q_UNUSED(query);
     };
 
     //
-    virtual QString RemoveNodeFirstQS() const;
     QString QSRemoveBranch() const;
-    QString RemoveNodeThirdQS() const;
-    QString DragNodeFirstQS() const;
-    QString DragNodeSecondQS() const;
+    QString QSRemoveNodeThird() const;
+    QString QSDragNodeFirst() const;
+    QString QSDragNodeSecond() const;
 
     //
     void CalculateLeafTotal(Node* node, QSqlQuery& query) const;
@@ -133,38 +132,15 @@ protected:
     bool WriteRelationship(int node_id, int parent_id, QSqlQuery& query) const;
 
     // table
-    virtual QString ReadTransQS() const = 0;
-    virtual QString QSReadHelperTransFPTS() const { return {}; }
-    virtual QString QSFreeViewFPT() const { return {}; }
-    virtual QString WriteTransQS() const = 0;
-    virtual QString UpdateTransValueQS() const { return {}; }
-    virtual QString RUpdateProductReferenceQS() const { return {}; }
-    virtual QString RUpdateStakeholderReferenceQS() const { return {}; }
-
+    virtual QString QSReadNodeTrans() const = 0;
+    virtual QString QSWriteNodeTrans() const = 0;
     virtual QString QSNodeTransToRemove() const = 0;
+
+    virtual QString QSReadHelperTransFPTS() const { return {}; }
     virtual QString QSHelperTransToRemoveFPTS() const { return {}; }
-
-    virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query) const = 0;
-    virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const = 0;
-    virtual void UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
-    {
-        Q_UNUSED(trans_shadow);
-        Q_UNUSED(query);
-    }
-    virtual void UpdateProductReference(int old_node_id, int new_node_id) const
-    {
-        Q_UNUSED(old_node_id);
-        Q_UNUSED(new_node_id);
-    }
-    virtual void UpdateStakeholderReference(int old_node_id, int new_node_id) const
-    {
-        Q_UNUSED(old_node_id);
-        Q_UNUSED(new_node_id);
-    }
-
-    //
-    virtual QString QSReplaceTransFPTS() const { return {}; }
-    virtual QString ReadTransRangeQS(CString& in_list) const
+    virtual QString QSReplaceNodeTransFPTS() const { return {}; }
+    virtual QString QSReplaceHelperTransFPTS() const { return {}; }
+    virtual QString QSReadTransRangeFPTS(CString& in_list) const
     {
         Q_UNUSED(in_list);
         return {};
@@ -174,6 +150,32 @@ protected:
         Q_UNUSED(in_list);
         return {};
     }
+
+    virtual QString QSUpdateTransValueFPTO() const { return {}; }
+    virtual QString QSFreeViewFPT() const { return {}; }
+    virtual QString QSUpdateProductReferenceSO() const { return {}; }
+    virtual QString QSUpdateStakeholderReferenceO() const { return {}; }
+
+    virtual void ReadTransQuery(Trans* trans, const QSqlQuery& query) const = 0;
+    virtual void WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const = 0;
+    virtual void UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QSqlQuery& query) const
+    {
+        Q_UNUSED(trans_shadow);
+        Q_UNUSED(query);
+    }
+    virtual void UpdateProductReferenceSO(int old_node_id, int new_node_id) const
+    {
+        Q_UNUSED(old_node_id);
+        Q_UNUSED(new_node_id);
+    }
+    virtual void UpdateStakeholderReferenceO(int old_node_id, int new_node_id) const
+    {
+        Q_UNUSED(old_node_id);
+        Q_UNUSED(new_node_id);
+    }
+
+    //
+
     virtual void ReadTransFunction(TransShadowList& trans_shadow_list, int node_id, QSqlQuery& query);
     virtual QMultiHash<int, int> ReplaceNodeFunction(int old_node_id, int new_node_id) const;
 

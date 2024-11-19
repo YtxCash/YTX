@@ -13,7 +13,7 @@ TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObje
 
 TreeModelOrder::~TreeModelOrder() { delete root_; }
 
-void TreeModelOrder::RUpdateLeafValueTO(int node_id, double diff, CString& node_field)
+void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch || diff == 0.0)
@@ -32,7 +32,7 @@ void TreeModelOrder::RUpdateLeafValueTO(int node_id, double diff, CString& node_
         UpdateAncestorValueOrder(node, diff);
 }
 
-void TreeModelOrder::RUpdateLeafValueFPTO(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     auto* node { node_hash_.value(node_id) };
     if (!node || node == root_ || node->branch)
@@ -58,7 +58,7 @@ void TreeModelOrder::RUpdateLeafValueFPTO(int node_id, double first_diff, double
         UpdateAncestorValueOrder(node, first_diff, second_diff, amount_diff, discount_diff, settled);
 }
 
-void TreeModelOrder::RUpdateStakeholderSO(int old_node_id, int new_node_id)
+void TreeModelOrder::RUpdateStakeholder(int old_node_id, int new_node_id)
 {
     const auto& const_node_hash { std::as_const(node_hash_) };
 

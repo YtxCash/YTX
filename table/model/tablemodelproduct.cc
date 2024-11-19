@@ -108,18 +108,18 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
             emit SResizeColumnToContents(std::to_underlying(TableEnumProduct::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
 
-            emit SUpdateLeafValueTO(*trans_shadow->rhs_node, *trans_shadow->unit_price, UNIT_COST);
-            emit SUpdateLeafValueTO(node_id_, *trans_shadow->unit_price, UNIT_COST);
+            emit SUpdateLeafValueOne(*trans_shadow->rhs_node, *trans_shadow->unit_price, UNIT_COST);
+            emit SUpdateLeafValueOne(node_id_, *trans_shadow->unit_price, UNIT_COST);
 
             double ratio { *trans_shadow->lhs_ratio };
             double debit { *trans_shadow->lhs_debit };
             double credit { *trans_shadow->lhs_credit };
-            emit SUpdateLeafValueFPTO(node_id_, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafValue(node_id_, debit, credit, ratio * debit, ratio * credit);
 
             ratio = *trans_shadow->rhs_ratio;
             debit = *trans_shadow->rhs_debit;
             credit = *trans_shadow->rhs_credit;
-            emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+            emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
 
             if (*trans_shadow->helper_node != 0) {
                 emit SAppendHelperTrans(info_.section, trans_shadow);
@@ -158,8 +158,8 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
         double ratio { *trans_shadow->rhs_ratio };
         double debit { *trans_shadow->rhs_debit };
         double credit { *trans_shadow->rhs_credit };
-        emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
-        emit SUpdateLeafValueFPTO(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
+        emit SUpdateLeafValue(old_rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
     }
 
     emit SResizeColumnToContents(index.column());
@@ -246,11 +246,11 @@ bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& pa
         double unit_cost { *trans_shadow->unit_price };
         double debit { *trans_shadow->lhs_debit };
         double credit { *trans_shadow->lhs_credit };
-        emit SUpdateLeafValueFPTO(node_id_, -debit, -credit, -unit_cost * debit, -unit_cost * credit);
+        emit SUpdateLeafValue(node_id_, -debit, -credit, -unit_cost * debit, -unit_cost * credit);
 
         debit = *trans_shadow->rhs_debit;
         credit = *trans_shadow->rhs_credit;
-        emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, -debit, -credit, -unit_cost * debit, -unit_cost * credit);
+        emit SUpdateLeafValue(*trans_shadow->rhs_node, -debit, -credit, -unit_cost * debit, -unit_cost * credit);
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
@@ -290,8 +290,8 @@ bool TableModelProduct::UpdateDebit(TransShadow* trans_shadow, double value)
     double amount_debit_diff { quantity_debit_diff * unit_cost };
     double amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateLeafValueFPTO(node_id_, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
-    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
+    emit SUpdateLeafValue(node_id_, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
 
     return true;
 }
@@ -320,8 +320,8 @@ bool TableModelProduct::UpdateCredit(TransShadow* trans_shadow, double value)
     double amount_debit_diff { quantity_debit_diff * unit_cost };
     double amount_credit_diff { quantity_credit_diff * unit_cost };
 
-    emit SUpdateLeafValueFPTO(node_id_, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
-    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
+    emit SUpdateLeafValue(node_id_, quantity_debit_diff, quantity_credit_diff, amount_debit_diff, amount_credit_diff);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, quantity_credit_diff, quantity_debit_diff, amount_credit_diff, amount_debit_diff);
 
     return true;
 }
@@ -340,8 +340,8 @@ bool TableModelProduct::UpdateRatio(TransShadow* trans_shadow, double value)
 
     sql_->UpdateField(info_.transaction, value, UNIT_COST, *trans_shadow->id);
 
-    emit SUpdateLeafValueFPTO(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
-    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * diff, *trans_shadow->rhs_credit * diff);
+    emit SUpdateLeafValue(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * diff, *trans_shadow->rhs_credit * diff);
 
     return true;
 }

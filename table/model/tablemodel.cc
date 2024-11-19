@@ -16,7 +16,7 @@ TableModel::TableModel(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject
 
 TableModel::~TableModel() { ResourcePool<TransShadow>::Instance().Recycle(trans_shadow_list_); }
 
-void TableModel::RRemoveMultiTransFPTS(const QMultiHash<int, int>& node_trans)
+void TableModel::RRemoveMultiTrans(const QMultiHash<int, int>& node_trans)
 {
     if (!node_trans.contains(node_id_))
         return;
@@ -24,7 +24,7 @@ void TableModel::RRemoveMultiTransFPTS(const QMultiHash<int, int>& node_trans)
     RemoveMultiTrans(node_trans.values(node_id_));
 }
 
-void TableModel::RMoveMultiTransFPTS(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
+void TableModel::RMoveMultiTrans(int old_node_id, int new_node_id, const QList<int>& trans_id_list)
 {
     if (node_id_ == old_node_id)
         RemoveMultiTrans(trans_id_list);
@@ -124,12 +124,12 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
         auto ratio { *trans_shadow->lhs_ratio };
         auto debit { *trans_shadow->lhs_debit };
         auto credit { *trans_shadow->lhs_credit };
-        emit SUpdateLeafValueFPTO(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafValue(node_id_, -debit, -credit, -ratio * debit, -ratio * credit);
 
         ratio = *trans_shadow->rhs_ratio;
         debit = *trans_shadow->rhs_debit;
         credit = *trans_shadow->rhs_credit;
-        emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
+        emit SUpdateLeafValue(*trans_shadow->rhs_node, -debit, -credit, -ratio * debit, -ratio * credit);
 
         int trans_id { *trans_shadow->id };
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
@@ -211,11 +211,11 @@ bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 
     double lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     double lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafValueFPTO(node_id_, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValue(node_id_, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
     double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
@@ -245,11 +245,11 @@ bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 
     double lhs_debit_diff { *trans_shadow->lhs_debit - lhs_debit };
     double lhs_credit_diff { *trans_shadow->lhs_credit - lhs_credit };
-    emit SUpdateLeafValueFPTO(node_id_, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
+    emit SUpdateLeafValue(node_id_, lhs_debit_diff, lhs_credit_diff, lhs_debit_diff * lhs_ratio, lhs_credit_diff * lhs_ratio);
 
     double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }
@@ -276,11 +276,11 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    emit SUpdateLeafValueFPTO(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
+    emit SUpdateLeafValue(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
 
     double rhs_debit_diff { *trans_shadow->rhs_debit - rhs_debit };
     double rhs_credit_diff { *trans_shadow->rhs_credit - rhs_credit };
-    emit SUpdateLeafValueFPTO(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
+    emit SUpdateLeafValue(*trans_shadow->rhs_node, rhs_debit_diff, rhs_credit_diff, rhs_debit_diff * rhs_ratio, rhs_credit_diff * rhs_ratio);
 
     return true;
 }

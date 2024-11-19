@@ -432,7 +432,7 @@ void MainWindow::CreateTableHelper(PTreeModel tree_model, TableHash* table_hash,
     table_hash->insert(node_id, widget);
     SignalStation::Instance().RegisterModel(section, node_id, model);
 
-    connect(data->sql, &Sqlite::SRemoveMultiTransFPTS, model, &TableModel::RRemoveMultiTransFPTS);
+    connect(data->sql, &Sqlite::SRemoveMultiTrans, model, &TableModel::RRemoveMultiTrans);
 }
 
 void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id)
@@ -471,8 +471,8 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 
-    connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
-    connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
+    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
     connect(table_model, &TableModel::SRemoveOneTrans, &SignalStation::Instance(), &SignalStation::RRemoveOneTrans);
     connect(table_model, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
@@ -480,8 +480,8 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
     connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
     connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
 
-    connect(data->sql, &Sqlite::SRemoveMultiTransFPTS, table_model, &TableModel::RRemoveMultiTransFPTS);
-    connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
+    connect(data->sql, &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
+    connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
 }
 
 void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* table_model, PTreeModel tree_model, TableWidgetOrder* widget) const
@@ -490,11 +490,11 @@ void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* tabl
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, widget, &TableWidgetOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
 
-    connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
-    connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
+    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
-    connect(table_model, &TableModel::SUpdateLeafValueFPTO, widget, &TableWidgetOrder::RUpdateLeafValueFPTO);
-    connect(table_model, &TableModel::SUpdateLeafValueTO, widget, &TableWidgetOrder::RUpdateLeafValueTO);
+    connect(table_model, &TableModel::SUpdateLeafValue, widget, &TableWidgetOrder::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, widget, &TableWidgetOrder::RUpdateLeafValueOne);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_model.data()) && "Tree Model is not TreeModelOrder");
     auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };
@@ -511,8 +511,8 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
 
-    connect(data->sql, &Sqlite::SMoveMultiTransFPTS, table_model, &TableModel::RMoveMultiTransFPTS);
-    connect(data->sql, &Sqlite::SRemoveMultiTransFPTS, table_model, &TableModel::RRemoveMultiTransFPTS);
+    connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
+    connect(data->sql, &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
 
     connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
     connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
@@ -864,7 +864,7 @@ void MainWindow::TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const
     connect(model, &TreeModel::SRule, &SignalStation::Instance(), &SignalStation::RRule);
 
     connect(sql, &Sqlite::SRemoveNode, model, &TreeModel::RRemoveNode);
-    connect(sql, &Sqlite::SUpdateMultiLeafTotalFPT, model, &TreeModel::RUpdateMultiLeafTotalFPT);
+    connect(sql, &Sqlite::SUpdateMultiLeafTotal, model, &TreeModel::RUpdateMultiLeafTotal);
 
     connect(sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }
@@ -1338,8 +1338,8 @@ void MainWindow::SetStakeholderData()
     auto* model { new TreeModelStakeholder(sql, info, stakeholder_settings_.default_unit, stakeholder_table_hash_, interface_.separator, this) };
     stakeholder_tree_ = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
 
-    connect(product_data_.sql, &Sqlite::SUpdateProductSO, sql, &Sqlite::RUpdateProductSO);
-    connect(sql, &Sqlite::SUpdateStakeholderSO, model, &TreeModel::RUpdateStakeholderSO);
+    connect(product_data_.sql, &Sqlite::SUpdateProduct, sql, &Sqlite::RUpdateProduct);
+    connect(sql, &Sqlite::SUpdateStakeholder, model, &TreeModel::RUpdateStakeholder);
     connect(static_cast<SqliteStakeholder*>(sql), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
     connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
 }
@@ -1400,8 +1400,8 @@ void MainWindow::SetSalesData()
     auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, this) };
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
 
-    connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholderSO, model, &TreeModel::RUpdateStakeholderSO);
-    connect(product_data_.sql, &Sqlite::SUpdateProductSO, sql, &Sqlite::RUpdateProductSO);
+    connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholder, model, &TreeModel::RUpdateStakeholder);
+    connect(product_data_.sql, &Sqlite::SUpdateProduct, sql, &Sqlite::RUpdateProduct);
 }
 
 void MainWindow::SetPurchaseData()
@@ -1434,8 +1434,8 @@ void MainWindow::SetPurchaseData()
     auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, this) };
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
 
-    connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholderSO, model, &TreeModel::RUpdateStakeholderSO);
-    connect(product_data_.sql, &Sqlite::SUpdateProductSO, sql, &Sqlite::RUpdateProductSO);
+    connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholder, model, &TreeModel::RUpdateStakeholder);
+    connect(product_data_.sql, &Sqlite::SUpdateProduct, sql, &Sqlite::RUpdateProduct);
 }
 
 void MainWindow::SetHeader()
@@ -1789,11 +1789,11 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, dialog, &EditNodeOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
 
-    connect(table_model, &TableModel::SUpdateLeafValueFPTO, tree_model, &TreeModel::RUpdateLeafValueFPTO);
-    connect(table_model, &TableModel::SUpdateLeafValueTO, tree_model, &TreeModel::RUpdateLeafValueTO);
+    connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, tree_model, &TreeModel::RUpdateLeafValueOne);
 
-    connect(table_model, &TableModel::SUpdateLeafValueFPTO, dialog, &EditNodeOrder::RUpdateLeafValueFPTO);
-    connect(table_model, &TableModel::SUpdateLeafValueTO, dialog, &EditNodeOrder::RUpdateLeafValueTO);
+    connect(table_model, &TableModel::SUpdateLeafValue, dialog, &EditNodeOrder::RUpdateLeafValue);
+    connect(table_model, &TableModel::SUpdateLeafValueOne, dialog, &EditNodeOrder::RUpdateLeafValueOne);
 
     assert(dynamic_cast<TreeModelOrder*>(tree_widget_->Model().data()) && "Model is not TreeModelOrder");
     auto* tree_model_order { static_cast<TreeModelOrder*>(tree_model.data()) };

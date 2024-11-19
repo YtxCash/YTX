@@ -9,7 +9,7 @@ SqliteTask::SqliteTask(CInfo& info, QObject* parent)
 {
 }
 
-QString SqliteTask::ReadNodeQS() const
+QString SqliteTask::QSReadNode() const
 {
     return QStringLiteral(R"(
     SELECT name, id, code, description, note, rule, branch, unit, is_helper, color, date_time, finished, unit_cost, quantity, amount
@@ -18,7 +18,7 @@ QString SqliteTask::ReadNodeQS() const
     )");
 }
 
-QString SqliteTask::WriteNodeQS() const
+QString SqliteTask::QSWriteNode() const
 {
     return QStringLiteral(R"(
     INSERT INTO task (name, code, description, note, rule, branch, unit, is_helper, color, date_time, finished, unit_cost)
@@ -26,7 +26,7 @@ QString SqliteTask::WriteNodeQS() const
     )");
 }
 
-QString SqliteTask::RemoveNodeSecondQS() const
+QString SqliteTask::QSRemoveNodeSecond() const
 {
     return QStringLiteral(R"(
     UPDATE task_transaction SET
@@ -35,7 +35,7 @@ QString SqliteTask::RemoveNodeSecondQS() const
     )");
 }
 
-QString SqliteTask::InternalReferenceQS() const
+QString SqliteTask::QSInternalReference() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM task_transaction
@@ -51,7 +51,7 @@ QString SqliteTask::QSHelperReferenceFPTS() const
     )");
 }
 
-QString SqliteTask::QSReplaceHelperFPTS() const
+QString SqliteTask::QSReplaceHelperTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE task_transaction SET
@@ -69,7 +69,7 @@ QString SqliteTask::QSRemoveHelperFPTS() const
     )");
 }
 
-QString SqliteTask::LeafTotalQS() const
+QString SqliteTask::QSLeafTotalFPT() const
 {
     return QStringLiteral(R"(
     WITH node_balance AS (
@@ -133,7 +133,7 @@ QString SqliteTask::QSHelperTransToRemoveFPTS() const
     )");
 }
 
-QString SqliteTask::ReadTransQS() const
+QString SqliteTask::QSReadNodeTrans() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
@@ -170,7 +170,7 @@ void SqliteTask::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->helper_node = query.value("helper_node").toInt();
 }
 
-QString SqliteTask::WriteTransQS() const
+QString SqliteTask::QSWriteNodeTrans() const
 {
     return QStringLiteral(R"(
     INSERT INTO task_transaction
@@ -180,7 +180,7 @@ QString SqliteTask::WriteTransQS() const
     )");
 }
 
-QString SqliteTask::ReadTransRangeQS(CString& in_list) const
+QString SqliteTask::QSReadTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
@@ -200,7 +200,7 @@ QString SqliteTask::QSReadHelperTransRangeFPTS(CString& in_list) const
         .arg(in_list);
 }
 
-QString SqliteTask::QSReplaceTransFPTS() const
+QString SqliteTask::QSReplaceNodeTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE task_transaction SET
@@ -210,7 +210,7 @@ QString SqliteTask::QSReplaceTransFPTS() const
     )");
 }
 
-QString SqliteTask::UpdateTransValueQS() const
+QString SqliteTask::QSUpdateTransValueFPTO() const
 {
     return QStringLiteral(R"(
     UPDATE task_transaction SET
@@ -239,7 +239,7 @@ void SqliteTask::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) con
     query.bindValue(":rhs_credit", *trans_shadow->rhs_credit);
 }
 
-void SqliteTask::UpdateTransValueBind(const TransShadow* trans_shadow, QSqlQuery& query) const
+void SqliteTask::UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QSqlQuery& query) const
 {
     query.bindValue(":lhs_node", *trans_shadow->lhs_node);
     query.bindValue(":lhs_debit", *trans_shadow->lhs_debit);
@@ -285,7 +285,7 @@ void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->finished = query.value("finished").toBool();
 }
 
-QString SqliteTask::UpdateNodeValueQS() const
+QString SqliteTask::QSUpdateNodeValueFPTO() const
 {
     return QStringLiteral(R"(
     UPDATE task SET
@@ -294,14 +294,14 @@ QString SqliteTask::UpdateNodeValueQS() const
     )");
 }
 
-void SqliteTask::UpdateNodeValueBind(const Node* node, QSqlQuery& query) const
+void SqliteTask::UpdateNodeValueBindFPTO(const Node* node, QSqlQuery& query) const
 {
     query.bindValue(":quantity", node->initial_total);
     query.bindValue(":amount", node->final_total);
     query.bindValue(":node_id", node->id);
 }
 
-QString SqliteTask::SearchTransQS() const
+QString SqliteTask::QSSearchTrans() const
 {
     return QStringLiteral(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
