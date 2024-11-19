@@ -562,17 +562,17 @@ bool Sqlite::ExternalReference(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-bool Sqlite::HelperReferenceFPTS(int node_id) const
+bool Sqlite::HelperReferenceFPTS(int helper_id) const
 {
     CString& string { QSHelperReferenceFPTS() };
-    if (string.isEmpty() || node_id <= 0)
+    if (string.isEmpty() || helper_id <= 0)
         return false;
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
     query.prepare(string);
-    query.bindValue(":node_id", node_id);
+    query.bindValue(":helper_id", helper_id);
 
     if (!query.exec()) {
         qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in HelperReferenceFPTS" << query.lastError().text();
@@ -583,7 +583,7 @@ bool Sqlite::HelperReferenceFPTS(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-bool Sqlite::ReadTrans(TransShadowList& trans_shadow_list, int node_id)
+bool Sqlite::ReadNodeTrans(TransShadowList& trans_shadow_list, int node_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -593,7 +593,7 @@ bool Sqlite::ReadTrans(TransShadowList& trans_shadow_list, int node_id)
     query.bindValue(":node_id", node_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTrans" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadNodeTrans" << query.lastError().text();
         return false;
     }
 
@@ -900,7 +900,7 @@ bool Sqlite::SearchTrans(TransList& trans_list, CString& text) const
     return true;
 }
 
-bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
+bool Sqlite::ReadNodeTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
 {
     if (trans_id_list.empty() || node_id <= 0)
         return false;
@@ -918,7 +918,7 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
         QList<int> current_batch { trans_id_list.mid(start, end - start) };
 
         QStringList placeholder { current_batch.size(), "?" };
-        QString string { QSReadTransRangeFPTS(placeholder.join(",")) };
+        QString string { QSReadNodeTransRangeFPTS(placeholder.join(",")) };
 
         query.prepare(string);
 
@@ -926,7 +926,7 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
             query.bindValue(i, current_batch.at(i));
 
         if (!query.exec()) {
-            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTransRange, batch" << batch_index << ": "
+            qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadNodeTransRange, batch" << batch_index << ": "
                        << query.lastError().text();
             continue;
         }
@@ -937,9 +937,9 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
     return true;
 }
 
-bool Sqlite::ReadHelperTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list)
+bool Sqlite::ReadHelperTransRange(TransShadowList& trans_shadow_list, int helper_id, const QList<int>& trans_id_list)
 {
-    if (trans_id_list.empty() || node_id <= 0)
+    if (trans_id_list.empty() || helper_id <= 0)
         return false;
 
     QSqlQuery query(*db_);
@@ -955,7 +955,7 @@ bool Sqlite::ReadHelperTransRange(TransShadowList& trans_shadow_list, int node_i
         QList<int> current_batch { trans_id_list.mid(start, end - start) };
 
         QStringList placeholder { current_batch.size(), "?" };
-        QString string { QSReadTransRangeFPTS(placeholder.join(",")) };
+        QString string { QSReadHelperTransRangeFPTS(placeholder.join(",")) };
 
         query.prepare(string);
 
@@ -968,13 +968,13 @@ bool Sqlite::ReadHelperTransRange(TransShadowList& trans_shadow_list, int node_i
             continue;
         }
 
-        ReadTransFunction(trans_shadow_list, node_id, query);
+        ReadTransFunction(trans_shadow_list, helper_id, query);
     }
 
     return true;
 }
 
-bool Sqlite::ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int node_id)
+bool Sqlite::ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int helper_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
@@ -984,14 +984,14 @@ bool Sqlite::ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int node_id
         return false;
 
     query.prepare(string);
-    query.bindValue(":node_id", node_id);
+    query.bindValue(":node_id", helper_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadTrans" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadHelperTransFPTS" << query.lastError().text();
         return false;
     }
 
-    ReadTransFunction(trans_shadow_list, node_id, query);
+    ReadTransFunction(trans_shadow_list, helper_id, query);
     return true;
 }
 

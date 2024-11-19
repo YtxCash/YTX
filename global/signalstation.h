@@ -42,8 +42,8 @@ signals:
 
     // send to TableModelHelper
     void SAppendHelperTrans(const TransShadow* trans_shadow);
-    void SRemoveHelperTrans(int node_id, int trans_id);
-    void SAppendMultiHelperTransFPTS(int new_node_id, const QList<int>& trans_id_list);
+    void SRemoveHelperTrans(int helper_id, int trans_id);
+    void SAppendMultiHelperTransFPTS(int new_helper_id, const QList<int>& trans_id_list);
 
 public slots:
     // receive from TableModel
@@ -52,7 +52,7 @@ public slots:
     void RUpdateBalance(Section section, int node_id, int trans_id);
 
     void RAppendHelperTrans(Section section, const TransShadow* trans_shadow);
-    void RRemoveHelperTrans(Section section, int node_id, int trans_id);
+    void RRemoveHelperTrans(Section section, int helper_id, int trans_id);
 
     // receive from SqliteStakeholder
     void RAppendPrice(Section section, TransShadow* trans_shadow);
@@ -61,7 +61,7 @@ public slots:
     void RRule(Section section, int node_id, bool rule);
 
     // receive from sqlite
-    void RMoveMultiHelperTransFPTS(Section section, int new_node_id, const QList<int>& trans_id_list);
+    void RMoveMultiHelperTransFPTS(Section section, int new_helper_id, const QList<int>& trans_id_list);
 
 private:
     SignalStation() = default;

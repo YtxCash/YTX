@@ -48,9 +48,9 @@ void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
     // todo 可能需要额外计算
 }
 
-void TableModelHelper::RRemoveHelperTrans(int node_id, int trans_id)
+void TableModelHelper::RRemoveHelperTrans(int helper_id, int trans_id)
 {
-    if (node_id_ != node_id)
+    if (node_id_ != helper_id)
         return;
 
     auto idx { GetIndex(trans_id) };
@@ -63,15 +63,15 @@ void TableModelHelper::RRemoveHelperTrans(int node_id, int trans_id)
     endRemoveRows();
 }
 
-void TableModelHelper::RAppendMultiHelperTransFPTS(int node_id, const QList<int>& trans_id_list)
+void TableModelHelper::RAppendMultiHelperTransFPTS(int helper_id, const QList<int>& trans_id_list)
 {
-    if (node_id_ != node_id)
+    if (node_id_ != helper_id)
         return;
 
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
 
-    sql_->ReadHelperTransRange(trans_shadow_list, node_id, trans_id_list);
+    sql_->ReadHelperTransRange(trans_shadow_list, helper_id, trans_id_list);
     beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();

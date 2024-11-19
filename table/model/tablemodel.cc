@@ -397,7 +397,7 @@ bool TableModel::AppendMultiTrans(int node_id, const QList<int>& trans_id_list)
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
 
-    sql_->ReadTransRange(trans_shadow_list, node_id, trans_id_list);
+    sql_->ReadNodeTransRange(trans_shadow_list, node_id, trans_id_list);
     beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();

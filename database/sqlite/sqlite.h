@@ -71,14 +71,14 @@ public:
     bool DragNode(int destination_node_id, int node_id) const;
     bool InternalReference(int node_id) const;
     bool ExternalReference(int node_id) const;
-    bool HelperReferenceFPTS(int node_id) const;
+    bool HelperReferenceFPTS(int helper_id) const;
     bool LeafTotal(Node* node) const;
     bool UpdateNodeValue(const Node* node) const;
     QList<int> SearchNodeName(CString& text) const;
 
     // table
-    bool ReadTrans(TransShadowList& trans_shadow_list, int node_id);
-    bool ReadTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
+    bool ReadNodeTrans(TransShadowList& trans_shadow_list, int node_id);
+    bool ReadNodeTransRange(TransShadowList& trans_shadow_list, int node_id, const QList<int>& trans_id_list);
     bool ReadHelperTransRange(TransShadowList& trans_shadow_list, int helper_id, const QList<int>& trans_id_list);
     bool ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int helper_id);
     bool WriteTrans(TransShadow* trans_shadow);
@@ -140,7 +140,7 @@ protected:
     virtual QString QSHelperTransToRemoveFPTS() const { return {}; }
     virtual QString QSReplaceNodeTransFPTS() const { return {}; }
     virtual QString QSReplaceHelperTransFPTS() const { return {}; }
-    virtual QString QSReadTransRangeFPTS(CString& in_list) const
+    virtual QString QSReadNodeTransRangeFPTS(CString& in_list) const
     {
         Q_UNUSED(in_list);
         return {};

@@ -11,7 +11,7 @@ TableModelOrder::TableModelOrder(
     , party_id_ { *node_shadow->party }
 {
     if (node_id >= 1)
-        sql_->ReadTrans(trans_shadow_list_, node_id);
+        sql_->ReadNodeTrans(trans_shadow_list_, node_id);
 
     if (party_id_ >= 1)
         sqlite_stakeholder_->ReadTrans(party_id_);

@@ -67,15 +67,15 @@ void SignalStation::RAppendHelperTrans(Section section, const TransShadow* trans
     emit SAppendHelperTrans(trans_shadow);
 }
 
-void SignalStation::RRemoveHelperTrans(Section section, int node_id, int trans_id)
+void SignalStation::RRemoveHelperTrans(Section section, int helper_id, int trans_id)
 {
-    const auto* model { FindTableModel(section, node_id) };
+    const auto* model { FindTableModel(section, helper_id) };
     if (!model)
         return;
 
     const auto* cast_model { static_cast<const TableModelHelper*>(model) };
     connect(this, &SignalStation::SRemoveHelperTrans, cast_model, &TableModelHelper::RRemoveHelperTrans, Qt::SingleShotConnection);
-    emit SRemoveHelperTrans(node_id, trans_id);
+    emit SRemoveHelperTrans(helper_id, trans_id);
 }
 
 void SignalStation::RAppendPrice(Section section, TransShadow* trans_shadow)
@@ -103,13 +103,13 @@ void SignalStation::RRule(Section section, int node_id, bool rule)
     emit SRule(node_id, rule);
 }
 
-void SignalStation::RMoveMultiHelperTransFPTS(Section section, int new_node_id, const QList<int>& trans_id_list)
+void SignalStation::RMoveMultiHelperTransFPTS(Section section, int new_helper_id, const QList<int>& trans_id_list)
 {
-    const auto* model { FindTableModel(section, new_node_id) };
+    const auto* model { FindTableModel(section, new_helper_id) };
     if (!model)
         return;
 
     const auto* cast_model { static_cast<const TableModelHelper*>(model) };
     connect(this, &SignalStation::SAppendMultiHelperTransFPTS, cast_model, &TableModelHelper::RAppendMultiHelperTransFPTS, Qt::SingleShotConnection);
-    emit SAppendMultiHelperTransFPTS(new_node_id, trans_id_list);
+    emit SAppendMultiHelperTransFPTS(new_helper_id, trans_id_list);
 }

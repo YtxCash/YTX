@@ -208,7 +208,7 @@ QString SqliteStakeholder::QSHelperReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM stakeholder_transaction
-    WHERE outside_product = :node_id AND removed = 0
+    WHERE outside_product = :helper_id AND removed = 0
     )");
 }
 
@@ -457,7 +457,7 @@ void SqliteStakeholder::ReadTransFunction(TransShadowList& trans_shadow_list, in
     }
 }
 
-QString SqliteStakeholder::QSReadTransRangeFPTS(CString& in_list) const
+QString SqliteStakeholder::QSReadNodeTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product

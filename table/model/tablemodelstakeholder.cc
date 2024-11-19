@@ -10,7 +10,7 @@ TableModelStakeholder::TableModelStakeholder(Sqlite* sql, bool rule, int node_id
     : TableModel { sql, rule, node_id, info, parent }
 {
     if (node_id >= 1)
-        sql_->ReadTrans(trans_shadow_list_, node_id);
+        sql_->ReadNodeTrans(trans_shadow_list_, node_id);
 }
 
 void TableModelStakeholder::RAppendPrice(TransShadow* trans_shadow)
@@ -49,7 +49,7 @@ bool TableModelStakeholder::AppendMultiTrans(int node_id, const QList<int>& tran
     auto row { trans_shadow_list_.size() };
     TransShadowList trans_shadow_list {};
 
-    sql_->ReadTransRange(trans_shadow_list, node_id, trans_id_list);
+    sql_->ReadNodeTransRange(trans_shadow_list, node_id, trans_id_list);
     beginInsertRows(QModelIndex(), row, row + trans_shadow_list.size() - 1);
     trans_shadow_list_.append(trans_shadow_list);
     endInsertRows();

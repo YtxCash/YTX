@@ -47,7 +47,7 @@ QString SqliteTask::QSHelperReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM task_transaction
-    WHERE helper_node = :node_id AND removed = 0
+    WHERE helper_node = :helper_id AND removed = 0
     )");
 }
 
@@ -180,7 +180,7 @@ QString SqliteTask::QSWriteNodeTrans() const
     )");
 }
 
-QString SqliteTask::QSReadTransRangeFPTS(CString& in_list) const
+QString SqliteTask::QSReadNodeTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
     SELECT id, lhs_node, unit_cost, lhs_debit, lhs_credit, rhs_node, rhs_debit, rhs_credit, state, description, helper_node, code, document, date_time
