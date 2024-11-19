@@ -50,8 +50,13 @@ void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
     emit SRemoveNode(node_id);
     emit SUpdateStakeholder(node_id, 0);
 
-    const QMultiHash<int, int> node_trans { TransToRemove(node_id, false) };
-    const QMultiHash<int, int> helper_trans { TransToRemove(node_id, true) };
+    QMultiHash<int, int> node_trans {};
+    QMultiHash<int, int> helper_trans {};
+
+    if (!is_helper) {
+        node_trans = TransToRemove(node_id, false);
+        helper_trans = TransToRemove(node_id, true);
+    }
 
     RemoveNode(node_id, branch, is_helper);
 
