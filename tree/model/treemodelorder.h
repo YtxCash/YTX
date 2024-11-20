@@ -30,7 +30,7 @@ class TreeModelOrder final : public TreeModel {
 
 public:
     TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    ~TreeModelOrder() override;
+    ~TreeModelOrder() override = default;
 
 signals:
     void SUpdateData(int node_id, TreeEnumOrder column, const QVariant& value);

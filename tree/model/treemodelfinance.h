@@ -27,7 +27,7 @@ class TreeModelFinance final : public TreeModel {
 
 public:
     TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    ~TreeModelFinance() override;
+    ~TreeModelFinance() override = default;
 
 public slots:
     void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,

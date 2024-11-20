@@ -27,7 +27,7 @@ class TreeModelProduct final : public TreeModel {
 
 public:
     TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    ~TreeModelProduct() override;
+    ~TreeModelProduct() override = default;
 
 public slots:
     void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,

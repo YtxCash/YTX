@@ -27,7 +27,7 @@ class TreeModelStakeholder final : public TreeModel {
 
 public:
     TreeModelStakeholder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    ~TreeModelStakeholder() override;
+    ~TreeModelStakeholder() override = default;
 
 public slots:
     void RUpdateStakeholder(int old_node_id, int new_node_id) override;

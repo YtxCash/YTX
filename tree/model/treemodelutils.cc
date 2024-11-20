@@ -36,7 +36,7 @@ void TreeModelUtils::UpdateBranchUnitF(const Node* root, Node* node)
     node->initial_total = initial_total;
 }
 
-void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, const Node* root, const Node* node, CString& separator)
+void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, StringHash& helper, const Node* root, const Node* node, CString& separator)
 {
     QQueue<const Node*> queue {};
     queue.enqueue(node);
@@ -54,6 +54,11 @@ void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, const 
                 queue.enqueue(child);
 
             branch.insert(current->id, path);
+            continue;
+        }
+
+        if (current->is_helper) {
+            helper.insert(current->id, path);
             continue;
         }
 
@@ -239,9 +244,7 @@ void TreeModelUtils::UpdateComboModel(QStandardItemModel* model, const QVector<s
     QSignalBlocker blocker(model);
 
     for (const auto& item : items) {
-        auto* standard_item = new QStandardItem(item.first);
-        standard_item->setData(item.second, Qt::UserRole);
-        model->appendRow(standard_item);
+        AddItemToModel(model, item.first, item.second, false);
     }
 
     model->sort(0);
@@ -249,7 +252,7 @@ void TreeModelUtils::UpdateComboModel(QStandardItemModel* model, const QVector<s
 
 void TreeModelUtils::PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model)
 {
-    if (!model)
+    if (!model || (leaf.isEmpty() && branch.isEmpty()))
         return;
 
     auto future = QtConcurrent::run([&]() {
@@ -280,7 +283,7 @@ void TreeModelUtils::PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, 
 
 void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model, int specific_node)
 {
-    if (!model)
+    if (!model || leaf.isEmpty())
         return;
 
     auto future = QtConcurrent::run([&, specific_node]() {
@@ -307,7 +310,7 @@ void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* m
 
 void TreeModelUtils::LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, Filter filter)
 {
-    if (!model)
+    if (!model || leaf.isEmpty())
         return;
 
     auto future = QtConcurrent::run([&, specific_unit, filter]() {
@@ -351,7 +354,7 @@ void TreeModelUtils::LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, 
 
 void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node)
 {
-    if (!model)
+    if (!model || leaf.isEmpty())
         return;
 
     auto future = QtConcurrent::run([&, specific_unit, exclude_node]() {
@@ -381,7 +384,7 @@ void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, 
 
 void TreeModelUtils::HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter)
 {
-    if (!model)
+    if (!model || helper.isEmpty())
         return;
 
     auto future = QtConcurrent::run([&, specific_node, filter]() {
@@ -399,7 +402,7 @@ void TreeModelUtils::HelperPathFPTS(CStringHash& helper, QStandardItemModel* mod
             }
         };
 
-        if (filter == Filter::kIncludeSpecificWithNone || filter == Filter::kIncludeAllWithNone) {
+        if (filter == Filter::kIncludeAllWithNone) {
             items.emplaceBack(QString(), 0);
         }
 
@@ -419,6 +422,65 @@ void TreeModelUtils::HelperPathFPTS(CStringHash& helper, QStandardItemModel* mod
     });
 
     watcher->setFuture(future);
+}
+
+void TreeModelUtils::AddItemToModel(QStandardItemModel* model, const QString& path, int node_id, bool should_sort)
+{
+    auto* standard_item { new QStandardItem(path) };
+    standard_item->setData(node_id, Qt::UserRole);
+    model->appendRow(standard_item);
+
+    if (should_sort)
+        model->sort(0);
+}
+
+void TreeModelUtils::RemoveItemFromModel(QStandardItemModel* model, int node_id)
+{
+    for (int row = 0; row != model->rowCount(); ++row) {
+        QStandardItem* item { model->item(row) };
+        if (item && item->data(Qt::UserRole).toInt() == node_id) {
+            model->removeRow(row);
+            return;
+        }
+    }
+}
+
+void TreeModelUtils::UpdateModel(CStringHash& helper, QStandardItemModel* model, const Node* node)
+{
+    QQueue<const Node*> queue {};
+    queue.enqueue(node);
+
+    QSet<int> helper_id {};
+    const Node* current {};
+
+    while (!queue.isEmpty()) {
+        current = queue.dequeue();
+
+        if (current->branch) {
+            for (const auto* child : current->children)
+                queue.enqueue(child);
+
+            continue;
+        }
+
+        if (current->is_helper) {
+            helper_id.insert(current->id);
+        }
+    }
+
+    if (helper_id.isEmpty())
+        return;
+
+    for (int row = 0; row != model->rowCount(); ++row) {
+        QStandardItem* item { model->item(row) };
+        if (!item)
+            continue;
+
+        int id = item->data(Qt::UserRole).toInt();
+        if (helper_id.contains(id)) {
+            item->setText(helper.value(id));
+        }
+    }
 }
 
 void TreeModelUtils::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff)

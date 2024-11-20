@@ -4,13 +4,11 @@
 
 #include "widget/combobox.h"
 
-HelperNode::HelperNode(CTreeModel* tree_model, Filter filter, QObject* parent)
+HelperNode::HelperNode(CTreeModel* tree_model, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
-    , filter_ { filter }
+    , helper_model_ { tree_model->HelperModel() }
 {
-    combo_model_ = new QStandardItemModel(this);
-    RUpdateComboModel();
 }
 
 QWidget* HelperNode::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
@@ -18,7 +16,7 @@ QWidget* HelperNode::createEditor(QWidget* parent, const QStyleOptionViewItem& o
     Q_UNUSED(option);
 
     auto* editor { new ComboBox(parent) };
-    editor->setModel(combo_model_);
+    editor->setModel(helper_model_);
 
     return editor;
 }
@@ -68,5 +66,3 @@ void HelperNode::updateEditorGeometry(QWidget* editor, const QStyleOptionViewIte
     editor->setMinimumWidth(width);
     editor->setGeometry(option.rect);
 }
-
-void HelperNode::RUpdateComboModel() { tree_model_->HelperPathFPTS(combo_model_, 0, filter_); }

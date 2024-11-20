@@ -31,7 +31,7 @@ class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    virtual ~TreeModel() = default;
+    virtual ~TreeModel();
 
 protected:
     explicit TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
@@ -129,7 +129,7 @@ public:
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }
-    QStandardItemModel* HelperModel() { return helper_model_; }
+    QStandardItemModel* HelperModel() const { return helper_model_; }
 
     void CopyNodeFPTS(Node* tmp_node, int node_id) const;
     QStringList ChildrenNameFPTS(int node_id, int exclude_child) const;

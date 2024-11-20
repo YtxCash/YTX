@@ -8,12 +8,6 @@ TreeModelStakeholder::TreeModelStakeholder(Sqlite* sql, CInfo& info, int default
     ConstructTree();
 }
 
-TreeModelStakeholder::~TreeModelStakeholder()
-{
-    qDeleteAll(node_hash_);
-    delete root_;
-}
-
 void TreeModelStakeholder::RUpdateStakeholder(int old_node_id, int new_node_id)
 {
     const auto& const_node_hash { std::as_const(node_hash_) };
@@ -68,6 +62,10 @@ bool TreeModelStakeholder::InsertNode(int row, const QModelIndex& parent, Node* 
 
     QString path { TreeModelUtils::ConstructPathFPTS(root_, node, separator_) };
     (node->branch ? branch_path_ : (node->is_helper ? helper_path_ : leaf_path_)).insert(node->id, path);
+
+    if (node->is_helper) {
+        TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
+    }
 
     emit SSearch();
     emit SUpdateComboModel();
@@ -137,7 +135,14 @@ bool TreeModelStakeholder::UpdateHelperFPTS(Node* node, bool value)
     node->is_helper = value;
     sql_->UpdateField(info_.node, value, IS_HELPER, node_id);
 
-    (node->is_helper) ? helper_path_.insert(node_id, leaf_path_.take(node_id)) : leaf_path_.insert(node_id, helper_path_.take(node_id));
+    if (node->is_helper) {
+        CString path { leaf_path_.take(node_id) };
+        helper_path_.insert(node_id, path);
+        TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
+    } else {
+        leaf_path_.insert(node_id, helper_path_.take(node_id));
+        TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
+    }
 
     return true;
 }
@@ -170,6 +175,8 @@ void TreeModelStakeholder::ConstructTree()
 
         leaf_path_.insert(node->id, path);
     }
+
+    TreeModelUtils::HelperPathFPTS(helper_path_, helper_model_, 0, Filter::kIncludeAllWithNone);
 }
 
 void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
@@ -236,7 +243,9 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
     endRemoveRows();
 
     if (branch) {
-        TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+        TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
+        TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+
         branch_path_.remove(node_id);
     }
 
@@ -246,6 +255,7 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
 
     if (node->is_helper) {
         helper_path_.remove(node_id);
+        TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
     }
 
     emit SSearch();
@@ -412,7 +422,9 @@ bool TreeModelStakeholder::dropMimeData(const QMimeData* data, Qt::DropAction ac
     }
 
     sql_->DragNode(destination_parent->id, node_id);
-    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
+    TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+
     emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumStakeholder::kName));
     return true;

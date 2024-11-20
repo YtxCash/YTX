@@ -9,8 +9,6 @@ TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTabl
     ConstructTree();
 }
 
-TreeModelOrder::~TreeModelOrder() { delete root_; }
-
 void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };

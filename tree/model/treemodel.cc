@@ -10,6 +10,13 @@ TreeModel::TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& tab
     , separator_ { separator }
 {
     TreeModelUtils::InitializeRoot(root_, default_unit);
+    helper_model_ = new QStandardItemModel(this);
+}
+
+TreeModel::~TreeModel()
+{
+    qDeleteAll(node_hash_);
+    delete root_;
 }
 
 void TreeModel::RRemoveNode(int node_id)
@@ -216,7 +223,9 @@ bool TreeModel::UpdateName(Node* node, CString& value)
     node->name = value;
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
-    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, root_, node, separator_);
+    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
+    TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;

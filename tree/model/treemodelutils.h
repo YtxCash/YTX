@@ -67,13 +67,17 @@ public:
     static void UpdateComboModel(QStandardItemModel* model, const QVector<std::pair<QString, int>>& items);
 
     static QString ConstructPathFPTS(const Node* root, const Node* node, CString& separator);
-    static void UpdatePathFPTS(StringHash& leaf, StringHash& branch, const Node* root, const Node* node, CString& separator);
+    static void UpdatePathFPTS(StringHash& leaf, StringHash& branch, StringHash& helper, const Node* root, const Node* node, CString& separator);
 
     static void PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model);
     static void LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model, int specific_node);
     static void LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, Filter filter);
     static void LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node);
     static void HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter);
+
+    static void AddItemToModel(QStandardItemModel* model, CString& path, int node_id, bool should_sort = true);
+    static void RemoveItemFromModel(QStandardItemModel* model, int node_id);
+    static void UpdateModel(CStringHash& helper, QStandardItemModel* model, const Node* node);
 
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsBranchFPTS(Node* node, CString& message);
