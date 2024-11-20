@@ -129,6 +129,7 @@ public:
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }
+    QStandardItemModel* HelperModel() { return helper_model_; }
 
     void CopyNodeFPTS(Node* tmp_node, int node_id) const;
     QStringList ChildrenNameFPTS(int node_id, int exclude_child) const;
@@ -186,6 +187,8 @@ protected:
     StringHash leaf_path_ {};
     StringHash branch_path_ {};
     StringHash helper_path_ {};
+
+    QStandardItemModel* helper_model_ {};
 
     CInfo& info_;
     CTableHash& table_hash_;
