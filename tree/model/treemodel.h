@@ -22,21 +22,20 @@
 
 #include <QAbstractItemModel>
 #include <QMimeData>
-#include <QStandardItemModel>
 
 #include "component/constvalue.h"
 #include "component/enumclass.h"
-#include "component/using.h"
-#include "tree/node.h"
+#include "treemodelutils.h"
 
 class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    explicit TreeModel(QObject* parent = nullptr);
     virtual ~TreeModel() = default;
 
 protected:
+    explicit TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
+
     TreeModel() = delete;
     TreeModel(const TreeModel&) = delete;
     TreeModel& operator=(const TreeModel&) = delete;
@@ -104,125 +103,69 @@ public:
     {
         return data && data->hasFormat(NODE_ID) && action != Qt::IgnoreAction;
     }
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override
+    {
+        Q_UNUSED(parent);
+        return info_.tree_header.size();
+    }
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
+    {
+        if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
+            return info_.tree_header.at(section);
+        }
+
+        return QVariant();
+    }
 
     // Ytx's
     // Default implementations
-    virtual double InitialTotalFPT(int node_id) const
-    {
-        Q_UNUSED(node_id);
-        return {};
-    }
-    virtual double FinalTotalFPT(int node_id) const
-    {
-        Q_UNUSED(node_id);
-        return {};
-    }
-    virtual QStringList ChildrenNameFPTS(int node_id, int exclude_child) const
-    {
-        Q_UNUSED(node_id);
-        Q_UNUSED(exclude_child);
-        return {};
-    }
-    virtual bool BranchFPTS(int node_id) const
-    {
-        Q_UNUSED(node_id);
-        return {};
-    }
-    virtual void CopyNodeFPTS(Node* tmp_node, int node_id) const
-    {
-        Q_UNUSED(tmp_node);
-        Q_UNUSED(node_id);
-    }
-    virtual void PathPreferencesFPT(QStandardItemModel* model) const { Q_UNUSED(model); }
-    virtual void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const
-    {
-        Q_UNUSED(model);
-        Q_UNUSED(specific_node);
-        Q_UNUSED(filter);
-    }
-    virtual void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
-    {
-        Q_UNUSED(model);
-        Q_UNUSED(specific_unit);
-        Q_UNUSED(exclude_node);
-    }
-    virtual void LeafPathHelperNodeFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
-    {
-        Q_UNUSED(model);
-        Q_UNUSED(specific_node);
-        Q_UNUSED(filter);
-    }
-    virtual void LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const
-    {
-        Q_UNUSED(model);
-        Q_UNUSED(specific_unit);
-        Q_UNUSED(filter);
-    }
-    virtual void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
-    {
-        Q_UNUSED(node_shadow);
-        Q_UNUSED(node_id);
-    }
-    virtual void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const
-    {
-        Q_UNUSED(node_shadow);
-        Q_UNUSED(node);
-    }
-    virtual void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
-    {
-        Q_UNUSED(old_separator);
-        Q_UNUSED(new_separator);
-    }
-    virtual void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
-    {
-        Q_UNUSED(node_list);
-        Q_UNUSED(node_id_list);
-    }
+    double InitialTotalFPT(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::initial_total); }
+    double FinalTotalFPT(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::final_total); }
+    bool BranchFPTS(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::branch); }
+    bool IsHelperFPTS(int node_id) { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); }
+    int Unit(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
+    QString Name(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
+    bool Rule(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
 
+    bool ChildrenEmpty(int node_id) const;
+    bool Contains(int node_id) const { return node_hash_.contains(node_id); }
+
+    void CopyNodeFPTS(Node* tmp_node, int node_id) const;
+    QStringList ChildrenNameFPTS(int node_id, int exclude_child) const;
+    QSet<int> ChildrenIDFPTS(int node_id) const;
+
+    void PathPreferencesFPT(QStandardItemModel* model) const;
+    void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const;
+    void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const;
+    void LeafPathHelperFPTS(QStandardItemModel* model, int specific_node, Filter filter) const;
+    void LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const;
+
+    void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const;
+    void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const;
+
+    void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator);
+    void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const;
+
+    void SetParent(Node* node, int parent_id) const;
+    QModelIndex GetIndex(int node_id) const;
+
+    // virtual functions
     virtual void UpdateNodeFPTS(const Node* tmp_node) { Q_UNUSED(tmp_node); }
-    virtual void RetriveNodeO(int node_id) { Q_UNUSED(node_id); };
+    virtual void RetriveNodeOrder(int node_id) { Q_UNUSED(node_id); }
 
-    virtual QSet<int> ChildrenSetFPTS(int node_id) const
-    {
-        Q_UNUSED(node_id);
-        return {};
-    }
-    virtual bool IsHelperFPTS(int node_id)
-    {
-        Q_UNUSED(node_id);
-        return {};
-    }
+    virtual void UpdateDefaultUnit(int default_unit) { root_->unit = default_unit; }
+    virtual QString GetPath(int node_id) const;
 
     // Core pure virtual functions
-    virtual void SetParent(Node* node, int parent_id) const = 0;
-    virtual void UpdateDefaultUnit(int default_unit) = 0;
-
-    virtual bool ChildrenEmpty(int node_id) const = 0;
-    virtual bool Contains(int node_id) const = 0;
     virtual bool InsertNode(int row, const QModelIndex& parent, Node* node) = 0;
     virtual bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) = 0;
-    virtual bool Rule(int node_id) const = 0;
-
-    virtual QModelIndex GetIndex(int node_id) const = 0;
-    virtual QString Name(int node_id) const = 0;
-    virtual QString GetPath(int node_id) const = 0;
-    virtual int Unit(int node_id) const = 0;
 
 protected:
-    // Core pure virtual functions
-    virtual Node* GetNodeByIndex(const QModelIndex& index) const = 0;
-    virtual bool UpdateName(Node* node, CString& value) = 0;
-    virtual bool UpdateUnit(Node* node, int value) = 0;
-    virtual void ConstructTree() = 0;
+    Node* GetNodeByIndex(const QModelIndex& index) const;
+    bool UpdateBranchFPTS(Node* node, bool value);
 
-    // Default implementations
-    virtual bool UpdateBranchFPTS(Node* node, bool value)
-    {
-        Q_UNUSED(node);
-        Q_UNUSED(value);
-        return {};
-    }
-
+    virtual bool UpdateName(Node* node, CString& value);
+    virtual bool UpdateRuleFPTO(Node* node, bool value);
     virtual bool UpdateHelperFPTS(Node* node, bool value)
     {
         Q_UNUSED(node);
@@ -230,12 +173,22 @@ protected:
         return {};
     }
 
-    virtual bool UpdateRuleFPTO(Node* node, bool value)
-    {
-        Q_UNUSED(node);
-        Q_UNUSED(value);
-        return {};
-    }
+    virtual void ConstructTree() = 0;
+    virtual bool UpdateUnit(Node* node, int value) = 0;
+
+protected:
+    Node* root_ {};
+    Sqlite* sql_ {};
+
+    QMutex mutex_ {};
+
+    NodeHash node_hash_ {};
+    StringHash leaf_path_ {};
+    StringHash branch_path_ {};
+
+    CInfo& info_;
+    CTableHash& table_hash_;
+    CString& separator_;
 };
 
 using PTreeModel = QPointer<TreeModel>;

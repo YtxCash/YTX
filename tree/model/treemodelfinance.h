@@ -21,7 +21,6 @@
 #define TREEMODELFINANCE_H
 
 #include "tree/model/treemodel.h"
-#include "treemodelutils.h"
 
 class TreeModelFinance final : public TreeModel {
     Q_OBJECT
@@ -46,62 +45,11 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override
-    {
-        Q_UNUSED(parent);
-        return info_.tree_header.size();
-    }
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
-    {
-        return TreeModelUtils::headerData(info_, section, orientation, role);
-    }
-
-    void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator) override;
-    void CopyNodeFPTS(Node* tmp_node, int node_id) const override;
-    void SetParent(Node* node, int parent_id) const override;
-    QStringList ChildrenNameFPTS(int node_id, int exclude_child) const override;
-    QString GetPath(int node_id) const override;
-    void PathPreferencesFPT(QStandardItemModel* model) const override;
-    void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const override;
-    void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const override;
-    void LeafPathHelperNodeFPTS(QStandardItemModel* model, int specific_node, Filter filter) const override;
-    QModelIndex GetIndex(int node_id) const override;
-    bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
-    bool ChildrenEmpty(int node_id) const override;
-    double InitialTotalFPT(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::initial_total); }
-    double FinalTotalFPT(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::final_total); }
-
-    int Unit(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
-    QString Name(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
-    bool BranchFPTS(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::branch); }
-    bool Rule(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
-    bool IsHelperFPTS(int node_id) override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); };
-
-    void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const override;
-    QSet<int> ChildrenSetFPTS(int node_id) const override;
 
 protected:
-    bool UpdateRuleFPTO(Node* node, bool value) override;
-    bool UpdateName(Node* node, CString& value) override;
-    Node* GetNodeByIndex(const QModelIndex& index) const override;
-    bool UpdateHelperFPTS(Node* node, bool value) override;
     void ConstructTree() override;
-
-    bool UpdateBranchFPTS(Node* node, bool value) override;
     bool UpdateUnit(Node* node, int value) override;
-
-private:
-    Sqlite* sql_ {};
-    Node* root_ {};
-    QMutex mutex_ {};
-
-    NodeHash node_hash_ {};
-    StringHash leaf_path_ {};
-    StringHash branch_path_ {};
-
-    CInfo& info_;
-    CTableHash& table_hash_;
-    CString& separator_;
+    bool UpdateHelperFPTS(Node* node, bool value) override;
 };
 
 #endif // TREEMODELFINANCE_H

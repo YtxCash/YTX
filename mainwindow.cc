@@ -1397,7 +1397,7 @@ void MainWindow::SetSalesData()
 
     sql = new SqliteOrder(info, this);
 
-    auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, this) };
+    auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this) };
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
 
     connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholder, model, &TreeModel::RUpdateStakeholder);
@@ -1431,7 +1431,7 @@ void MainWindow::SetPurchaseData()
 
     sql = new SqliteOrder(info, this);
 
-    auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, this) };
+    auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this) };
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
 
     connect(stakeholder_data_.sql, &Sqlite::SUpdateStakeholder, model, &TreeModel::RUpdateStakeholder);
@@ -1855,7 +1855,7 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
             return;
 
     } else {
-        nodes = model->ChildrenSetFPTS(node_id);
+        nodes = model->ChildrenIDFPTS(node_id);
     }
 
     int tab_node_id {};
@@ -2194,7 +2194,7 @@ void MainWindow::RTreeLocation(int node_id)
     auto* widget { tree_widget_ };
     ui->tabWidget->setCurrentWidget(widget);
 
-    tree_widget_->Model()->RetriveNodeO(node_id);
+    tree_widget_->Model()->RetriveNodeOrder(node_id);
     auto index { tree_widget_->Model()->GetIndex(node_id) };
     widget->activateWindow();
     widget->View()->setCurrentIndex(index);

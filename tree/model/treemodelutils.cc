@@ -2,23 +2,11 @@
 
 #include <QApplication>
 #include <QQueue>
-#include <QTimer>
 #include <QtConcurrent>
 
 #include "component/constvalue.h"
 #include "global/resourcepool.h"
 #include "widget/temporarylabel.h"
-
-QString TreeModelUtils::GetPathFPTS(CStringHash& leaf, CStringHash& branch, int node_id)
-{
-    if (auto it = leaf.constFind(node_id); it != leaf.constEnd())
-        return it.value();
-
-    if (auto it = branch.constFind(node_id); it != branch.constEnd())
-        return it.value();
-
-    return {};
-}
 
 void TreeModelUtils::UpdateBranchUnitF(const Node* root, Node* node)
 {
@@ -172,36 +160,6 @@ void TreeModelUtils::ShowTemporaryTooltipFPTS(CString& message, int duration)
     QObject::connect(label, &QLabel::destroyed, timer, [timer]() { timer->stop(); });
 }
 
-QSet<int> TreeModelUtils::ChildrenSetFPTS(CNodeHash& hash, int node_id)
-{
-    if (node_id <= 0)
-        return {};
-
-    auto it { hash.constFind(node_id) };
-    if (it == hash.constEnd() || !it.value())
-        return {};
-
-    auto* node { it.value() };
-    if (!node->branch || node->children.isEmpty())
-        return {};
-
-    QQueue<const Node*> queue {};
-    queue.enqueue(node);
-
-    QSet<int> set {};
-    while (!queue.isEmpty()) {
-        auto* queue_node = queue.dequeue();
-
-        if (queue_node->branch)
-            for (const auto* child : queue_node->children)
-                queue.enqueue(child);
-        else
-            set.insert(queue_node->id);
-    }
-
-    return set;
-}
-
 bool TreeModelUtils::IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message)
 {
     if (sql->InternalReference(node_id)) {
@@ -270,76 +228,6 @@ bool TreeModelUtils::IsOpenedFPTS(CTableHash& hash, int node_id, CString& messag
     }
 
     return false;
-}
-
-void TreeModelUtils::SearchNodeFPTS(CNodeHash& hash, QList<const Node*>& node_list, const QList<int>& node_id_list)
-{
-    node_list.reserve(node_id_list.size());
-
-    for (int node_id : node_id_list) {
-        auto it { hash.constFind(node_id) };
-        if (it != hash.constEnd() && it.value()) {
-            node_list.emplaceBack(it.value());
-        }
-    }
-}
-
-bool TreeModelUtils::ChildrenEmpty(CNodeHash& hash, int node_id)
-{
-    auto it { hash.constFind(node_id) };
-    return (it == hash.constEnd()) ? true : it.value()->children.isEmpty();
-}
-
-void TreeModelUtils::UpdateSeparatorFPTS(StringHash& leaf, StringHash& branch, CString& old_separator, CString& new_separator)
-{
-    if (old_separator == new_separator || new_separator.isEmpty())
-        return;
-
-    auto UpdatePaths = [&old_separator, &new_separator](auto& paths) {
-        for (auto& path : paths)
-            path.replace(old_separator, new_separator);
-    };
-
-    UpdatePaths(leaf);
-    UpdatePaths(branch);
-}
-
-void TreeModelUtils::CopyNodeFPTS(CNodeHash& hash, Node* tmp_node, int node_id)
-{
-    if (!tmp_node)
-        return;
-
-    auto it = hash.constFind(node_id);
-    if (it == hash.constEnd() || !it.value())
-        return;
-
-    *tmp_node = *(it.value());
-}
-
-void TreeModelUtils::SetParent(CNodeHash& hash, Node* root, Node* node, int parent_id)
-{
-    if (!node)
-        return;
-
-    auto it { hash.constFind(parent_id) };
-
-    node->parent = it == hash.constEnd() ? root : it.value();
-}
-
-QStringList TreeModelUtils::ChildrenNameFPTS(CNodeHash& hash, Node* root, int node_id, int exclude_child)
-{
-    auto it { hash.constFind(node_id) };
-
-    auto* node { it == hash.constEnd() ? root : it.value() };
-    QStringList list {};
-    list.reserve(node->children.size());
-
-    for (const auto* child : node->children) {
-        if (child->id != exclude_child)
-            list.emplaceBack(child->name);
-    }
-
-    return list;
 }
 
 void TreeModelUtils::UpdateComboModel(QStandardItemModel* model, const QVector<std::pair<QString, int>>& items)

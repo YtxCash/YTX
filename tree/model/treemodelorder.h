@@ -24,13 +24,12 @@
 
 #include "database/sqlite/sqliteorder.h"
 #include "tree/model/treemodel.h"
-#include "treemodelutils.h"
 
 class TreeModelOrder final : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObject* parent = nullptr);
+    TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
     ~TreeModelOrder() override;
 
 signals:
@@ -49,39 +48,19 @@ public:
     void sort(int column, Qt::SortOrder order) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override
-    {
-        Q_UNUSED(parent);
-        return info_.tree_header.size();
-    }
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
-    {
-        return TreeModelUtils::headerData(info_, section, orientation, role);
-    }
 
     bool InsertNode(int row, const QModelIndex& parent, Node* node) override;
     bool RemoveNode(int row, const QModelIndex& parent = QModelIndex()) override;
 
     void UpdateTree(const QDate& start_date, const QDate& end_date);
-    void SetParent(Node* node, int parent_id) const override;
-    void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const override;
-    void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const override;
-    QModelIndex GetIndex(int node_id) const override;
-    bool Contains(int node_id) const override { return node_hash_.contains(node_id); }
-    bool ChildrenEmpty(int node_id) const override;
-    int Unit(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
-    QString Name(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
     QString GetPath(int node_id) const override;
-    bool Rule(int node_id) const override { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
-    void UpdateDefaultUnit(int default_unit) override { root_->unit = default_unit; }
-    void RetriveNodeO(int node_id) override;
+    void RetriveNodeOrder(int node_id) override;
     int Party(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::party); };
 
 protected:
     bool UpdateRuleFPTO(Node* node, bool value) override; // charge = 0, refund = 1
     bool UpdateUnit(Node* node, int value) override; // Cash = 0, Monthly = 1, Pending = 2
     bool UpdateName(Node* node, CString& value) override;
-    Node* GetNodeByIndex(const QModelIndex& index) const override;
     void ConstructTree() override;
 
 private:
@@ -91,11 +70,6 @@ private:
 
 private:
     SqliteOrder* sql_ {};
-    Node* root_ {};
-
-    NodeHash node_hash_ {};
-
-    CInfo& info_;
 };
 
 #endif // TREEMODELORDER_H

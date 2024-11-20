@@ -2,12 +2,10 @@
 
 #include "global/resourcepool.h"
 
-TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, QObject* parent)
-    : TreeModel { parent }
+TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
+    : TreeModel(sql, info, default_unit, table_hash, separator, parent)
     , sql_ { static_cast<SqliteOrder*>(sql) }
-    , info_ { info }
 {
-    TreeModelUtils::InitializeRoot(root_, default_unit);
     ConstructTree();
 }
 
@@ -118,8 +116,6 @@ void TreeModelOrder::UpdateAncestorValueOrder(Node* node, double first_diff, dou
         emit dataChanged(index(ancestor.first().row(), column_begin), index(ancestor.last().row(), column_end), { Qt::DisplayRole });
 }
 
-Node* TreeModelOrder::GetNodeByIndex(const QModelIndex& index) const { return TreeModelUtils::GetNodeByIndex(root_, index); }
-
 void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
 {
     beginResetModel();
@@ -150,49 +146,6 @@ void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
     endResetModel();
 }
 
-void TreeModelOrder::SetParent(Node* node, int parent_id) const { TreeModelUtils::SetParent(node_hash_, root_, node, parent_id); }
-
-void TreeModelOrder::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
-{
-    if (!node_shadow || node_id <= 0)
-        return;
-
-    auto it { node_hash_.constFind(node_id) };
-    if (it != node_hash_.constEnd() && it.value())
-        node_shadow->Set(it.value());
-}
-
-void TreeModelOrder::SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const
-{
-    if (!node_shadow || !node)
-        return;
-
-    node_shadow->Set(node);
-}
-
-QModelIndex TreeModelOrder::GetIndex(int node_id) const
-{
-    if (node_id == -1)
-        return QModelIndex();
-
-    auto it = node_hash_.constFind(node_id);
-    if (it == node_hash_.constEnd() || !it.value())
-        return QModelIndex();
-
-    const Node* node { it.value() };
-
-    if (!node->parent)
-        return QModelIndex();
-
-    auto row { node->parent->children.indexOf(node) };
-    if (row == -1)
-        return QModelIndex();
-
-    return createIndex(row, 0, node);
-}
-
-bool TreeModelOrder::ChildrenEmpty(int node_id) const { return TreeModelUtils::ChildrenEmpty(node_hash_, node_id); }
-
 QString TreeModelOrder::GetPath(int node_id) const
 {
     if (auto it = node_hash_.constFind(node_id); it != node_hash_.constEnd())
@@ -201,7 +154,7 @@ QString TreeModelOrder::GetPath(int node_id) const
     return {};
 }
 
-void TreeModelOrder::RetriveNodeO(int node_id)
+void TreeModelOrder::RetriveNodeOrder(int node_id)
 {
     if (node_hash_.contains(node_id))
         return;
@@ -293,6 +246,7 @@ bool TreeModelOrder::UpdateName(Node* node, CString& value)
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kName));
+    emit SSearch();
     return true;
 }
 
