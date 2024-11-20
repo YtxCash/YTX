@@ -530,7 +530,7 @@ void MainWindow::DelegateFPTS(PQTableView table_view) const
 
 void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
-    auto* node { new TableCombo(tree_model, node_id, Filter::kExcludeSpecific, table_view) };
+    auto* node { new TableCombo(tree_model, node_id, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kRhsNode), node);
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
@@ -558,7 +558,7 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
 
 void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
-    auto* node { new TableCombo(tree_model, node_id, Filter::kExcludeSpecific, table_view) };
+    auto* node { new TableCombo(tree_model, node_id, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kRhsNode), node);
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
@@ -590,7 +590,7 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kHelperNode), helper_node);
     connect(tree_model, &TreeModel::SUpdateComboModel, helper_node, &HelperNode::RUpdateComboModel);
 
-    auto* node { new TableCombo(tree_model, node_id, Filter::kExcludeSpecific, table_view) };
+    auto* node { new TableCombo(tree_model, node_id, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kRhsNode), node);
     connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 

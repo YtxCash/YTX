@@ -98,6 +98,10 @@ bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)
         leaf_path_.remove(node_id);
     }
 
+    if (node->is_helper) {
+        helper_path_.remove(node_id);
+    }
+
     emit SSearch();
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SUpdateComboModel();
@@ -123,7 +127,7 @@ bool TreeModelFinance::InsertNode(int row, const QModelIndex& parent, Node* node
     node_hash_.insert(node->id, node);
 
     QString path { TreeModelUtils::ConstructPathFPTS(root_, node, separator_) };
-    (node->branch ? branch_path_ : leaf_path_).insert(node->id, path);
+    (node->branch ? branch_path_ : (node->is_helper ? helper_path_ : leaf_path_)).insert(node->id, path);
 
     emit SSearch();
     emit SUpdateComboModel();
@@ -382,6 +386,8 @@ bool TreeModelFinance::UpdateHelperFPTS(Node* node, bool value)
     node->is_helper = value;
     sql_->UpdateField(info_.node, value, IS_HELPER, node_id);
 
+    (node->is_helper) ? helper_path_.insert(node_id, leaf_path_.take(node_id)) : leaf_path_.insert(node_id, helper_path_.take(node_id));
+
     return true;
 }
 
@@ -403,6 +409,11 @@ void TreeModelFinance::ConstructTree()
 
         if (node->branch) {
             branch_path_.insert(node->id, path);
+            continue;
+        }
+
+        if (node->is_helper) {
+            helper_path_.insert(node->id, path);
             continue;
         }
 

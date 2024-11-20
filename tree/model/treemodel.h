@@ -135,9 +135,9 @@ public:
     QSet<int> ChildrenIDFPTS(int node_id) const;
 
     void PathPreferencesFPT(QStandardItemModel* model) const;
-    void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const;
+    void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node) const;
     void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const;
-    void LeafPathHelperFPTS(QStandardItemModel* model, int specific_node, Filter filter) const;
+    void HelperPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const;
     void LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const;
 
     void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const;
@@ -185,6 +185,7 @@ protected:
     NodeHash node_hash_ {};
     StringHash leaf_path_ {};
     StringHash branch_path_ {};
+    StringHash helper_path_ {};
 
     CInfo& info_;
     CTableHash& table_hash_;

@@ -94,21 +94,18 @@ void TreeModel::CopyNodeFPTS(Node* tmp_node, int node_id) const
     *tmp_node = *(it.value());
 }
 
-void TreeModel::PathPreferencesFPT(QStandardItemModel* model) const { TreeModelUtils::PathPreferencesFPT(node_hash_, leaf_path_, branch_path_, model); }
+void TreeModel::PathPreferencesFPT(QStandardItemModel* model) const { TreeModelUtils::PathPreferencesFPT(leaf_path_, branch_path_, model); }
 
-void TreeModel::LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node, Filter filter) const
-{
-    TreeModelUtils::LeafPathRhsNodeFPT(node_hash_, leaf_path_, model, specific_node, filter);
-}
+void TreeModel::LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node) const { TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, model, specific_node); }
 
 void TreeModel::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
 {
     TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
 }
 
-void TreeModel::LeafPathHelperFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
+void TreeModel::HelperPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
 {
-    TreeModelUtils::LeafPathHelperNodeFTS(node_hash_, leaf_path_, model, specific_node, filter);
+    TreeModelUtils::HelperPathFPTS(helper_path_, model, specific_node, filter);
 }
 
 void TreeModel::LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const
@@ -198,6 +195,9 @@ QString TreeModel::GetPath(int node_id) const
         return it.value();
 
     if (auto it = branch_path_.constFind(node_id); it != branch_path_.constEnd())
+        return it.value();
+
+    if (auto it = helper_path_.constFind(node_id); it != helper_path_.constEnd())
         return it.value();
 
     return {};

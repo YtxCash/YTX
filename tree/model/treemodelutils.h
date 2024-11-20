@@ -69,11 +69,11 @@ public:
     static QString ConstructPathFPTS(const Node* root, const Node* node, CString& separator);
     static void UpdatePathFPTS(StringHash& leaf, StringHash& branch, const Node* root, const Node* node, CString& separator);
 
-    static void PathPreferencesFPT(CNodeHash& hash, CStringHash& leaf, CStringHash& branch, QStandardItemModel* model);
-    static void LeafPathRhsNodeFPT(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_node, Filter filter);
+    static void PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model);
+    static void LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model, int specific_node);
     static void LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, Filter filter);
     static void LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node);
-    static void LeafPathHelperNodeFTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_node, Filter filter);
+    static void HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter);
 
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsBranchFPTS(Node* node, CString& message);

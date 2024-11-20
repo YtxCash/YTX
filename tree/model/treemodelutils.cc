@@ -247,7 +247,7 @@ void TreeModelUtils::UpdateComboModel(QStandardItemModel* model, const QVector<s
     model->sort(0);
 }
 
-void TreeModelUtils::PathPreferencesFPT(CNodeHash& hash, CStringHash& leaf, CStringHash& branch, QStandardItemModel* model)
+void TreeModelUtils::PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model)
 {
     if (!model)
         return;
@@ -256,20 +256,12 @@ void TreeModelUtils::PathPreferencesFPT(CNodeHash& hash, CStringHash& leaf, CStr
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf.size() + branch.size());
 
-        auto should_add = [](const Node* node) { return !node->is_helper; };
-
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
-            auto it = hash.constFind(id);
-            if (it != hash.constEnd() && should_add(it.value())) {
-                items.emplaceBack(path, id);
-            }
+            items.emplaceBack(path, id);
         }
 
         for (const auto& [id, path] : branch.asKeyValueRange()) {
-            auto it = hash.constFind(id);
-            if (it != hash.constEnd() && should_add(it.value())) {
-                items.emplaceBack(path, id);
-            }
+            items.emplaceBack(path, id);
         }
 
         items.emplaceBack(QString(), 0);
@@ -286,27 +278,17 @@ void TreeModelUtils::PathPreferencesFPT(CNodeHash& hash, CStringHash& leaf, CStr
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathRhsNodeFPT(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_node, Filter filter)
+void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model, int specific_node)
 {
     if (!model)
         return;
 
-    auto future = QtConcurrent::run([&, specific_node, filter]() {
+    auto future = QtConcurrent::run([&, specific_node]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf.size());
 
-        auto should_add = [specific_node, filter](const Node* node) {
-            switch (filter) {
-            case Filter::kExcludeSpecific:
-                return node->id != specific_node && !node->is_helper;
-            default:
-                return false;
-            }
-        };
-
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
-            auto it = hash.constFind(id);
-            if (it != hash.constEnd() && should_add(it.value())) {
+            if (id != specific_node) {
                 items.emplaceBack(path, id);
             }
         }
@@ -376,11 +358,11 @@ void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, 
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf.size());
 
-        auto should_add = [specific_unit, exclude_node](const Node* node) { return node->unit == specific_unit && node->id != exclude_node; };
+        auto should_add = [specific_unit, exclude_node](const Node* node, int id) { return node->unit == specific_unit && id != exclude_node; };
 
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
             auto it = hash.constFind(id);
-            if (it != hash.constEnd() && should_add(it.value())) {
+            if (it != hash.constEnd() && should_add(it.value(), id)) {
                 items.emplaceBack(path, id);
             }
         }
@@ -397,21 +379,21 @@ void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathHelperNodeFTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_node, Filter filter)
+void TreeModelUtils::HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter)
 {
     if (!model)
         return;
 
     auto future = QtConcurrent::run([&, specific_node, filter]() {
         QVector<std::pair<QString, int>> items;
-        items.reserve(leaf.size());
+        items.reserve(helper.size() + 1);
 
-        auto should_add = [specific_node, filter](const Node* node) {
+        auto should_add = [specific_node, filter](int helper_id) {
             switch (filter) {
             case Filter::kIncludeAllWithNone:
-                return node->is_helper;
+                return true;
             case Filter::kExcludeSpecific:
-                return node->is_helper && node->id != specific_node;
+                return helper_id != specific_node;
             default:
                 return false;
             }
@@ -421,9 +403,8 @@ void TreeModelUtils::LeafPathHelperNodeFTS(CNodeHash& hash, CStringHash& leaf, Q
             items.emplaceBack(QString(), 0);
         }
 
-        for (const auto& [id, path] : leaf.asKeyValueRange()) {
-            auto it = hash.constFind(id);
-            if (it != hash.constEnd() && should_add(it.value())) {
+        for (const auto& [id, path] : helper.asKeyValueRange()) {
+            if (should_add(id)) {
                 items.emplaceBack(path, id);
             }
         }
