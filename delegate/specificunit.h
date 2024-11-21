@@ -17,17 +17,17 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef INSIDEPRODUCT_H
-#define INSIDEPRODUCT_H
+#ifndef SPECIFICUNIT_H
+#define SPECIFICUNIT_H
 
 #include <QStandardItemModel>
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-class InsideProduct : public StyledItemDelegate {
+class SpecificUnit : public StyledItemDelegate {
 public:
-    InsideProduct(CTreeModel* tree_model, QStandardItemModel* combo_model, QObject* parent = nullptr);
+    SpecificUnit(CTreeModel* tree_model, QStandardItemModel* combo_model, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -40,4 +40,4 @@ private:
     QStandardItemModel* combo_model_ {};
 };
 
-#endif // INSIDEPRODUCT_H
+#endif // SPECIFICUNIT_H

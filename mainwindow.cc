@@ -21,9 +21,9 @@
 #include "database/sqlite/sqlitestakeholder.h"
 #include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
-#include "delegate/insideproduct.h"
 #include "delegate/line.h"
 #include "delegate/search/searchpathtabler.h"
+#include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
 #include "delegate/table/helpernode.h"
 #include "delegate/table/tablecombo.h"
@@ -618,7 +618,7 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
 void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
 {
     auto* product_tree_model { product_tree_->Model().data() };
-    auto* inside_product { new InsideProduct(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
     auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
@@ -645,7 +645,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
 void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
 {
     auto* product_tree_model { product_tree_->Model().data() };
-    auto* inside_product { new InsideProduct(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
+    auto* inside_product { new SpecificUnit(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
@@ -804,7 +804,7 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
     auto* deadline { new DeadLine(DD, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 
-    auto* employee { new InsideProduct(stakeholder_tree_->Model(), stakeholder_tree_->Model()->UnitModelPS(UNIT_EMP), tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), stakeholder_tree_->Model()->UnitModelPS(UNIT_EMP), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
 
     auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
@@ -829,7 +829,7 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
-    auto* employee { new InsideProduct(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(UNIT_EMP), tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(UNIT_EMP), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
 
     auto* name { new OrderNameR(stakeholder_tree_model, tree_view) };
