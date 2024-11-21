@@ -34,7 +34,7 @@
 #include "delegate/tree/color.h"
 #include "delegate/tree/finance/financeforeignr.h"
 #include "delegate/tree/order/finished.h"
-#include "delegate/tree/order/ordername.h"
+#include "delegate/tree/order/ordernamer.h"
 #include "delegate/tree/stakeholder/deadline.h"
 #include "delegate/tree/stakeholder/paymentperiod.h"
 #include "delegate/tree/stakeholder/taxrate.h"
@@ -832,8 +832,7 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
     auto* employee { new InsideProduct(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(UNIT_EMP), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
 
-    auto party_unit { info.section == Section::kSales ? UNIT_CUST : UNIT_VEND };
-    auto* name { new OrderName(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(party_unit), tree_view) };
+    auto* name { new OrderNameR(stakeholder_tree_model, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
 
     auto* date_time { new TreeDateTime(interface_.date_format, true, tree_view) };

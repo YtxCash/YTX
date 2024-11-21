@@ -17,26 +17,22 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ORDERNAME_H
-#define ORDERNAME_H
+#ifndef ORDERNAMER_H
+#define ORDERNAMER_H
 
 #include <QStandardItemModel>
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-class OrderName : public StyledItemDelegate {
+class OrderNameR : public StyledItemDelegate {
 public:
-    OrderName(CTreeModel* tree_model, QStandardItemModel* combo_model, QObject* parent = nullptr);
-    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
-    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    OrderNameR(CTreeModel* tree_model, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
     CTreeModel* tree_model_ {};
-    QStandardItemModel* combo_model_ {};
 };
 
-#endif // ORDERNAME_H
+#endif // ORDERNAMER_H
