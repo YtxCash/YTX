@@ -229,8 +229,7 @@ void TreeModelProduct::ConstructTree()
         return;
 
     const auto& const_node_hash { std::as_const(node_hash_) };
-
-    QSet<int> node_id {};
+    QSet<int> range {};
 
     for (auto* node : const_node_hash) {
         if (!node->parent) {
@@ -239,7 +238,7 @@ void TreeModelProduct::ConstructTree()
         }
 
         if (node->unit != UNIT_POS)
-            node_id.insert(node->id);
+            range.insert(node->id);
     }
 
     QString path {};
@@ -262,7 +261,7 @@ void TreeModelProduct::ConstructTree()
 
     TreeModelUtils::HelperPathFPTS(helper_path_, helper_model_, 0, Filter::kIncludeAllWithNone);
     TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
-    TreeModelUtils::LeafPathSpecificUnitPS(node_id, leaf_path_, product_model_);
+    TreeModelUtils::LeafPathSpecificUnitP(leaf_path_, range, product_model_);
 }
 
 bool TreeModelProduct::UpdateHelperFPTS(Node* node, bool value)

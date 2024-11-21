@@ -24,7 +24,6 @@
 #include "delegate/insideproduct.h"
 #include "delegate/line.h"
 #include "delegate/search/searchpathtabler.h"
-#include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
 #include "delegate/table/helpernode.h"
 #include "delegate/table/tablecombo.h"
@@ -489,7 +488,6 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
 void MainWindow::TableConnectOrder(PQTableView table_view, TableModelOrder* table_model, PTreeModel tree_model, TableWidgetOrder* widget) const
 {
     connect(table_model, &TableModel::SSearch, tree_model, &TreeModel::RSearch);
-    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, widget, &TableWidgetOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, table_view, &QTableView::resizeColumnToContents);
 
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);
@@ -806,9 +804,8 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
     auto* deadline { new DeadLine(DD, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 
-    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), UNIT_EMP, true, Filter::kIncludeSpecificWithNone, tree_view) };
+    auto* employee { new InsideProduct(stakeholder_tree_->Model(), stakeholder_tree_->Model()->UnitModelPS(UNIT_EMP), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
-    connect(stakeholder_tree_->Model(), &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
     auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kIsHelper), helper);
@@ -832,14 +829,12 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
-    auto* employee { new SpecificUnit(stakeholder_tree_model, UNIT_EMP, true, Filter::kIncludeSpecificWithNone, tree_view) };
+    auto* employee { new InsideProduct(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(UNIT_EMP), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
-    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, employee, &SpecificUnit::RUpdateComboModel);
 
     auto party_unit { info.section == Section::kSales ? UNIT_CUST : UNIT_VEND };
-    auto* name { new OrderName(stakeholder_tree_model, party_unit, Filter::kIncludeSpecific, tree_view) };
+    auto* name { new OrderName(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(party_unit), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
-    connect(stakeholder_tree_model, &TreeModel::SUpdateComboModel, name, &OrderName::RUpdateComboModel);
 
     auto* date_time { new TreeDateTime(interface_.date_format, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
@@ -1788,7 +1783,6 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
         }
     });
 
-    connect(stakeholder_tree_->Model(), &TreeModelStakeholder::SUpdateComboModel, dialog, &EditNodeOrder::RUpdateComboModel);
     connect(table_model, &TableModel::SResizeColumnToContents, dialog->View(), &QTableView::resizeColumnToContents);
 
     connect(table_model, &TableModel::SUpdateLeafValue, tree_model, &TreeModel::RUpdateLeafValue);

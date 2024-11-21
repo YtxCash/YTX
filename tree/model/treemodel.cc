@@ -109,11 +109,6 @@ void TreeModel::HelperPathFPTS(QStandardItemModel* model, int specific_node, Fil
     TreeModelUtils::HelperPathFPTS(helper_path_, model, specific_node, filter);
 }
 
-void TreeModel::LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const
-{
-    TreeModelUtils::LeafPathSpecificUnitPS(node_hash_, leaf_path_, model, specific_unit, filter);
-}
-
 void TreeModel::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
 {
     if (!node_shadow || node_id <= 0)

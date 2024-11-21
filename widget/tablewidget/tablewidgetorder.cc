@@ -27,7 +27,7 @@ TableWidgetOrder::TableWidgetOrder(
     IniDialog();
     IniData();
     ui->tableViewOrder->setFocus();
-    QTimer::singleShot(50, this, [this]() { IniDataCombo(*node_shadow_->party, *node_shadow_->employee); });
+    IniDataCombo(*node_shadow_->party, *node_shadow_->employee);
 
     IniUnit(*node_shadow_->unit);
 
@@ -48,20 +48,6 @@ TableWidgetOrder::~TableWidgetOrder()
 }
 
 QPointer<QTableView> TableWidgetOrder::View() const { return ui->tableViewOrder; }
-
-void TableWidgetOrder::RUpdateComboModel()
-{
-    if (*node_shadow_->branch)
-        return;
-
-    const int party_id { ui->comboParty->currentData().toInt() };
-    const int employee_id { ui->comboEmployee->currentData().toInt() };
-
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, Filter::kIncludeSpecific);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, Filter::kIncludeSpecificWithNone);
-
-    QTimer::singleShot(50, this, [this, employee_id, party_id]() { IniDataCombo(party_id, employee_id); });
-}
 
 void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
 {
@@ -114,8 +100,7 @@ void TableWidgetOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVar
 
 void TableWidgetOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
-void TableWidgetOrder::RUpdateLeafValue(
-    int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
+void TableWidgetOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
@@ -126,14 +111,12 @@ void TableWidgetOrder::RUpdateLeafValue(
 
 void TableWidgetOrder::IniDialog()
 {
-    combo_model_party_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, Filter::kIncludeSpecific);
-    ui->comboParty->setModel(combo_model_party_);
+    pmodel_ = stakeholder_tree_->UnitModelPS(party_unit_);
+    ui->comboParty->setModel(pmodel_);
     ui->comboParty->setCurrentIndex(-1);
 
-    combo_model_employee_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, Filter::kIncludeSpecificWithNone);
-    ui->comboEmployee->setModel(combo_model_employee_);
+    emodel_ = stakeholder_tree_->UnitModelPS(UNIT_EMP);
+    ui->comboEmployee->setModel(emodel_);
     ui->comboEmployee->setCurrentIndex(-1);
 
     ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);

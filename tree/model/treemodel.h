@@ -56,9 +56,6 @@ signals:
     void SUpdateName(int node_id, CString& name, bool branch);
     void SUpdateDSpinBox();
 
-    // send to SpecificUnit delegate, EditNodeOrder and TableWidgetOrder
-    void SUpdateComboModel();
-
 public slots:
     // receive from Sqlite
     void RRemoveNode(int node_id);
@@ -139,7 +136,6 @@ public:
     void PathPreferencesFPT(QStandardItemModel* model) const;
     void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const;
     void HelperPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const;
-    void LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const;
 
     void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const;
     void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const;

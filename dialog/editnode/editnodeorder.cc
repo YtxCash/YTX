@@ -36,20 +36,6 @@ EditNodeOrder::EditNodeOrder(
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }
 
-void EditNodeOrder::RUpdateComboModel()
-{
-    if (*node_shadow_->branch)
-        return;
-
-    const int party_id { ui->comboParty->currentData().toInt() };
-    const int employee_id { ui->comboEmployee->currentData().toInt() };
-
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, Filter::kIncludeSpecific);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, Filter::kIncludeSpecificWithNone);
-
-    QTimer::singleShot(50, this, [this, employee_id, party_id]() { IniDataCombo(party_id, employee_id); });
-}
-
 void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value)
 {
     if (node_id != node_id_)
@@ -117,13 +103,11 @@ QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
 
 void EditNodeOrder::IniDialog()
 {
-    combo_model_party_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_party_, party_unit_, Filter::kIncludeSpecific);
+    combo_model_party_ = stakeholder_tree_->UnitModelPS(party_unit_);
     ui->comboParty->setModel(combo_model_party_);
     ui->comboParty->setCurrentIndex(-1);
 
-    combo_model_employee_ = new QStandardItemModel(this);
-    stakeholder_tree_->LeafPathSpecificUnitPS(combo_model_employee_, UNIT_EMP, Filter::kIncludeSpecificWithNone);
+    combo_model_employee_ = stakeholder_tree_->UnitModelPS(UNIT_EMP);
     ui->comboEmployee->setModel(combo_model_employee_);
     ui->comboEmployee->setCurrentIndex(-1);
 
@@ -416,6 +400,7 @@ void EditNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1
 
     ui->chkBoxRefund->setChecked(false);
     ui->tableViewOrder->clearSelection();
+    ui->labelParty->setText(enable ? tr("Branch") : tr("Party"));
 }
 
 void EditNodeOrder::on_lineDescription_editingFinished()

@@ -71,8 +71,9 @@ public:
 
     static void PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model);
     static void LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model);
-    static void LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, Filter filter);
-    static void LeafPathSpecificUnitPS(const QSet<int>& node_id, CStringHash& leaf, QStandardItemModel* model);
+    static void LeafPathSpecificUnitP(CStringHash& leaf, const QSet<int>& range, QStandardItemModel* model);
+    static void LeafPathSpecificUnitS(CStringHash& leaf, const QSet<int>& crange, QStandardItemModel* cmodel, const QSet<int>& vrange,
+        QStandardItemModel* vmodel, const QSet<int>& erange, QStandardItemModel* emodel);
     static void LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node);
     static void HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter);
 

@@ -27,21 +27,15 @@
 
 class OrderName : public StyledItemDelegate {
 public:
-    OrderName(CTreeModel* tree_model, int unit, Filter unit_filter, QObject* parent = nullptr);
+    OrderName(CTreeModel* tree_model, QStandardItemModel* combo_model, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-public slots:
-    void RUpdateComboModel();
-
 private:
     CTreeModel* tree_model_ {};
-    const Filter filter_ {};
-    const int unit_ {};
-
     QStandardItemModel* combo_model_ {};
 };
 

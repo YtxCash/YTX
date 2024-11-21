@@ -45,11 +45,19 @@ public:
 
     int Employee(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::employee); }
     QList<int> PartyList(CString& text, int unit) const;
+    QStandardItemModel* UnitModelPS(int unit) const override;
+    void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator) override;
 
 protected:
     void ConstructTree() override;
     bool UpdateUnit(Node* node, int value) override;
     bool UpdateHelperFPTS(Node* node, bool value) override;
+    bool UpdateName(Node* node, CString& value) override;
+
+private:
+    QStandardItemModel* cmodel_ {};
+    QStandardItemModel* vmodel_ {};
+    QStandardItemModel* emodel_ {};
 };
 
 #endif // TREEMODELSTAKEHOLDER_H

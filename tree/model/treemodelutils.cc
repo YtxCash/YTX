@@ -306,34 +306,17 @@ void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* m
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, Filter filter)
+void TreeModelUtils::LeafPathSpecificUnitP(CStringHash& leaf, const QSet<int>& range, QStandardItemModel* model)
 {
-    if (!model || leaf.isEmpty())
+    if (!model || leaf.isEmpty() || range.isEmpty())
         return;
 
-    auto future = QtConcurrent::run([&, specific_unit, filter]() {
+    auto future = QtConcurrent::run([range, &leaf]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf.size());
 
-        auto should_add = [specific_unit, filter](const Node* node) {
-            switch (filter) {
-            case Filter::kIncludeSpecificWithNone:
-            case Filter::kIncludeSpecific:
-                return node->unit == specific_unit;
-            case Filter::kExcludeSpecific:
-                return node->unit != specific_unit;
-            default:
-                return false;
-            }
-        };
-
-        if (filter == Filter::kIncludeSpecificWithNone) {
-            items.emplaceBack(QString(), 0);
-        }
-
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
-            auto it = hash.constFind(id);
-            if (it != hash.constEnd() && should_add(it.value())) {
+            if (range.contains(id)) {
                 items.emplaceBack(path, id);
             }
         }
@@ -350,29 +333,59 @@ void TreeModelUtils::LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathSpecificUnitPS(const QSet<int>& node_ids, CStringHash& leaf, QStandardItemModel* model)
+void TreeModelUtils::LeafPathSpecificUnitS(CStringHash& leaf, const QSet<int>& crange, QStandardItemModel* cmodel, const QSet<int>& vrange,
+    QStandardItemModel* vmodel, const QSet<int>& erange, QStandardItemModel* emodel)
 {
-    if (!model || leaf.isEmpty() || node_ids.isEmpty())
+    if (leaf.isEmpty())
         return;
 
-    auto future = QtConcurrent::run([node_ids, &leaf]() {
-        QVector<std::pair<QString, int>> items;
-        items.reserve(leaf.size());
+    auto future = QtConcurrent::run([&leaf, crange, vrange, erange]() {
+        QVector<std::pair<QString, int>> citems;
+        QVector<std::pair<QString, int>> vitems;
+        QVector<std::pair<QString, int>> eitems;
 
+        eitems.emplaceBack(QString(), 0);
+
+        const auto total_size { static_cast<double>(leaf.size()) };
+        citems.reserve(static_cast<qsizetype>(total_size * 0.6));
+        vitems.reserve(static_cast<qsizetype>(total_size * 0.3));
+        eitems.reserve(static_cast<qsizetype>(total_size * 0.1));
+
+        // Single traversal of leaf
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
-            if (node_ids.contains(id)) {
-                items.emplaceBack(path, id);
+            if (crange.contains(id)) {
+                citems.emplaceBack(path, id);
+            }
+            if (vrange.contains(id)) {
+                vitems.emplaceBack(path, id);
+            }
+            if (erange.contains(id)) {
+                eitems.emplaceBack(path, id);
             }
         }
 
-        return items;
+        return std::make_tuple(std::move(citems), std::move(vitems), std::move(eitems));
     });
 
-    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(model);
-    QObject::connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, watcher, [watcher, model]() {
-        TreeModelUtils::UpdateComboModel(model, watcher->result());
-        watcher->deleteLater();
-    });
+    auto* watcher = new QFutureWatcher<std::tuple<QVector<std::pair<QString, int>>, QVector<std::pair<QString, int>>, QVector<std::pair<QString, int>>>>(
+        cmodel); // Use one model for ownership
+    QObject::connect(watcher,
+        &QFutureWatcher<std::tuple<QVector<std::pair<QString, int>>, QVector<std::pair<QString, int>>, QVector<std::pair<QString, int>>>>::finished, watcher,
+        [watcher, cmodel, vmodel, emodel]() {
+            auto [citems, vitems, eitems] = watcher->result();
+
+            if (cmodel && !citems.isEmpty()) {
+                TreeModelUtils::UpdateComboModel(cmodel, citems);
+            }
+            if (vmodel && !vitems.isEmpty()) {
+                TreeModelUtils::UpdateComboModel(vmodel, vitems);
+            }
+            if (emodel && !eitems.isEmpty()) {
+                TreeModelUtils::UpdateComboModel(emodel, eitems);
+            }
+
+            watcher->deleteLater();
+        });
 
     watcher->setFuture(future);
 }

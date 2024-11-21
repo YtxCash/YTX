@@ -42,7 +42,6 @@ signals:
     void SUpdateParty(int node_id, int party_id);
 
 public slots:
-    void RUpdateComboModel();
     void RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value);
 
     void RUpdateLeafValueOne(int node_id, double diff); // first
@@ -83,8 +82,8 @@ private:
     TreeModelStakeholder* stakeholder_tree_ {};
     CSettings* settings_ {};
 
-    QStandardItemModel* combo_model_employee_ {};
-    QStandardItemModel* combo_model_party_ {};
+    QStandardItemModel* emodel_ {};
+    QStandardItemModel* pmodel_ {};
 
     const int node_id_ {};
     const QString info_node_ {};

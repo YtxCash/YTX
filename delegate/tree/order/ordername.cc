@@ -4,14 +4,11 @@
 
 #include "widget/combobox.h"
 
-OrderName::OrderName(CTreeModel* tree_model, int unit, Filter filter, QObject* parent)
+OrderName::OrderName(CTreeModel* tree_model, QStandardItemModel* combo_model, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
-    , filter_ { filter }
-    , unit_ { unit }
+    , combo_model_ { combo_model }
 {
-    combo_model_ = new QStandardItemModel(this);
-    RUpdateComboModel();
 }
 
 QWidget* OrderName::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -66,5 +63,3 @@ QSize OrderName::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIn
     const QString& text = index.data().toString() + tree_model_->GetPath(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kParty)).data().toInt());
     return CalculateTextSize(text);
 }
-
-void OrderName::RUpdateComboModel() { tree_model_->LeafPathSpecificUnitPS(combo_model_, unit_, filter_); }
