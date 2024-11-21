@@ -281,19 +281,17 @@ void TreeModelUtils::PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model, int specific_node)
+void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model)
 {
     if (!model || leaf.isEmpty())
         return;
 
-    auto future = QtConcurrent::run([&, specific_node]() {
+    auto future = QtConcurrent::run([&]() {
         QVector<std::pair<QString, int>> items;
         items.reserve(leaf.size());
 
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
-            if (id != specific_node) {
-                items.emplaceBack(path, id);
-            }
+            items.emplaceBack(path, id);
         }
 
         return items;
@@ -445,12 +443,17 @@ void TreeModelUtils::RemoveItemFromModel(QStandardItemModel* model, int node_id)
     }
 }
 
-void TreeModelUtils::UpdateModel(CStringHash& helper, QStandardItemModel* model, const Node* node)
+void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& helper, QStandardItemModel* helper_model, const Node* node)
 {
+    if (!node)
+        return;
+
     QQueue<const Node*> queue {};
     queue.enqueue(node);
 
     QSet<int> helper_id {};
+    QSet<int> leaf_id {};
+
     const Node* current {};
 
     while (!queue.isEmpty()) {
@@ -459,28 +462,34 @@ void TreeModelUtils::UpdateModel(CStringHash& helper, QStandardItemModel* model,
         if (current->branch) {
             for (const auto* child : current->children)
                 queue.enqueue(child);
-
-            continue;
-        }
-
-        if (current->is_helper) {
-            helper_id.insert(current->id);
-        }
-    }
-
-    if (helper_id.isEmpty())
-        return;
-
-    for (int row = 0; row != model->rowCount(); ++row) {
-        QStandardItem* item { model->item(row) };
-        if (!item)
-            continue;
-
-        int id = item->data(Qt::UserRole).toInt();
-        if (helper_id.contains(id)) {
-            item->setText(helper.value(id));
+        } else {
+            if (current->is_helper)
+                helper_id.insert(current->id);
+            else
+                leaf_id.insert(current->id);
         }
     }
+
+    // 更新模型的通用逻辑
+    auto UpdateModel = [](QStandardItemModel* model, const QSet<int>& ids, CStringHash& data) {
+        if (!model || ids.isEmpty())
+            return;
+
+        for (int row = 0; row != model->rowCount(); ++row) {
+            QStandardItem* item = model->item(row);
+            if (!item)
+                continue;
+
+            int id = item->data(Qt::UserRole).toInt();
+            if (ids.contains(id)) {
+                item->setText(data.value(id, QString {}));
+            }
+        }
+    };
+
+    // 分别更新 helper_model 和 leaf_model
+    UpdateModel(helper_model, helper_id, helper);
+    UpdateModel(leaf_model, leaf_id, leaf);
 }
 
 void TreeModelUtils::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff)

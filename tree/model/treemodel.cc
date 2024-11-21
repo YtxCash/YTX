@@ -103,8 +103,6 @@ void TreeModel::CopyNodeFPTS(Node* tmp_node, int node_id) const
 
 void TreeModel::PathPreferencesFPT(QStandardItemModel* model) const { TreeModelUtils::PathPreferencesFPT(leaf_path_, branch_path_, model); }
 
-void TreeModel::LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node) const { TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, model, specific_node); }
-
 void TreeModel::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
 {
     TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
@@ -150,7 +148,24 @@ void TreeModel::UpdateSeparatorFPTS(CString& old_separator, CString& new_separat
 
     UpdatePaths(leaf_path_);
     UpdatePaths(branch_path_);
-    emit SUpdateComboModel();
+    UpdatePaths(helper_path_);
+
+    auto UpdateModel = [](QStandardItemModel* model, CStringHash& data) {
+        if (!model)
+            return;
+
+        for (int row = 0; row != model->rowCount(); ++row) {
+            QStandardItem* item = model->item(row);
+            if (!item)
+                continue;
+
+            int id = item->data(Qt::UserRole).toInt();
+            item->setText(data.value(id, QString {}));
+        }
+    };
+
+    UpdateModel(leaf_model_, leaf_path_);
+    UpdateModel(helper_model_, helper_path_);
 }
 
 void TreeModel::SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
@@ -224,7 +239,7 @@ bool TreeModel::UpdateName(Node* node, CString& value)
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-    TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
@@ -276,7 +291,16 @@ bool TreeModel::UpdateBranchFPTS(Node* node, bool value)
     node->branch = value;
     sql_->UpdateField(info_.node, value, BRANCH, node_id);
 
-    (node->branch) ? branch_path_.insert(node_id, leaf_path_.take(node_id)) : leaf_path_.insert(node_id, branch_path_.take(node_id));
+    if (node->branch) {
+        CString path { leaf_path_.take(node_id) };
+        branch_path_.insert(node_id, path);
+        TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
+    } else {
+        CString path { branch_path_.take(node_id) };
+        leaf_path_.insert(node_id, path);
+        TreeModelUtils::AddItemToModel(leaf_model_, path, node->id);
+    }
+
     return true;
 }
 

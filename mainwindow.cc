@@ -56,6 +56,7 @@
 #include "global/resourcepool.h"
 #include "global/signalstation.h"
 #include "global/sqlconnection.h"
+#include "table/model/sortfilterproxymodel.h"
 #include "table/model/tablemodelfinance.h"
 #include "table/model/tablemodelhelper.h"
 #include "table/model/tablemodelproduct.h"
@@ -530,9 +531,11 @@ void MainWindow::DelegateFPTS(PQTableView table_view) const
 
 void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
-    auto* node { new TableCombo(tree_model, node_id, table_view) };
+    auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
+    filter_model->setSourceModel(tree_model->LeafModel());
+
+    auto* node { new TableCombo(tree_model, filter_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kRhsNode), node);
-    connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kState), state);
@@ -557,9 +560,11 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
 
 void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
-    auto* node { new TableCombo(tree_model, node_id, table_view) };
+    auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
+    filter_model->setSourceModel(tree_model->LeafModel());
+
+    auto* node { new TableCombo(tree_model, filter_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kRhsNode), node);
-    connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kState), state);
@@ -587,9 +592,11 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
     auto* helper_node { new HelperNode(tree_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kHelperNode), helper_node);
 
-    auto* node { new TableCombo(tree_model, node_id, table_view) };
+    auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
+    filter_model->setSourceModel(tree_model->LeafModel());
+
+    auto* node { new TableCombo(tree_model, filter_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kRhsNode), node);
-    connect(tree_model, &TreeModel::SUpdateComboModel, node, &TableCombo::RUpdateComboModel);
 
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kState), state);

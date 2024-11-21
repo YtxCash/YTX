@@ -5,6 +5,7 @@
 TreeModelProduct::TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel(sql, info, default_unit, table_hash, separator, parent)
 {
+    leaf_model_ = new QStandardItemModel(this);
     ConstructTree();
 }
 
@@ -110,7 +111,7 @@ bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
 
     if (branch) {
         TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-        TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+        TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
 
         branch_path_.remove(node_id);
         emit SUpdateName(node_id, node->name, branch);
@@ -119,6 +120,7 @@ bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
     if (!branch) {
         TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
         leaf_path_.remove(node_id);
+        TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
     }
 
     if (node->is_helper) {
@@ -155,6 +157,10 @@ bool TreeModelProduct::InsertNode(int row, const QModelIndex& parent, Node* node
 
     if (node->is_helper) {
         TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
+    }
+
+    if (!node->branch) {
+        TreeModelUtils::AddItemToModel(leaf_model_, path, node->id);
     }
 
     emit SSearch();
@@ -219,6 +225,7 @@ void TreeModelProduct::ConstructTree()
     }
 
     TreeModelUtils::HelperPathFPTS(helper_path_, helper_model_, 0, Filter::kIncludeAllWithNone);
+    TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
 }
 
 bool TreeModelProduct::UpdateHelperFPTS(Node* node, bool value)
@@ -460,7 +467,7 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-    TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
 
     emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));

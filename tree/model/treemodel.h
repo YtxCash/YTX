@@ -56,7 +56,7 @@ signals:
     void SUpdateName(int node_id, CString& name, bool branch);
     void SUpdateDSpinBox();
 
-    // send to SpecificUnit delegate, TableCombo delegate, EditNodeOrder and TableWidgetOrder
+    // send to SpecificUnit delegate, EditNodeOrder and TableWidgetOrder
     void SUpdateComboModel();
 
 public slots:
@@ -130,13 +130,13 @@ public:
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }
     QStandardItemModel* HelperModel() const { return helper_model_; }
+    QStandardItemModel* LeafModel() const { return leaf_model_; }
 
     void CopyNodeFPTS(Node* tmp_node, int node_id) const;
     QStringList ChildrenNameFPTS(int node_id, int exclude_child) const;
     QSet<int> ChildrenIDFPTS(int node_id) const;
 
     void PathPreferencesFPT(QStandardItemModel* model) const;
-    void LeafPathRhsNodeFPT(QStandardItemModel* model, int specific_node) const;
     void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const;
     void HelperPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const;
     void LeafPathSpecificUnitPS(QStandardItemModel* model, int specific_unit, Filter filter) const;
@@ -189,6 +189,7 @@ protected:
     StringHash helper_path_ {};
 
     QStandardItemModel* helper_model_ {};
+    QStandardItemModel* leaf_model_ {};
 
     CInfo& info_;
     CTableHash& table_hash_;

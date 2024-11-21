@@ -2,19 +2,17 @@
 
 #include "widget/combobox.h"
 
-TableCombo::TableCombo(CTreeModel* tree_model, int specific_node, QObject* parent)
+TableCombo::TableCombo(CTreeModel* tree_model, SortFilterProxyModel* filter_model, QObject* parent)
     : StyledItemDelegate { parent }
-    , specific_node_ { specific_node }
     , tree_model_ { tree_model }
+    , filter_model_ { filter_model }
 {
-    combo_model_ = new QStandardItemModel(this);
-    RUpdateComboModel();
 }
 
 QWidget* TableCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
 {
     auto* editor { new ComboBox(parent) };
-    editor->setModel(combo_model_);
+    editor->setModel(filter_model_);
 
     return editor;
 }
@@ -70,5 +68,3 @@ void TableCombo::updateEditorGeometry(QWidget* editor, const QStyleOptionViewIte
     editor->setMinimumWidth(width);
     editor->setGeometry(option.rect);
 }
-
-void TableCombo::RUpdateComboModel() { tree_model_->LeafPathRhsNodeFPT(combo_model_, specific_node_); }

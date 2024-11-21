@@ -5,6 +5,7 @@
 TreeModelFinance::TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent)
     : TreeModel(sql, info, default_unit, table_hash, separator, parent)
 {
+    leaf_model_ = new QStandardItemModel(this);
     ConstructTree();
 }
 
@@ -83,7 +84,7 @@ bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)
 
     if (branch) {
         TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-        TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+        TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
 
         branch_path_.remove(node_id);
         emit SUpdateName(node_id, node->name, branch);
@@ -92,6 +93,7 @@ bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)
     if (!branch) {
         TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
         leaf_path_.remove(node_id);
+        TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
     }
 
     if (node->is_helper) {
@@ -101,7 +103,6 @@ bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)
 
     emit SSearch();
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
-    emit SUpdateComboModel();
 
     ResourcePool<Node>::Instance().Recycle(node);
     node_hash_.remove(node_id);
@@ -130,8 +131,11 @@ bool TreeModelFinance::InsertNode(int row, const QModelIndex& parent, Node* node
         TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
     }
 
+    if (!node->branch) {
+        TreeModelUtils::AddItemToModel(leaf_model_, path, node->id);
+    }
+
     emit SSearch();
-    emit SUpdateComboModel();
     return true;
 }
 
@@ -155,7 +159,6 @@ void TreeModelFinance::UpdateNodeFPTS(const Node* tmp_node)
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
         emit SUpdateName(node->id, node->name, node->branch);
-        emit SUpdateComboModel();
     }
 
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
@@ -357,10 +360,9 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-    TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
     emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
-    emit SUpdateComboModel();
 
     return true;
 }
@@ -431,6 +433,7 @@ void TreeModelFinance::ConstructTree()
     }
 
     TreeModelUtils::HelperPathFPTS(helper_path_, helper_model_, 0, Filter::kIncludeAllWithNone);
+    TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
 }
 
 bool TreeModelFinance::UpdateUnit(Node* node, int value)

@@ -244,7 +244,7 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
 
     if (branch) {
         TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-        TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+        TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
 
         branch_path_.remove(node_id);
     }
@@ -423,7 +423,7 @@ bool TreeModelStakeholder::dropMimeData(const QMimeData* data, Qt::DropAction ac
 
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-    TreeModelUtils::UpdateModel(helper_path_, helper_model_, node);
+    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
 
     emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumStakeholder::kName));
