@@ -350,6 +350,33 @@ void TreeModelUtils::LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, 
     watcher->setFuture(future);
 }
 
+void TreeModelUtils::LeafPathSpecificUnitPS(const QSet<int>& node_ids, CStringHash& leaf, QStandardItemModel* model)
+{
+    if (!model || leaf.isEmpty() || node_ids.isEmpty())
+        return;
+
+    auto future = QtConcurrent::run([node_ids, &leaf]() {
+        QVector<std::pair<QString, int>> items;
+        items.reserve(leaf.size());
+
+        for (const auto& [id, path] : leaf.asKeyValueRange()) {
+            if (node_ids.contains(id)) {
+                items.emplaceBack(path, id);
+            }
+        }
+
+        return items;
+    });
+
+    auto* watcher = new QFutureWatcher<QVector<std::pair<QString, int>>>(model);
+    QObject::connect(watcher, &QFutureWatcher<QVector<std::pair<QString, int>>>::finished, watcher, [watcher, model]() {
+        TreeModelUtils::UpdateComboModel(model, watcher->result());
+        watcher->deleteLater();
+    });
+
+    watcher->setFuture(future);
+}
+
 void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node)
 {
     if (!model || leaf.isEmpty())
@@ -451,8 +478,8 @@ void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_mod
     QQueue<const Node*> queue {};
     queue.enqueue(node);
 
-    QSet<int> helper_id {};
-    QSet<int> leaf_id {};
+    QSet<int> helper_range {};
+    QSet<int> leaf_range {};
 
     const Node* current {};
 
@@ -464,32 +491,93 @@ void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_mod
                 queue.enqueue(child);
         } else {
             if (current->is_helper)
-                helper_id.insert(current->id);
+                helper_range.insert(current->id);
             else
-                leaf_id.insert(current->id);
+                leaf_range.insert(current->id);
         }
     }
 
-    // 更新模型的通用逻辑
-    auto UpdateModel = [](QStandardItemModel* model, const QSet<int>& ids, CStringHash& data) {
-        if (!model || ids.isEmpty())
-            return;
+    // 分别更新 helper_model 和 leaf_model
+    UpdateModelFunction(helper_model, helper_range, helper);
+    UpdateModelFunction(leaf_model, leaf_range, leaf);
+}
 
-        for (int row = 0; row != model->rowCount(); ++row) {
-            QStandardItem* item = model->item(row);
-            if (!item)
-                continue;
+void TreeModelUtils::UpdateUnitModel(CStringHash& leaf, QStandardItemModel* unit_model, const Node* node, int specific_unit, Filter filter)
+{
+    if (!node)
+        return;
 
-            int id = item->data(Qt::UserRole).toInt();
-            if (ids.contains(id)) {
-                item->setText(data.value(id, QString {}));
-            }
+    QQueue<const Node*> queue {};
+    const Node* current {};
+    QSet<int> range {};
+
+    queue.enqueue(node);
+
+    auto should_add = [filter, specific_unit](const Node* node) {
+        switch (filter) {
+        case Filter::kIncludeSpecific:
+            return node->unit == specific_unit;
+        case Filter::kExcludeSpecific:
+            return node->unit != specific_unit;
+        default:
+            return false;
         }
     };
 
-    // 分别更新 helper_model 和 leaf_model
-    UpdateModel(helper_model, helper_id, helper);
-    UpdateModel(leaf_model, leaf_id, leaf);
+    while (!queue.isEmpty()) {
+        current = queue.dequeue();
+
+        if (current->branch) {
+            for (const auto* child : current->children)
+                queue.enqueue(child);
+        } else {
+            if (!current->is_helper && should_add(current))
+                range.insert(current->id);
+        }
+    }
+
+    UpdateModelFunction(unit_model, range, leaf);
+}
+
+void TreeModelUtils::UpdatePathSeparatorFPTS(CString& old_separator, CString& new_separator, StringHash& source_path)
+{
+    if (old_separator == new_separator || new_separator.isEmpty() || source_path.isEmpty())
+        return;
+
+    for (auto& path : source_path)
+        path.replace(old_separator, new_separator);
+}
+
+void TreeModelUtils::UpdateModelSeparatorFPTS(QStandardItemModel* model, CStringHash& source_path)
+{
+    if (!model || source_path.isEmpty())
+        return;
+
+    for (int row = 0; row != model->rowCount(); ++row) {
+        QStandardItem* item = model->item(row);
+        if (!item)
+            continue;
+
+        int id = item->data(Qt::UserRole).toInt();
+        item->setText(source_path.value(id, QString {}));
+    }
+}
+
+void TreeModelUtils::UpdateModelFunction(QStandardItemModel* model, const QSet<int>& update_range, CStringHash& source_path)
+{
+    if (!model || update_range.isEmpty() || source_path.isEmpty())
+        return;
+
+    for (int row = 0; row != model->rowCount(); ++row) {
+        QStandardItem* item = model->item(row);
+        if (!item)
+            continue;
+
+        int id = item->data(Qt::UserRole).toInt();
+        if (update_range.contains(id)) {
+            item->setText(source_path.value(id, QString {}));
+        }
+    }
 }
 
 void TreeModelUtils::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff)

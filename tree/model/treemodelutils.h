@@ -72,12 +72,16 @@ public:
     static void PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model);
     static void LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model);
     static void LeafPathSpecificUnitPS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, Filter filter);
+    static void LeafPathSpecificUnitPS(const QSet<int>& node_id, CStringHash& leaf, QStandardItemModel* model);
     static void LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node);
     static void HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter);
 
     static void AddItemToModel(QStandardItemModel* model, CString& path, int node_id, bool should_sort = true);
     static void RemoveItemFromModel(QStandardItemModel* model, int node_id);
     static void UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& helper, QStandardItemModel* helper_model, const Node* node);
+    static void UpdateUnitModel(CStringHash& leaf, QStandardItemModel* unit_model, const Node* node, int specific_unit, Filter filter);
+    static void UpdatePathSeparatorFPTS(CString& old_separator, CString& new_separator, StringHash& source_path);
+    static void UpdateModelSeparatorFPTS(QStandardItemModel* model, CStringHash& source_path);
 
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsBranchFPTS(Node* node, CString& message);
@@ -91,6 +95,9 @@ public:
     static bool IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message);
     static bool IsHelperReferencedFPTS(Sqlite* sql, int node_id, CString& message);
     static bool IsExternalReferencedPS(Sqlite* sql, int node_id, CString& message);
+
+private:
+    static void UpdateModelFunction(QStandardItemModel* model, const QSet<int>& update_range, CStringHash& source_path);
 };
 
 #endif // TREEMODELUTILS_H

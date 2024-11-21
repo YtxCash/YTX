@@ -9,6 +9,8 @@ TreeModelTask::TreeModelTask(Sqlite* sql, CInfo& info, int default_unit, CTableH
     ConstructTree();
 }
 
+TreeModelTask::~TreeModelTask() { qDeleteAll(node_hash_); }
+
 void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };

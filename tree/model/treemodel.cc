@@ -13,11 +13,7 @@ TreeModel::TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& tab
     helper_model_ = new QStandardItemModel(this);
 }
 
-TreeModel::~TreeModel()
-{
-    qDeleteAll(node_hash_);
-    delete root_;
-}
+TreeModel::~TreeModel() { delete root_; }
 
 void TreeModel::RRemoveNode(int node_id)
 {
@@ -141,31 +137,12 @@ void TreeModel::UpdateSeparatorFPTS(CString& old_separator, CString& new_separat
     if (old_separator == new_separator || new_separator.isEmpty())
         return;
 
-    auto UpdatePaths = [&old_separator, &new_separator](auto& paths) {
-        for (auto& path : paths)
-            path.replace(old_separator, new_separator);
-    };
+    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, leaf_path_);
+    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, branch_path_);
+    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, helper_path_);
 
-    UpdatePaths(leaf_path_);
-    UpdatePaths(branch_path_);
-    UpdatePaths(helper_path_);
-
-    auto UpdateModel = [](QStandardItemModel* model, CStringHash& data) {
-        if (!model)
-            return;
-
-        for (int row = 0; row != model->rowCount(); ++row) {
-            QStandardItem* item = model->item(row);
-            if (!item)
-                continue;
-
-            int id = item->data(Qt::UserRole).toInt();
-            item->setText(data.value(id, QString {}));
-        }
-    };
-
-    UpdateModel(leaf_model_, leaf_path_);
-    UpdateModel(helper_model_, helper_path_);
+    TreeModelUtils::UpdateModelSeparatorFPTS(leaf_model_, leaf_path_);
+    TreeModelUtils::UpdateModelSeparatorFPTS(helper_model_, helper_path_);
 }
 
 void TreeModel::SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const

@@ -144,7 +144,6 @@ public:
     void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const;
     void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const;
 
-    void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator);
     void SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const;
 
     void SetParent(Node* node, int parent_id) const;
@@ -153,6 +152,13 @@ public:
     // virtual functions
     virtual void UpdateNodeFPTS(const Node* tmp_node) { Q_UNUSED(tmp_node); }
     virtual void RetriveNodeOrder(int node_id) { Q_UNUSED(node_id); }
+
+    virtual void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator);
+    virtual QStandardItemModel* UnitModelPS(int unit = 0) const
+    {
+        Q_UNUSED(unit);
+        return nullptr;
+    }
 
     virtual void UpdateDefaultUnit(int default_unit) { root_->unit = default_unit; }
     virtual QString GetPath(int node_id) const;

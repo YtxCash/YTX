@@ -9,6 +9,8 @@ TreeModelFinance::TreeModelFinance(Sqlite* sql, CInfo& info, int default_unit, C
     ConstructTree();
 }
 
+TreeModelFinance::~TreeModelFinance() { qDeleteAll(node_hash_); }
+
 void TreeModelFinance::RUpdateLeafValue(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {

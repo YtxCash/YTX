@@ -27,7 +27,7 @@ class TreeModelTask final : public TreeModel {
 
 public:
     TreeModelTask(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    ~TreeModelTask() override = default;
+    ~TreeModelTask() override;
 
 public slots:
     void RUpdateLeafValueOne(int node_id, double diff, CString& node_field) override; // unit_cost

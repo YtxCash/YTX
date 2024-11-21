@@ -8,6 +8,8 @@ TreeModelStakeholder::TreeModelStakeholder(Sqlite* sql, CInfo& info, int default
     ConstructTree();
 }
 
+TreeModelStakeholder::~TreeModelStakeholder() { qDeleteAll(node_hash_); }
+
 void TreeModelStakeholder::RUpdateStakeholder(int old_node_id, int new_node_id)
 {
     const auto& const_node_hash { std::as_const(node_hash_) };

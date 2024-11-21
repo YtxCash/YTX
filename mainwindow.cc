@@ -21,6 +21,7 @@
 #include "database/sqlite/sqlitestakeholder.h"
 #include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
+#include "delegate/insideproduct.h"
 #include "delegate/line.h"
 #include "delegate/search/searchpathtabler.h"
 #include "delegate/specificunit.h"
@@ -618,10 +619,9 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
 
 void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
 {
-    auto product_tree_model { product_tree_->Model() };
-    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, Filter::kExcludeSpecific, table_view) };
+    auto* product_tree_model { product_tree_->Model().data() };
+    auto* inside_product { new InsideProduct(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
-    connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
     auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
@@ -646,14 +646,13 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
 
 void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
 {
-    auto product_tree_model { product_tree_->Model() };
-    auto* inside_product { new SpecificUnit(product_tree_model, UNIT_POS, false, Filter::kExcludeSpecific, table_view) };
+    auto* product_tree_model { product_tree_->Model().data() };
+    auto* inside_product { new InsideProduct(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
-    connect(product_tree_model, &TreeModel::SUpdateComboModel, inside_product, &SpecificUnit::RUpdateComboModel);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
     auto* helper_node { new HelperNode(stakeholder_tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), helper_node);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), helper_node);
 
     auto* color { new ColorR(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);

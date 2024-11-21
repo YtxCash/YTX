@@ -27,7 +27,7 @@ class TreeModelProduct final : public TreeModel {
 
 public:
     TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, CTableHash& table_hash, CString& separator, QObject* parent = nullptr);
-    ~TreeModelProduct() override = default;
+    ~TreeModelProduct() override;
 
 public slots:
     void RUpdateLeafValue(int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff,
@@ -48,10 +48,21 @@ public:
     const QString& Color(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::color); }
     double First(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::first); }
 
+    void UpdateSeparatorFPTS(CString& old_separator, CString& new_separator) override;
+    QStandardItemModel* UnitModelPS(int unit = 0) const override
+    {
+        Q_UNUSED(unit);
+        return product_model_;
+    }
+
 protected:
     void ConstructTree() override;
     bool UpdateUnit(Node* node, int value) override;
     bool UpdateHelperFPTS(Node* node, bool value) override;
+    bool UpdateName(Node* node, CString& value) override;
+
+private:
+    QStandardItemModel* product_model_ {};
 };
 
 #endif // TREEMODELPRODUCT_H

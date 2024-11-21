@@ -6,8 +6,12 @@ TreeModelProduct::TreeModelProduct(Sqlite* sql, CInfo& info, int default_unit, C
     : TreeModel(sql, info, default_unit, table_hash, separator, parent)
 {
     leaf_model_ = new QStandardItemModel(this);
+    product_model_ = new QStandardItemModel(this);
+
     ConstructTree();
 }
+
+TreeModelProduct::~TreeModelProduct() { qDeleteAll(node_hash_); }
 
 void TreeModelProduct::RUpdateLeafValue(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
@@ -77,7 +81,6 @@ void TreeModelProduct::UpdateNodeFPTS(const Node* tmp_node)
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
         emit SUpdateName(node->id, node->name, node->branch);
-        emit SUpdateComboModel();
     }
 
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
@@ -128,9 +131,12 @@ bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
         TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
     }
 
+    if (node->unit != UNIT_POS) {
+        TreeModelUtils::RemoveItemFromModel(product_model_, node->id);
+    }
+
     emit SSearch();
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
-    emit SUpdateComboModel();
 
     ResourcePool<Node>::Instance().Recycle(node);
     node_hash_.remove(node_id);
@@ -163,9 +169,26 @@ bool TreeModelProduct::InsertNode(int row, const QModelIndex& parent, Node* node
         TreeModelUtils::AddItemToModel(leaf_model_, path, node->id);
     }
 
+    if (node->unit != UNIT_POS) {
+        TreeModelUtils::AddItemToModel(product_model_, path, node->id);
+    }
+
     emit SSearch();
-    emit SUpdateComboModel();
     return true;
+}
+
+void TreeModelProduct::UpdateSeparatorFPTS(CString& old_separator, CString& new_separator)
+{
+    if (old_separator == new_separator || new_separator.isEmpty())
+        return;
+
+    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, leaf_path_);
+    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, branch_path_);
+    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, helper_path_);
+
+    TreeModelUtils::UpdateModelSeparatorFPTS(leaf_model_, leaf_path_);
+    TreeModelUtils::UpdateModelSeparatorFPTS(helper_model_, helper_path_);
+    TreeModelUtils::UpdateModelSeparatorFPTS(product_model_, leaf_path_);
 }
 
 bool TreeModelProduct::UpdateUnit(Node* node, int value)
@@ -191,19 +214,32 @@ bool TreeModelProduct::UpdateUnit(Node* node, int value)
     node->unit = value;
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
+    if (value == UNIT_POS)
+        TreeModelUtils::RemoveItemFromModel(product_model_, node_id);
+    else
+        TreeModelUtils::AddItemToModel(product_model_, leaf_path_.value(node_id), node_id);
+
     return true;
 }
 
 void TreeModelProduct::ConstructTree()
 {
     sql_->ReadNode(node_hash_);
+    if (node_hash_.isEmpty())
+        return;
+
     const auto& const_node_hash { std::as_const(node_hash_) };
+
+    QSet<int> node_id {};
 
     for (auto* node : const_node_hash) {
         if (!node->parent) {
             node->parent = root_;
             root_->children.emplace_back(node);
         }
+
+        if (node->unit != UNIT_POS)
+            node_id.insert(node->id);
     }
 
     QString path {};
@@ -226,6 +262,7 @@ void TreeModelProduct::ConstructTree()
 
     TreeModelUtils::HelperPathFPTS(helper_path_, helper_model_, 0, Filter::kIncludeAllWithNone);
     TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
+    TreeModelUtils::LeafPathSpecificUnitPS(node_id, leaf_path_, product_model_);
 }
 
 bool TreeModelProduct::UpdateHelperFPTS(Node* node, bool value)
@@ -257,12 +294,35 @@ bool TreeModelProduct::UpdateHelperFPTS(Node* node, bool value)
     if (node->is_helper) {
         CString path { leaf_path_.take(node_id) };
         helper_path_.insert(node_id, path);
-        TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
+        TreeModelUtils::AddItemToModel(helper_model_, path, node_id);
+        TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
+
+        if (node->unit != UNIT_POS)
+            TreeModelUtils::RemoveItemFromModel(product_model_, node_id);
     } else {
-        leaf_path_.insert(node_id, helper_path_.take(node_id));
+        CString path { helper_path_.take(node_id) };
+        leaf_path_.insert(node_id, path);
         TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
+        TreeModelUtils::AddItemToModel(leaf_model_, path, node_id);
+
+        if (node->unit != UNIT_POS)
+            TreeModelUtils::AddItemToModel(product_model_, path, node_id);
     }
 
+    return true;
+}
+
+bool TreeModelProduct::UpdateName(Node* node, CString& value)
+{
+    node->name = value;
+    sql_->UpdateField(info_.node, value, NAME, node->id);
+
+    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
+    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, product_model_, node, UNIT_POS, Filter::kExcludeSpecific);
+
+    emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
+    emit SSearch();
     return true;
 }
 
@@ -468,10 +528,10 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
     TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, product_model_, node, UNIT_POS, Filter::kExcludeSpecific);
 
     emit SUpdateName(node_id, node->name, node->branch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
-    emit SUpdateComboModel();
 
     return true;
 }
