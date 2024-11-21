@@ -151,34 +151,10 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
         return false;
 
     if (!node->is_helper) {
-        switch (node->unit) {
-        case UNIT_CUST:
-            TreeModelUtils::RemoveItemFromModel(cmodel_, node->id);
-            break;
-        case UNIT_VEND:
-            TreeModelUtils::RemoveItemFromModel(vmodel_, node->id);
-            break;
-        case UNIT_EMP:
-            TreeModelUtils::RemoveItemFromModel(emodel_, node->id);
-            break;
-        default:
-            break;
-        }
+        RemoveItem(node_id, node->unit);
 
         const auto& path { GetPath(node_id) };
-        switch (value) {
-        case UNIT_CUST:
-            TreeModelUtils::AddItemToModel(cmodel_, path, node->id);
-            break;
-        case UNIT_VEND:
-            TreeModelUtils::AddItemToModel(vmodel_, path, node->id);
-            break;
-        case UNIT_EMP:
-            TreeModelUtils::AddItemToModel(emodel_, path, node->id);
-            break;
-        default:
-            break;
-        }
+        AddItem(node_id, path, value);
     }
 
     node->unit = value;
@@ -213,44 +189,19 @@ bool TreeModelStakeholder::UpdateHelperFPTS(Node* node, bool value)
     node->is_helper = value;
     sql_->UpdateField(info_.node, value, IS_HELPER, node_id);
 
-    const auto& path { GetPath(node_id) };
-
     if (node->is_helper) {
         CString path { leaf_path_.take(node_id) };
         helper_path_.insert(node_id, path);
         TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
 
-        switch (node->unit) {
-        case UNIT_CUST:
-            TreeModelUtils::RemoveItemFromModel(cmodel_, node->id);
-            break;
-        case UNIT_VEND:
-            TreeModelUtils::RemoveItemFromModel(vmodel_, node->id);
-            break;
-        case UNIT_EMP:
-            TreeModelUtils::RemoveItemFromModel(emodel_, node->id);
-            break;
-        default:
-            break;
-        }
+        RemoveItem(node_id, node->unit);
 
     } else {
-        leaf_path_.insert(node_id, helper_path_.take(node_id));
+        CString path { helper_path_.take(node_id) };
+        leaf_path_.insert(node_id, path);
         TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
 
-        switch (node->unit) {
-        case UNIT_CUST:
-            TreeModelUtils::AddItemToModel(cmodel_, path, node->id);
-            break;
-        case UNIT_VEND:
-            TreeModelUtils::AddItemToModel(vmodel_, path, node->id);
-            break;
-        case UNIT_EMP:
-            TreeModelUtils::AddItemToModel(emodel_, path, node->id);
-            break;
-        default:
-            break;
-        }
+        AddItem(node_id, path, node->unit);
     }
 
     return true;
@@ -270,6 +221,40 @@ bool TreeModelStakeholder::UpdateName(Node* node, CString& value)
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
     return true;
+}
+
+void TreeModelStakeholder::RemoveItem(int node_id, int unit)
+{
+    switch (unit) {
+    case UNIT_CUST:
+        TreeModelUtils::RemoveItemFromModel(cmodel_, node_id);
+        break;
+    case UNIT_VEND:
+        TreeModelUtils::RemoveItemFromModel(vmodel_, node_id);
+        break;
+    case UNIT_EMP:
+        TreeModelUtils::RemoveItemFromModel(emodel_, node_id);
+        break;
+    default:
+        break;
+    }
+}
+
+void TreeModelStakeholder::AddItem(int node_id, CString& path, int unit)
+{
+    switch (unit) {
+    case UNIT_CUST:
+        TreeModelUtils::AddItemToModel(cmodel_, path, node_id);
+        break;
+    case UNIT_VEND:
+        TreeModelUtils::AddItemToModel(vmodel_, path, node_id);
+        break;
+    case UNIT_EMP:
+        TreeModelUtils::AddItemToModel(emodel_, path, node_id);
+        break;
+    default:
+        break;
+    }
 }
 
 void TreeModelStakeholder::ConstructTree()
@@ -400,19 +385,7 @@ bool TreeModelStakeholder::RemoveNode(int row, const QModelIndex& parent)
         helper_path_.remove(node_id);
         TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
     } else {
-        switch (node->unit) {
-        case UNIT_CUST:
-            TreeModelUtils::RemoveItemFromModel(cmodel_, node->id);
-            break;
-        case UNIT_VEND:
-            TreeModelUtils::RemoveItemFromModel(vmodel_, node->id);
-            break;
-        case UNIT_EMP:
-            TreeModelUtils::RemoveItemFromModel(emodel_, node->id);
-            break;
-        default:
-            break;
-        }
+        RemoveItem(node_id, node->unit);
     }
 
     emit SSearch();

@@ -55,6 +55,10 @@ protected:
     bool UpdateName(Node* node, CString& value) override;
 
 private:
+    void RemoveItem(int node_id, int unit);
+    void AddItem(int node_id, CString& path, int unit);
+
+private:
     QStandardItemModel* cmodel_ {};
     QStandardItemModel* vmodel_ {};
     QStandardItemModel* emodel_ {};
