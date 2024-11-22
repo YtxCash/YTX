@@ -16,7 +16,7 @@ Sqlite::Sqlite(CInfo& info, QObject* parent)
 
 Sqlite::~Sqlite() { qDeleteAll(trans_hash_); }
 
-void Sqlite::RRemoveNode(int node_id, bool branch, bool is_helper)
+void Sqlite::RRemoveNode(int node_id, int node_type)
 {
     // Notify MainWindow to release the table view
     emit SFreeView(node_id);
@@ -28,16 +28,16 @@ void Sqlite::RRemoveNode(int node_id, bool branch, bool is_helper)
     QMultiHash<int, int> node_trans {};
     QMultiHash<int, int> helper_trans {};
 
-    if (!is_helper) {
-        node_trans = TransToRemove(node_id, false);
-        helper_trans = TransToRemove(node_id, true);
+    if (node_type == kTypeLeaf) {
+        node_trans = TransToRemove(node_id, kTypeLeaf);
+        helper_trans = TransToRemove(node_id, kTypeSupport);
     }
 
     // Remove node, path, trans from the sqlite3 database
-    RemoveNode(node_id, branch, is_helper);
+    RemoveNode(node_id, node_type);
 
     // Process buffered trans
-    if (is_helper) {
+    if (node_type == kTypeSupport) {
         RemoveHelperFunction(node_id);
         return;
     }
@@ -57,16 +57,25 @@ void Sqlite::RRemoveNode(int node_id, bool branch, bool is_helper)
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
 }
 
-QMultiHash<int, int> Sqlite::TransToRemove(int node_id, bool is_helper) const
+QMultiHash<int, int> Sqlite::TransToRemove(int node_id, int target_node_type) const
 {
     QMultiHash<int, int> hash {};
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    QString string { QSNodeTransToRemove() };
-    if (is_helper)
+    QString string {};
+
+    switch (target_node_type) {
+    case kTypeLeaf:
+        string = QSNodeTransToRemove();
+        break;
+    case kTypeSupport:
         string = QSHelperTransToRemoveFPTS();
+        break;
+    default:
+        break;
+    }
 
     query.prepare(string);
     query.bindValue(":node_id", node_id);
@@ -136,31 +145,31 @@ bool Sqlite::FreeView(int old_node_id, int new_node_id) const
     return query.value(0).toInt() == 0;
 }
 
-void Sqlite::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
+void Sqlite::RReplaceNode(int old_node_id, int new_node_id, int node_type)
 {
     auto section { info_.section };
     if (section == Section::kPurchase || section == Section::kSales)
         return;
 
-    // begin deal with database
-    QSqlQuery query(*db_);
-
-    QString string { QSReplaceNodeTransFPTS() };
-    if (is_helper)
-        string = QSReplaceHelperTransFPTS();
-
-    if (string.isEmpty())
-        return;
-
+    QString string {};
     bool free {};
     QList<int> helper_trans {};
 
-    if (!is_helper)
+    switch (node_type) {
+    case kTypeLeaf:
+        string = QSReplaceNodeTransFPTS();
         free = FreeView(old_node_id, new_node_id);
-
-    if (is_helper)
+        break;
+    case kTypeSupport:
+        string = QSReplaceHelperTransFPTS();
         helper_trans = HelperTransToMoveFPTS(old_node_id);
+        break;
+    default:
+        break;
+    }
 
+    // begin deal with database
+    QSqlQuery query(*db_);
     query.prepare(string);
 
     query.bindValue(":new_node_id", new_node_id);
@@ -171,13 +180,13 @@ void Sqlite::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
     }
     // end deal with database
 
-    if (is_helper) {
+    if (node_type == kTypeSupport) {
         emit SFreeView(old_node_id);
         emit SRemoveNode(old_node_id);
         emit SMoveMultiHelperTransFPTS(info_.section, new_node_id, helper_trans);
 
         ReplaceHelperFunction(old_node_id, new_node_id);
-        RemoveNode(old_node_id, false, is_helper);
+        RemoveNode(old_node_id, kTypeSupport);
 
         return;
     }
@@ -195,7 +204,7 @@ void Sqlite::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
     if (free) {
         emit SFreeView(old_node_id);
         emit SRemoveNode(old_node_id);
-        RemoveNode(old_node_id, false, is_helper);
+        RemoveNode(old_node_id, kTypeLeaf);
     }
 }
 
@@ -314,7 +323,7 @@ bool Sqlite::LeafTotal(Node* node) const
 {
     CString& string { QSLeafTotalFPT() };
 
-    if (string.isEmpty() || !node || node->id <= 0 || node->branch)
+    if (string.isEmpty() || !node || node->id <= 0 || node->type != kTypeLeaf)
         return false;
 
     QSqlQuery query(*db_);
@@ -363,19 +372,27 @@ QList<int> Sqlite::SearchNodeName(CString& text) const
     return node_list;
 }
 
-bool Sqlite::RemoveNode(int node_id, bool branch, bool is_helper) const
+bool Sqlite::RemoveNode(int node_id, int node_type) const
 {
     QSqlQuery query(*db_);
 
-    CString& string_frist { QSRemoveNodeFirst() };
-    QString string_second { QSRemoveNodeSecond() };
-    CString& string_third { QSRemoveNodeThird() };
+    CString string_frist { QSRemoveNodeFirst() };
+    QString string_second {};
+    CString string_third { QSRemoveNodeThird() };
 
-    if (branch)
+    switch (node_type) {
+    case kTypeLeaf:
+        string_second = QSRemoveNodeSecond();
+        break;
+    case kTypeBranch:
         string_second = QSRemoveBranch();
-
-    if (is_helper)
+        break;
+    case kTypeSupport:
         string_second = QSRemoveHelperFPTS();
+        break;
+    default:
+        break;
+    }
 
     if (!DBTransaction([&]() {
             query.prepare(string_frist);
@@ -770,7 +787,7 @@ bool Sqlite::RemoveTrans(int trans_id)
 
 bool Sqlite::UpdateNodeValue(const Node* node) const
 {
-    if (node->branch)
+    if (node->type != kTypeLeaf)
         return false;
 
     CString& string { QSUpdateNodeValueFPTO() };

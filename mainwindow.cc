@@ -267,8 +267,8 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
     if (index.column() != 0)
         return;
 
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
-    if (branch)
+    const int type { index.siblingAtColumn(std::to_underlying(TreeEnum::kType)).data().toInt() };
+    if (type == kTypeBranch)
         return;
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
@@ -295,9 +295,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
         }
 
         if (section != Section::kSales && section != Section::kPurchase) {
-            const bool is_helper { index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toBool() };
-
-            if (is_helper)
+            if (type == kTypeSupport)
                 CreateTableHelper(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
             else
                 CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
@@ -731,8 +729,8 @@ void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
     auto* rule { new TreeCombo(info.rule_map, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
-    auto* branch { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kBranch), branch);
+    // todo
+    // tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kType), branch);
 
     auto* unit { new TreeCombo(info.unit_map, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
@@ -745,9 +743,6 @@ void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& s
 
     auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kInitialTotal), initial_total);
-
-    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kIsHelper), helper);
 }
 
 void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
@@ -769,9 +764,6 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 
     auto* finished { new Finished(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kFinished), finished);
-
-    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kIsHelper), helper);
 }
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
@@ -788,9 +780,6 @@ void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) cons
 
     auto* color { new Color(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
-
-    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kIsHelper), helper);
 }
 
 void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const
@@ -806,9 +795,6 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
 
     auto* employee { new SpecificUnit(stakeholder_tree_->Model(), stakeholder_tree_->Model()->UnitModelPS(UNIT_EMP), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
-
-    auto* helper { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kIsHelper), helper);
 }
 
 void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const
@@ -926,10 +912,9 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
         return;
 
     const int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
-    const bool is_helper { index.siblingAtColumn(std::to_underlying(TreeEnum::kIsHelper)).data().toBool() };
+    const int node_type { index.siblingAtColumn(std::to_underlying(TreeEnum::kType)).data().toInt() };
 
-    if (branch) {
+    if (node_type == kTypeBranch) {
         if (model->ChildrenEmpty(node_id))
             model->RemoveNode(index.row(), index.parent());
         else
@@ -944,13 +929,13 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     bool helper_reference { sql->HelperReferenceFPTS(node_id) };
 
     if (!interal_reference && !exteral_reference && !helper_reference) {
-        RemoveView(model, index, node_id, is_helper);
+        RemoveView(model, index, node_id, node_type);
         return;
     }
 
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
 
-    auto* dialog { new class RemoveNode(model, data_->info.section, node_id, unit, branch, exteral_reference, is_helper, this) };
+    auto* dialog { new class RemoveNode(model, data_->info.section, node_id, node_type, unit, exteral_reference, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
     connect(dialog, &RemoveNode::SReplaceNode, sql, &Sqlite::RReplaceNode);
     dialog->exec();
@@ -1003,10 +988,10 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
         view->setCurrentIndex(new_index);
 }
 
-void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id, bool is_helper)
+void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id, int node_type)
 {
     tree_model->RemoveNode(index.row(), index.parent());
-    data_->sql->RemoveNode(node_id, false, is_helper);
+    data_->sql->RemoveNode(node_id, node_type);
     auto* widget { table_hash_->value(node_id) };
 
     if (widget) {
@@ -1045,11 +1030,17 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
     }
 
     for (int node_id : list) {
-        if (tree_model->Contains(node_id) && !tree_model->BranchFPTS(node_id) && node_id >= 1) {
-            if (tree_model->IsHelperFPTS(node_id))
+        if (tree_model->Contains(node_id) && node_id >= 1) {
+            switch (tree_model->TypeFPTS(node_id)) {
+            case kTypeSupport:
                 CreateTableHelper(tree_model, &table_hash, &data, &settings, node_id);
-            else
+                break;
+            case kTypeLeaf:
                 CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
+                break;
+            default:
+                break;
+            }
         }
     }
 }
@@ -1435,43 +1426,43 @@ void MainWindow::SetPurchaseData()
 
 void MainWindow::SetHeader()
 {
-    finance_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("IsHelper"),
-        tr("Foreign Total"), tr("Local Total"), {} };
+    finance_data_.info.tree_header
+        = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Foreign Total"), tr("Local Total"), {} };
     finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("FXRate"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
         tr("Description"), {}, {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
-    finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
+    finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {}, {},
         {}, {}, {}, {}, {}, tr("Foreign Total"), tr("Local Total") };
     finance_data_.info.helper_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsRatio"), tr("LhsDebit"), tr("LhsCredit"),
         tr("Description"), tr("UnitPrice"), tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsRatio"), tr("RhsNode") };
 
-    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("IsHelper"),
-        tr("Color"), tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
+    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Color"),
+        tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
     product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
         tr("UnitCost"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
-    product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {}, {},
+    product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {}, {},
         tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity"), tr("Amount") };
     product_data_.info.helper_header = finance_data_.info.helper_header;
 
-    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"),
-        tr("IsHelper"), tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
+    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("IsHelper"),
+        tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
     stakeholder_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("OutsideProduct"), tr("D"), tr("S"),
         tr("InsideProduct"), tr("PlaceHolder") };
     stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("InsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
         tr("NodeID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("OutsideProduct") };
-    stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {},
+    stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {},
         tr("Employee"), tr("Deadline"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
     stakeholder_data_.info.helper_header = finance_data_.info.helper_header;
 
-    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("IsHelper"),
-        tr("DateTime"), tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
+    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("DateTime"),
+        tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
     task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
-    task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), {}, {},
+    task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {},
         tr("DateTime"), tr("Color"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
     task_data_.info.helper_header = finance_data_.info.helper_header;
 
@@ -1544,8 +1535,8 @@ void MainWindow::RAppendNodeTriggered()
     if (!parent_index.isValid())
         return;
 
-    const bool branch { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool() };
-    if (!branch)
+    const int type { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kType)).data().toInt() };
+    if (type != kTypeBranch)
         return;
 
     const int parent_id { parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };

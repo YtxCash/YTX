@@ -48,7 +48,6 @@ public:
 
 protected:
     void ConstructTree() override;
-    bool UpdateHelperFPTS(Node* node, bool value) override;
     bool UpdateUnit(Node* node, int value) override;
 };
 

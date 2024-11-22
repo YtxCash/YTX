@@ -60,8 +60,8 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
         return node->note;
     case TreeEnumSearch::kRule:
         return node->rule;
-    case TreeEnumSearch::kBranch:
-        return node->branch ? node->branch : QVariant();
+    case TreeEnumSearch::kType:
+        return node->type;
     case TreeEnumSearch::kUnit:
         return node->unit;
     case TreeEnumSearch::kParty:
@@ -116,8 +116,8 @@ void SearchNodeModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
         case TreeEnumSearch::kRule:
             return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
-        case TreeEnumSearch::kBranch:
-            return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
+        case TreeEnumSearch::kType:
+            return (order == Qt::AscendingOrder) ? (lhs->type < rhs->type) : (lhs->type > rhs->type);
         case TreeEnumSearch::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
         case TreeEnumSearch::kParty:

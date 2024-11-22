@@ -15,7 +15,7 @@ void TreeModelFinance::RUpdateLeafValue(
     int node_id, double initial_debit_diff, double initial_credit_diff, double final_debit_diff, double final_credit_diff, double /*settled_diff*/)
 {
     auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
-    if (!node || node == root_ || node->branch)
+    if (!node || node == root_ || node->type != kTypeLeaf)
         return;
 
     if (initial_credit_diff == 0 && initial_debit_diff == 0 && final_debit_diff == 0 && final_credit_diff == 0)
@@ -45,7 +45,7 @@ void TreeModelFinance::RUpdateMultiLeafTotal(const QList<int>& node_list)
     for (int node_id : node_list) {
         node = TreeModelUtils::GetNodeByID(node_hash_, node_id);
 
-        if (!node || node->branch)
+        if (!node || node->type != kTypeLeaf)
             continue;
 
         old_final_total = node->final_total;
@@ -71,36 +71,37 @@ bool TreeModelFinance::RemoveNode(int row, const QModelIndex& parent)
     auto* parent_node { GetNodeByIndex(parent) };
     auto* node { parent_node->children.at(row) };
 
-    int node_id { node->id };
-    bool branch { node->branch };
+    const int node_id { node->id };
 
     beginRemoveRows(parent, row, row);
-    if (branch) {
+    parent_node->children.removeOne(node);
+    endRemoveRows();
+
+    switch (node->type) {
+    case kTypeBranch: {
         for (auto* child : node->children) {
             child->parent = parent_node;
             parent_node->children.emplace_back(child);
         }
-    }
-    parent_node->children.removeOne(node);
-    endRemoveRows();
 
-    if (branch) {
-        TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-        TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
+        TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, support_path_, root_, node, separator_);
+        TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, support_path_, support_model_, node);
 
         branch_path_.remove(node_id);
-        emit SUpdateName(node_id, node->name, branch);
-    }
+        emit SUpdateName(node_id, node->name, true);
 
-    if (!branch) {
+    } break;
+    case kTypeLeaf: {
         TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
-        leaf_path_.remove(node_id);
         TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
-    }
-
-    if (node->is_helper) {
-        helper_path_.remove(node_id);
-        TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
+        leaf_path_.remove(node_id);
+    } break;
+    case kTypeSupport: {
+        TreeModelUtils::RemoveItemFromModel(support_model_, node_id);
+        support_path_.remove(node_id);
+    } break;
+    default:
+        break;
     }
 
     emit SSearch();
@@ -126,15 +127,22 @@ bool TreeModelFinance::InsertNode(int row, const QModelIndex& parent, Node* node
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    QString path { TreeModelUtils::ConstructPathFPTS(root_, node, separator_) };
-    (node->branch ? branch_path_ : (node->is_helper ? helper_path_ : leaf_path_)).insert(node->id, path);
+    CString path { TreeModelUtils::ConstructPathFPTS(root_, node, separator_) };
 
-    if (node->is_helper) {
-        TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
-    }
-
-    if (!node->branch) {
+    switch (node->type) {
+    case kTypeBranch:
+        branch_path_.insert(node->id, path);
+        break;
+    case kTypeLeaf:
         TreeModelUtils::AddItemToModel(leaf_model_, path, node->id);
+        leaf_path_.insert(node->id, path);
+        break;
+    case kTypeSupport:
+        TreeModelUtils::AddItemToModel(support_model_, path, node->id);
+        support_path_.insert(node->id, path);
+        break;
+    default:
+        break;
     }
 
     emit SSearch();
@@ -154,13 +162,13 @@ void TreeModelFinance::UpdateNodeFPTS(const Node* tmp_node)
     if (*node == *tmp_node)
         return;
 
-    UpdateBranchFPTS(node, tmp_node->branch);
+    UpdateTypeFPTS(node, tmp_node->type);
     UpdateRuleFPTO(node, tmp_node->rule);
     UpdateUnit(node, tmp_node->unit);
 
     if (node->name != tmp_node->name) {
         UpdateName(node, tmp_node->name);
-        emit SUpdateName(node->id, node->name, node->branch);
+        emit SUpdateName(node->id, node->name, node->type == kTypeBranch);
     }
 
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
@@ -178,7 +186,7 @@ void TreeModelFinance::UpdateDefaultUnit(int default_unit)
     const auto& const_node_hash { std::as_const(node_hash_) };
 
     for (auto* node : const_node_hash)
-        if (node->branch && node->unit != default_unit)
+        if (node->type == kTypeBranch && node->unit != default_unit)
             TreeModelUtils::UpdateBranchUnitF(root_, node);
 }
 
@@ -206,12 +214,10 @@ QVariant TreeModelFinance::data(const QModelIndex& index, int role) const
         return node->note;
     case TreeEnumFinance::kRule:
         return node->rule;
-    case TreeEnumFinance::kBranch:
-        return node->branch ? node->branch : QVariant();
+    case TreeEnumFinance::kType:
+        return node->type;
     case TreeEnumFinance::kUnit:
         return node->unit;
-    case TreeEnumFinance::kIsHelper:
-        return node->is_helper ? node->is_helper : QVariant();
     case TreeEnumFinance::kInitialTotal:
         return node->unit == root_->unit ? QVariant() : node->initial_total;
     case TreeEnumFinance::kFinalTotal:
@@ -245,14 +251,11 @@ bool TreeModelFinance::setData(const QModelIndex& index, const QVariant& value, 
     case TreeEnumFinance::kRule:
         UpdateRuleFPTO(node, value.toBool());
         break;
-    case TreeEnumFinance::kBranch:
-        UpdateBranchFPTS(node, value.toBool());
+    case TreeEnumFinance::kType:
+        UpdateTypeFPTS(node, value.toInt());
         break;
     case TreeEnumFinance::kUnit:
         UpdateUnit(node, value.toInt());
-        break;
-    case TreeEnumFinance::kIsHelper:
-        UpdateHelperFPTS(node, value.toBool());
         break;
     default:
         return false;
@@ -280,12 +283,10 @@ void TreeModelFinance::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
         case TreeEnumFinance::kRule:
             return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
-        case TreeEnumFinance::kBranch:
-            return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
+        case TreeEnumFinance::kType:
+            return (order == Qt::AscendingOrder) ? (lhs->type < rhs->type) : (lhs->type > rhs->type);
         case TreeEnumFinance::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
-        case TreeEnumFinance::kIsHelper:
-            return (order == Qt::AscendingOrder) ? (lhs->is_helper < rhs->is_helper) : (lhs->is_helper > rhs->is_helper);
         case TreeEnumFinance::kInitialTotal:
             return (order == Qt::AscendingOrder) ? (lhs->initial_total < rhs->initial_total) : (lhs->initial_total > rhs->initial_total);
         case TreeEnumFinance::kFinalTotal:
@@ -315,8 +316,7 @@ Qt::ItemFlags TreeModelFinance::flags(const QModelIndex& index) const
         break;
     case TreeEnumFinance::kInitialTotal:
     case TreeEnumFinance::kFinalTotal:
-    case TreeEnumFinance::kBranch:
-    case TreeEnumFinance::kIsHelper:
+    case TreeEnumFinance::kType:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:
@@ -333,7 +333,7 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
         return false;
 
     auto* destination_parent { GetNodeByIndex(parent) };
-    if (!destination_parent->branch)
+    if (destination_parent->type != kTypeBranch)
         return false;
 
     int node_id {};
@@ -361,45 +361,10 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
     }
 
     sql_->DragNode(destination_parent->id, node_id);
-    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
-    emit SUpdateName(node_id, node->name, node->branch);
+    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, support_path_, root_, node, separator_);
+    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, support_path_, support_model_, node);
+    emit SUpdateName(node_id, node->name, node->type == kTypeBranch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
-
-    return true;
-}
-
-bool TreeModelFinance::UpdateHelperFPTS(Node* node, bool value)
-{
-    if (node->is_helper == value)
-        return false;
-
-    const int node_id { node->id };
-    QString message { tr("Cannot change %1 helper,").arg(GetPath(node_id)) };
-
-    if (TreeModelUtils::IsBranchFPTS(node, message))
-        return false;
-
-    if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
-        return false;
-
-    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
-        return false;
-
-    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
-        return false;
-
-    node->is_helper = value;
-    sql_->UpdateField(info_.node, value, IS_HELPER, node_id);
-
-    if (node->is_helper) {
-        CString path { leaf_path_.take(node_id) };
-        helper_path_.insert(node_id, path);
-        TreeModelUtils::AddItemToModel(helper_model_, path, node->id);
-    } else {
-        leaf_path_.insert(node_id, helper_path_.take(node_id));
-        TreeModelUtils::RemoveItemFromModel(helper_model_, node_id);
-    }
 
     return true;
 }
@@ -420,21 +385,23 @@ void TreeModelFinance::ConstructTree()
     for (auto* node : const_node_hash) {
         path = TreeModelUtils::ConstructPathFPTS(root_, node, separator_);
 
-        if (node->branch) {
+        switch (node->type) {
+        case kTypeBranch:
             branch_path_.insert(node->id, path);
-            continue;
+            break;
+        case kTypeLeaf:
+            TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
+            leaf_path_.insert(node->id, path);
+            break;
+        case kTypeSupport:
+            support_path_.insert(node->id, path);
+            break;
+        default:
+            break;
         }
-
-        if (node->is_helper) {
-            helper_path_.insert(node->id, path);
-            continue;
-        }
-
-        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
-        leaf_path_.insert(node->id, path);
     }
 
-    TreeModelUtils::HelperPathFPTS(helper_path_, helper_model_, 0, Filter::kIncludeAllWithNone);
+    TreeModelUtils::HelperPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
     TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
 }
 
@@ -455,7 +422,7 @@ bool TreeModelFinance::UpdateUnit(Node* node, int value)
     node->unit = value;
     sql_->UpdateField(info_.node, value, UNIT, node_id);
 
-    if (node->branch)
+    if (node->type == kTypeBranch)
         TreeModelUtils::UpdateBranchUnitF(root_, node);
 
     return true;

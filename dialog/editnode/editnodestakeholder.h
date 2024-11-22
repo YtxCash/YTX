@@ -48,7 +48,6 @@ private slots:
     void on_dSpinPaymentPeriod_editingFinished();
     void on_dSpinTaxRate_editingFinished();
 
-    void on_chkBoxBranch_toggled(bool checked);
     void on_rBtnMonthly_toggled(bool checked);
 
     void on_comboUnit_currentIndexChanged(int index);
@@ -56,6 +55,10 @@ private slots:
 
     void on_plainTextEdit_textChanged();
     void on_deadline_editingFinished();
+
+    void on_rBtnLeaf_toggled(bool checked);
+    void on_rBtnBranch_toggled(bool checked);
+    void on_rBtnSupport_toggled(bool checked);
 
 private:
     void IniDialog(CStringMap& unit_map, TreeModel* stakeholder_tree, int common_decimal);

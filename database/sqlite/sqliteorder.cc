@@ -122,7 +122,7 @@ bool SqliteOrder::RetriveNode(NodeHash& node_hash, int node_id)
     return true;
 }
 
-void SqliteOrder::RRemoveNode(int node_id, bool branch, bool /*is_helper*/)
+void SqliteOrder::RRemoveNode(int node_id, int /*node_type*/)
 {
     // Notify MainWindow to release the table view
     emit SFreeView(node_id);
@@ -131,11 +131,11 @@ void SqliteOrder::RRemoveNode(int node_id, bool branch, bool /*is_helper*/)
 
     // Mark Trans for removal
 
-    const QMultiHash<int, int> node_trans { TransToRemove(node_id, false) };
+    const QMultiHash<int, int> node_trans { TransToRemove(node_id, kTypeLeaf) };
     const auto trans { node_trans.values() };
 
     // Remove node, path, trans from the sqlite3 database
-    RemoveNode(node_id, branch, false);
+    RemoveNode(node_id, kTypeLeaf);
 
     // Recycle trans resources
     for (int trans_id : trans)
@@ -145,9 +145,9 @@ void SqliteOrder::RRemoveNode(int node_id, bool branch, bool /*is_helper*/)
 QString SqliteOrder::QSReadNode() const
 {
     return QString(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled
+    SELECT name, id, code, description, note, rule, type, unit, party, employee, date_time, first, second, discount, finished, amount, settled
     FROM %1
-    WHERE ((DATE(date_time) BETWEEN :start_date AND :end_date) OR branch = true) AND removed = 0
+    WHERE ((DATE(date_time) BETWEEN :start_date AND :end_date) OR type = 1) AND removed = 0
     )")
         .arg(node_);
 }
@@ -155,8 +155,8 @@ QString SqliteOrder::QSReadNode() const
 QString SqliteOrder::QSWriteNode() const
 {
     return QString(R"(
-    INSERT INTO %1 (name, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled)
-    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :party, :employee, :date_time, :first, :second, :discount, :finished, :amount, :settled)
+    INSERT INTO %1 (name, code, description, note, rule, type, unit, party, employee, date_time, first, second, discount, finished, amount, settled)
+    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :party, :employee, :date_time, :first, :second, :discount, :finished, :amount, :settled)
     )")
         .arg(node_);
 }
@@ -262,7 +262,7 @@ QString SqliteOrder::QSNodeTransToRemove() const
 QString SqliteOrder::SearchNodeQS(CString& in_list) const
 {
     return QString(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, party, employee, date_time, first, second, discount, finished, amount, settled
+    SELECT name, id, code, description, note, rule, type, unit, party, employee, date_time, first, second, discount, finished, amount, settled
     FROM %1
     WHERE party IN (%2) AND removed = 0
     )")
@@ -382,7 +382,7 @@ void SqliteOrder::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->description = query.value("description").toString();
     node->note = query.value("note").toString();
     node->rule = query.value("rule").toBool();
-    node->branch = query.value("branch").toBool();
+    node->type = query.value("type").toInt();
     node->unit = query.value("unit").toInt();
     node->party = query.value("party").toInt();
     node->employee = query.value("employee").toInt();
@@ -402,7 +402,7 @@ void SqliteOrder::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":description", node->description);
     query.bindValue(":note", node->note);
     query.bindValue(":rule", node->rule);
-    query.bindValue(":branch", node->branch);
+    query.bindValue(":type", node->type);
     query.bindValue(":unit", node->unit);
     query.bindValue(":party", node->party);
     query.bindValue(":employee", node->employee);

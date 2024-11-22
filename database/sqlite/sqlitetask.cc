@@ -12,7 +12,7 @@ SqliteTask::SqliteTask(CInfo& info, QObject* parent)
 QString SqliteTask::QSReadNode() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, is_helper, color, date_time, finished, unit_cost, quantity, amount
+    SELECT name, id, code, description, note, rule, type, unit, color, date_time, finished, unit_cost, quantity, amount
     FROM task
     WHERE removed = 0
     )");
@@ -21,8 +21,8 @@ QString SqliteTask::QSReadNode() const
 QString SqliteTask::QSWriteNode() const
 {
     return QStringLiteral(R"(
-    INSERT INTO task (name, code, description, note, rule, branch, unit, is_helper, color, date_time, finished, unit_cost)
-    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :is_helper, :color, :date_time, :finished, :unit_cost)
+    INSERT INTO task (name, code, description, note, rule, type, unit, color, date_time, finished, unit_cost)
+    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :color, :date_time, :finished, :unit_cost)
     )");
 }
 
@@ -247,9 +247,8 @@ void SqliteTask::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":description", node->description);
     query.bindValue(":note", node->note);
     query.bindValue(":rule", node->rule);
-    query.bindValue(":branch", node->branch);
+    query.bindValue(":type", node->type);
     query.bindValue(":unit", node->unit);
-    query.bindValue(":is_helper", node->is_helper);
     query.bindValue(":color", node->color);
     query.bindValue(":date_time", node->date_time);
     query.bindValue(":unit_cost", node->first);
@@ -264,9 +263,8 @@ void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->description = query.value("description").toString();
     node->note = query.value("note").toString();
     node->rule = query.value("rule").toBool();
-    node->branch = query.value("branch").toBool();
+    node->type = query.value("type").toInt();
     node->unit = query.value("unit").toInt();
-    node->is_helper = query.value("is_helper").toBool();
     node->initial_total = query.value("quantity").toDouble();
     node->final_total = query.value("amount").toDouble();
     node->color = query.value("color").toString();

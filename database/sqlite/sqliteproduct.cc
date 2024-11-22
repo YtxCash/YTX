@@ -12,7 +12,7 @@ SqliteProduct::SqliteProduct(CInfo& info, QObject* parent)
 QString SqliteProduct::QSReadNode() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, is_helper, color, commission, unit_price, quantity, amount
+    SELECT name, id, code, description, note, rule, type, unit, color, commission, unit_price, quantity, amount
     FROM product
     WHERE removed = 0
     )");
@@ -21,8 +21,8 @@ QString SqliteProduct::QSReadNode() const
 QString SqliteProduct::QSWriteNode() const
 {
     return QStringLiteral(R"(
-    INSERT INTO product (name, code, description, note, rule, branch, unit, is_helper, color, commission, unit_price)
-    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :is_helper, :color, :commission, :unit_price)
+    INSERT INTO product (name, code, description, note, rule, type, unit, color, commission, unit_price)
+    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :color, :commission, :unit_price)
     )");
 }
 
@@ -151,9 +151,8 @@ void SqliteProduct::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":description", node->description);
     query.bindValue(":note", node->note);
     query.bindValue(":rule", node->rule);
-    query.bindValue(":branch", node->branch);
+    query.bindValue(":type", node->type);
     query.bindValue(":unit", node->unit);
-    query.bindValue(":is_helper", node->is_helper);
     query.bindValue(":color", node->color);
     query.bindValue(":commission", node->second);
     query.bindValue(":unit_price", node->first);
@@ -167,8 +166,7 @@ void SqliteProduct::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->description = query.value("description").toString();
     node->note = query.value("note").toString();
     node->rule = query.value("rule").toBool();
-    node->branch = query.value("branch").toBool();
-    node->is_helper = query.value("is_helper").toBool();
+    node->type = query.value("type").toInt();
     node->unit = query.value("unit").toInt();
     node->color = query.value("color").toString();
     node->second = query.value("commission").toDouble();

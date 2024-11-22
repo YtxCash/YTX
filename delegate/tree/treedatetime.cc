@@ -13,7 +13,7 @@ TreeDateTime::TreeDateTime(const QString& date_format, bool skip_branch, QObject
 
 QWidget* TreeDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
-    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
+    if (skip_branch_ && (index.siblingAtColumn(std::to_underlying(TreeEnum::kType)).data().toInt() == kTypeBranch))
         return nullptr;
 
     auto* editor { new DateTimeEdit(parent) };

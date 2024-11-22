@@ -57,8 +57,8 @@ signals:
 
 public slots:
     // receive from remove node dialog
-    virtual void RRemoveNode(int node_id, bool branch, bool is_helper);
-    virtual void RReplaceNode(int old_node_id, int new_node_id, bool is_helper);
+    virtual void RRemoveNode(int node_id, int node_type);
+    virtual void RReplaceNode(int old_node_id, int new_node_id, int node_type);
     // receive from sql
     void RUpdateProduct(int old_node_id, int new_node_id);
     void RUpdateStakeholder(int old_node_id, int new_node_id);
@@ -66,7 +66,7 @@ public slots:
 public:
     // tree
     bool ReadNode(NodeHash& node_hash);
-    bool RemoveNode(int node_id, bool branch, bool is_helper) const;
+    bool RemoveNode(int node_id, int node_type) const;
     bool WriteNode(int parent_id, Node* node) const;
     bool DragNode(int destination_node_id, int node_id) const;
     bool InternalReference(int node_id) const;
@@ -175,7 +175,7 @@ protected:
 
     //
     void ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) const;
-    QMultiHash<int, int> TransToRemove(int node_id, bool is_helper) const;
+    QMultiHash<int, int> TransToRemove(int node_id, int target_node_type) const;
     QList<int> HelperTransToMoveFPTS(int helper_id) const;
     void RemoveHelperFunction(int helper_id) const;
     void ReplaceHelperFunction(int old_helper_id, int new_helper_id);

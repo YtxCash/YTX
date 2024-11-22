@@ -118,15 +118,14 @@ public:
     // Default implementations
     double InitialTotalFPT(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::initial_total); }
     double FinalTotalFPT(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::final_total); }
-    bool BranchFPTS(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::branch); }
-    bool IsHelperFPTS(int node_id) { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::is_helper); }
+    int TypeFPTS(int node_id) { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::type); }
     int Unit(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
     QString Name(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
     bool Rule(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }
-    QStandardItemModel* HelperModel() const { return helper_model_; }
+    QStandardItemModel* HelperModel() const { return support_model_; }
     QStandardItemModel* LeafModel() const { return leaf_model_; }
 
     void CopyNodeFPTS(Node* tmp_node, int node_id) const;
@@ -165,16 +164,10 @@ public:
 
 protected:
     Node* GetNodeByIndex(const QModelIndex& index) const;
-    bool UpdateBranchFPTS(Node* node, bool value);
+    bool UpdateTypeFPTS(Node* node, int value);
 
     virtual bool UpdateName(Node* node, CString& value);
     virtual bool UpdateRuleFPTO(Node* node, bool value);
-    virtual bool UpdateHelperFPTS(Node* node, bool value)
-    {
-        Q_UNUSED(node);
-        Q_UNUSED(value);
-        return {};
-    }
 
     virtual void ConstructTree() = 0;
     virtual bool UpdateUnit(Node* node, int value) = 0;
@@ -188,9 +181,9 @@ protected:
     NodeHash node_hash_ {};
     StringHash leaf_path_ {};
     StringHash branch_path_ {};
-    StringHash helper_path_ {};
+    StringHash support_path_ {};
 
-    QStandardItemModel* helper_model_ {};
+    QStandardItemModel* support_model_ {};
     QStandardItemModel* leaf_model_ {};
 
     CInfo& info_;

@@ -78,7 +78,10 @@ public:
     static void HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter);
 
     static void AddItemToModel(QStandardItemModel* model, CString& path, int node_id, bool should_sort = true);
+    static void AddItemToModel(QStandardItemModel* model, QStandardItem* item, bool should_sort = true);
     static void RemoveItemFromModel(QStandardItemModel* model, int node_id);
+    static QStandardItem* TakeItemFromModel(QStandardItemModel* model, int node_id);
+
     static void UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& helper, QStandardItemModel* helper_model, const Node* node);
     static void UpdateUnitModel(CStringHash& leaf, QStandardItemModel* unit_model, const Node* node, int specific_unit, Filter filter);
     static void UpdatePathSeparatorFPTS(CString& old_separator, CString& new_separator, StringHash& source_path);
@@ -86,7 +89,6 @@ public:
 
     static bool HasChildrenFPTS(Node* node, CString& message);
     static bool IsBranchFPTS(Node* node, CString& message);
-    static bool IsHelperFPTS(Node* node, CString& message);
     static bool IsOpenedFPTS(CTableHash& hash, int node_id, CString& message);
 
     static void UpdateBranchUnitF(const Node* root, Node* node);

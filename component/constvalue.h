@@ -36,6 +36,11 @@ inline constexpr int UNIT_IM = 0;
 inline constexpr int UNIT_MS = 1;
 inline constexpr int UNIT_PEND = 2;
 
+// Constants for node type
+inline constexpr int kTypeLeaf = 0;
+inline constexpr int kTypeBranch = 1;
+inline constexpr int kTypeSupport = 2;
+
 inline constexpr int UNIT_CUST = 0;
 inline constexpr int UNIT_EMP = 1;
 inline constexpr int UNIT_VEND = 2;
@@ -84,7 +89,7 @@ inline constexpr char LANGUAGE[] = "language";
 inline constexpr char ZH_CN[] = "zh_CN";
 
 // Constants for tree and table's column
-inline constexpr char BRANCH[] = "branch";
+inline constexpr char TYPE[] = "type";
 inline constexpr char CODE[] = "code";
 inline constexpr char COLOR[] = "color";
 inline constexpr char COMMISSION[] = "commission";
@@ -97,7 +102,6 @@ inline constexpr char FINAL_TOTAL[] = "final_total";
 inline constexpr char FIRST[] = "first";
 inline constexpr char INITIAL_TOTAL[] = "initial_total";
 inline constexpr char INITIAL_SUBTOTAL[] = "initial_subtotal";
-inline constexpr char IS_HELPER[] = "is_helper";
 inline constexpr char AMOUNT[] = "amount";
 inline constexpr char NAME[] = "name";
 inline constexpr char NODE_ID[] = "node/id";

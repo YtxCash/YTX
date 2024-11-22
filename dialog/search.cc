@@ -167,7 +167,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kDiscount), total);
 
     auto* check { new CheckBoxR(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kBranch), check);
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kType), check);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFinished), check);
 
     auto* name { new SearchPathTreeR(tree_, std::to_underlying(TreeEnumSearch::kID), view) };

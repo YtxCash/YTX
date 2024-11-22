@@ -4,7 +4,7 @@
 #include "ui_editnodefinance.h"
 
 EditNodeFinance::EditNodeFinance(
-    Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, QWidget* parent)
+    Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool type_enable, bool unit_enable, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
     , node_ { node }
@@ -16,7 +16,7 @@ EditNodeFinance::EditNodeFinance(
 
     IniDialog(unit_map);
     IniConnect();
-    Data(node, branch_enable, unit_enable);
+    Data(node, type_enable, unit_enable);
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }
@@ -34,7 +34,7 @@ void EditNodeFinance::IniDialog(CStringMap& unit_map)
 
 void EditNodeFinance::IniConnect() { connect(ui->lineName, &QLineEdit::textEdited, this, &EditNodeFinance::RNameEdited); }
 
-void EditNodeFinance::Data(Node* node, bool branch_enable, bool unit_enable)
+void EditNodeFinance::Data(Node* node, bool type_enable, bool unit_enable)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);
@@ -51,8 +51,23 @@ void EditNodeFinance::Data(Node* node, bool branch_enable, bool unit_enable)
     ui->lineDescription->setText(node->description);
     ui->plainNote->setPlainText(node->note);
 
-    ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(branch_enable);
+    switch (node->type) {
+    case kTypeBranch:
+        ui->rBtnBranch->setChecked(true);
+        break;
+    case kTypeLeaf:
+        ui->rBtnLeaf->setChecked(true);
+        break;
+    case kTypeSupport:
+        ui->rBtnSupport->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    ui->rBtnBranch->setEnabled(type_enable);
+    ui->rBtnLeaf->setEnabled(type_enable);
+    ui->rBtnSupport->setEnabled(type_enable);
 }
 
 void EditNodeFinance::RNameEdited(const QString& arg1)
@@ -83,6 +98,22 @@ void EditNodeFinance::on_rBtnDDCI_toggled(bool checked)
     node_->rule = checked;
 }
 
-void EditNodeFinance::on_chkBoxBranch_toggled(bool checked) { node_->branch = checked; }
-
 void EditNodeFinance::on_plainNote_textChanged() { node_->note = ui->plainNote->toPlainText(); }
+
+void EditNodeFinance::on_rBtnLeaf_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeLeaf;
+}
+
+void EditNodeFinance::on_rBtnBranch_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeBranch;
+}
+
+void EditNodeFinance::on_rBtnSupport_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeSupport;
+}

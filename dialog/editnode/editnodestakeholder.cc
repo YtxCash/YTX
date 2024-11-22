@@ -58,7 +58,7 @@ void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
 
 void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::RNameEdited); }
 
-void EditNodeStakeholder::Data(Node* node, bool branch_enable, bool unit_enable)
+void EditNodeStakeholder::Data(Node* node, bool type_enable, bool unit_enable)
 {
     int unit_index { ui->comboUnit->findData(node_->unit) };
     ui->comboUnit->setCurrentIndex(unit_index);
@@ -83,8 +83,23 @@ void EditNodeStakeholder::Data(Node* node, bool branch_enable, bool unit_enable)
     ui->dSpinTaxRate->setValue(node->second * HUNDRED);
     ui->deadline->setDateTime(QDateTime::fromString(node->date_time, DATE_TIME_FST));
 
-    ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(branch_enable);
+    switch (node->type) {
+    case kTypeBranch:
+        ui->rBtnBranch->setChecked(true);
+        break;
+    case kTypeLeaf:
+        ui->rBtnLeaf->setChecked(true);
+        break;
+    case kTypeSupport:
+        ui->rBtnSupport->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    ui->rBtnBranch->setEnabled(type_enable);
+    ui->rBtnLeaf->setEnabled(type_enable);
+    ui->rBtnSupport->setEnabled(type_enable);
 }
 
 void EditNodeStakeholder::RNameEdited(const QString& arg1)
@@ -99,8 +114,6 @@ void EditNodeStakeholder::on_lineEditName_editingFinished() { node_->name = ui->
 void EditNodeStakeholder::on_lineEditCode_editingFinished() { node_->code = ui->lineEditCode->text(); }
 
 void EditNodeStakeholder::on_lineEditDescription_editingFinished() { node_->description = ui->lineEditDescription->text(); }
-
-void EditNodeStakeholder::on_chkBoxBranch_toggled(bool checked) { node_->branch = checked; }
 
 void EditNodeStakeholder::on_plainTextEdit_textChanged() { node_->note = ui->plainTextEdit->toPlainText(); }
 
@@ -123,3 +136,21 @@ void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
 void EditNodeStakeholder::on_rBtnMonthly_toggled(bool checked) { node_->rule = checked; }
 
 void EditNodeStakeholder::on_deadline_editingFinished() { node_->date_time = ui->deadline->dateTime().toString(DATE_TIME_FST); }
+
+void EditNodeStakeholder::on_rBtnLeaf_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeLeaf;
+}
+
+void EditNodeStakeholder::on_rBtnBranch_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeBranch;
+}
+
+void EditNodeStakeholder::on_rBtnSupport_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeSupport;
+}

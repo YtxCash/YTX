@@ -49,9 +49,12 @@ private slots:
     void on_comboUnit_currentIndexChanged(int index);
 
     void on_rBtnDDCI_toggled(bool checked);
-    void on_chkBoxBranch_toggled(bool checked);
 
     void on_plainTextEdit_textChanged();
+
+    void on_rBtnLeaf_toggled(bool checked);
+    void on_rBtnBranch_toggled(bool checked);
+    void on_rBtnSupport_toggled(bool checked);
 
 private:
     void IniDialog(CStringMap& unit_map, int amount_decimal);

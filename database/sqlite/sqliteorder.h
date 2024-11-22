@@ -34,7 +34,7 @@ public:
     bool RetriveNode(NodeHash& node_hash, int node_id);
 
 public slots:
-    void RRemoveNode(int node_id, bool branch, bool is_helper) override;
+    void RRemoveNode(int node_id, int node_type) override;
 
 protected:
     // tree

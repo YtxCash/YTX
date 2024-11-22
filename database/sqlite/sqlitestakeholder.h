@@ -33,8 +33,8 @@ signals:
     void SAppendPrice(Section section, TransShadow* trans_shadow);
 
 public slots:
-    void RReplaceNode(int old_node_id, int new_node_id, bool is_helper) override;
-    void RRemoveNode(int node_id, bool branch, bool is_helper) override;
+    void RReplaceNode(int old_node_id, int new_node_id, int node_type) override;
+    void RRemoveNode(int node_id, int node_type) override;
 
 public:
     bool SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const;

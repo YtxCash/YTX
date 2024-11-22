@@ -94,31 +94,15 @@ enum class TableEnumHelper {
 };
 
 // Enum class defining node columns
-enum class TreeEnum { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kIsHelper };
+enum class TreeEnum { kName, kID, kCode, kDescription, kNote, kRule, kType, kUnit };
 
-enum class TreeEnumFinance { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kIsHelper, kInitialTotal, kFinalTotal };
+enum class TreeEnumFinance { kName, kID, kCode, kDescription, kNote, kRule, kType, kUnit, kInitialTotal, kFinalTotal };
 
-enum class TreeEnumTask {
-    kName,
-    kID,
-    kCode,
-    kDescription,
-    kNote,
-    kRule,
-    kBranch,
-    kUnit,
-    kIsHelper,
-    kDateTime,
-    kFinished,
-    kColor,
-    kUnitCost,
-    kQuantity,
-    kAmount
-};
+enum class TreeEnumTask { kName, kID, kCode, kDescription, kNote, kRule, kType, kUnit, kDateTime, kFinished, kColor, kUnitCost, kQuantity, kAmount };
 
-enum class TreeEnumProduct { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kIsHelper, kColor, kUnitPrice, kCommission, kQuantity, kAmount };
+enum class TreeEnumProduct { kName, kID, kCode, kDescription, kNote, kRule, kType, kUnit, kColor, kUnitPrice, kCommission, kQuantity, kAmount };
 
-enum class TreeEnumStakeholder { kName, kID, kCode, kDescription, kNote, kRule, kBranch, kUnit, kIsHelper, kDeadline, kEmployee, kPaymentPeriod, kTaxRate };
+enum class TreeEnumStakeholder { kName, kID, kCode, kDescription, kNote, kRule, kType, kUnit, kDeadline, kEmployee, kPaymentPeriod, kTaxRate };
 
 enum class TreeEnumOrder {
     kName,
@@ -127,7 +111,7 @@ enum class TreeEnumOrder {
     kDescription,
     kNote,
     kRule,
-    kBranch,
+    kType,
     kUnit,
     kParty,
     kEmployee,
@@ -147,7 +131,7 @@ enum class TreeEnumSearch {
     kDescription,
     kNote,
     kRule,
-    kBranch,
+    kType,
     kUnit,
     kParty,
     kEmployee,

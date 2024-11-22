@@ -16,9 +16,8 @@ void SqliteFinance::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":description", node->description);
     query.bindValue(":note", node->note);
     query.bindValue(":rule", node->rule);
-    query.bindValue(":branch", node->branch);
+    query.bindValue(":type", node->type);
     query.bindValue(":unit", node->unit);
-    query.bindValue(":is_helper", node->is_helper);
 }
 
 void SqliteFinance::ReadNodeQuery(Node* node, const QSqlQuery& query) const
@@ -29,9 +28,8 @@ void SqliteFinance::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->description = query.value("description").toString();
     node->note = query.value("note").toString();
     node->rule = query.value("rule").toBool();
-    node->branch = query.value("branch").toBool();
+    node->type = query.value("type").toInt();
     node->unit = query.value("unit").toInt();
-    node->is_helper = query.value("is_helper").toBool();
     node->initial_total = query.value("initial_total").toDouble();
     node->final_total = query.value("final_total").toDouble();
 }
@@ -90,7 +88,7 @@ void SqliteFinance::UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QS
 QString SqliteFinance::QSReadNode() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, is_helper, initial_total, final_total
+    SELECT name, id, code, description, note, rule, type, unit, initial_total, final_total
     FROM finance
     WHERE removed = 0
     )");
@@ -99,8 +97,8 @@ QString SqliteFinance::QSReadNode() const
 QString SqliteFinance::QSWriteNode() const
 {
     return QStringLiteral(R"(
-    INSERT INTO finance (name, code, description, note, rule, branch, unit, is_helper)
-    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :is_helper)
+    INSERT INTO finance (name, code, description, note, rule, type, unit)
+    VALUES (:name, :code, :description, :note, :rule, :type, :unit)
     )");
 }
 

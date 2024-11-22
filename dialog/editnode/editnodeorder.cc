@@ -71,7 +71,7 @@ void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVarian
 
         ui->pBtnFinishOrder->setChecked(finished);
         ui->pBtnFinishOrder->setText(finished ? tr("Edit") : tr("Finish"));
-        LockWidgets(finished, *node_shadow_->branch);
+        LockWidgets(finished, *node_shadow_->type == kTypeBranch);
 
         if (finished) {
             ui->pBtnPrint->setFocus();
@@ -89,7 +89,7 @@ void EditNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpi
 
 void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
-    if (*node_shadow_->branch)
+    if (*node_shadow_->type != kTypeLeaf)
         return;
 
     ui->dSpinFirst->setValue(ui->dSpinFirst->value() + first_diff);
@@ -140,7 +140,7 @@ void EditNodeOrder::accept()
         emit QDialog::accepted();
         node_id_ = *node_shadow_->id;
 
-        if (!(*node_shadow_->branch))
+        if (*node_shadow_->type == kTypeLeaf)
             emit SUpdateNodeID(node_id_);
 
         ui->chkBoxBranch->setEnabled(false);
@@ -223,7 +223,7 @@ void EditNodeOrder::IniDataCombo(int party, int employee)
 
 void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
 {
-    if (!*node_shadow_->branch || arg1.isEmpty())
+    if (*node_shadow_->type != kTypeBranch || arg1.isEmpty())
         return;
 
     *node_shadow_->name = arg1;
@@ -239,7 +239,7 @@ void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
 
 void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
 {
-    if (*node_shadow_->branch)
+    if (*node_shadow_->type != kTypeLeaf)
         return;
 
     int party_id { ui->comboParty->currentData().toInt() };
@@ -334,7 +334,7 @@ void EditNodeOrder::on_rBtnPending_toggled(bool checked)
 void EditNodeOrder::on_pBtnInsertParty_clicked()
 {
     const auto& name { ui->comboParty->currentText() };
-    if (*node_shadow_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
+    if (*node_shadow_->type == kTypeBranch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
         return;
 
     auto* node { ResourcePool<Node>::Instance().Allocate() };
@@ -365,12 +365,12 @@ void EditNodeOrder::on_pBtnFinishOrder_toggled(bool checked)
     *node_shadow_->finished = checked;
 
     sql_->UpdateField(info_node_, checked, FINISHED, node_id_);
-    if (!(*node_shadow_->branch))
+    if (*node_shadow_->type == kTypeLeaf)
         emit SUpdateFinished(node_id_, checked);
 
     ui->pBtnFinishOrder->setText(checked ? tr("Edit") : tr("Finish"));
 
-    LockWidgets(checked, *node_shadow_->branch);
+    LockWidgets(checked, *node_shadow_->type == kTypeBranch);
 
     if (checked) {
         ui->tableViewOrder->clearSelection();
@@ -382,7 +382,7 @@ void EditNodeOrder::on_pBtnFinishOrder_toggled(bool checked)
 void EditNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1)
 {
     bool enable { arg1 == Qt::Checked };
-    *node_shadow_->branch = enable;
+    *node_shadow_->type = enable;
     LockWidgets(false, enable);
 
     ui->comboEmployee->setCurrentIndex(-1);

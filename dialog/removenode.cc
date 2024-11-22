@@ -6,20 +6,19 @@
 #include "dialog/signalblocker.h"
 #include "ui_removenode.h"
 
-RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int unit, bool branch, bool exteral_reference, bool is_helper, QWidget* parent)
+RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int node_type, int unit, bool exteral_reference, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::RemoveNode)
     , node_id_ { node_id }
     , unit_ { unit }
-    , branch_ { branch }
-    , is_helper_ { is_helper }
+    , node_type_ { node_type }
     , section_ { section }
     , model_ { model }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniData(section, exteral_reference, is_helper);
+    IniData(section, exteral_reference, node_type);
     IniConnect();
 }
 
@@ -53,18 +52,18 @@ void RemoveNode::RCustomAccept()
 
     if (msg.exec() == QMessageBox::Ok) {
         if (ui->rBtnRemoveRecords->isChecked())
-            emit SRemoveNode(node_id_, branch_, is_helper_);
+            emit SRemoveNode(node_id_, node_type_);
 
         if (ui->rBtnReplaceRecords->isChecked()) {
             int new_node_id { ui->comboBox->currentData().toInt() };
-            emit SReplaceNode(node_id_, new_node_id, is_helper_);
+            emit SReplaceNode(node_id_, new_node_id, node_type_);
         }
 
         accept();
     }
 }
 
-void RemoveNode::IniData(Section section, bool exteral_reference, bool is_helper)
+void RemoveNode::IniData(Section section, bool exteral_reference, int node_type)
 {
     ui->label->setWordWrap(true);
     ui->pBtnCancel->setDefault(true);
@@ -87,7 +86,7 @@ void RemoveNode::IniData(Section section, bool exteral_reference, bool is_helper
     // 不需要接收更新combo model的信号
     auto* combo_model_ { new QStandardItemModel(this) };
 
-    if (is_helper) {
+    if (node_type == kTypeSupport) {
         model_->HelperPathFPTS(combo_model_, node_id_, Filter::kExcludeSpecific);
     } else {
         model_->LeafPathRemoveNodeFPTS(combo_model_, unit_, node_id_);

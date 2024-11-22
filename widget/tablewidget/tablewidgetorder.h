@@ -52,7 +52,6 @@ public:
     QPointer<QTableView> View() const override;
 
 private slots:
-    void on_comboParty_editTextChanged(const QString& arg1);
 
     void on_comboParty_currentIndexChanged(int index);
     void on_comboEmployee_currentIndexChanged(int index);

@@ -40,7 +40,7 @@ void EditNodeProduct::IniDialog(CStringMap& unit_map, int amount_decimal)
 
 void EditNodeProduct::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeProduct::RNameEdited); }
 
-void EditNodeProduct::Data(Node* node, bool branch_enable, bool unit_enable)
+void EditNodeProduct::Data(Node* node, bool type_enable, bool unit_enable)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);
@@ -59,8 +59,23 @@ void EditNodeProduct::Data(Node* node, bool branch_enable, bool unit_enable)
     ui->dSpinBoxUnitPrice->setValue(node->first);
     ui->dSpinBoxCommission->setValue(node->second);
 
-    ui->chkBoxBranch->setChecked(node->branch);
-    ui->chkBoxBranch->setEnabled(branch_enable);
+    switch (node->type) {
+    case kTypeBranch:
+        ui->rBtnBranch->setChecked(true);
+        break;
+    case kTypeLeaf:
+        ui->rBtnLeaf->setChecked(true);
+        break;
+    case kTypeSupport:
+        ui->rBtnSupport->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    ui->rBtnBranch->setEnabled(type_enable);
+    ui->rBtnLeaf->setEnabled(type_enable);
+    ui->rBtnSupport->setEnabled(type_enable);
 }
 
 void EditNodeProduct::RNameEdited(const QString& arg1)
@@ -91,10 +106,26 @@ void EditNodeProduct::on_rBtnDDCI_toggled(bool checked)
     node_->rule = checked;
 }
 
-void EditNodeProduct::on_chkBoxBranch_toggled(bool checked) { node_->branch = checked; }
-
 void EditNodeProduct::on_plainTextEdit_textChanged() { node_->note = ui->plainTextEdit->toPlainText(); }
 
 void EditNodeProduct::on_dSpinBoxUnitPrice_editingFinished() { node_->first = ui->dSpinBoxUnitPrice->value(); }
 
 void EditNodeProduct::on_dSpinBoxCommission_editingFinished() { node_->second = ui->dSpinBoxCommission->value(); }
+
+void EditNodeProduct::on_rBtnLeaf_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeLeaf;
+}
+
+void EditNodeProduct::on_rBtnBranch_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeBranch;
+}
+
+void EditNodeProduct::on_rBtnSupport_toggled(bool checked)
+{
+    if (checked)
+        node_->type = kTypeSupport;
+}

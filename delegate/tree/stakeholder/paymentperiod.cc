@@ -54,9 +54,9 @@ QSize PaymentPeriod::sizeHint(const QStyleOptionViewItem& /*option*/, const QMod
 
 bool PaymentPeriod::Skip(const QModelIndex& index) const
 {
-    const bool branch { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kBranch)).data().toBool() };
+    const int type { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kType)).data().toInt() };
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
     const bool rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
 
-    return branch || unit == UNIT_PROD || rule == RULE_IM;
+    return type != kTypeLeaf || unit == UNIT_PROD || rule == RULE_IM;
 }

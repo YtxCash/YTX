@@ -2,6 +2,7 @@
 
 #include <widget/combobox.h>
 
+#include "component/constvalue.h"
 #include "component/enumclass.h"
 
 TreeCombo::TreeCombo(CStringMap& map, bool skip_branch, QObject* parent)
@@ -22,7 +23,7 @@ QWidget* TreeCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& op
     Q_UNUSED(option);
     Q_UNUSED(index);
 
-    if (skip_branch_ && index.siblingAtColumn(std::to_underlying(TreeEnum::kBranch)).data().toBool())
+    if (skip_branch_ && (index.siblingAtColumn(std::to_underlying(TreeEnum::kType)).data().toInt() == kTypeBranch))
         return nullptr;
 
     auto* editor { new ComboBox(parent) };

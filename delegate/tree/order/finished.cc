@@ -20,7 +20,7 @@ void Finished::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
 
 bool Finished::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    if (event->type() != type_ || index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kBranch)).data().toBool())
+    if (event->type() != type_ || index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kType)).data().toBool())
         return false;
 
     auto* mouse_event { static_cast<QMouseEvent*>(event) };

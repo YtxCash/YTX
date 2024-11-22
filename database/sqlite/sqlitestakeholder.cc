@@ -11,18 +11,18 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 {
 }
 
-void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, bool is_helper)
+void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, int node_type)
 {
     QList<int> helper_trans {};
-    if (is_helper)
+    if (node_type == kTypeSupport)
         helper_trans = HelperTransToMoveFPTS(old_node_id);
 
     emit SFreeView(old_node_id);
     emit SRemoveNode(old_node_id);
     emit SUpdateStakeholder(old_node_id, new_node_id);
 
-    if (!is_helper) {
-        RemoveNode(old_node_id, false, is_helper);
+    if (node_type == kTypeLeaf) {
+        RemoveNode(old_node_id, kTypeLeaf);
         return;
     }
 
@@ -40,11 +40,11 @@ void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, bool is_h
     // end deal with database
 
     ReplaceHelperFunction(old_node_id, new_node_id);
-    RemoveNode(old_node_id, false, is_helper);
+    RemoveNode(old_node_id, kTypeSupport);
     emit SMoveMultiHelperTransFPTS(info_.section, new_node_id, helper_trans);
 }
 
-void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
+void SqliteStakeholder::RRemoveNode(int node_id, int node_type)
 {
     emit SFreeView(node_id);
     emit SRemoveNode(node_id);
@@ -53,14 +53,14 @@ void SqliteStakeholder::RRemoveNode(int node_id, bool branch, bool is_helper)
     QMultiHash<int, int> node_trans {};
     QMultiHash<int, int> helper_trans {};
 
-    if (!is_helper) {
-        node_trans = TransToRemove(node_id, false);
-        helper_trans = TransToRemove(node_id, true);
+    if (node_type == kTypeLeaf) {
+        node_trans = TransToRemove(node_id, kTypeLeaf);
+        helper_trans = TransToRemove(node_id, kTypeSupport);
     }
 
-    RemoveNode(node_id, branch, is_helper);
+    RemoveNode(node_id, node_type);
 
-    if (is_helper) {
+    if (node_type == kTypeSupport) {
         RemoveHelperFunction(node_id);
         return;
     }
@@ -148,7 +148,7 @@ bool SqliteStakeholder::ReadTrans(int node_id)
 QString SqliteStakeholder::QSReadNode() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, branch, unit, is_helper, employee, deadline, payment_period, tax_rate
+    SELECT name, id, code, description, note, rule, type, unit, employee, deadline, payment_period, tax_rate
     FROM stakeholder
     WHERE removed = 0
     )");
@@ -157,8 +157,8 @@ QString SqliteStakeholder::QSReadNode() const
 QString SqliteStakeholder::QSWriteNode() const
 {
     return QStringLiteral(R"(
-    INSERT INTO stakeholder (name, code, description, note, rule, branch, unit, is_helper, employee, deadline, payment_period, tax_rate)
-    VALUES (:name, :code, :description, :note, :rule, :branch, :unit, :is_helper, :employee, :deadline, :payment_period, :tax_rate)
+    INSERT INTO stakeholder (name, code, description, note, rule, type, unit, employee, deadline, payment_period, tax_rate)
+    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :employee, :deadline, :payment_period, :tax_rate)
     )");
 }
 
@@ -169,9 +169,8 @@ void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":description", node->description);
     query.bindValue(":note", node->note);
     query.bindValue(":rule", node->rule);
-    query.bindValue(":branch", node->branch);
+    query.bindValue(":type", node->type);
     query.bindValue(":unit", node->unit);
-    query.bindValue(":is_helper", node->is_helper);
     query.bindValue(":employee", node->employee);
     query.bindValue(":deadline", node->date_time);
     query.bindValue(":payment_period", node->first);
@@ -480,9 +479,8 @@ void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->description = query.value("description").toString();
     node->note = query.value("note").toString();
     node->rule = query.value("rule").toBool();
-    node->branch = query.value("branch").toBool();
+    node->type = query.value("type").toInt();
     node->unit = query.value("unit").toInt();
-    node->is_helper = query.value("is_helper").toBool();
     node->employee = query.value("employee").toInt();
     node->date_time = query.value("deadline").toString();
     node->first = query.value("payment_period").toInt();

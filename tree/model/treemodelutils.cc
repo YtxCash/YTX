@@ -10,7 +10,7 @@
 
 void TreeModelUtils::UpdateBranchUnitF(const Node* root, Node* node)
 {
-    if (!node || !node->branch || node->unit == root->unit)
+    if (!node || node->type != kTypeBranch || node->unit == root->unit)
         return;
 
     QQueue<const Node*> queue {};
@@ -25,11 +25,17 @@ void TreeModelUtils::UpdateBranchUnitF(const Node* root, Node* node)
     while (!queue.isEmpty()) {
         current = queue.dequeue();
 
-        if (current->branch) {
+        switch (current->type) {
+        case kTypeBranch: {
             for (const auto* child : current->children)
                 queue.enqueue(child);
-        } else if (current->unit == unit) {
-            initial_total += (current->rule == rule ? 1 : -1) * current->initial_total;
+        } break;
+        case kTypeLeaf: {
+            if (current->unit == unit)
+                initial_total += (current->rule == rule ? 1 : -1) * current->initial_total;
+        } break;
+        default:
+            break;
         }
     }
 
@@ -49,20 +55,22 @@ void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, String
 
         path = ConstructPathFPTS(root, current, separator);
 
-        if (current->branch) {
+        switch (current->type) {
+        case kTypeBranch:
             for (const auto* child : current->children)
                 queue.enqueue(child);
 
             branch.insert(current->id, path);
-            continue;
-        }
-
-        if (current->is_helper) {
+            break;
+        case kTypeLeaf:
             helper.insert(current->id, path);
-            continue;
+            break;
+        case kTypeSupport:
+            leaf.insert(current->id, path);
+            break;
+        default:
+            break;
         }
-
-        leaf.insert(current->id, path);
     }
 }
 
@@ -71,7 +79,7 @@ void TreeModelUtils::InitializeRoot(Node*& root, int default_unit)
     if (root == nullptr) {
         root = ResourcePool<Node>::Instance().Allocate();
         root->id = -1;
-        root->branch = true;
+        root->type = kTypeBranch;
         root->unit = default_unit;
     }
 
@@ -207,18 +215,8 @@ bool TreeModelUtils::HasChildrenFPTS(Node* node, CString& message)
 
 bool TreeModelUtils::IsBranchFPTS(Node* node, CString& message)
 {
-    if (node->branch) {
+    if (node->type == kTypeBranch) {
         ShowTemporaryTooltipFPTS(QObject::tr("%1 it is branch.").arg(message), THREE_THOUSAND);
-        return true;
-    }
-
-    return false;
-}
-
-bool TreeModelUtils::IsHelperFPTS(Node* node, CString& message)
-{
-    if (node->is_helper) {
-        ShowTemporaryTooltipFPTS(QObject::tr("%1 it is helper.").arg(message), THREE_THOUSAND);
         return true;
     }
 
@@ -464,9 +462,15 @@ void TreeModelUtils::HelperPathFPTS(CStringHash& helper, QStandardItemModel* mod
 
 void TreeModelUtils::AddItemToModel(QStandardItemModel* model, const QString& path, int node_id, bool should_sort)
 {
-    auto* standard_item { new QStandardItem(path) };
-    standard_item->setData(node_id, Qt::UserRole);
-    model->appendRow(standard_item);
+    auto* item { new QStandardItem(path) };
+    item->setData(node_id, Qt::UserRole);
+
+    AddItemToModel(model, item, should_sort);
+}
+
+void TreeModelUtils::AddItemToModel(QStandardItemModel* model, QStandardItem* item, bool should_sort)
+{
+    model->appendRow(item);
 
     if (should_sort)
         model->sort(0);
@@ -481,6 +485,18 @@ void TreeModelUtils::RemoveItemFromModel(QStandardItemModel* model, int node_id)
             return;
         }
     }
+}
+
+QStandardItem* TreeModelUtils::TakeItemFromModel(QStandardItemModel* model, int node_id)
+{
+    for (int row = 0; row != model->rowCount(); ++row) {
+        QStandardItem* item { model->item(row) };
+        if (item && item->data(Qt::UserRole).toInt() == node_id) {
+            return model->takeItem(row);
+        }
+    }
+
+    return nullptr;
 }
 
 void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& helper, QStandardItemModel* helper_model, const Node* node)
@@ -499,14 +515,20 @@ void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_mod
     while (!queue.isEmpty()) {
         current = queue.dequeue();
 
-        if (current->branch) {
+        switch (current->type) {
+        case kTypeBranch:
             for (const auto* child : current->children)
                 queue.enqueue(child);
-        } else {
-            if (current->is_helper)
-                helper_range.insert(current->id);
-            else
-                leaf_range.insert(current->id);
+
+            break;
+        case kTypeLeaf:
+            leaf_range.insert(current->id);
+            break;
+        case kTypeSupport:
+            helper_range.insert(current->id);
+            break;
+        default:
+            break;
         }
     }
 
@@ -540,12 +562,18 @@ void TreeModelUtils::UpdateUnitModel(CStringHash& leaf, QStandardItemModel* unit
     while (!queue.isEmpty()) {
         current = queue.dequeue();
 
-        if (current->branch) {
+        switch (current->type) {
+        case kTypeBranch:
             for (const auto* child : current->children)
                 queue.enqueue(child);
-        } else {
-            if (!current->is_helper && should_add(current))
+
+            break;
+        case kTypeLeaf:
+            if (should_add(current))
                 range.insert(current->id);
+            break;
+        default:
+            break;
         }
     }
 

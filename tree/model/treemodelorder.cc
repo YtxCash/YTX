@@ -12,7 +12,7 @@ TreeModelOrder::TreeModelOrder(Sqlite* sql, CInfo& info, int default_unit, CTabl
 void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
-    if (!node || node == root_ || node->branch || diff == 0.0)
+    if (!node || node == root_ || node->type != kTypeLeaf || diff == 0.0)
         return;
 
     node->first += diff;
@@ -24,14 +24,14 @@ void TreeModelOrder::RUpdateLeafValueOne(int node_id, double diff, CString& node
     auto index { GetIndex(node_id) };
     emit dataChanged(index.siblingAtColumn(column), index.siblingAtColumn(column));
 
-    if (!node->branch && node->finished)
+    if (node->finished)
         UpdateAncestorValueOrder(node, diff);
 }
 
 void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
 {
     auto* node { node_hash_.value(node_id) };
-    if (!node || node == root_ || node->branch)
+    if (!node || node == root_ || node->type != kTypeLeaf)
         return;
 
     if (first_diff == 0 && second_diff == 0 && amount_diff == 0 && discount_diff == 0 && settled_diff == 0)
@@ -50,7 +50,7 @@ void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double sec
     auto index { GetIndex(node->id) };
     emit dataChanged(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFirst)), index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kSettled)));
 
-    if (!node->branch && node->finished)
+    if (node->finished)
         UpdateAncestorValueOrder(node, first_diff, second_diff, amount_diff, discount_diff, settled);
 }
 
@@ -128,7 +128,7 @@ void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
             root_->children.emplace_back(node);
         }
 
-        if (node->branch) {
+        if (node->type == kTypeBranch) {
             node->first = 0.0;
             node->second = 0.0;
             node->initial_total = 0.0;
@@ -138,7 +138,7 @@ void TreeModelOrder::UpdateTree(const QDate& start_date, const QDate& end_date)
     }
 
     for (auto* node : const_node_hash) {
-        if (!node->branch && node->finished)
+        if (node->type == kTypeLeaf && node->finished)
             UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
     }
     endResetModel();
@@ -170,7 +170,7 @@ void TreeModelOrder::RetriveNodeOrder(int node_id)
 
 bool TreeModelOrder::UpdateRuleFPTO(Node* node, bool value)
 {
-    if (node->rule == value || node->branch)
+    if (node->rule == value || node->type != kTypeLeaf)
         return false;
 
     node->rule = value;
@@ -198,7 +198,7 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
 {
     // Cash = 0, Monthly = 1, Pending = 2
 
-    if (node->unit == value || node->branch)
+    if (node->unit == value || node->type != kTypeLeaf)
         return false;
 
     node->unit = value;
@@ -262,7 +262,7 @@ void TreeModelOrder::ConstructTree()
     }
 
     for (auto* node : const_node_hash)
-        if (!node->branch && node->finished)
+        if (node->type == kTypeLeaf && node->finished)
             UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 }
 
@@ -284,8 +284,8 @@ void TreeModelOrder::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->note < rhs->note) : (lhs->note > rhs->note);
         case TreeEnumOrder::kRule:
             return (order == Qt::AscendingOrder) ? (lhs->rule < rhs->rule) : (lhs->rule > rhs->rule);
-        case TreeEnumOrder::kBranch:
-            return (order == Qt::AscendingOrder) ? (lhs->branch < rhs->branch) : (lhs->branch > rhs->branch);
+        case TreeEnumOrder::kType:
+            return (order == Qt::AscendingOrder) ? (lhs->type < rhs->type) : (lhs->type > rhs->type);
         case TreeEnumOrder::kUnit:
             return (order == Qt::AscendingOrder) ? (lhs->unit < rhs->unit) : (lhs->unit > rhs->unit);
         case TreeEnumOrder::kParty:
@@ -330,7 +330,7 @@ bool TreeModelOrder::InsertNode(int row, const QModelIndex& parent, Node* node)
     sql_->WriteNode(parent_node->id, node);
     node_hash_.insert(node->id, node);
 
-    if (!node->branch && node->finished)
+    if (node->type == kTypeLeaf && node->finished)
         UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
 
     emit SSearch();
@@ -345,30 +345,31 @@ bool TreeModelOrder::RemoveNode(int row, const QModelIndex& parent)
     auto* parent_node { GetNodeByIndex(parent) };
     auto* node { parent_node->children.at(row) };
 
-    int node_id { node->id };
-    bool branch { node->branch };
-
     beginRemoveRows(parent, row, row);
-    if (branch) {
+    parent_node->children.removeOne(node);
+    endRemoveRows();
+
+    switch (node->type) {
+    case kTypeBranch:
         for (auto* child : node->children) {
             child->parent = parent_node;
             parent_node->children.emplace_back(child);
         }
-    }
-    parent_node->children.removeOne(node);
-    endRemoveRows();
-
-    if (!branch) {
+        break;
+    case kTypeLeaf:
         if (node->finished) {
             UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
         }
+        break;
+    default:
+        break;
     }
 
     emit SSearch();
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kName));
 
     ResourcePool<Node>::Instance().Recycle(node);
-    node_hash_.remove(node_id);
+    node_hash_.remove(node->id);
 
     return true;
 }
@@ -383,6 +384,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     const TreeEnumOrder kColumn { index.column() };
+    bool branch { node->type == kTypeBranch };
 
     switch (kColumn) {
     case TreeEnumOrder::kName:
@@ -396,9 +398,9 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kNote:
         return node->note;
     case TreeEnumOrder::kRule:
-        return node->branch ? -1 : node->rule;
-    case TreeEnumOrder::kBranch:
-        return node->branch ? node->branch : QVariant();
+        return branch ? -1 : node->rule;
+    case TreeEnumOrder::kType:
+        return branch ? node->type : QVariant();
     case TreeEnumOrder::kUnit:
         return node->unit;
     case TreeEnumOrder::kParty:
@@ -406,7 +408,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kEmployee:
         return node->employee == 0 ? QVariant() : node->employee;
     case TreeEnumOrder::kDateTime:
-        return node->branch || node->date_time.isEmpty() ? QVariant() : node->date_time;
+        return branch || node->date_time.isEmpty() ? QVariant() : node->date_time;
     case TreeEnumOrder::kFirst:
         return node->first == 0 ? QVariant() : node->first;
     case TreeEnumOrder::kSecond:
@@ -414,7 +416,7 @@ QVariant TreeModelOrder::data(const QModelIndex& index, int role) const
     case TreeEnumOrder::kDiscount:
         return node->discount == 0 ? QVariant() : node->discount;
     case TreeEnumOrder::kFinished:
-        return !node->branch && node->finished ? node->finished : QVariant();
+        return !branch && node->finished ? node->finished : QVariant();
     case TreeEnumOrder::kAmount:
         return node->initial_total;
     case TreeEnumOrder::kSettled:
@@ -489,7 +491,7 @@ Qt::ItemFlags TreeModelOrder::flags(const QModelIndex& index) const
         flags |= Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
         flags &= ~Qt::ItemIsEditable;
         break;
-    case TreeEnumOrder::kBranch:
+    case TreeEnumOrder::kType:
     case TreeEnumOrder::kFinished:
     case TreeEnumOrder::kFirst:
     case TreeEnumOrder::kSecond:
@@ -511,7 +513,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
         return false;
 
     auto* destination_parent { GetNodeByIndex(parent) };
-    if (!destination_parent->branch)
+    if (destination_parent->type != kTypeBranch)
         return false;
 
     int node_id {};
@@ -529,7 +531,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        if (node->branch) {
+        if (node->type == kTypeBranch) {
             UpdateAncestorValueOrder(node, -node->first, -node->second, -node->initial_total, -node->discount, -node->final_total);
         } else {
             if (node->finished) {

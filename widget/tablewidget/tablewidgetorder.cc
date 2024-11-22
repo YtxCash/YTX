@@ -143,7 +143,7 @@ void TableWidgetOrder::IniData()
     ui->dSpinAmount->setValue(*node_shadow_->initial_total);
 
     ui->chkBoxRefund->setChecked(*node_shadow_->rule);
-    ui->chkBoxBranch->setChecked(*node_shadow_->branch);
+    ui->chkBoxBranch->setChecked(false);
     ui->lineDescription->setText(*node_shadow_->description);
     ui->dateTimeEdit->setDateTime(QDateTime::fromString(*node_shadow_->date_time, DATE_TIME_FST));
     ui->pBtnFinishOrder->setChecked(*node_shadow_->finished);
@@ -220,20 +220,8 @@ void TableWidgetOrder::IniUnit(int unit)
     }
 }
 
-void TableWidgetOrder::on_comboParty_editTextChanged(const QString& arg1)
-{
-    if (!*node_shadow_->branch || arg1.isEmpty())
-        return;
-
-    *node_shadow_->name = arg1;
-    sql_->UpdateField(info_node_, arg1, NAME, node_id_);
-}
-
 void TableWidgetOrder::on_comboParty_currentIndexChanged(int /*index*/)
 {
-    if (*node_shadow_->branch)
-        return;
-
     int party_id { ui->comboParty->currentData().toInt() };
     if (party_id <= 0)
         return;
@@ -309,7 +297,7 @@ void TableWidgetOrder::on_rBtnPending_toggled(bool checked)
 void TableWidgetOrder::on_pBtnInsertParty_clicked()
 {
     const auto& name { ui->comboParty->currentText() };
-    if (*node_shadow_->branch || name.isEmpty() || ui->comboParty->currentIndex() != -1)
+    if (name.isEmpty() || ui->comboParty->currentIndex() != -1)
         return;
 
     auto* node { ResourcePool<Node>::Instance().Allocate() };

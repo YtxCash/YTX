@@ -10,7 +10,7 @@ TreeModel::TreeModel(Sqlite* sql, CInfo& info, int default_unit, CTableHash& tab
     , separator_ { separator }
 {
     TreeModelUtils::InitializeRoot(root_, default_unit);
-    helper_model_ = new QStandardItemModel(this);
+    support_model_ = new QStandardItemModel(this);
 }
 
 TreeModel::~TreeModel() { delete root_; }
@@ -106,7 +106,7 @@ void TreeModel::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_u
 
 void TreeModel::HelperPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
 {
-    TreeModelUtils::HelperPathFPTS(helper_path_, model, specific_node, filter);
+    TreeModelUtils::HelperPathFPTS(support_path_, model, specific_node, filter);
 }
 
 void TreeModel::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const
@@ -134,10 +134,10 @@ void TreeModel::UpdateSeparatorFPTS(CString& old_separator, CString& new_separat
 
     TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, leaf_path_);
     TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, branch_path_);
-    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, helper_path_);
+    TreeModelUtils::UpdatePathSeparatorFPTS(old_separator, new_separator, support_path_);
 
     TreeModelUtils::UpdateModelSeparatorFPTS(leaf_model_, leaf_path_);
-    TreeModelUtils::UpdateModelSeparatorFPTS(helper_model_, helper_path_);
+    TreeModelUtils::UpdateModelSeparatorFPTS(support_model_, support_path_);
 }
 
 void TreeModel::SearchNodeFPTS(QList<const Node*>& node_list, const QList<int>& node_id_list) const
@@ -191,7 +191,7 @@ QString TreeModel::GetPath(int node_id) const
     if (auto it = branch_path_.constFind(node_id); it != branch_path_.constEnd())
         return it.value();
 
-    if (auto it = helper_path_.constFind(node_id); it != helper_path_.constEnd())
+    if (auto it = support_path_.constFind(node_id); it != support_path_.constEnd())
         return it.value();
 
     return {};
@@ -210,8 +210,8 @@ bool TreeModel::UpdateName(Node* node, CString& value)
     node->name = value;
     sql_->UpdateField(info_.node, value, NAME, node->id);
 
-    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, helper_path_, root_, node, separator_);
-    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, helper_path_, helper_model_, node);
+    TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, support_path_, root_, node, separator_);
+    TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, support_path_, support_model_, node);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
@@ -229,7 +229,7 @@ bool TreeModel::UpdateRuleFPTO(Node* node, bool value)
     node->final_total = -node->final_total;
     node->initial_total = -node->initial_total;
     node->first = -node->first;
-    if (!node->branch) {
+    if (node->type == kTypeLeaf) {
         emit SRule(info_.section, node->id, value);
         sql_->UpdateNodeValue(node);
     }
@@ -237,21 +237,18 @@ bool TreeModel::UpdateRuleFPTO(Node* node, bool value)
     return true;
 }
 
-bool TreeModel::UpdateBranchFPTS(Node* node, bool value)
+bool TreeModel::UpdateTypeFPTS(Node* node, int value)
 {
-    if (node->branch == value)
+    if (node->type == value)
         return false;
 
     const int node_id { node->id };
-    QString message { tr("Cannot change %1 branch,").arg(GetPath(node_id)) };
+    QString message { tr("Cannot change %1 type,").arg(GetPath(node_id)) };
 
     if (TreeModelUtils::HasChildrenFPTS(node, message))
         return false;
 
     if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
-        return false;
-
-    if (TreeModelUtils::IsHelperFPTS(node, message))
         return false;
 
     if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
@@ -260,17 +257,42 @@ bool TreeModel::UpdateBranchFPTS(Node* node, bool value)
     if (TreeModelUtils::IsExternalReferencedPS(sql_, node_id, message))
         return false;
 
-    node->branch = value;
-    sql_->UpdateField(info_.node, value, BRANCH, node_id);
+    QString path {};
+    QStandardItem* item {};
 
-    if (node->branch) {
-        CString path { leaf_path_.take(node_id) };
+    switch (node->type) {
+    case kTypeBranch:
+        path = branch_path_.take(node_id);
+        break;
+    case kTypeLeaf:
+        item = TreeModelUtils::TakeItemFromModel(leaf_model_, node->id);
+        path = leaf_path_.take(node_id);
+        break;
+    case kTypeSupport:
+        item = TreeModelUtils::TakeItemFromModel(support_model_, node->id);
+        path = support_path_.take(node_id);
+        break;
+    default:
+        break;
+    }
+
+    node->type = value;
+    sql_->UpdateField(info_.node, value, TYPE, node_id);
+
+    switch (value) {
+    case kTypeBranch:
         branch_path_.insert(node_id, path);
-        TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
-    } else {
-        CString path { branch_path_.take(node_id) };
+        break;
+    case kTypeLeaf:
+        TreeModelUtils::AddItemToModel(leaf_model_, item);
         leaf_path_.insert(node_id, path);
-        TreeModelUtils::AddItemToModel(leaf_model_, path, node->id);
+        break;
+    case kTypeSupport:
+        TreeModelUtils::AddItemToModel(support_model_, item);
+        support_path_.insert(node_id, path);
+        break;
+    default:
+        break;
     }
 
     return true;
@@ -292,7 +314,7 @@ QSet<int> TreeModel::ChildrenIDFPTS(int node_id) const
         return {};
 
     auto* node { it.value() };
-    if (!node->branch || node->children.isEmpty())
+    if (node->type != kTypeBranch || node->children.isEmpty())
         return {};
 
     QQueue<const Node*> queue {};
@@ -302,11 +324,17 @@ QSet<int> TreeModel::ChildrenIDFPTS(int node_id) const
     while (!queue.isEmpty()) {
         auto* queue_node = queue.dequeue();
 
-        if (queue_node->branch)
+        switch (queue_node->type) {
+        case kTypeBranch: {
             for (const auto* child : queue_node->children)
                 queue.enqueue(child);
-        else
+        } break;
+        case kTypeLeaf:
             set.insert(queue_node->id);
+            break;
+        default:
+            break;
+        }
     }
 
     return set;
