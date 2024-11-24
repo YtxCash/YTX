@@ -418,7 +418,7 @@ void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::HelperPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter)
+void TreeModelUtils::SupportPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter)
 {
     if (!model || helper.isEmpty())
         return;

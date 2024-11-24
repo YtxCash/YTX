@@ -120,8 +120,8 @@ void Sqlite::RemoveHelperFunction(int helper_id) const
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->helper_id == helper_id) {
-            trans->helper_id = 0;
+        if (trans->support_id == helper_id) {
+            trans->support_id = 0;
         }
     }
 }
@@ -434,8 +434,8 @@ void Sqlite::ReplaceHelperFunction(int old_helper_id, int new_helper_id)
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->helper_id == old_helper_id) {
-            trans->helper_id = new_helper_id;
+        if (trans->support_id == old_helper_id) {
+            trans->support_id = new_helper_id;
         }
     }
 }
@@ -626,7 +626,7 @@ void Sqlite::ConvertTrans(Trans* trans, TransShadow* trans_shadow, bool left) co
     trans_shadow->code = &trans->code;
     trans_shadow->document = &trans->document;
     trans_shadow->description = &trans->description;
-    trans_shadow->helper_id = &trans->helper_id;
+    trans_shadow->support_id = &trans->support_id;
     trans_shadow->discount_price = &trans->discount_price;
     trans_shadow->unit_price = &trans->unit_price;
     trans_shadow->settled = &trans->settled;
@@ -719,7 +719,7 @@ bool Sqlite::WriteTransRangeO(const QList<TransShadow*>& list) const
         amount_list.emplaceBack(*trans_shadow->rhs_credit);
         discount_list.emplaceBack(*trans_shadow->rhs_debit);
         settled_list.emplaceBack(*trans_shadow->settled);
-        outside_product_list.emplaceBack(*trans_shadow->helper_id);
+        outside_product_list.emplaceBack(*trans_shadow->support_id);
         discount_price_list.emplaceBack(*trans_shadow->discount_price);
     }
 

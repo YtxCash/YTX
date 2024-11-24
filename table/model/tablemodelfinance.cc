@@ -30,7 +30,7 @@ QVariant TableModelFinance::data(const QModelIndex& index, int role) const
     case TableEnumFinance::kDescription:
         return *trans_shadow->description;
     case TableEnumFinance::kHelperNode:
-        return *trans_shadow->helper_id == 0 ? QVariant() : *trans_shadow->helper_id;
+        return *trans_shadow->support_id == 0 ? QVariant() : *trans_shadow->support_id;
     case TableEnumFinance::kRhsNode:
         return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
     case TableEnumFinance::kState:
@@ -58,7 +58,7 @@ bool TableModelFinance::setData(const QModelIndex& index, const QVariant& value,
 
     auto* trans_shadow { trans_shadow_list_.at(kRow) };
     int old_rhs_node { *trans_shadow->rhs_node };
-    int old_hel_node { *trans_shadow->helper_id };
+    int old_hel_node { *trans_shadow->support_id };
 
     bool rhs_changed { false };
     bool deb_changed { false };
@@ -81,7 +81,7 @@ bool TableModelFinance::setData(const QModelIndex& index, const QVariant& value,
             sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnumFinance::kHelperNode:
-        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), HELPER_ID, &TransShadow::helper_id);
+        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), HELPER_ID, &TransShadow::support_id);
         break;
     case TableEnumFinance::kLhsRatio:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
@@ -117,7 +117,7 @@ bool TableModelFinance::setData(const QModelIndex& index, const QVariant& value,
             credit = *trans_shadow->rhs_credit;
             emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
 
-            if (*trans_shadow->helper_id != 0) {
+            if (*trans_shadow->support_id != 0) {
                 emit SAppendHelperTrans(info_.section, trans_shadow);
             }
         }
@@ -136,7 +136,7 @@ bool TableModelFinance::setData(const QModelIndex& index, const QVariant& value,
         if (old_hel_node != 0)
             emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->id);
 
-        if (*trans_shadow->helper_id != 0) {
+        if (*trans_shadow->support_id != 0) {
             emit SAppendHelperTrans(info_.section, trans_shadow);
         }
     }
@@ -180,7 +180,7 @@ void TableModelFinance::sort(int column, Qt::SortOrder order)
         case TableEnumFinance::kDescription:
             return (order == Qt::AscendingOrder) ? (*lhs->description < *rhs->description) : (*lhs->description > *rhs->description);
         case TableEnumFinance::kHelperNode:
-            return (order == Qt::AscendingOrder) ? (*lhs->helper_id < *rhs->helper_id) : (*lhs->helper_id > *rhs->helper_id);
+            return (order == Qt::AscendingOrder) ? (*lhs->support_id < *rhs->support_id) : (*lhs->support_id > *rhs->support_id);
         case TableEnumFinance::kRhsNode:
             return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
         case TableEnumFinance::kState:

@@ -17,15 +17,15 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TABLEMODELHELPER_H
-#define TABLEMODELHELPER_H
+#ifndef TABLEMODELSUPPORT_H
+#define TABLEMODELSUPPORT_H
 
 #include "tablemodel.h"
 
-class TableModelHelper final : public TableModel {
+class TableModelSupport final : public TableModel {
     Q_OBJECT
 public:
-    TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
+    TableModelSupport(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent = nullptr);
 
 public slots:
     // receive from TableModel
@@ -50,4 +50,4 @@ protected:
     bool RemoveMultiTrans(const QList<int>& trans_id_list) override;
 };
 
-#endif // TABLEMODELHELPER_H
+#endif // TABLEMODELSUPPORT_H

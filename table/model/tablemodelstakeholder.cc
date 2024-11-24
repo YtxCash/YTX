@@ -34,7 +34,7 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
     endRemoveRows();
 
     if (rhs_node_id != 0) {
-        if (int helper_id = *trans_shadow->helper_id; helper_id != 0)
+        if (int helper_id = *trans_shadow->support_id; helper_id != 0)
             emit SRemoveHelperTrans(info_.section, helper_id, *trans_shadow->id);
 
         sql_->RemoveTrans(*trans_shadow->id);
@@ -113,7 +113,7 @@ QVariant TableModelStakeholder::data(const QModelIndex& index, int role) const
     case TableEnumStakeholder::kInsideProduct:
         return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
     case TableEnumStakeholder::kOutsideProduct:
-        return *trans_shadow->helper_id == 0 ? QVariant() : *trans_shadow->helper_id;
+        return *trans_shadow->support_id == 0 ? QVariant() : *trans_shadow->support_id;
     default:
         return QVariant();
     }
@@ -129,7 +129,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     auto* trans_shadow { trans_shadow_list_.at(kRow) };
     int old_rhs_node { *trans_shadow->rhs_node };
-    int old_hel_node { *trans_shadow->helper_id };
+    int old_hel_node { *trans_shadow->support_id };
 
     bool rhs_changed { false };
     bool hel_changed { false };
@@ -155,7 +155,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
         break;
     case TableEnumStakeholder::kOutsideProduct:
-        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::helper_id);
+        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::support_id);
         break;
     default:
         return false;
@@ -165,7 +165,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         if (old_rhs_node == 0) {
             sql_->WriteTrans(trans_shadow);
 
-            if (*trans_shadow->helper_id != 0) {
+            if (*trans_shadow->support_id != 0) {
                 emit SAppendHelperTrans(info_.section, trans_shadow);
             }
         } else
@@ -176,7 +176,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
         if (old_hel_node != 0)
             emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->id);
 
-        if (*trans_shadow->helper_id != 0) {
+        if (*trans_shadow->support_id != 0) {
             emit SAppendHelperTrans(info_.section, trans_shadow);
         }
     }
@@ -211,7 +211,7 @@ void TableModelStakeholder::sort(int column, Qt::SortOrder order)
         case TableEnumStakeholder::kState:
             return (order == Qt::AscendingOrder) ? (*lhs->state < *rhs->state) : (*lhs->state > *rhs->state);
         case TableEnumStakeholder::kOutsideProduct:
-            return (order == Qt::AscendingOrder) ? (*lhs->helper_id < *rhs->helper_id) : (*lhs->helper_id > *rhs->helper_id);
+            return (order == Qt::AscendingOrder) ? (*lhs->support_id < *rhs->support_id) : (*lhs->support_id > *rhs->support_id);
         case TableEnumStakeholder::kInsideProduct:
             return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
         default:

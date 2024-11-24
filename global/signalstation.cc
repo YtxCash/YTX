@@ -1,6 +1,6 @@
 #include "global/signalstation.h"
 
-#include "table/model/tablemodelhelper.h"
+#include "table/model/tablemodelsupport.h"
 #include "table/model/tablemodelstakeholder.h"
 
 SignalStation& SignalStation::Instance()
@@ -58,12 +58,12 @@ void SignalStation::RAppendHelperTrans(Section section, const TransShadow* trans
     if (!trans_shadow)
         return;
 
-    const auto* model { FindTableModel(section, *trans_shadow->helper_id) };
+    const auto* model { FindTableModel(section, *trans_shadow->support_id) };
     if (!model)
         return;
 
-    const auto* cast_model { static_cast<const TableModelHelper*>(model) };
-    connect(this, &SignalStation::SAppendHelperTrans, cast_model, &TableModelHelper::RAppendHelperTrans, Qt::SingleShotConnection);
+    const auto* cast_model { static_cast<const TableModelSupport*>(model) };
+    connect(this, &SignalStation::SAppendHelperTrans, cast_model, &TableModelSupport::RAppendHelperTrans, Qt::SingleShotConnection);
     emit SAppendHelperTrans(trans_shadow);
 }
 
@@ -73,8 +73,8 @@ void SignalStation::RRemoveHelperTrans(Section section, int helper_id, int trans
     if (!model)
         return;
 
-    const auto* cast_model { static_cast<const TableModelHelper*>(model) };
-    connect(this, &SignalStation::SRemoveHelperTrans, cast_model, &TableModelHelper::RRemoveHelperTrans, Qt::SingleShotConnection);
+    const auto* cast_model { static_cast<const TableModelSupport*>(model) };
+    connect(this, &SignalStation::SRemoveHelperTrans, cast_model, &TableModelSupport::RRemoveHelperTrans, Qt::SingleShotConnection);
     emit SRemoveHelperTrans(helper_id, trans_id);
 }
 
@@ -109,7 +109,7 @@ void SignalStation::RMoveMultiHelperTransFPTS(Section section, int new_helper_id
     if (!model)
         return;
 
-    const auto* cast_model { static_cast<const TableModelHelper*>(model) };
-    connect(this, &SignalStation::SAppendMultiHelperTransFPTS, cast_model, &TableModelHelper::RAppendMultiHelperTransFPTS, Qt::SingleShotConnection);
+    const auto* cast_model { static_cast<const TableModelSupport*>(model) };
+    connect(this, &SignalStation::SAppendMultiHelperTransFPTS, cast_model, &TableModelSupport::RAppendMultiHelperTransFPTS, Qt::SingleShotConnection);
     emit SAppendMultiHelperTransFPTS(new_helper_id, trans_id_list);
 }

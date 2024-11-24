@@ -59,7 +59,7 @@ void TableModel::RAppendOneTrans(const TransShadow* trans_shadow)
     new_trans_shadow->unit_price = trans_shadow->unit_price;
     new_trans_shadow->discount_price = trans_shadow->discount_price;
     new_trans_shadow->settled = trans_shadow->settled;
-    new_trans_shadow->helper_id = trans_shadow->helper_id;
+    new_trans_shadow->support_id = trans_shadow->support_id;
 
     new_trans_shadow->rhs_ratio = trans_shadow->lhs_ratio;
     new_trans_shadow->rhs_debit = trans_shadow->lhs_debit;
@@ -135,7 +135,7 @@ bool TableModel::removeRows(int row, int /*count*/, const QModelIndex& parent)
         emit SRemoveOneTrans(info_.section, rhs_node_id, trans_id);
         TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
 
-        if (int helper_id = *trans_shadow->helper_id; helper_id != 0)
+        if (int helper_id = *trans_shadow->support_id; helper_id != 0)
             emit SRemoveHelperTrans(info_.section, helper_id, *trans_shadow->id);
 
         sql_->RemoveTrans(trans_id);

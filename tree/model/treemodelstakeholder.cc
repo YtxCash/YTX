@@ -271,7 +271,7 @@ void TreeModelStakeholder::ConstructTree()
         }
     }
 
-    TreeModelUtils::HelperPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
+    TreeModelUtils::SupportPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
     TreeModelUtils::LeafPathSpecificUnitS(leaf_path_, crange, cmodel_, vrange, vmodel_, erange, emodel_);
 }
 

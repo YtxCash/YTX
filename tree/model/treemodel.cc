@@ -104,9 +104,9 @@ void TreeModel::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_u
     TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
 }
 
-void TreeModel::HelperPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
+void TreeModel::SupportPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
 {
-    TreeModelUtils::HelperPathFPTS(support_path_, model, specific_node, filter);
+    TreeModelUtils::SupportPathFPTS(support_path_, model, specific_node, filter);
 }
 
 void TreeModel::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const

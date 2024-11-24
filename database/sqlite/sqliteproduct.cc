@@ -191,7 +191,7 @@ void SqliteProduct::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
     trans->state = query.value("state").toBool();
-    trans->helper_id = query.value("helper_id").toInt();
+    trans->support_id = query.value("helper_id").toInt();
 }
 
 void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
@@ -200,7 +200,7 @@ void SqliteProduct::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) 
     query.bindValue(":unit_cost", *trans_shadow->unit_price);
     query.bindValue(":state", *trans_shadow->state);
     query.bindValue(":description", *trans_shadow->description);
-    query.bindValue(":helper_id", *trans_shadow->helper_id);
+    query.bindValue(":helper_id", *trans_shadow->support_id);
     query.bindValue(":code", *trans_shadow->code);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
 

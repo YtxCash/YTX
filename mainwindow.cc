@@ -58,7 +58,7 @@
 #include "global/sqlconnection.h"
 #include "table/model/sortfilterproxymodel.h"
 #include "table/model/tablemodelfinance.h"
-#include "table/model/tablemodelhelper.h"
+#include "table/model/tablemodelsupport.h"
 #include "table/model/tablemodelproduct.h"
 #include "table/model/tablemodelstakeholder.h"
 #include "table/model/tablemodeltask.h"
@@ -415,7 +415,7 @@ void MainWindow::CreateTableHelper(PTreeModel tree_model, TableHash* table_hash,
     auto section { info.section };
     auto rule { tree_model->Rule(node_id) };
 
-    auto* model { new TableModelHelper(sql, rule, node_id, info, this) };
+    auto* model { new TableModelSupport(sql, rule, node_id, info, this) };
     TableWidgetFPTS* widget { new TableWidgetFPTS(model, this) };
 
     int tab_index { ui->tabWidget->addTab(widget, name) };

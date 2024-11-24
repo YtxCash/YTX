@@ -457,6 +457,6 @@ void TreeModelTask::ConstructTree()
         }
     }
 
-    TreeModelUtils::HelperPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
+    TreeModelUtils::SupportPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
     TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
 }

@@ -269,7 +269,7 @@ void TreeModelProduct::ConstructTree()
         }
     }
 
-    TreeModelUtils::HelperPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
+    TreeModelUtils::SupportPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
     TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
     TreeModelUtils::LeafPathSpecificUnitP(leaf_path_, range, product_model_);
 }

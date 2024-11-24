@@ -87,7 +87,7 @@ void RemoveNode::IniData(Section section, bool exteral_reference, int node_type)
     auto* combo_model_ { new QStandardItemModel(this) };
 
     if (node_type == kTypeSupport) {
-        model_->HelperPathFPTS(combo_model_, node_id_, Filter::kExcludeSpecific);
+        model_->SupportPathFPTS(combo_model_, node_id_, Filter::kExcludeSpecific);
     } else {
         model_->LeafPathRemoveNodeFPTS(combo_model_, unit_, node_id_);
     }

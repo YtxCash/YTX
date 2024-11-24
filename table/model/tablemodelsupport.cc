@@ -1,20 +1,20 @@
-#include "tablemodelhelper.h"
+#include "tablemodelsupport.h"
 
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "global/resourcepool.h"
 #include "tablemodelutils.h"
 
-TableModelHelper::TableModelHelper(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
+TableModelSupport::TableModelSupport(Sqlite* sql, bool rule, int node_id, CInfo& info, QObject* parent)
     : TableModel { sql, rule, node_id, info, parent }
 {
     if (node_id >= 1)
         sql_->ReadHelperTransFPTS(trans_shadow_list_, node_id);
 }
 
-void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
+void TableModelSupport::RAppendHelperTrans(const TransShadow* trans_shadow)
 {
-    if (node_id_ != *trans_shadow->helper_id)
+    if (node_id_ != *trans_shadow->support_id)
         return;
 
     auto* new_trans_shadow { ResourcePool<TransShadow>::Instance().Allocate() };
@@ -27,7 +27,7 @@ void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
     new_trans_shadow->unit_price = trans_shadow->unit_price;
     new_trans_shadow->discount_price = trans_shadow->discount_price;
     new_trans_shadow->settled = trans_shadow->settled;
-    new_trans_shadow->helper_id = trans_shadow->helper_id;
+    new_trans_shadow->support_id = trans_shadow->support_id;
 
     new_trans_shadow->lhs_ratio = trans_shadow->lhs_ratio;
     new_trans_shadow->lhs_debit = trans_shadow->lhs_debit;
@@ -48,7 +48,7 @@ void TableModelHelper::RAppendHelperTrans(const TransShadow* trans_shadow)
     // todo 可能需要额外计算
 }
 
-void TableModelHelper::RRemoveHelperTrans(int helper_id, int trans_id)
+void TableModelSupport::RRemoveHelperTrans(int helper_id, int trans_id)
 {
     if (node_id_ != helper_id)
         return;
@@ -63,7 +63,7 @@ void TableModelHelper::RRemoveHelperTrans(int helper_id, int trans_id)
     endRemoveRows();
 }
 
-void TableModelHelper::RAppendMultiHelperTransFPTS(int helper_id, const QList<int>& trans_id_list)
+void TableModelSupport::RAppendMultiHelperTransFPTS(int helper_id, const QList<int>& trans_id_list)
 {
     if (node_id_ != helper_id)
         return;
@@ -77,7 +77,7 @@ void TableModelHelper::RAppendMultiHelperTransFPTS(int helper_id, const QList<in
     endInsertRows();
 }
 
-QVariant TableModelHelper::data(const QModelIndex& index, int role) const
+QVariant TableModelSupport::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return QVariant();
@@ -121,7 +121,7 @@ QVariant TableModelHelper::data(const QModelIndex& index, int role) const
     }
 }
 
-bool TableModelHelper::setData(const QModelIndex& index, const QVariant& value, int role)
+bool TableModelSupport::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!index.isValid() || role != Qt::EditRole)
         return false;
@@ -153,7 +153,7 @@ bool TableModelHelper::setData(const QModelIndex& index, const QVariant& value, 
     return true;
 }
 
-void TableModelHelper::sort(int column, Qt::SortOrder order)
+void TableModelSupport::sort(int column, Qt::SortOrder order)
 {
     if (column <= -1 || column >= info_.search_trans_header.size() - 1)
         return;
@@ -200,7 +200,7 @@ void TableModelHelper::sort(int column, Qt::SortOrder order)
     emit layoutChanged();
 }
 
-Qt::ItemFlags TableModelHelper::flags(const QModelIndex& index) const
+Qt::ItemFlags TableModelSupport::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
@@ -222,7 +222,7 @@ Qt::ItemFlags TableModelHelper::flags(const QModelIndex& index) const
     return flags;
 }
 
-QVariant TableModelHelper::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant TableModelSupport::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         return info_.helper_header.at(section);
@@ -230,9 +230,9 @@ QVariant TableModelHelper::headerData(int section, Qt::Orientation orientation, 
     return QVariant();
 }
 
-int TableModelHelper::columnCount(const QModelIndex& /*parent*/) const { return info_.helper_header.size(); }
+int TableModelSupport::columnCount(const QModelIndex& /*parent*/) const { return info_.helper_header.size(); }
 
-bool TableModelHelper::RemoveMultiTrans(const QList<int>& trans_id_list)
+bool TableModelSupport::RemoveMultiTrans(const QList<int>& trans_id_list)
 {
     if (trans_id_list.isEmpty())
         return false;
