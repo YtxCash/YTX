@@ -40,10 +40,10 @@ signals:
     void SRule(int node_id, bool rule);
     void SAppendPrice(TransShadow* trans_shadow);
 
-    // send to TableModelHelper
-    void SAppendHelperTrans(const TransShadow* trans_shadow);
-    void SRemoveHelperTrans(int helper_id, int trans_id);
-    void SAppendMultiHelperTransFPTS(int new_helper_id, const QList<int>& trans_id_list);
+    // send to TableModelSupport
+    void SAppendSupportTrans(const TransShadow* trans_shadow);
+    void SRemoveSupportTrans(int support_id, int trans_id);
+    void SAppendMultiSupportTransFPTS(int new_support_id, const QList<int>& trans_id_list);
 
 public slots:
     // receive from TableModel
@@ -51,8 +51,8 @@ public slots:
     void RRemoveOneTrans(Section section, int node_id, int trans_id);
     void RUpdateBalance(Section section, int node_id, int trans_id);
 
-    void RAppendHelperTrans(Section section, const TransShadow* trans_shadow);
-    void RRemoveHelperTrans(Section section, int helper_id, int trans_id);
+    void RAppendSupportTrans(Section section, const TransShadow* trans_shadow);
+    void RRemoveSupportTrans(Section section, int support_id, int trans_id);
 
     // receive from SqliteStakeholder
     void RAppendPrice(Section section, TransShadow* trans_shadow);
@@ -61,7 +61,7 @@ public slots:
     void RRule(Section section, int node_id, bool rule);
 
     // receive from sqlite
-    void RMoveMultiHelperTransFPTS(Section section, int new_helper_id, const QList<int>& trans_id_list);
+    void RMoveMultiSupportTransFPTS(Section section, int new_support_id, const QList<int>& trans_id_list);
 
 private:
     SignalStation() = default;

@@ -67,7 +67,7 @@ public:
     static void UpdateComboModel(QStandardItemModel* model, const QVector<std::pair<QString, int>>& items);
 
     static QString ConstructPathFPTS(const Node* root, const Node* node, CString& separator);
-    static void UpdatePathFPTS(StringHash& leaf, StringHash& branch, StringHash& helper, const Node* root, const Node* node, CString& separator);
+    static void UpdatePathFPTS(StringHash& leaf, StringHash& branch, StringHash& support, const Node* root, const Node* node, CString& separator);
 
     static void PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model);
     static void LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model);
@@ -75,14 +75,14 @@ public:
     static void LeafPathSpecificUnitS(CStringHash& leaf, const QSet<int>& crange, QStandardItemModel* cmodel, const QSet<int>& vrange,
         QStandardItemModel* vmodel, const QSet<int>& erange, QStandardItemModel* emodel);
     static void LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node);
-    static void SupportPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter);
+    static void SupportPathFPTS(CStringHash& support, QStandardItemModel* model, int specific_node, Filter filter);
 
     static void AddItemToModel(QStandardItemModel* model, CString& path, int node_id, bool should_sort = true);
     static void AddItemToModel(QStandardItemModel* model, QStandardItem* item, bool should_sort = true);
     static void RemoveItemFromModel(QStandardItemModel* model, int node_id);
     static QStandardItem* TakeItemFromModel(QStandardItemModel* model, int node_id);
 
-    static void UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& helper, QStandardItemModel* helper_model, const Node* node);
+    static void UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& support, QStandardItemModel* support_model, const Node* node);
     static void UpdateUnitModel(CStringHash& leaf, QStandardItemModel* unit_model, const Node* node, int specific_unit, Filter filter);
     static void UpdatePathSeparatorFPTS(CString& old_separator, CString& new_separator, StringHash& source_path);
     static void UpdateModelSeparatorFPTS(QStandardItemModel* model, CStringHash& source_path);
@@ -95,7 +95,7 @@ public:
     static void ShowTemporaryTooltipFPTS(CString& message, int duration);
 
     static bool IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message);
-    static bool IsHelperReferencedFPTS(Sqlite* sql, int node_id, CString& message);
+    static bool IsSupportReferencedFPTS(Sqlite* sql, int node_id, CString& message);
     static bool IsExternalReferencedPS(Sqlite* sql, int node_id, CString& message);
 
 private:

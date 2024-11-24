@@ -148,7 +148,7 @@ private:
     void SetPurchaseData();
 
     void CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id);
-    void CreateTableHelper(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id);
+    void CreateTableSupport(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id);
     void CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id);
     void DelegateFPTS(PQTableView table_view) const;
     void DelegateFinance(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
@@ -158,8 +158,8 @@ private:
     void DelegateOrder(PQTableView table_view, CSettings* settings) const;
     void SetView(PQTableView table_view) const;
 
-    void SetHelperView(PQTableView table_view) const;
-    void DelegateHelper(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const;
+    void SetSupportView(PQTableView table_view) const;
+    void DelegateSupport(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const;
 
     void TableConnectFPT(PQTableView table_view, PTableModel table_model, PTreeModel tree_model, CData* data) const;
     void TableConnectOrder(PQTableView table_view, TableModelOrder* table_model, PTreeModel tree_model, TableWidgetOrder* widget) const;

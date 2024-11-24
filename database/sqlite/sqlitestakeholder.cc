@@ -13,9 +13,9 @@ SqliteStakeholder::SqliteStakeholder(CInfo& info, QObject* parent)
 
 void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, int node_type)
 {
-    QList<int> helper_trans {};
+    QList<int> support_trans {};
     if (node_type == kTypeSupport)
-        helper_trans = HelperTransToMoveFPTS(old_node_id);
+        support_trans = SupportTransToMoveFPTS(old_node_id);
 
     emit SFreeView(old_node_id);
     emit SRemoveNode(old_node_id);
@@ -28,7 +28,7 @@ void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, int node_
 
     // begin deal with database
     QSqlQuery query(*db_);
-    CString& string { QSReplaceHelperTransFPTS() };
+    CString& string { QSReplaceSupportTransFPTS() };
 
     query.prepare(string);
     query.bindValue(":new_node_id", new_node_id);
@@ -39,9 +39,9 @@ void SqliteStakeholder::RReplaceNode(int old_node_id, int new_node_id, int node_
     }
     // end deal with database
 
-    ReplaceHelperFunction(old_node_id, new_node_id);
+    ReplaceSupportFunction(old_node_id, new_node_id);
     RemoveNode(old_node_id, kTypeSupport);
-    emit SMoveMultiHelperTransFPTS(info_.section, new_node_id, helper_trans);
+    emit SMoveMultiSupportTransFPTS(info_.section, new_node_id, support_trans);
 }
 
 void SqliteStakeholder::RRemoveNode(int node_id, int node_type)
@@ -51,22 +51,22 @@ void SqliteStakeholder::RRemoveNode(int node_id, int node_type)
     emit SUpdateStakeholder(node_id, 0);
 
     QMultiHash<int, int> node_trans {};
-    QMultiHash<int, int> helper_trans {};
+    QMultiHash<int, int> support_trans {};
 
     if (node_type == kTypeLeaf) {
         node_trans = TransToRemove(node_id, kTypeLeaf);
-        helper_trans = TransToRemove(node_id, kTypeSupport);
+        support_trans = TransToRemove(node_id, kTypeSupport);
     }
 
     RemoveNode(node_id, node_type);
 
     if (node_type == kTypeSupport) {
-        RemoveHelperFunction(node_id);
+        RemoveSupportFunction(node_id);
         return;
     }
 
-    if (!helper_trans.isEmpty())
-        emit SRemoveMultiTrans(helper_trans);
+    if (!support_trans.isEmpty())
+        emit SRemoveMultiTrans(support_trans);
 
     // Recycle trans resources
     const auto trans { node_trans.values() };
@@ -208,15 +208,15 @@ QString SqliteStakeholder::QSExternalReferencePS() const
     )");
 }
 
-QString SqliteStakeholder::QSHelperReferenceFPTS() const
+QString SqliteStakeholder::QSSupportReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM stakeholder_transaction
-    WHERE outside_product = :helper_id AND removed = 0
+    WHERE outside_product = :support_id AND removed = 0
     )");
 }
 
-QString SqliteStakeholder::QSReplaceHelperTransFPTS() const
+QString SqliteStakeholder::QSReplaceSupportTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
@@ -225,7 +225,7 @@ QString SqliteStakeholder::QSReplaceHelperTransFPTS() const
     )");
 }
 
-QString SqliteStakeholder::QSRemoveHelperFPTS() const
+QString SqliteStakeholder::QSRemoveSupportFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE stakeholder_transaction SET
@@ -234,15 +234,15 @@ QString SqliteStakeholder::QSRemoveHelperFPTS() const
     )");
 }
 
-QString SqliteStakeholder::QSHelperTransToMoveFPTS() const
+QString SqliteStakeholder::QSSupportTransToMoveFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id FROM stakeholder_transaction
-    WHERE outside_product = :helper_id AND removed = 0
+    WHERE outside_product = :support_id AND removed = 0
     )");
 }
 
-QString SqliteStakeholder::QSHelperTransToRemoveFPTS() const
+QString SqliteStakeholder::QSSupportTransToRemoveFPTS() const
 {
     return QStringLiteral(R"(
     SELECT outside_product, id FROM stakeholder_transaction
@@ -259,7 +259,7 @@ QString SqliteStakeholder::QSReadNodeTrans() const
     )");
 }
 
-QString SqliteStakeholder::QSReadHelperTransFPTS() const
+QString SqliteStakeholder::QSReadSupportTransFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id, date_time, code, outside_product, lhs_node, unit_price, description, document, state, inside_product

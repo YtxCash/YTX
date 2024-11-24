@@ -25,7 +25,7 @@
 #include "delegate/search/searchpathtabler.h"
 #include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
-#include "delegate/table/helpernode.h"
+#include "delegate/table/supportnode.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledatetime.h"
 #include "delegate/table/tabledbclick.h"
@@ -58,9 +58,9 @@
 #include "global/sqlconnection.h"
 #include "table/model/sortfilterproxymodel.h"
 #include "table/model/tablemodelfinance.h"
-#include "table/model/tablemodelsupport.h"
 #include "table/model/tablemodelproduct.h"
 #include "table/model/tablemodelstakeholder.h"
+#include "table/model/tablemodelsupport.h"
 #include "table/model/tablemodeltask.h"
 #include "tree/model/treemodelfinance.h"
 #include "tree/model/treemodelorder.h"
@@ -296,7 +296,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
 
         if (section != Section::kSales && section != Section::kPurchase) {
             if (type == kTypeSupport)
-                CreateTableHelper(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
+                CreateTableSupport(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
             else
                 CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
         }
@@ -407,7 +407,7 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
     SignalStation::Instance().RegisterModel(section, node_id, model);
 }
 
-void MainWindow::CreateTableHelper(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
+void MainWindow::CreateTableSupport(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
 {
     CString name { tree_model->Name(node_id) };
     auto* sql { data->sql };
@@ -425,8 +425,8 @@ void MainWindow::CreateTableHelper(PTreeModel tree_model, TableHash* table_hash,
     tab_bar->setTabToolTip(tab_index, tree_model->GetPath(node_id));
 
     auto view { widget->View() };
-    SetHelperView(view);
-    DelegateHelper(view, tree_model, settings);
+    SetSupportView(view);
+    DelegateSupport(view, tree_model, settings);
 
     table_hash->insert(node_id, widget);
     SignalStation::Instance().RegisterModel(section, node_id, model);
@@ -476,8 +476,8 @@ void MainWindow::TableConnectFPT(PQTableView table_view, PTableModel table_model
     connect(table_model, &TableModel::SRemoveOneTrans, &SignalStation::Instance(), &SignalStation::RRemoveOneTrans);
     connect(table_model, &TableModel::SAppendOneTrans, &SignalStation::Instance(), &SignalStation::RAppendOneTrans);
     connect(table_model, &TableModel::SUpdateBalance, &SignalStation::Instance(), &SignalStation::RUpdateBalance);
-    connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
-    connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
+    connect(table_model, &TableModel::SRemoveSupportTrans, &SignalStation::Instance(), &SignalStation::RRemoveSupportTrans);
+    connect(table_model, &TableModel::SAppendSupportTrans, &SignalStation::Instance(), &SignalStation::RAppendSupportTrans);
 
     connect(data->sql, &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
@@ -512,8 +512,8 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
     connect(data->sql, &Sqlite::SMoveMultiTrans, table_model, &TableModel::RMoveMultiTrans);
     connect(data->sql, &Sqlite::SRemoveMultiTrans, table_model, &TableModel::RRemoveMultiTrans);
 
-    connect(table_model, &TableModel::SRemoveHelperTrans, &SignalStation::Instance(), &SignalStation::RRemoveHelperTrans);
-    connect(table_model, &TableModel::SAppendHelperTrans, &SignalStation::Instance(), &SignalStation::RAppendHelperTrans);
+    connect(table_model, &TableModel::SRemoveSupportTrans, &SignalStation::Instance(), &SignalStation::RRemoveSupportTrans);
+    connect(table_model, &TableModel::SAppendSupportTrans, &SignalStation::Instance(), &SignalStation::RAppendSupportTrans);
 }
 
 void MainWindow::DelegateFPTS(PQTableView table_view) const
@@ -551,8 +551,8 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
     auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSubtotal), subtotal);
 
-    auto* helper_node { new HelperNode(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kHelperNode), helper_node);
+    auto* support_node { new SupportNode(tree_model, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSupportID), support_node);
 }
 
 void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
@@ -580,14 +580,14 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSubtotal), subtotal);
 
-    auto* helper_node { new HelperNode(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kHelperNode), helper_node);
+    auto* support_node { new SupportNode(tree_model, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSupportID), support_node);
 }
 
 void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
-    auto* helper_node { new HelperNode(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kHelperNode), helper_node);
+    auto* support_node { new SupportNode(tree_model, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kSupportID), support_node);
 
     auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
     filter_model->setSourceModel(tree_model->LeafModel());
@@ -636,8 +636,8 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto* helper_node { new HelperNode(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), helper_node);
+    auto* support_node { new SupportNode(tree_model, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), support_node);
 }
 
 void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
@@ -647,8 +647,8 @@ void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) cons
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto* helper_node { new HelperNode(stakeholder_tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), helper_node);
+    auto* support_node { new SupportNode(stakeholder_tree_model, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), support_node);
 
     auto* color { new ColorR(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kColor), color);
@@ -926,9 +926,9 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     auto* sql { data_->sql };
     bool interal_reference { sql->InternalReference(node_id) };
     bool exteral_reference { sql->ExternalReference(node_id) };
-    bool helper_reference { sql->HelperReferenceFPTS(node_id) };
+    bool support_reference { sql->SupportReferenceFPTS(node_id) };
 
-    if (!interal_reference && !exteral_reference && !helper_reference) {
+    if (!interal_reference && !exteral_reference && !support_reference) {
         RemoveView(model, index, node_id, node_type);
         return;
     }
@@ -956,7 +956,7 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
 
     // 2. 获取模型和当前索引
     auto model { table_widget->Model() };
-    if (!model || model->IsHelper()) {
+    if (!model || model->IsSupport()) {
         return;
     }
 
@@ -1033,7 +1033,7 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
         if (tree_model->Contains(node_id) && node_id >= 1) {
             switch (tree_model->TypeFPTS(node_id)) {
             case kTypeSupport:
-                CreateTableHelper(tree_model, &table_hash, &data, &settings, node_id);
+                CreateTableSupport(tree_model, &table_hash, &data, &settings, node_id);
                 break;
             case kTypeLeaf:
                 CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
@@ -1156,18 +1156,18 @@ void MainWindow::SetView(PQTableView view) const
     view->sortByColumn(std::to_underlying(TableEnum::kDateTime), Qt::AscendingOrder); // will run function: AccumulateSubtotal while sorting
 }
 
-void MainWindow::SetHelperView(PQTableView view) const
+void MainWindow::SetSupportView(PQTableView view) const
 {
     view->setSortingEnabled(true);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setAlternatingRowColors(true);
     view->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::CurrentChanged);
-    view->setColumnHidden(std::to_underlying(TableEnumHelper::kID), false);
+    view->setColumnHidden(std::to_underlying(TableEnumSupport::kID), false);
 
     auto* h_header { view->horizontalHeader() };
     h_header->setSectionResizeMode(QHeaderView::ResizeToContents);
-    h_header->setSectionResizeMode(std::to_underlying(TableEnumHelper::kDescription), QHeaderView::Stretch);
+    h_header->setSectionResizeMode(std::to_underlying(TableEnumSupport::kDescription), QHeaderView::Stretch);
 
     auto* v_header { view->verticalHeader() };
     v_header->setDefaultSectionSize(ROW_HEIGHT);
@@ -1179,36 +1179,36 @@ void MainWindow::SetHelperView(PQTableView view) const
     view->sortByColumn(std::to_underlying(TableEnum::kDateTime), Qt::AscendingOrder);
 }
 
-void MainWindow::DelegateHelper(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
+void MainWindow::DelegateSupport(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
 {
     auto* line { new Line(table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kDescription), line);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kCode), line);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDescription), line);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kCode), line);
 
     auto* date_time { new TableDateTime(interface_.date_format, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kDateTime), date_time);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDateTime), date_time);
 
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kState), state);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kState), state);
 
     auto* document { new TableDbClick(table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kDocument), document);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
     auto* value { new TableDoubleSpinR(settings->amount_decimal, false, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsDebit), value);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsDebit), value);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsCredit), value);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsCredit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsDebit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kRhsDebit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsCredit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kRhsCredit), value);
 
     auto* ratio { new TableDoubleSpinR(settings->common_decimal, false, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsRatio), ratio);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsRatio), ratio);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kUnitPrice), ratio);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsRatio), ratio);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kRhsRatio), ratio);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kUnitPrice), ratio);
 
     auto* node_name { new SearchPathTableR(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kLhsNode), node_name);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumHelper::kRhsNode), node_name);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsNode), node_name);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kRhsNode), node_name);
 }
 
 void MainWindow::SetConnect() const
@@ -1264,7 +1264,7 @@ void MainWindow::SetFinanceData()
     auto* model { new TreeModelFinance(sql, info, finance_settings_.default_unit, finance_table_hash_, interface_.separator, this) };
     finance_tree_ = new TreeWidgetFPT(model, info, finance_settings_, this);
 
-    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
+    connect(sql, &Sqlite::SMoveMultiSupportTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiSupportTransFPTS);
 }
 
 void MainWindow::SetProductData()
@@ -1292,7 +1292,7 @@ void MainWindow::SetProductData()
     auto* model { new TreeModelProduct(sql, info, product_settings_.default_unit, product_table_hash_, interface_.separator, this) };
     product_tree_ = new TreeWidgetFPT(model, info, product_settings_, this);
 
-    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
+    connect(sql, &Sqlite::SMoveMultiSupportTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiSupportTransFPTS);
 }
 
 void MainWindow::SetStakeholderData()
@@ -1327,7 +1327,7 @@ void MainWindow::SetStakeholderData()
     connect(product_data_.sql, &Sqlite::SUpdateProduct, sql, &Sqlite::RUpdateProduct);
     connect(sql, &Sqlite::SUpdateStakeholder, model, &TreeModel::RUpdateStakeholder);
     connect(static_cast<SqliteStakeholder*>(sql), &SqliteStakeholder::SAppendPrice, &SignalStation::Instance(), &SignalStation::RAppendPrice);
-    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
+    connect(sql, &Sqlite::SMoveMultiSupportTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiSupportTransFPTS);
 }
 
 void MainWindow::SetTaskData()
@@ -1354,7 +1354,7 @@ void MainWindow::SetTaskData()
 
     auto* model { new TreeModelTask(sql, info, task_settings_.default_unit, task_table_hash_, interface_.separator, this) };
     task_tree_ = new TreeWidgetFPT(model, info, task_settings_, this);
-    connect(sql, &Sqlite::SMoveMultiHelperTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiHelperTransFPTS);
+    connect(sql, &Sqlite::SMoveMultiSupportTransFPTS, &SignalStation::Instance(), &SignalStation::RMoveMultiSupportTransFPTS);
 }
 
 void MainWindow::SetSalesData()
@@ -1428,43 +1428,43 @@ void MainWindow::SetHeader()
 {
     finance_data_.info.tree_header
         = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Foreign Total"), tr("Local Total"), {} };
-    finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("FXRate"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
+    finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("FXRate"), tr("Code"), tr("Description"), tr("SupportNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
         tr("Description"), {}, {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
     finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {}, {},
         {}, {}, {}, {}, {}, tr("Foreign Total"), tr("Local Total") };
-    finance_data_.info.helper_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsRatio"), tr("LhsDebit"), tr("LhsCredit"),
+    finance_data_.info.support_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsRatio"), tr("LhsDebit"), tr("LhsCredit"),
         tr("Description"), tr("UnitPrice"), tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsRatio"), tr("RhsNode") };
 
     product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Color"),
         tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
-    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
+    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
         tr("UnitCost"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
     product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {}, {},
         tr("Color"), tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity"), tr("Amount") };
-    product_data_.info.helper_header = finance_data_.info.helper_header;
+    product_data_.info.support_header = finance_data_.info.support_header;
 
-    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("IsHelper"),
-        tr("Deadline"), tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
+    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Deadline"),
+        tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
     stakeholder_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("OutsideProduct"), tr("D"), tr("S"),
         tr("InsideProduct"), tr("PlaceHolder") };
     stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("InsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
         tr("NodeID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("OutsideProduct") };
     stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {},
         tr("Employee"), tr("Deadline"), {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
-    stakeholder_data_.info.helper_header = finance_data_.info.helper_header;
+    stakeholder_data_.info.support_header = finance_data_.info.support_header;
 
     task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("DateTime"),
         tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
-    task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("HelperNode"), tr("D"), tr("S"),
+    task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportNode"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
     task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {},
         tr("DateTime"), tr("Color"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
-    task_data_.info.helper_header = finance_data_.info.helper_header;
+    task_data_.info.support_header = finance_data_.info.support_header;
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Branch"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled"), {} };
@@ -1549,7 +1549,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
         return;
 
     auto model { table_widget->Model() };
-    if (!model || model->IsHelper())
+    if (!model || model->IsSupport())
         return;
 
     constexpr int ID_ZERO = 0;

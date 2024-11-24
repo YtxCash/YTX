@@ -29,11 +29,11 @@ public:
 
 public slots:
     // receive from TableModel
-    void RAppendHelperTrans(const TransShadow* trans_shadow);
-    void RRemoveHelperTrans(int helper_id, int trans_id);
+    void RAppendSupportTrans(const TransShadow* trans_shadow);
+    void RRemoveSupportTrans(int support_id, int trans_id);
 
     // receive from SignalStation
-    void RAppendMultiHelperTransFPTS(int new_helper_id, const QList<int>& trans_id_list);
+    void RAppendMultiSupportTransFPTS(int new_support_id, const QList<int>& trans_id_list);
 
 public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -44,7 +44,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    bool IsHelper() const override { return true; }
+    bool IsSupport() const override { return true; }
 
 protected:
     bool RemoveMultiTrans(const QList<int>& trans_id_list) override;

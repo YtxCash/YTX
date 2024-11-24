@@ -42,7 +42,7 @@ void TreeModelUtils::UpdateBranchUnitF(const Node* root, Node* node)
     node->initial_total = initial_total;
 }
 
-void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, StringHash& helper, const Node* root, const Node* node, CString& separator)
+void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, StringHash& support, const Node* root, const Node* node, CString& separator)
 {
     QQueue<const Node*> queue {};
     queue.enqueue(node);
@@ -63,7 +63,7 @@ void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, String
             branch.insert(current->id, path);
             break;
         case kTypeLeaf:
-            helper.insert(current->id, path);
+            support.insert(current->id, path);
             break;
         case kTypeSupport:
             leaf.insert(current->id, path);
@@ -183,10 +183,10 @@ bool TreeModelUtils::IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString&
     return false;
 }
 
-bool TreeModelUtils::IsHelperReferencedFPTS(Sqlite* sql, int node_id, CString& message)
+bool TreeModelUtils::IsSupportReferencedFPTS(Sqlite* sql, int node_id, CString& message)
 {
-    if (sql->HelperReferenceFPTS(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is helper referenced.").arg(message), THREE_THOUSAND);
+    if (sql->SupportReferenceFPTS(node_id)) {
+        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is support referenced.").arg(message), THREE_THOUSAND);
         return true;
     }
 
@@ -408,21 +408,21 @@ void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::SupportPathFPTS(CStringHash& helper, QStandardItemModel* model, int specific_node, Filter filter)
+void TreeModelUtils::SupportPathFPTS(CStringHash& support, QStandardItemModel* model, int specific_node, Filter filter)
 {
-    if (!model || helper.isEmpty())
+    if (!model || support.isEmpty())
         return;
 
     auto future = QtConcurrent::run([&, specific_node, filter]() {
         QVector<std::pair<QString, int>> items;
-        items.reserve(helper.size() + 1);
+        items.reserve(support.size() + 1);
 
-        auto should_add = [specific_node, filter](int helper_id) {
+        auto should_add = [specific_node, filter](int support_id) {
             switch (filter) {
             case Filter::kIncludeAllWithNone:
                 return true;
             case Filter::kExcludeSpecific:
-                return helper_id != specific_node;
+                return support_id != specific_node;
             default:
                 return false;
             }
@@ -432,7 +432,7 @@ void TreeModelUtils::SupportPathFPTS(CStringHash& helper, QStandardItemModel* mo
             items.emplaceBack(QString(), 0);
         }
 
-        for (const auto& [id, path] : helper.asKeyValueRange()) {
+        for (const auto& [id, path] : support.asKeyValueRange()) {
             if (should_add(id)) {
                 items.emplaceBack(path, id);
             }
@@ -489,7 +489,7 @@ QStandardItem* TreeModelUtils::TakeItemFromModel(QStandardItemModel* model, int 
     return nullptr;
 }
 
-void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& helper, QStandardItemModel* helper_model, const Node* node)
+void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& support, QStandardItemModel* support_model, const Node* node)
 {
     if (!node)
         return;
@@ -497,7 +497,7 @@ void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_mod
     QQueue<const Node*> queue {};
     queue.enqueue(node);
 
-    QSet<int> helper_range {};
+    QSet<int> support_range {};
     QSet<int> leaf_range {};
 
     const Node* current {};
@@ -515,15 +515,15 @@ void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_mod
             leaf_range.insert(current->id);
             break;
         case kTypeSupport:
-            helper_range.insert(current->id);
+            support_range.insert(current->id);
             break;
         default:
             break;
         }
     }
 
-    // 分别更新 helper_model 和 leaf_model
-    UpdateModelFunction(helper_model, helper_range, helper);
+    // 分别更新 support_model 和 leaf_model
+    UpdateModelFunction(support_model, support_range, support);
     UpdateModelFunction(leaf_model, leaf_range, leaf);
 }
 

@@ -4,54 +4,53 @@
 
 ### Relationship Between Node, Sql Node Table And Enum
 
-| Node            |  name   |   id    |  code   | description  |  note   |  rule   | branch  |  unit   | is_helper |  party  | employee  | date_time |  color  |     first      |   second    | discount  | finished  | initial_total | final_total |
-| --------------- | :-----: | :-----: | :-----: | :----------: | :-----: | :-----: | :-----: | :-----: | :-------: | :-----: | :-------: | :-------: | :-----: | :------------: | :---------: | :-------: | :-------: | :-----------: | :---------: |
-| EnumSearch      |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  | kBranch |  kUnit  | kIsHelper | kParty  | kEmployee | kDateTime | KColor  |     kFirst     |   kSecond   | kDiscount | kFinished | kInitialTotal | kFinalTotal |
-|                 |         |         |         |              |         |         |         |         |           |         |           |           |         |                |             |           |           |               |             |
-| Qt              | QString |   int   | QString |   QString    | QString |  bool   |  bool   |   int   |   bool    |   int   |    int    |  QString  | QString |     double     |   double    |  double   |   bool    |    double     |   double    |
-| Sqlite3         |  TEXT   | INTEGER |  TEXT   |     TEXT     |  TEXT   | BOOLEAN | BOOLEAN | INTEGER |  BOOLEAN  | INTEGER |  INTEGER  |   DATE    |  TEXT   |    NUMERIC     |   NUMERIC   |  NUMERIC  |  BOOLEAN  |    NUMERIC    |   NUMERIC   |
-|                 |         |         |         |              |         |         |         |         |           |         |           |           |         |                |             |           |           |               |             |
-| finance         |  name   |   id    |  code   | description  |  note   |  rule   | branch  |  unit   | is_helper |    X    |     X     |     X     |    X    |       X        |      X      |     X     |     X     | initial_total | final_total |
-| TreeEnum        |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  | kBranch |  kUnit  | kIsHelper |    X    |     X     |     X     |    X    |       X        |      X      |     X     |     X     | kInitialTotal | kFinalTotal |
-|                 |         |         |         |              |         |         |         |         |           |         |           |           |         |                |             |           |           |               |             |
-| task            |  name   |   id    |  code   | description  |  note   |  rule   | branch  |  unit   | is_helper |    X    |     X     | date_time |  color  |   unit_cost    |      X      |     X     | finished  | initial_total | final_total |
-| TreeEnumTask    |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  | kBranch |  kUnit  | kIsHelper |    X    |     X     | kDateTime | kColor  |   kUnitCost    |      X      |     X     | kFinished | kInitialTotal | kFinalTotal |
-|                 |         |         |         |              |         |         |         |         |           |         |           |           |         |                |             |           |           |               |             |
-| product         |  name   |   id    |  code   | description  |  note   |  rule   | branch  |  unit   |     X     |    X    |     X     |     X     |  color  |   unit_price   | commission  |     X     |     X     | initial_total | final_total |
-| EnumProduct     |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  | kBranch |  kUnit  |     X     |    X    |     X     |     X     | kColor  |   kUnitPrice   | kCommission |     X     |     X     | kInitialTotal | kFinalTotal |
-|                 |         |         |         |              |         |         |         |         |           |         |           |           |         |                |             |           |           |               |             |
-| stakeholder     |  name   |   id    |  code   | description  |  note   |  rule   | branch  |  unit   | is_helper |    X    | employee  | deadline  |    X    | payment_period |  tax_rate   |     X     |     X     |       X       |      X      |
-| EnumStakeholder |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  | kBranch |  kUnit  | kIsHelper |    X    | kEmployee | kDeadline |    X    | kPaymentPeriod |  kTaxRate   |     X     |     X     |       X       |      X      |
-|                 |         |         |         |              |         |         |         |         |           |         |           |           |         |                |             |           |           |               |             |
-| purchase        |  name   |   id    |  code   | description  |  note   |  rule   | branch  |  unit   |     X     |  party  | employee  | date_time |    X    |     first      |   second    | discount  | finished  |    amount     |   settled   |
-| EnumOrder       |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  | kBranch |  kUnit  |     X     | kParty  | kEmployee | kDateTime |    X    |     kFirst     |   kSecond   | kDiscount | kFinished |    kAmount    |  kSettled   |
-|                 |         |         |         |              |         |         |         |         |           |         |           |           |         |                |             |           |           |               |             |
-| sales           |  name   |   id    |  code   | description  |  note   |  rule   | branch  |  unit   |     X     |  party  | employee  | date_time |    X    |     first      |   second    | discount  | finished  |    amount     |   settled   |
-| EnumOrder       |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  | kBranch |  kUnit  |     X     | kParty  | kEmployee | kDateTime |    X    |     kFirst     |   kSecond   | kDiscount | kFinished |    kAmount    |  kSettled   |
+| Node            |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |  party  | employee  | date_time |  color  |     first      |   second    | discount  | finished  | initial_total | final_total |
+| --------------- | :-----: | :-----: | :-----: | :----------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-------: | :-------: | :-----: | :------------: | :---------: | :-------: | :-------: | :-----------: | :---------: |
+| EnumSearch      |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  | kParty  | kEmployee | kDateTime | KColor  |     kFirst     |   kSecond   | kDiscount | kFinished | kInitialTotal | kFinalTotal |
+|                 |         |         |         |              |         |         |         |         |         |           |           |         |                |             |           |           |               |             |
+| Qt              | QString |   int   | QString |   QString    | QString |  bool   |   int   |   int   |   int   |    int    |  QString  | QString |     double     |   double    |  double   |   bool    |    double     |   double    |
+| Sqlite3         |  TEXT   | INTEGER |  TEXT   |     TEXT     |  TEXT   | BOOLEAN | INTEGER | INTEGER | INTEGER |  INTEGER  |   DATE    |  TEXT   |    NUMERIC     |   NUMERIC   |  NUMERIC  |  BOOLEAN  |    NUMERIC    |   NUMERIC   |
+|                 |         |         |         |              |         |         |         |         |         |           |           |         |                |             |           |           |               |             |
+| finance         |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |    X    |     X     |     X     |    X    |       X        |      X      |     X     |     X     | initial_total | final_total |
+| TreeEnum        |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  |    X    |     X     |     X     |    X    |       X        |      X      |     X     |     X     | kInitialTotal | kFinalTotal |
+|                 |         |         |         |              |         |         |         |         |         |           |           |         |                |             |           |           |               |             |
+| task            |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |    X    |     X     | date_time |  color  |   unit_cost    |      X      |     X     | finished  | initial_total | final_total |
+| TreeEnumTask    |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  |    X    |     X     | kDateTime | kColor  |   kUnitCost    |      X      |     X     | kFinished | kInitialTotal | kFinalTotal |
+|                 |         |         |         |              |         |         |         |         |         |           |           |         |                |             |           |           |               |             |
+| product         |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |    X    |     X     |     X     |  color  |   unit_price   | commission  |     X     |     X     | initial_total | final_total |
+| EnumProduct     |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  |    X    |     X     |     X     | kColor  |   kUnitPrice   | kCommission |     X     |     X     | kInitialTotal | kFinalTotal |
+|                 |         |         |         |              |         |         |         |         |         |           |           |         |                |             |           |           |               |             |
+| stakeholder     |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |    X    | employee  | deadline  |    X    | payment_period |  tax_rate   |     X     |     X     |       X       |      X      |
+| EnumStakeholder |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  |    X    | kEmployee | kDeadline |    X    | kPaymentPeriod |  kTaxRate   |     X     |     X     |       X       |      X      |
+|                 |         |         |         |              |         |         |         |         |         |           |           |         |                |             |           |           |               |             |
+| purchase        |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |  party  | employee  | date_time |    X    |     first      |   second    | discount  | finished  |    amount     |   settled   |
+| EnumOrder       |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  | kParty  | kEmployee | kDateTime |    X    |     kFirst     |   kSecond   | kDiscount | kFinished |    kAmount    |  kSettled   |
+|                 |         |         |         |              |         |         |         |         |         |           |           |         |                |             |           |           |               |             |
+| sales           |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |  party  | employee  | date_time |    X    |     first      |   second    | discount  | finished  |    amount     |   settled   |
+| EnumOrder       |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  | kParty  | kEmployee | kDateTime |    X    |     kFirst     |   kSecond   | kDiscount | kFinished |    kAmount    |  kSettled   |
 
+-- type: leaf = 0, branch = 1, support = 2
 -- stakeholder-U: Employee = 0, Customer = 1, Vendor = 2, Product = 3
 -- stakeholder-R: Cash = 0, Monthly = 1
 -- order-U: Cash = 0, Monthly = 1, Pending = 2
 -- order-R: Charge = 0, Refund = 1
 -- R: DICD = 0, DDCI = 1
--- B: Branch
--- U: Unit
 -- X: Placeholder
 
 ### Relationship Between Trans, Sql Transaction Table And Enum
 
-| Trans           |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  | unit_price |   helper_node   | discount_price | settled  |  document   |  state  | rhs_credit | rhs_debit | rhs_ratio |    rhs_node    |
+| Trans           |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  | unit_price |   support_id    | discount_price | settled  |  document   |  state  | rhs_credit | rhs_debit | rhs_ratio |    rhs_node    |
 | --------------- | :-----: | :-------: | :-----: | :------: | :-------: | :-------: | :--------: | :----------: | :--------: | :-------------: | :------------: | :------: | :---------: | :-----: | :--------: | :-------: | :-------: | :------------: |
-| EnumSearch      |   kID   | kDateTime |  KCode  | kLhsNode | kLhsRatio | kLhsDebit | kLhsCredit | kDescription | kUnitPrice |   kHelperNode   | kDiscountPrice | kSettled |  kDocument  | kState  | kRhsCredit | kRhsDebit | kRhsRatio |    kRhsNode    |
+| EnumSearch      |   kID   | kDateTime |  KCode  | kLhsNode | kLhsRatio | kLhsDebit | kLhsCredit | kDescription | kUnitPrice |   kSupportID    | kDiscountPrice | kSettled |  kDocument  | kState  | kRhsCredit | kRhsDebit | kRhsRatio |    kRhsNode    |
 |                 |         |           |         |          |           |           |            |              |            |                 |                |          |             |         |            |           |           |                |
 | Qt              |   int   |  QString  | QString |   int    |  double   |  double   |   double   |   QString    |   double   |       int       |     double     |  double  | QStringList |  bool   |   double   |  double   |  double   |      int       |
 | Sqlite3         | INTEGER |   TEXT    |  TEXT   | INTEGER  |  NUMERIC  |  NUMERIC  |  NUMERIC   |     TEXT     |  NUMERIC   |    INTERGER     |    NUMERIC     | NUMERIC  |    TEXT     | BOOLEAN |  NUMERIC   |  NUMERIC  |  NUMERIC  |    INTEGER     |
 |                 |         |           |         |          |           |           |            |              |            |                 |                |          |             |         |            |           |           |                |
-| finance         |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  |     X      |   helper_node   |       X        |    X     |  document   |  state  | rhs_credit | rhs_debit | rhs_ratio |    rhs_node    |
-| TableEnum       |   kID   | kDateTime |  kCode  |    X     | kLhsRatio |  kDebit   |  kCredit   | kDescription |     X      |   kHelperNode   |       X        |    X     |  kDocument  | kState  |     X      |     X     |     X     |    kRhsNode    |
+| finance         |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  |     X      |   support_id    |       X        |    X     |  document   |  state  | rhs_credit | rhs_debit | rhs_ratio |    rhs_node    |
+| TableEnum       |   kID   | kDateTime |  kCode  |    X     | kLhsRatio |  kDebit   |  kCredit   | kDescription |     X      |   kSupportID    |       X        |    X     |  kDocument  | kState  |     X      |     X     |     X     |    kRhsNode    |
 |                 |         |           |         |          |           |           |            |              |            |                 |                |          |             |         |            |           |           |                |
-| task            |   id    | date_time |  code   | lhs_node |     X     | lhs_debit | lhs_credit | description  | unit_cost  |   helper_node   |       X        |    X     |  document   |  state  | rhs_credit | rhs_debit |     X     |    rhs_node    |
-| TableEnum       |   kID   | kDateTime |  kCode  |    X     |     X     |  kDebit   |  kCredit   | kDescription | kUnitCost  |   kHelperNode   |       X        |    X     |  kDocument  | kState  |     X      |     X     |     X     |    kRhsNode    |
+| task            |   id    | date_time |  code   | lhs_node |     X     | lhs_debit | lhs_credit | description  | unit_cost  |   support_id    |       X        |    X     |  document   |  state  | rhs_credit | rhs_debit |     X     |    rhs_node    |
+| TableEnum       |   kID   | kDateTime |  kCode  |    X     |     X     |  kDebit   |  kCredit   | kDescription | kUnitCost  |   kSupportID    |       X        |    X     |  kDocument  | kState  |     X      |     X     |     X     |    kRhsNode    |
 |                 |         |           |         |          |           |           |            |              |            |                 |                |          |             |         |            |           |           |                |
 | product         |   id    | date_time |  code   | lhs_node |     X     | lhs_debit | lhs_credit | description  | unit_cost  |        X        |       X        |    X     |  document   |  state  | rhs_credit | rhs_debit |     X     |    rhs_node    |
 | TableEnum       |   kID   | kDateTime |  kCode  |    X     |     X     |  kDebit   |  kCredit   | kDescription | kUnitCost  |        X        |       X        |    X     |  kDocument  | kState  |     X      |     X     |     X     |    kRhsNode    |
@@ -65,9 +64,7 @@
 | sales           |   id    |     X     |  code   | lhs_node |     X     |   first   |   second   | description  | unit_price | outside_product | discount_price | settled  |      X      |    X    |   amount   | discount  |     X     | inside_product |
 | EnumOrder       |   kID   |     X     |  kCode  |    X     |     X     |  kFirst   |  kSecond   | kDescription | kUnitPrice | kOutsideProduct | kDiscountPrice | kSettled |      X      |    X    |  kAmount   | kDiscount |     X     | kInsideProduct |
 
--- stakestakeholder: lhs_ratio - party's unit_price/employee's commission, rhs_node - product_id
--- purchase: lhs_node - inside_product_id, lhs_ratio - unit_price, rhs_node - outside_product_id, show lhs_node's description
--- sales: lhs_node - inside_product_id, lhs_ratio - unit_price, rhs_node - outside_product_id, show lhs_node's description
+
 
 ## User
 

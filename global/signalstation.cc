@@ -1,7 +1,7 @@
 #include "global/signalstation.h"
 
-#include "table/model/tablemodelsupport.h"
 #include "table/model/tablemodelstakeholder.h"
+#include "table/model/tablemodelsupport.h"
 
 SignalStation& SignalStation::Instance()
 {
@@ -53,7 +53,7 @@ void SignalStation::RUpdateBalance(Section section, int node_id, int trans_id)
     emit SUpdateBalance(node_id, trans_id);
 }
 
-void SignalStation::RAppendHelperTrans(Section section, const TransShadow* trans_shadow)
+void SignalStation::RAppendSupportTrans(Section section, const TransShadow* trans_shadow)
 {
     if (!trans_shadow)
         return;
@@ -63,19 +63,19 @@ void SignalStation::RAppendHelperTrans(Section section, const TransShadow* trans
         return;
 
     const auto* cast_model { static_cast<const TableModelSupport*>(model) };
-    connect(this, &SignalStation::SAppendHelperTrans, cast_model, &TableModelSupport::RAppendHelperTrans, Qt::SingleShotConnection);
-    emit SAppendHelperTrans(trans_shadow);
+    connect(this, &SignalStation::SAppendSupportTrans, cast_model, &TableModelSupport::RAppendSupportTrans, Qt::SingleShotConnection);
+    emit SAppendSupportTrans(trans_shadow);
 }
 
-void SignalStation::RRemoveHelperTrans(Section section, int helper_id, int trans_id)
+void SignalStation::RRemoveSupportTrans(Section section, int support_id, int trans_id)
 {
-    const auto* model { FindTableModel(section, helper_id) };
+    const auto* model { FindTableModel(section, support_id) };
     if (!model)
         return;
 
     const auto* cast_model { static_cast<const TableModelSupport*>(model) };
-    connect(this, &SignalStation::SRemoveHelperTrans, cast_model, &TableModelSupport::RRemoveHelperTrans, Qt::SingleShotConnection);
-    emit SRemoveHelperTrans(helper_id, trans_id);
+    connect(this, &SignalStation::SRemoveSupportTrans, cast_model, &TableModelSupport::RRemoveSupportTrans, Qt::SingleShotConnection);
+    emit SRemoveSupportTrans(support_id, trans_id);
 }
 
 void SignalStation::RAppendPrice(Section section, TransShadow* trans_shadow)
@@ -103,13 +103,13 @@ void SignalStation::RRule(Section section, int node_id, bool rule)
     emit SRule(node_id, rule);
 }
 
-void SignalStation::RMoveMultiHelperTransFPTS(Section section, int new_helper_id, const QList<int>& trans_id_list)
+void SignalStation::RMoveMultiSupportTransFPTS(Section section, int new_support_id, const QList<int>& trans_id_list)
 {
-    const auto* model { FindTableModel(section, new_helper_id) };
+    const auto* model { FindTableModel(section, new_support_id) };
     if (!model)
         return;
 
     const auto* cast_model { static_cast<const TableModelSupport*>(model) };
-    connect(this, &SignalStation::SAppendMultiHelperTransFPTS, cast_model, &TableModelSupport::RAppendMultiHelperTransFPTS, Qt::SingleShotConnection);
-    emit SAppendMultiHelperTransFPTS(new_helper_id, trans_id_list);
+    connect(this, &SignalStation::SAppendMultiSupportTransFPTS, cast_model, &TableModelSupport::RAppendMultiSupportTransFPTS, Qt::SingleShotConnection);
+    emit SAppendMultiSupportTransFPTS(new_support_id, trans_id_list);
 }

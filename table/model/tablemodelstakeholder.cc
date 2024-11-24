@@ -34,8 +34,8 @@ bool TableModelStakeholder::removeRows(int row, int /*count*/, const QModelIndex
     endRemoveRows();
 
     if (rhs_node_id != 0) {
-        if (int helper_id = *trans_shadow->support_id; helper_id != 0)
-            emit SRemoveHelperTrans(info_.section, helper_id, *trans_shadow->id);
+        if (int support_id = *trans_shadow->support_id; support_id != 0)
+            emit SRemoveSupportTrans(info_.section, support_id, *trans_shadow->id);
 
         sql_->RemoveTrans(*trans_shadow->id);
     }
@@ -166,7 +166,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
             sql_->WriteTrans(trans_shadow);
 
             if (*trans_shadow->support_id != 0) {
-                emit SAppendHelperTrans(info_.section, trans_shadow);
+                emit SAppendSupportTrans(info_.section, trans_shadow);
             }
         } else
             sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
@@ -174,10 +174,10 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     if (hel_changed) {
         if (old_hel_node != 0)
-            emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->id);
+            emit SRemoveSupportTrans(info_.section, old_hel_node, *trans_shadow->id);
 
         if (*trans_shadow->support_id != 0) {
-            emit SAppendHelperTrans(info_.section, trans_shadow);
+            emit SAppendSupportTrans(info_.section, trans_shadow);
         }
     }
 

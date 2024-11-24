@@ -51,7 +51,7 @@ void SqliteFinance::ReadTransQuery(Trans* trans, const QSqlQuery& query) const
     trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
     trans->state = query.value("state").toBool();
-    trans->support_id = query.value("helper_id").toInt();
+    trans->support_id = query.value("support_id").toInt();
 }
 
 void SqliteFinance::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) const
@@ -69,7 +69,7 @@ void SqliteFinance::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& query) 
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":code", *trans_shadow->code);
     query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
-    query.bindValue(":helper_id", *trans_shadow->support_id);
+    query.bindValue(":support_id", *trans_shadow->support_id);
 }
 
 void SqliteFinance::UpdateTransValueBindFPTO(const TransShadow* trans_shadow, QSqlQuery& query) const
@@ -119,29 +119,29 @@ QString SqliteFinance::QSInternalReference() const
     )");
 }
 
-QString SqliteFinance::QSHelperReferenceFPTS() const
+QString SqliteFinance::QSSupportReferenceFPTS() const
 {
     return QStringLiteral(R"(
     SELECT COUNT(*) FROM finance_transaction
-    WHERE helper_id = :helper_id AND removed = 0
+    WHERE support_id = :support_id AND removed = 0
     )");
 }
 
-QString SqliteFinance::QSReplaceHelperTransFPTS() const
+QString SqliteFinance::QSReplaceSupportTransFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET
-        helper_id = :new_node_id
-    WHERE helper_id = :old_node_id AND removed = 0
+        support_id = :new_node_id
+    WHERE support_id = :old_node_id AND removed = 0
     )");
 }
 
-QString SqliteFinance::QSRemoveHelperFPTS() const
+QString SqliteFinance::QSRemoveSupportFPTS() const
 {
     return QStringLiteral(R"(
     UPDATE finance_transaction SET
-        helper_id = 0
-    WHERE helper_id = :node_id AND removed = 0
+        support_id = 0
+    WHERE support_id = :node_id AND removed = 0
     )");
 }
 
@@ -182,11 +182,11 @@ QString SqliteFinance::QSLeafTotalFPT() const
     )");
 }
 
-QString SqliteFinance::QSHelperTransToMoveFPTS() const
+QString SqliteFinance::QSSupportTransToMoveFPTS() const
 {
     return QStringLiteral(R"(
     SELECT id FROM finance_transaction
-    WHERE helper_id = :helper_id AND removed = 0
+    WHERE support_id = :support_id AND removed = 0
     )");
 }
 
@@ -201,10 +201,10 @@ QString SqliteFinance::QSNodeTransToRemove() const
     )");
 }
 
-QString SqliteFinance::QSHelperTransToRemoveFPTS() const
+QString SqliteFinance::QSSupportTransToRemoveFPTS() const
 {
     return QStringLiteral(R"(
-    SELECT helper_id, id FROM finance_transaction
+    SELECT support_id, id FROM finance_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
 }
@@ -212,18 +212,18 @@ QString SqliteFinance::QSHelperTransToRemoveFPTS() const
 QString SqliteFinance::QSReadNodeTrans() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, support_id, code, document, date_time
     FROM finance_transaction
     WHERE (lhs_node = :node_id OR rhs_node = :node_id) AND removed = 0
     )");
 }
 
-QString SqliteFinance::QSReadHelperTransFPTS() const
+QString SqliteFinance::QSReadSupportTransFPTS() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, support_id, code, document, date_time
     FROM finance_transaction
-    WHERE helper_id = :node_id AND removed = 0
+    WHERE support_id = :node_id AND removed = 0
     )");
 }
 
@@ -231,16 +231,16 @@ QString SqliteFinance::QSWriteNodeTrans() const
 {
     return QStringLiteral(R"(
     INSERT INTO finance_transaction
-    (date_time, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_id, code, document)
+    (date_time, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, support_id, code, document)
     VALUES
-    (:date_time, :lhs_node, :lhs_ratio, :lhs_debit, :lhs_credit, :rhs_node, :rhs_ratio, :rhs_debit, :rhs_credit, :state, :description, :helper_id, :code, :document)
+    (:date_time, :lhs_node, :lhs_ratio, :lhs_debit, :lhs_credit, :rhs_node, :rhs_ratio, :rhs_debit, :rhs_credit, :state, :description, :support_id, :code, :document)
     )");
 }
 
 QString SqliteFinance::QSReadTransRangeFPTS(CString& in_list) const
 {
     return QString(R"(
-    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, support_id, code, document, date_time
     FROM finance_transaction
     WHERE id IN (%1) AND removed = 0
     )")
@@ -286,7 +286,7 @@ void SqliteFinance::UpdateNodeValueBindFPTO(const Node* node, QSqlQuery& query) 
 QString SqliteFinance::QSSearchTrans() const
 {
     return QStringLiteral(R"(
-    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, helper_id, code, document, date_time
+    SELECT id, lhs_node, lhs_ratio, lhs_debit, lhs_credit, rhs_node, rhs_ratio, rhs_debit, rhs_credit, state, description, support_id, code, document, date_time
     FROM finance_transaction
     WHERE (lhs_debit = :text OR lhs_credit = :text OR rhs_debit = :text OR rhs_credit = :text OR description LIKE :description) AND removed = 0
     ORDER BY date_time

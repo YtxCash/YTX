@@ -1,27 +1,27 @@
-#include "helpernode.h"
+#include "supportnode.h"
 
 #include <QPainter>
 
 #include "widget/combobox.h"
 
-HelperNode::HelperNode(CTreeModel* tree_model, QObject* parent)
+SupportNode::SupportNode(CTreeModel* tree_model, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
-    , helper_model_ { tree_model->HelperModel() }
+    , support_model_ { tree_model->SupportModel() }
 {
 }
 
-QWidget* HelperNode::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+QWidget* SupportNode::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     Q_UNUSED(option);
 
     auto* editor { new ComboBox(parent) };
-    editor->setModel(helper_model_);
+    editor->setModel(support_model_);
 
     return editor;
 }
 
-void HelperNode::setEditorData(QWidget* editor, const QModelIndex& index) const
+void SupportNode::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<ComboBox*>(editor) };
     int key { index.data().toInt() };
@@ -29,14 +29,14 @@ void HelperNode::setEditorData(QWidget* editor, const QModelIndex& index) const
     cast_editor->setCurrentIndex(item_index);
 }
 
-void HelperNode::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void SupportNode::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<ComboBox*>(editor) };
     int key { cast_editor->currentData().toInt() };
     model->setData(index, key);
 }
 
-void HelperNode::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void SupportNode::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString& text { tree_model_->GetPath(index.data().toInt()) };
     if (text.isEmpty())
@@ -50,13 +50,13 @@ void HelperNode::paint(QPainter* painter, const QStyleOptionViewItem& option, co
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize HelperNode::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize SupportNode::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString& text = tree_model_->GetPath(index.data().toInt());
     return CalculateTextSize(text);
 }
 
-void HelperNode::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void SupportNode::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QSize text_size { CalculateTextSize(tree_model_->GetPath(index.data().toInt())) };
     const int width { std::max(option.rect.width(), text_size.width()) };

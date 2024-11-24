@@ -125,7 +125,7 @@ public:
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }
-    QStandardItemModel* HelperModel() const { return support_model_; }
+    QStandardItemModel* SupportModel() const { return support_model_; }
     QStandardItemModel* LeafModel() const { return leaf_model_; }
 
     void CopyNodeFPTS(Node* tmp_node, int node_id) const;

@@ -27,13 +27,13 @@ enum class Section { kFinance, kProduct, kTask, kStakeholder, kSales, kPurchase 
 enum class Filter { kIncludeSpecific, kExcludeSpecific, kIncludeSpecificWithNone, kIncludeAllWithNone };
 
 // Enum class defining trans columns
-enum class TableEnum { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode };
+enum class TableEnum { kID, kDateTime, kLhsRatio, kCode, kDescription, kSupportID, kDocument, kState, kRhsNode };
 
-enum class TableEnumFinance { kID, kDateTime, kLhsRatio, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+enum class TableEnumFinance { kID, kDateTime, kLhsRatio, kCode, kDescription, kSupportID, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
 
-enum class TableEnumTask { kID, kDateTime, kUnitCost, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+enum class TableEnumTask { kID, kDateTime, kUnitCost, kCode, kDescription, kSupportID, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
 
-enum class TableEnumProduct { kID, kDateTime, kUnitCost, kCode, kDescription, kHelperNode, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
+enum class TableEnumProduct { kID, kDateTime, kUnitCost, kCode, kDescription, kSupportID, kDocument, kState, kRhsNode, kDebit, kCredit, kSubtotal };
 
 enum class TableEnumStakeholder { kID, kDateTime, kUnitPrice, kCode, kDescription, kOutsideProduct, kDocument, kState, kInsideProduct };
 
@@ -64,7 +64,7 @@ enum class TableEnumSearch {
     kLhsCredit,
     kDescription,
     kUnitPrice,
-    kHelperNode,
+    kSupportNode,
     kDiscountPrice,
     kSettled,
     kDocument,
@@ -75,7 +75,7 @@ enum class TableEnumSearch {
     kRhsNode
 };
 
-enum class TableEnumHelper {
+enum class TableEnumSupport {
     kID,
     kDateTime,
     kCode,

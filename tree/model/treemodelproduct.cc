@@ -216,7 +216,7 @@ bool TreeModelProduct::UpdateUnit(Node* node, int value)
     if (TreeModelUtils::IsExternalReferencedPS(sql_, node_id, message))
         return false;
 
-    if (TreeModelUtils::IsHelperReferencedFPTS(sql_, node_id, message))
+    if (TreeModelUtils::IsSupportReferencedFPTS(sql_, node_id, message))
         return false;
 
     node->unit = value;

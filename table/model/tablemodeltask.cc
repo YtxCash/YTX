@@ -32,7 +32,7 @@ QVariant TableModelTask::data(const QModelIndex& index, int role) const
         return *trans_shadow->unit_price == 0 ? QVariant() : *trans_shadow->unit_price;
     case TableEnumTask::kDescription:
         return *trans_shadow->description;
-    case TableEnumTask::kHelperNode:
+    case TableEnumTask::kSupportID:
         return *trans_shadow->support_id == 0 ? QVariant() : *trans_shadow->support_id;
     case TableEnumTask::kRhsNode:
         return *trans_shadow->rhs_node == 0 ? QVariant() : *trans_shadow->rhs_node;
@@ -67,7 +67,7 @@ bool TableModelTask::setData(const QModelIndex& index, const QVariant& value, in
     bool deb_changed { false };
     bool cre_changed { false };
     bool rat_changed { false };
-    bool hel_changed { false };
+    bool sup_changed { false };
 
     switch (kColumn) {
     case TableEnumTask::kDateTime:
@@ -83,8 +83,8 @@ bool TableModelTask::setData(const QModelIndex& index, const QVariant& value, in
         TableModelUtils::UpdateField(
             sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
         break;
-    case TableEnumTask::kHelperNode:
-        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), HELPER_ID, &TransShadow::support_id);
+    case TableEnumTask::kSupportID:
+        sup_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), SUPPORT_ID, &TransShadow::support_id);
         break;
     case TableEnumTask::kUnitCost:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
@@ -124,7 +124,7 @@ bool TableModelTask::setData(const QModelIndex& index, const QVariant& value, in
             emit SUpdateLeafValue(*trans_shadow->rhs_node, debit, credit, ratio * debit, ratio * credit);
 
             if (*trans_shadow->support_id != 0) {
-                emit SAppendHelperTrans(info_.section, trans_shadow);
+                emit SAppendSupportTrans(info_.section, trans_shadow);
             }
         }
 
@@ -143,12 +143,12 @@ bool TableModelTask::setData(const QModelIndex& index, const QVariant& value, in
         emit SResizeColumnToContents(std::to_underlying(TableEnumTask::kSubtotal));
     }
 
-    if (hel_changed) {
+    if (sup_changed) {
         if (old_hel_node != 0)
-            emit SRemoveHelperTrans(info_.section, old_hel_node, *trans_shadow->id);
+            emit SRemoveSupportTrans(info_.section, old_hel_node, *trans_shadow->id);
 
         if (*trans_shadow->support_id != 0) {
-            emit SAppendHelperTrans(info_.section, trans_shadow);
+            emit SAppendSupportTrans(info_.section, trans_shadow);
         }
     }
 
@@ -185,7 +185,7 @@ void TableModelTask::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (*lhs->unit_price < *rhs->unit_price) : (*lhs->unit_price > *rhs->unit_price);
         case TableEnumTask::kDescription:
             return (order == Qt::AscendingOrder) ? (*lhs->description < *rhs->description) : (*lhs->description > *rhs->description);
-        case TableEnumTask::kHelperNode:
+        case TableEnumTask::kSupportID:
             return (order == Qt::AscendingOrder) ? (*lhs->support_id < *rhs->support_id) : (*lhs->support_id > *rhs->support_id);
         case TableEnumTask::kRhsNode:
             return (order == Qt::AscendingOrder) ? (*lhs->rhs_node < *rhs->rhs_node) : (*lhs->rhs_node > *rhs->rhs_node);
@@ -259,8 +259,8 @@ bool TableModelTask::removeRows(int row, int /*count*/, const QModelIndex& paren
 
         TableModelUtils::AccumulateSubtotal(mutex_, trans_shadow_list_, row, rule_);
 
-        if (int helper_id = *trans_shadow->support_id; helper_id != 0)
-            emit SRemoveHelperTrans(info_.section, helper_id, *trans_shadow->id);
+        if (int support_id = *trans_shadow->support_id; support_id != 0)
+            emit SRemoveSupportTrans(info_.section, support_id, *trans_shadow->id);
 
         sql_->RemoveTrans(trans_id);
 

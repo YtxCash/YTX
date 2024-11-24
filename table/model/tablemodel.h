@@ -48,8 +48,8 @@ signals:
     void SRemoveOneTrans(Section section, int node_id, int trans_id);
     void SUpdateBalance(Section section, int node_id, int trans_id);
 
-    void SAppendHelperTrans(Section section, const TransShadow* trans_shadow);
-    void SRemoveHelperTrans(Section section, int node_id, int trans_id);
+    void SAppendSupportTrans(Section section, const TransShadow* trans_shadow);
+    void SRemoveSupportTrans(Section section, int node_id, int trans_id);
 
     // send to its table view
     void SResizeColumnToContents(int column);
@@ -78,7 +78,7 @@ public:
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
     virtual int GetNodeRow(int node_id) const;
-    virtual bool IsHelper() const { return false; }
+    virtual bool IsSupport() const { return false; }
 
     QModelIndex GetIndex(int trans_id) const;
     QStringList* GetDocumentPointer(const QModelIndex& index) const;

@@ -26,11 +26,11 @@ void Sqlite::RRemoveNode(int node_id, int node_type)
     // Mark Trans for removal
 
     QMultiHash<int, int> node_trans {};
-    QMultiHash<int, int> helper_trans {};
+    QMultiHash<int, int> support_trans {};
 
     if (node_type == kTypeLeaf) {
         node_trans = TransToRemove(node_id, kTypeLeaf);
-        helper_trans = TransToRemove(node_id, kTypeSupport);
+        support_trans = TransToRemove(node_id, kTypeSupport);
     }
 
     // Remove node, path, trans from the sqlite3 database
@@ -38,7 +38,7 @@ void Sqlite::RRemoveNode(int node_id, int node_type)
 
     // Process buffered trans
     if (node_type == kTypeSupport) {
-        RemoveHelperFunction(node_id);
+        RemoveSupportFunction(node_id);
         return;
     }
 
@@ -47,8 +47,8 @@ void Sqlite::RRemoveNode(int node_id, int node_type)
     emit SRemoveMultiTrans(node_trans);
     emit SUpdateMultiLeafTotal(node_trans.uniqueKeys());
 
-    if (!helper_trans.isEmpty())
-        emit SRemoveMultiTrans(helper_trans);
+    if (!support_trans.isEmpty())
+        emit SRemoveMultiTrans(support_trans);
 
     // Recycle trans resources
     const auto trans { node_trans.values() };
@@ -71,7 +71,7 @@ QMultiHash<int, int> Sqlite::TransToRemove(int node_id, int target_node_type) co
         string = QSNodeTransToRemove();
         break;
     case kTypeSupport:
-        string = QSHelperTransToRemoveFPTS();
+        string = QSSupportTransToRemoveFPTS();
         break;
     default:
         break;
@@ -91,20 +91,20 @@ QMultiHash<int, int> Sqlite::TransToRemove(int node_id, int target_node_type) co
     return hash;
 }
 
-QList<int> Sqlite::HelperTransToMoveFPTS(int helper_id) const
+QList<int> Sqlite::SupportTransToMoveFPTS(int support_id) const
 {
     QList<int> list {};
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    CString string { QSHelperTransToMoveFPTS() };
+    CString string { QSSupportTransToMoveFPTS() };
 
     query.prepare(string);
-    query.bindValue(":helper_id", helper_id);
+    query.bindValue(":support_id", support_id);
 
     if (!query.exec()) {
-        qWarning() << "Failed in HelperTransToMove" << query.lastError().text();
+        qWarning() << "Failed in SupportTransToMoveFPTS" << query.lastError().text();
         return {};
     }
 
@@ -115,12 +115,12 @@ QList<int> Sqlite::HelperTransToMoveFPTS(int helper_id) const
     return list;
 }
 
-void Sqlite::RemoveHelperFunction(int helper_id) const
+void Sqlite::RemoveSupportFunction(int support_id) const
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->support_id == helper_id) {
+        if (trans->support_id == support_id) {
             trans->support_id = 0;
         }
     }
@@ -153,7 +153,7 @@ void Sqlite::RReplaceNode(int old_node_id, int new_node_id, int node_type)
 
     QString string {};
     bool free {};
-    QList<int> helper_trans {};
+    QList<int> support_trans {};
 
     switch (node_type) {
     case kTypeLeaf:
@@ -161,8 +161,8 @@ void Sqlite::RReplaceNode(int old_node_id, int new_node_id, int node_type)
         free = FreeView(old_node_id, new_node_id);
         break;
     case kTypeSupport:
-        string = QSReplaceHelperTransFPTS();
-        helper_trans = HelperTransToMoveFPTS(old_node_id);
+        string = QSReplaceSupportTransFPTS();
+        support_trans = SupportTransToMoveFPTS(old_node_id);
         break;
     default:
         break;
@@ -183,9 +183,9 @@ void Sqlite::RReplaceNode(int old_node_id, int new_node_id, int node_type)
     if (node_type == kTypeSupport) {
         emit SFreeView(old_node_id);
         emit SRemoveNode(old_node_id);
-        emit SMoveMultiHelperTransFPTS(info_.section, new_node_id, helper_trans);
+        emit SMoveMultiSupportTransFPTS(info_.section, new_node_id, support_trans);
 
-        ReplaceHelperFunction(old_node_id, new_node_id);
+        ReplaceSupportFunction(old_node_id, new_node_id);
         RemoveNode(old_node_id, kTypeSupport);
 
         return;
@@ -388,7 +388,7 @@ bool Sqlite::RemoveNode(int node_id, int node_type) const
         string_second = QSRemoveBranch();
         break;
     case kTypeSupport:
-        string_second = QSRemoveHelperFPTS();
+        string_second = QSRemoveSupportFPTS();
         break;
     default:
         break;
@@ -429,13 +429,13 @@ bool Sqlite::RemoveNode(int node_id, int node_type) const
     return true;
 }
 
-void Sqlite::ReplaceHelperFunction(int old_helper_id, int new_helper_id)
+void Sqlite::ReplaceSupportFunction(int old_support_id, int new_support_id)
 {
     const auto& const_trans_hash { std::as_const(trans_hash_) };
 
     for (auto* trans : const_trans_hash) {
-        if (trans->support_id == old_helper_id) {
-            trans->support_id = new_helper_id;
+        if (trans->support_id == old_support_id) {
+            trans->support_id = new_support_id;
         }
     }
 }
@@ -579,20 +579,20 @@ bool Sqlite::ExternalReference(int node_id) const
     return query.value(0).toInt() >= 1;
 }
 
-bool Sqlite::HelperReferenceFPTS(int helper_id) const
+bool Sqlite::SupportReferenceFPTS(int support_id) const
 {
-    CString& string { QSHelperReferenceFPTS() };
-    if (string.isEmpty() || helper_id <= 0)
+    CString& string { QSSupportReferenceFPTS() };
+    if (string.isEmpty() || support_id <= 0)
         return false;
 
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
     query.prepare(string);
-    query.bindValue(":helper_id", helper_id);
+    query.bindValue(":support_id", support_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in HelperReferenceFPTS" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in SupportReferenceFPTS" << query.lastError().text();
         return false;
     }
 
@@ -954,24 +954,24 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
     return true;
 }
 
-bool Sqlite::ReadHelperTransFPTS(TransShadowList& trans_shadow_list, int helper_id)
+bool Sqlite::ReadSupportTransFPTS(TransShadowList& trans_shadow_list, int support_id)
 {
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    CString& string { QSReadHelperTransFPTS() };
+    CString& string { QSReadSupportTransFPTS() };
     if (string.isEmpty())
         return false;
 
     query.prepare(string);
-    query.bindValue(":node_id", helper_id);
+    query.bindValue(":node_id", support_id);
 
     if (!query.exec()) {
-        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadHelperTransFPTS" << query.lastError().text();
+        qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadSupportTransFPTS" << query.lastError().text();
         return false;
     }
 
-    ReadTransFunction(trans_shadow_list, helper_id, query);
+    ReadTransFunction(trans_shadow_list, support_id, query);
     return true;
 }
 
