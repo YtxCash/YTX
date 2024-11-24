@@ -88,7 +88,6 @@ public:
     static void UpdateModelSeparatorFPTS(QStandardItemModel* model, CStringHash& source_path);
 
     static bool HasChildrenFPTS(Node* node, CString& message);
-    static bool IsBranchFPTS(Node* node, CString& message);
     static bool IsOpenedFPTS(CTableHash& hash, int node_id, CString& message);
 
     static void UpdateBranchUnitF(const Node* root, Node* node);

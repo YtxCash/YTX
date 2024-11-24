@@ -213,16 +213,6 @@ bool TreeModelUtils::HasChildrenFPTS(Node* node, CString& message)
     return false;
 }
 
-bool TreeModelUtils::IsBranchFPTS(Node* node, CString& message)
-{
-    if (node->type == kTypeBranch) {
-        ShowTemporaryTooltipFPTS(QObject::tr("%1 it is branch.").arg(message), THREE_THOUSAND);
-        return true;
-    }
-
-    return false;
-}
-
 bool TreeModelUtils::IsOpenedFPTS(CTableHash& hash, int node_id, CString& message)
 {
     if (hash.contains(node_id)) {
