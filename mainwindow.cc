@@ -25,7 +25,7 @@
 #include "delegate/search/searchpathtabler.h"
 #include "delegate/specificunit.h"
 #include "delegate/table/colorr.h"
-#include "delegate/table/supportnode.h"
+#include "delegate/table/supportid.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledatetime.h"
 #include "delegate/table/tabledbclick.h"
@@ -551,7 +551,7 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
     auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSubtotal), subtotal);
 
-    auto* support_node { new SupportNode(tree_model, table_view) };
+    auto* support_node { new SupportID(tree_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSupportID), support_node);
 }
 
@@ -580,13 +580,13 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSubtotal), subtotal);
 
-    auto* support_node { new SupportNode(tree_model, table_view) };
+    auto* support_node { new SupportID(tree_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSupportID), support_node);
 }
 
 void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
-    auto* support_node { new SupportNode(tree_model, table_view) };
+    auto* support_node { new SupportID(tree_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kSupportID), support_node);
 
     auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
@@ -636,7 +636,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
 
-    auto* support_node { new SupportNode(tree_model, table_view) };
+    auto* support_node { new SupportID(tree_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), support_node);
 }
 
@@ -647,7 +647,7 @@ void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) cons
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kInsideProduct), inside_product);
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
-    auto* support_node { new SupportNode(stakeholder_tree_model, table_view) };
+    auto* support_node { new SupportID(stakeholder_tree_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kOutsideProduct), support_node);
 
     auto* color { new ColorR(table_view) };
@@ -1428,7 +1428,7 @@ void MainWindow::SetHeader()
 {
     finance_data_.info.tree_header
         = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Foreign Total"), tr("Local Total"), {} };
-    finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("FXRate"), tr("Code"), tr("Description"), tr("SupportNode"), tr("D"), tr("S"),
+    finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("FXRate"), tr("Code"), tr("Description"), tr("SupportID"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
         tr("Description"), {}, {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
@@ -1439,7 +1439,7 @@ void MainWindow::SetHeader()
 
     product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Color"),
         tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
-    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportNode"), tr("D"), tr("S"),
+    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportID"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
         tr("UnitCost"), {}, {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
@@ -1459,7 +1459,7 @@ void MainWindow::SetHeader()
 
     task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("DateTime"),
         tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
-    task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportNode"), tr("D"), tr("S"),
+    task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportID"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
     task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {},

@@ -1,17 +1,17 @@
-#include "supportnode.h"
+#include "supportid.h"
 
 #include <QPainter>
 
 #include "widget/combobox.h"
 
-SupportNode::SupportNode(CTreeModel* tree_model, QObject* parent)
+SupportID::SupportID(CTreeModel* tree_model, QObject* parent)
     : StyledItemDelegate { parent }
     , tree_model_ { tree_model }
     , support_model_ { tree_model->SupportModel() }
 {
 }
 
-QWidget* SupportNode::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+QWidget* SupportID::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
     Q_UNUSED(option);
 
@@ -21,7 +21,7 @@ QWidget* SupportNode::createEditor(QWidget* parent, const QStyleOptionViewItem& 
     return editor;
 }
 
-void SupportNode::setEditorData(QWidget* editor, const QModelIndex& index) const
+void SupportID::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<ComboBox*>(editor) };
     int key { index.data().toInt() };
@@ -29,14 +29,14 @@ void SupportNode::setEditorData(QWidget* editor, const QModelIndex& index) const
     cast_editor->setCurrentIndex(item_index);
 }
 
-void SupportNode::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void SupportID::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<ComboBox*>(editor) };
     int key { cast_editor->currentData().toInt() };
     model->setData(index, key);
 }
 
-void SupportNode::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void SupportID::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString& text { tree_model_->GetPath(index.data().toInt()) };
     if (text.isEmpty())
@@ -50,13 +50,13 @@ void SupportNode::paint(QPainter* painter, const QStyleOptionViewItem& option, c
     // painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, path);
 }
 
-QSize SupportNode::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize SupportID::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const QString& text = tree_model_->GetPath(index.data().toInt());
     return CalculateTextSize(text);
 }
 
-void SupportNode::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void SupportID::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QSize text_size { CalculateTextSize(tree_model_->GetPath(index.data().toInt())) };
     const int width { std::max(option.rect.width(), text_size.width()) };

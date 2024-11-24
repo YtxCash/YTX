@@ -64,7 +64,7 @@ enum class TableEnumSearch {
     kLhsCredit,
     kDescription,
     kUnitPrice,
-    kSupportNode,
+    kSupportID,
     kDiscountPrice,
     kSettled,
     kDocument,

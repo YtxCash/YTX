@@ -17,17 +17,17 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SUPPORTNODE_H
-#define SUPPORTNODE_H
+#ifndef SUPPORTID_H
+#define SUPPORTID_H
 
 #include <QStandardItemModel>
 
 #include "delegate/styleditemdelegate.h"
 #include "tree/model/treemodel.h"
 
-class SupportNode : public StyledItemDelegate {
+class SupportID : public StyledItemDelegate {
 public:
-    SupportNode(CTreeModel* tree_model, QObject* parent = nullptr);
+    SupportID(CTreeModel* tree_model, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -40,4 +40,4 @@ private:
     QStandardItemModel* support_model_ {};
 };
 
-#endif // SUPPORTNODE_H
+#endif // SUPPORTID_H
