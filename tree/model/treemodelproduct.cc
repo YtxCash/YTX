@@ -435,7 +435,6 @@ Qt::ItemFlags TreeModelProduct::flags(const QModelIndex& index) const
         break;
     case TreeEnumProduct::kQuantity:
     case TreeEnumProduct::kAmount:
-    case TreeEnumProduct::kType:
     case TreeEnumProduct::kColor:
         flags &= ~Qt::ItemIsEditable;
         break;

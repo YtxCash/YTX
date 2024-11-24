@@ -235,7 +235,6 @@ Qt::ItemFlags TreeModelTask::flags(const QModelIndex& index) const
         break;
     case TreeEnumTask::kQuantity:
     case TreeEnumTask::kAmount:
-    case TreeEnumTask::kType:
     case TreeEnumTask::kFinished:
     case TreeEnumTask::kColor:
     case TreeEnumTask::kUnitCost:

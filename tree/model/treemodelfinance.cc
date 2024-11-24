@@ -316,7 +316,6 @@ Qt::ItemFlags TreeModelFinance::flags(const QModelIndex& index) const
         break;
     case TreeEnumFinance::kInitialTotal:
     case TreeEnumFinance::kFinalTotal:
-    case TreeEnumFinance::kType:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

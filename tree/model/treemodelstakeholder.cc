@@ -469,9 +469,6 @@ Qt::ItemFlags TreeModelStakeholder::flags(const QModelIndex& index) const
         flags |= Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
         flags &= ~Qt::ItemIsEditable;
         break;
-    case TreeEnumStakeholder::kType:
-        flags &= ~Qt::ItemIsEditable;
-        break;
     default:
         flags |= Qt::ItemIsEditable;
         break;
