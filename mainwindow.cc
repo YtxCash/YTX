@@ -1247,14 +1247,11 @@ void MainWindow::SetFinanceData()
     info.transaction = FINANCE_TRANSACTION;
 
     QStringList unit_list { "CNY", "HKD", "USD", "GBP", "JPY", "CAD", "AUD", "EUR" };
-    auto& unit_map { info.unit_map };
-
     QStringList unit_symbol_list { "¥", "$", "$", "£", "¥", "$", "$", "€" };
-    auto& unit_symbol_map { info.unit_symbol_map };
 
     for (int i = 0; i != unit_list.size(); ++i) {
-        unit_map.insert(i, unit_list.at(i));
-        unit_symbol_map.insert(i, unit_symbol_list.at(i));
+        info.unit_map.insert(i, unit_list.at(i));
+        info.unit_symbol_map.insert(i, unit_symbol_list.at(i));
     }
 
     sql_.QuerySettings(finance_settings_, section);
@@ -1280,10 +1277,9 @@ void MainWindow::SetProductData()
 
     // POS: Position, PC: Piece, SF: SquareFeet
     QStringList unit_list { {}, tr("POS"), tr("BOX"), tr("PC"), tr("SET"), tr("SF") };
-    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_map.insert(i, unit_list.at(i));
+        info.unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(product_settings_, section);
 
@@ -1312,10 +1308,9 @@ void MainWindow::SetStakeholderData()
 
     // EMP: EMPLOYEE, CUST: CUSTOMER, VEND: VENDOR, PROD: PRODUCT
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
-    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_map.insert(i, unit_list.at(i));
+        info.unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(stakeholder_settings_, section);
 
@@ -1343,10 +1338,9 @@ void MainWindow::SetTaskData()
 
     // PROD: PRODUCT, STKH: STAKEHOLDER
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
-    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_map.insert(i, unit_list.at(i));
+        info.unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(task_settings_, section);
 
@@ -1374,10 +1368,9 @@ void MainWindow::SetSalesData()
 
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
-    auto& unit_map { info.unit_map };
 
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_map.insert(i, unit_list.at(i));
+        info.unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(sales_settings_, section);
 
@@ -1408,10 +1401,8 @@ void MainWindow::SetPurchaseData()
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
 
-    auto& unit_map { info.unit_map };
-
     for (int i = 0; i != unit_list.size(); ++i)
-        unit_map.insert(i, unit_list.at(i));
+        info.unit_map.insert(i, unit_list.at(i));
 
     sql_.QuerySettings(purchase_settings_, section);
 
