@@ -21,6 +21,7 @@
 #define INFO_H
 
 #include <QMap>
+#include <QStandardItemModel>
 #include <QStringList>
 #include <tuple>
 
@@ -42,7 +43,10 @@ struct Info {
 
     QMap<int, QString> unit_map {};
     QMap<int, QString> unit_symbol_map {};
-    QMap<int, QString> rule_map { { 0, "DICD" }, { 1, "DDCI" } };
+    QMap<int, QString> rule_map {};
+
+    QStandardItemModel* unit_model {};
+    QStandardItemModel* rule_model {};
 };
 
 struct Tab {

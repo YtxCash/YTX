@@ -21,6 +21,7 @@
 #define EDITNODEPRODUCT_H
 
 #include <QDialog>
+#include <QStandardItemModel>
 
 #include "component/using.h"
 #include "tree/node.h"
@@ -33,8 +34,8 @@ class EditNodeProduct final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeProduct(Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable, int amount_decimal,
-        QWidget* parent = nullptr);
+    EditNodeProduct(Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
+        int amount_decimal, QWidget* parent = nullptr);
     ~EditNodeProduct();
 
 private slots:
@@ -57,7 +58,7 @@ private slots:
     void on_rBtnSupport_toggled(bool checked);
 
 private:
-    void IniDialog(CStringMap& unit_map, int amount_decimal);
+    void IniDialog(QStandardItemModel* unit_model, int amount_decimal);
     void IniConnect();
     void Data(Node* node, bool branch_enable, bool unit_enable);
 

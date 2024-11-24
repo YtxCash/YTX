@@ -726,13 +726,13 @@ void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
     auto* plain_text { new TreePlainText(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kNote), plain_text);
 
-    auto* rule { new TreeCombo(info.rule_map, false, tree_view) };
+    auto* rule { new TreeCombo(info.rule_map, info.rule_model, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
     // todo
     // tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kType), branch);
 
-    auto* unit { new TreeCombo(info.unit_map, false, tree_view) };
+    auto* unit { new TreeCombo(info.unit_map, info.unit_model, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
 }
 
@@ -799,7 +799,7 @@ void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) 
 
 void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto* rule { new TreeCombo(info.rule_map, true, tree_view) };
+    auto* rule { new TreeCombo(info.rule_map, info.rule_model, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
     auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
@@ -1045,6 +1045,20 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
     }
 }
 
+QStandardItemModel* MainWindow::CreateModelFromList(QStringList& list, QObject* parent)
+{
+    auto* model { new QStandardItemModel(parent) };
+    int index {};
+
+    for (auto&& value : list) {
+        auto* item { new QStandardItem(std::move(value)) };
+        item->setData(index++, Qt::UserRole);
+        model->appendRow(item);
+    }
+
+    return model;
+}
+
 void MainWindow::Recent()
 {
     recent_list_ = shared_interface_->value(RECENT_FILE).toStringList();
@@ -1248,11 +1262,18 @@ void MainWindow::SetFinanceData()
 
     QStringList unit_list { "CNY", "HKD", "USD", "GBP", "JPY", "CAD", "AUD", "EUR" };
     QStringList unit_symbol_list { "¥", "$", "$", "£", "¥", "$", "$", "€" };
+    QStringList rule_list { "DICD", "DDCI" };
 
     for (int i = 0; i != unit_list.size(); ++i) {
         info.unit_map.insert(i, unit_list.at(i));
         info.unit_symbol_map.insert(i, unit_symbol_list.at(i));
     }
+
+    for (int i = 0; i != rule_list.size(); ++i)
+        info.rule_map.insert(i, rule_list.at(i));
+
+    info.unit_model = CreateModelFromList(unit_list, this);
+    info.rule_model = CreateModelFromList(rule_list, this);
 
     sql_.QuerySettings(finance_settings_, section);
 
@@ -1277,9 +1298,16 @@ void MainWindow::SetProductData()
 
     // POS: Position, PC: Piece, SF: SquareFeet
     QStringList unit_list { {}, tr("POS"), tr("BOX"), tr("PC"), tr("SET"), tr("SF") };
+    QStringList rule_list { "DICD", "DDCI" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
+
+    for (int i = 0; i != rule_list.size(); ++i)
+        info.rule_map.insert(i, rule_list.at(i));
+
+    info.unit_model = CreateModelFromList(unit_list, this);
+    info.rule_model = CreateModelFromList(rule_list, this);
 
     sql_.QuerySettings(product_settings_, section);
 
@@ -1302,15 +1330,19 @@ void MainWindow::SetStakeholderData()
     info.path = STAKEHOLDER_PATH;
     info.transaction = STAKEHOLDER_TRANSACTION;
 
-    // IM：Immediate, MS（Monthly Settlement）
-    info.rule_map.insert(0, tr("IM"));
-    info.rule_map.insert(1, tr("MS"));
-
     // EMP: EMPLOYEE, CUST: CUSTOMER, VEND: VENDOR, PROD: PRODUCT
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
+    // IM：Immediate, MS（Monthly Settlement）
+    QStringList rule_list { "IM", "MS" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
+
+    for (int i = 0; i != rule_list.size(); ++i)
+        info.rule_map.insert(i, rule_list.at(i));
+
+    info.unit_model = CreateModelFromList(unit_list, this);
+    info.rule_model = CreateModelFromList(rule_list, this);
 
     sql_.QuerySettings(stakeholder_settings_, section);
 
@@ -1338,9 +1370,16 @@ void MainWindow::SetTaskData()
 
     // PROD: PRODUCT, STKH: STAKEHOLDER
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
+    QStringList rule_list { "DICD", "DDCI" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
+
+    for (int i = 0; i != rule_list.size(); ++i)
+        info.rule_map.insert(i, rule_list.at(i));
+
+    info.unit_model = CreateModelFromList(unit_list, this);
+    info.rule_model = CreateModelFromList(rule_list, this);
 
     sql_.QuerySettings(task_settings_, section);
 
@@ -1362,15 +1401,19 @@ void MainWindow::SetSalesData()
     info.path = SALES_PATH;
     info.transaction = SALES_TRANSACTION;
 
-    // SO: SALES ORDER, RO: REFUND ORDER
-    info.rule_map.insert(0, tr("SO"));
-    info.rule_map.insert(1, tr("RO"));
-
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
+    // SO: SALES ORDER, RO: REFUND ORDER
+    QStringList rule_list { "SO", "RO" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
+
+    for (int i = 0; i != rule_list.size(); ++i)
+        info.rule_map.insert(i, rule_list.at(i));
+
+    info.unit_model = CreateModelFromList(unit_list, this);
+    info.rule_model = CreateModelFromList(rule_list, this);
 
     sql_.QuerySettings(sales_settings_, section);
 
@@ -1394,15 +1437,19 @@ void MainWindow::SetPurchaseData()
     info.path = PURCHASE_PATH;
     info.transaction = PURCHASE_TRANSACTION;
 
-    // PO: PURCHASE ORDER, RO: REFUND ORDER
-    info.rule_map.insert(0, tr("PO"));
-    info.rule_map.insert(1, tr("RO"));
-
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
+    // SO: SALES ORDER, RO: REFUND ORDER
+    QStringList rule_list { "SO", "RO" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
+
+    for (int i = 0; i != rule_list.size(); ++i)
+        info.rule_map.insert(i, rule_list.at(i));
+
+    info.unit_model = CreateModelFromList(unit_list, this);
+    info.rule_model = CreateModelFromList(rule_list, this);
 
     sql_.QuerySettings(purchase_settings_, section);
 
@@ -1625,7 +1672,7 @@ void MainWindow::REditNode()
 void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 {
     auto section { data_->info.section };
-    const auto& unit_map { data_->info.unit_map };
+    auto* unit_model { data_->info.unit_model };
 
     QDialog* dialog {};
     auto model { tree_widget_->Model() };
@@ -1648,18 +1695,18 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, this);
+        dialog = new EditNodeFinance(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, this);
         break;
     case Section::kTask:
-        dialog = new EditNodeFinance(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, this);
+        dialog = new EditNodeFinance(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, this);
         break;
     case Section::kStakeholder:
         unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
-        dialog = new EditNodeStakeholder(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, model, this);
+        dialog = new EditNodeStakeholder(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, model, this);
         break;
     case Section::kProduct:
         unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
-        dialog = new EditNodeProduct(tmp_node, unit_map, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, this);
+        dialog = new EditNodeProduct(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(tmp_node);
@@ -1674,30 +1721,30 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
 {
     auto tree_model { tree_widget_->Model() };
     auto section { data_->info.section };
+    auto* unit_model { data_->info.unit_model };
 
     auto parent_path { tree_model->GetPath(parent_id) };
     if (!parent_path.isEmpty())
         parent_path += interface_.separator;
 
-    const auto& info { data_->info };
     const auto& name_list { tree_model->ChildrenNameFPTS(parent_id, 0) };
 
     QDialog* dialog {};
 
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(node, info.unit_map, parent_path, name_list, true, true, this);
+        dialog = new EditNodeFinance(node, unit_model, parent_path, name_list, true, true, this);
         break;
     case Section::kTask:
         node->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);
-        dialog = new EditNodeFinance(node, info.unit_map, parent_path, name_list, true, true, this);
+        dialog = new EditNodeFinance(node, unit_model, parent_path, name_list, true, true, this);
         break;
     case Section::kStakeholder:
         node->unit = settings_->default_unit;
-        dialog = new EditNodeStakeholder(node, info.unit_map, parent_path, name_list, true, true, settings_->common_decimal, tree_model, this);
+        dialog = new EditNodeStakeholder(node, unit_model, parent_path, name_list, true, true, settings_->common_decimal, tree_model, this);
         break;
     case Section::kProduct:
-        dialog = new EditNodeProduct(node, info.unit_map, parent_path, name_list, true, true, settings_->common_decimal, this);
+        dialog = new EditNodeProduct(node, unit_model, parent_path, name_list, true, true, settings_->common_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(node);

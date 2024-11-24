@@ -21,6 +21,7 @@
 #define EDITNODEFIANNCE_H
 
 #include <QDialog>
+#include <QStandardItemModel>
 
 #include "component/using.h"
 #include "tree/node.h"
@@ -33,8 +34,8 @@ class EditNodeFinance final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeFinance(
-        Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool type_enable, bool unit_enable, QWidget* parent = nullptr);
+    EditNodeFinance(Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool type_enable, bool unit_enable,
+        QWidget* parent = nullptr);
     ~EditNodeFinance();
 
 private slots:
@@ -55,7 +56,7 @@ private slots:
     void on_rBtnSupport_toggled(bool checked);
 
 private:
-    void IniDialog(CStringMap& unit_map);
+    void IniDialog(QStandardItemModel* unit_model);
     void IniConnect();
     void Data(Node* node, bool type_enable, bool unit_enable);
 

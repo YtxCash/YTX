@@ -5,17 +5,12 @@
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 
-TreeCombo::TreeCombo(CStringMap& map, bool skip_branch, QObject* parent)
+TreeCombo::TreeCombo(CStringMap& map, QStandardItemModel* model, bool skip_branch, QObject* parent)
     : StyledItemDelegate { parent }
     , map_ { map }
     , skip_branch_ { skip_branch }
+    , model_ { model }
 {
-    model_ = new QStandardItemModel(this);
-    for (auto it = map_.cbegin(); it != map_.cend(); ++it) {
-        auto* item { new QStandardItem(it.value()) };
-        item->setData(it.key(), Qt::UserRole);
-        model_->appendRow(item);
-    }
 }
 
 QWidget* TreeCombo::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const

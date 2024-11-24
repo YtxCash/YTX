@@ -212,6 +212,8 @@ private:
     void SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const;
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
 
+    QStandardItemModel* CreateModelFromList(QStringList& list, QObject* parent = nullptr);
+
     template <InheritQAbstractItemView T> bool HasSelection(QPointer<T> view) const
     {
         return view && view->selectionModel() && view->selectionModel()->hasSelection();

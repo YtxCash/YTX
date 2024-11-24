@@ -4,7 +4,7 @@
 #include "ui_editnodefinance.h"
 
 EditNodeFinance::EditNodeFinance(
-    Node* node, CStringMap& unit_map, CString& parent_path, CStringList& name_list, bool type_enable, bool unit_enable, QWidget* parent)
+    Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool type_enable, bool unit_enable, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
     , node_ { node }
@@ -14,22 +14,21 @@ EditNodeFinance::EditNodeFinance(
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_map);
+    IniDialog(unit_model);
     IniConnect();
     Data(node, type_enable, unit_enable);
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }
 
-void EditNodeFinance::IniDialog(CStringMap& unit_map)
+void EditNodeFinance::IniDialog(QStandardItemModel* unit_model)
 {
     ui->lineName->setFocus();
     ui->lineName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
 
-    for (auto it = unit_map.cbegin(); it != unit_map.cend(); ++it)
-        ui->comboUnit->addItem(it.value(), it.key());
+    ui->comboUnit->setModel(unit_model);
 }
 
 void EditNodeFinance::IniConnect() { connect(ui->lineName, &QLineEdit::textEdited, this, &EditNodeFinance::RNameEdited); }
