@@ -44,9 +44,11 @@ struct Info {
     QMap<int, QString> unit_map {};
     QMap<int, QString> unit_symbol_map {};
     QMap<int, QString> rule_map {};
+    QMap<int, QString> type_map {};
 
     QStandardItemModel* unit_model {};
     QStandardItemModel* rule_model {};
+    QStandardItemModel* type_model {};
 };
 
 struct Tab {

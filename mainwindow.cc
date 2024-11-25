@@ -729,11 +729,11 @@ void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
     auto* rule { new TreeCombo(info.rule_map, info.rule_model, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
-    // todo
-    // tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kType), branch);
-
     auto* unit { new TreeCombo(info.unit_map, info.unit_model, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kUnit), unit);
+
+    auto* type { new TreeCombo(info.type_map, info.type_model, false, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kType), type);
 }
 
 void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const
@@ -1263,6 +1263,7 @@ void MainWindow::SetFinanceData()
     QStringList unit_list { "CNY", "HKD", "USD", "GBP", "JPY", "CAD", "AUD", "EUR" };
     QStringList unit_symbol_list { "¥", "$", "$", "£", "¥", "$", "$", "€" };
     QStringList rule_list { "DICD", "DDCI" };
+    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
 
     for (int i = 0; i != unit_list.size(); ++i) {
         info.unit_map.insert(i, unit_list.at(i));
@@ -1272,8 +1273,12 @@ void MainWindow::SetFinanceData()
     for (int i = 0; i != rule_list.size(); ++i)
         info.rule_map.insert(i, rule_list.at(i));
 
+    for (int i = 0; i != type_list.size(); ++i)
+        info.type_map.insert(i, type_list.at(i));
+
     info.unit_model = CreateModelFromList(unit_list, this);
     info.rule_model = CreateModelFromList(rule_list, this);
+    info.type_model = CreateModelFromList(type_list, this);
 
     sql_.QuerySettings(finance_settings_, section);
 
@@ -1299,6 +1304,7 @@ void MainWindow::SetProductData()
     // POS: Position, PC: Piece, SF: SquareFeet
     QStringList unit_list { {}, tr("POS"), tr("BOX"), tr("PC"), tr("SET"), tr("SF") };
     QStringList rule_list { "DICD", "DDCI" };
+    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1306,8 +1312,12 @@ void MainWindow::SetProductData()
     for (int i = 0; i != rule_list.size(); ++i)
         info.rule_map.insert(i, rule_list.at(i));
 
+    for (int i = 0; i != type_list.size(); ++i)
+        info.type_map.insert(i, type_list.at(i));
+
     info.unit_model = CreateModelFromList(unit_list, this);
     info.rule_model = CreateModelFromList(rule_list, this);
+    info.type_model = CreateModelFromList(type_list, this);
 
     sql_.QuerySettings(product_settings_, section);
 
@@ -1334,6 +1344,7 @@ void MainWindow::SetStakeholderData()
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
     // IM：Immediate, MS（Monthly Settlement）
     QStringList rule_list { "IM", "MS" };
+    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1341,8 +1352,12 @@ void MainWindow::SetStakeholderData()
     for (int i = 0; i != rule_list.size(); ++i)
         info.rule_map.insert(i, rule_list.at(i));
 
+    for (int i = 0; i != type_list.size(); ++i)
+        info.type_map.insert(i, type_list.at(i));
+
     info.unit_model = CreateModelFromList(unit_list, this);
     info.rule_model = CreateModelFromList(rule_list, this);
+    info.type_model = CreateModelFromList(type_list, this);
 
     sql_.QuerySettings(stakeholder_settings_, section);
 
@@ -1371,6 +1386,7 @@ void MainWindow::SetTaskData()
     // PROD: PRODUCT, STKH: STAKEHOLDER
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
     QStringList rule_list { "DICD", "DDCI" };
+    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1378,8 +1394,12 @@ void MainWindow::SetTaskData()
     for (int i = 0; i != rule_list.size(); ++i)
         info.rule_map.insert(i, rule_list.at(i));
 
+    for (int i = 0; i != type_list.size(); ++i)
+        info.type_map.insert(i, type_list.at(i));
+
     info.unit_model = CreateModelFromList(unit_list, this);
     info.rule_model = CreateModelFromList(rule_list, this);
+    info.type_model = CreateModelFromList(type_list, this);
 
     sql_.QuerySettings(task_settings_, section);
 
@@ -1405,6 +1425,7 @@ void MainWindow::SetSalesData()
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
     // SO: SALES ORDER, RO: REFUND ORDER
     QStringList rule_list { "SO", "RO" };
+    QStringList type_list { tr("Leaf"), tr("Branch") };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1412,8 +1433,12 @@ void MainWindow::SetSalesData()
     for (int i = 0; i != rule_list.size(); ++i)
         info.rule_map.insert(i, rule_list.at(i));
 
+    for (int i = 0; i != type_list.size(); ++i)
+        info.type_map.insert(i, type_list.at(i));
+
     info.unit_model = CreateModelFromList(unit_list, this);
     info.rule_model = CreateModelFromList(rule_list, this);
+    info.type_model = CreateModelFromList(type_list, this);
 
     sql_.QuerySettings(sales_settings_, section);
 
@@ -1441,6 +1466,7 @@ void MainWindow::SetPurchaseData()
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
     // SO: SALES ORDER, RO: REFUND ORDER
     QStringList rule_list { "SO", "RO" };
+    QStringList type_list { tr("Leaf"), tr("Branch") };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1448,8 +1474,12 @@ void MainWindow::SetPurchaseData()
     for (int i = 0; i != rule_list.size(); ++i)
         info.rule_map.insert(i, rule_list.at(i));
 
+    for (int i = 0; i != type_list.size(); ++i)
+        info.type_map.insert(i, type_list.at(i));
+
     info.unit_model = CreateModelFromList(unit_list, this);
     info.rule_model = CreateModelFromList(rule_list, this);
+    info.type_model = CreateModelFromList(type_list, this);
 
     sql_.QuerySettings(purchase_settings_, section);
 
