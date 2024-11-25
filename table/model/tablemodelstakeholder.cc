@@ -136,26 +136,26 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
 
     switch (kColumn) {
     case TableEnumStakeholder::kDateTime:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), DATE_TIME, &TransShadow::date_time);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), kDateTime, &TransShadow::date_time);
         break;
     case TableEnumStakeholder::kCode:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), kCode, &TransShadow::code);
         break;
     case TableEnumStakeholder::kInsideProduct:
         rhs_changed = UpdateInsideProduct(trans_shadow, value.toInt());
         break;
     case TableEnumStakeholder::kUnitPrice:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toDouble(), UNIT_PRICE, &TransShadow::unit_price);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toDouble(), kUnitPrice, &TransShadow::unit_price);
         break;
     case TableEnumStakeholder::kDescription:
         TableModelUtils::UpdateField(
-            sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
+            sql_, trans_shadow, info_.transaction, value.toString(), kDescription, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnumStakeholder::kState:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), kState, &TransShadow::state);
         break;
     case TableEnumStakeholder::kOutsideProduct:
-        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), OUTSIDE_PRODUCT, &TransShadow::support_id);
+        hel_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), kOutsideProduct, &TransShadow::support_id);
         break;
     default:
         return false;
@@ -169,7 +169,7 @@ bool TableModelStakeholder::setData(const QModelIndex& index, const QVariant& va
                 emit SAppendSupportTrans(info_.section, trans_shadow);
             }
         } else
-            sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
+            sql_->UpdateField(info_.transaction, value.toInt(), kInsideProduct, *trans_shadow->id);
     }
 
     if (hel_changed) {

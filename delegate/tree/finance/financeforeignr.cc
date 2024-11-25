@@ -24,12 +24,12 @@ QString FinanceForeignR::Format(const QModelIndex& index) const
 {
     int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
     if (unit == default_unit_)
-        return EMPTYSTRING;
+        return kEmptyString;
 
     double value { index.data().toDouble() };
 
     auto it { unit_symbol_map_.constFind(unit) };
-    auto symbol { (it != unit_symbol_map_.constEnd()) ? it.value() : EMPTYSTRING };
+    auto symbol { (it != unit_symbol_map_.constEnd()) ? it.value() : kEmptyString };
 
     return symbol + locale_.toString(value, 'f', decimal_);
 }

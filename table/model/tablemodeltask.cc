@@ -71,20 +71,20 @@ bool TableModelTask::setData(const QModelIndex& index, const QVariant& value, in
 
     switch (kColumn) {
     case TableEnumTask::kDateTime:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), DATE_TIME, &TransShadow::date_time);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), kDateTime, &TransShadow::date_time);
         break;
     case TableEnumTask::kCode:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), kCode, &TransShadow::code);
         break;
     case TableEnumTask::kState:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), kState, &TransShadow::state);
         break;
     case TableEnumTask::kDescription:
         TableModelUtils::UpdateField(
-            sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
+            sql_, trans_shadow, info_.transaction, value.toString(), kDescription, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnumTask::kSupportID:
-        sup_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), SUPPORT_ID, &TransShadow::support_id);
+        sup_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), kSupportID, &TransShadow::support_id);
         break;
     case TableEnumTask::kUnitCost:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
@@ -110,8 +110,8 @@ bool TableModelTask::setData(const QModelIndex& index, const QVariant& value, in
             emit SResizeColumnToContents(std::to_underlying(TableEnumTask::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
 
-            emit SUpdateLeafValueOne(*trans_shadow->rhs_node, *trans_shadow->unit_price, UNIT_COST);
-            emit SUpdateLeafValueOne(node_id_, *trans_shadow->unit_price, UNIT_COST);
+            emit SUpdateLeafValueOne(*trans_shadow->rhs_node, *trans_shadow->unit_price, kUnitCost);
+            emit SUpdateLeafValueOne(node_id_, *trans_shadow->unit_price, kUnitCost);
 
             double ratio { *trans_shadow->lhs_ratio };
             double debit { *trans_shadow->lhs_debit };
@@ -265,8 +265,8 @@ bool TableModelTask::removeRows(int row, int /*count*/, const QModelIndex& paren
         sql_->RemoveTrans(trans_id);
 
         QTimer::singleShot(50, this, [this, rhs_node_id, unit_cost]() {
-            emit SUpdateLeafValueOne(rhs_node_id, -unit_cost, UNIT_COST);
-            emit SUpdateLeafValueOne(node_id_, -unit_cost, UNIT_COST);
+            emit SUpdateLeafValueOne(rhs_node_id, -unit_cost, kUnitCost);
+            emit SUpdateLeafValueOne(node_id_, -unit_cost, kUnitCost);
         });
     }
 
@@ -346,13 +346,13 @@ bool TableModelTask::UpdateRatio(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    sql_->UpdateField(info_.transaction, value, UNIT_COST, *trans_shadow->id);
+    sql_->UpdateField(info_.transaction, value, kUnitCost, *trans_shadow->id);
 
     emit SUpdateLeafValue(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
     emit SUpdateLeafValue(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * diff, *trans_shadow->rhs_credit * diff);
 
-    emit SUpdateLeafValueOne(*trans_shadow->rhs_node, diff, UNIT_COST);
-    emit SUpdateLeafValueOne(node_id_, diff, UNIT_COST);
+    emit SUpdateLeafValueOne(*trans_shadow->rhs_node, diff, kUnitCost);
+    emit SUpdateLeafValueOne(node_id_, diff, kUnitCost);
 
     return true;
 }

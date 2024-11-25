@@ -63,7 +63,7 @@ QMimeData* TreeModel::mimeData(const QModelIndexList& indexes) const
 
     if (first_index.isValid()) {
         int id { first_index.sibling(first_index.row(), std::to_underlying(TreeEnum::kID)).data().toInt() };
-        mime_data->setData(NODE_ID, QByteArray::number(id));
+        mime_data->setData(kNodeID, QByteArray::number(id));
     }
 
     return mime_data;
@@ -208,7 +208,7 @@ Node* TreeModel::GetNodeByIndex(const QModelIndex& index) const
 bool TreeModel::UpdateName(Node* node, CString& value)
 {
     node->name = value;
-    sql_->UpdateField(info_.node, value, NAME, node->id);
+    sql_->UpdateField(info_.node, value, kName, node->id);
 
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, support_path_, root_, node, separator_);
     TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, support_path_, support_model_, node);
@@ -224,7 +224,7 @@ bool TreeModel::UpdateRuleFPTO(Node* node, bool value)
         return false;
 
     node->rule = value;
-    sql_->UpdateField(info_.node, value, RULE, node->id);
+    sql_->UpdateField(info_.node, value, kRule, node->id);
 
     node->final_total = -node->final_total;
     node->initial_total = -node->initial_total;
@@ -277,7 +277,7 @@ bool TreeModel::UpdateTypeFPTS(Node* node, int value)
     }
 
     node->type = value;
-    sql_->UpdateField(info_.node, value, TYPE, node_id);
+    sql_->UpdateField(info_.node, value, kType, node_id);
 
     switch (value) {
     case kTypeBranch:

@@ -40,15 +40,15 @@ void TreeModelStakeholder::UpdateNodeFPTS(const Node* tmp_node)
         emit SUpdateName(node->id, node->name, node->type == kTypeBranch);
     }
 
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->first, PAYMENT_PERIOD, &Node::first);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->second, TAX_RATE, &Node::second);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->date_time, DEADLINE, &Node::date_time);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->rule, RULE, &Node::rule);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->employee, EMPLOYEE, &Node::employee);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->unit, UNIT, &Node::unit);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, kDescription, &Node::description);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, kCode, &Node::code);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, kNote, &Node::note);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->first, kPaymentPeriod, &Node::first);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->second, kTaxRate, &Node::second);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->date_time, kDeadline, &Node::date_time);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->rule, kRule, &Node::rule);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->employee, kEmployee, &Node::employee);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->unit, kUnit, &Node::unit);
 }
 
 bool TreeModelStakeholder::InsertNode(int row, const QModelIndex& parent, Node* node)
@@ -75,13 +75,13 @@ bool TreeModelStakeholder::InsertNode(int row, const QModelIndex& parent, Node* 
         leaf_path_.insert(node->id, path);
 
         switch (node->unit) {
-        case UNIT_CUST:
+        case kUnitCust:
             TreeModelUtils::AddItemToModel(cmodel_, path, node->id);
             break;
-        case UNIT_VEND:
+        case kUnitVend:
             TreeModelUtils::AddItemToModel(vmodel_, path, node->id);
             break;
-        case UNIT_EMP:
+        case kUnitEmp:
             TreeModelUtils::AddItemToModel(emodel_, path, node->id);
             break;
         default:
@@ -114,11 +114,11 @@ QList<int> TreeModelStakeholder::PartyList(CString& text, int unit) const
 QStandardItemModel* TreeModelStakeholder::UnitModelPS(int unit) const
 {
     switch (unit) {
-    case UNIT_CUST:
+    case kUnitCust:
         return cmodel_;
-    case UNIT_VEND:
+    case kUnitVend:
         return vmodel_;
-    case UNIT_EMP:
+    case kUnitEmp:
         return emodel_;
     default:
         return nullptr;
@@ -168,7 +168,7 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
     }
 
     node->unit = value;
-    sql_->UpdateField(info_.node, value, UNIT, node_id);
+    sql_->UpdateField(info_.node, value, kUnit, node_id);
 
     return true;
 }
@@ -176,13 +176,13 @@ bool TreeModelStakeholder::UpdateUnit(Node* node, int value)
 bool TreeModelStakeholder::UpdateName(Node* node, CString& value)
 {
     node->name = value;
-    sql_->UpdateField(info_.node, value, NAME, node->id);
+    sql_->UpdateField(info_.node, value, kName, node->id);
 
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, support_path_, root_, node, separator_);
     TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, support_path_, support_model_, node);
-    TreeModelUtils::UpdateUnitModel(leaf_path_, cmodel_, node, UNIT_CUST, Filter::kIncludeSpecific);
-    TreeModelUtils::UpdateUnitModel(leaf_path_, vmodel_, node, UNIT_VEND, Filter::kIncludeSpecific);
-    TreeModelUtils::UpdateUnitModel(leaf_path_, emodel_, node, UNIT_EMP, Filter::kIncludeSpecific);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, cmodel_, node, kUnitCust, Filter::kIncludeSpecific);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, vmodel_, node, kUnitVend, Filter::kIncludeSpecific);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, emodel_, node, kUnitEmp, Filter::kIncludeSpecific);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnum::kName));
     emit SSearch();
@@ -192,13 +192,13 @@ bool TreeModelStakeholder::UpdateName(Node* node, CString& value)
 void TreeModelStakeholder::RemoveItem(int node_id, int unit)
 {
     switch (unit) {
-    case UNIT_CUST:
+    case kUnitCust:
         TreeModelUtils::RemoveItemFromModel(cmodel_, node_id);
         break;
-    case UNIT_VEND:
+    case kUnitVend:
         TreeModelUtils::RemoveItemFromModel(vmodel_, node_id);
         break;
-    case UNIT_EMP:
+    case kUnitEmp:
         TreeModelUtils::RemoveItemFromModel(emodel_, node_id);
         break;
     default:
@@ -209,13 +209,13 @@ void TreeModelStakeholder::RemoveItem(int node_id, int unit)
 void TreeModelStakeholder::AddItem(int node_id, CString& path, int unit)
 {
     switch (unit) {
-    case UNIT_CUST:
+    case kUnitCust:
         TreeModelUtils::AddItemToModel(cmodel_, path, node_id);
         break;
-    case UNIT_VEND:
+    case kUnitVend:
         TreeModelUtils::AddItemToModel(vmodel_, path, node_id);
         break;
-    case UNIT_EMP:
+    case kUnitEmp:
         TreeModelUtils::AddItemToModel(emodel_, path, node_id);
         break;
     default:
@@ -238,13 +238,13 @@ void TreeModelStakeholder::ConstructTree()
         }
 
         switch (node->unit) {
-        case UNIT_CUST:
+        case kUnitCust:
             crange.insert(node->id);
             break;
-        case UNIT_VEND:
+        case kUnitVend:
             vrange.insert(node->id);
             break;
-        case UNIT_EMP:
+        case kUnitEmp:
             erange.insert(node->id);
             break;
         default:
@@ -374,7 +374,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return QVariant();
 
     const TreeEnumStakeholder kColumn { index.column() };
-    bool skip { node->type == kTypeBranch || node->unit == UNIT_PROD || node->rule == RULE_IM };
+    bool skip { node->type == kTypeBranch || node->unit == kUnitProd || node->rule == kRuleIM };
 
     switch (kColumn) {
     case TreeEnumStakeholder::kName:
@@ -419,16 +419,16 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
 
     switch (kColumn) {
     case TreeEnumStakeholder::kCode:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kCode, &Node::code);
         break;
     case TreeEnumStakeholder::kDescription:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kDescription, &Node::description);
         break;
     case TreeEnumStakeholder::kNote:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kNote, &Node::note);
         break;
     case TreeEnumStakeholder::kRule:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toBool(), RULE, &Node::rule);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toBool(), kRule, &Node::rule);
         break;
     case TreeEnumStakeholder::kType:
         UpdateTypeFPTS(node, value.toInt());
@@ -437,16 +437,16 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumStakeholder::kDeadline:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DEADLINE, &Node::date_time);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kDeadline, &Node::date_time);
         break;
     case TreeEnumStakeholder::kEmployee:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), EMPLOYEE, &Node::employee);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), kEmployee, &Node::employee);
         break;
     case TreeEnumStakeholder::kPaymentPeriod:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), PAYMENT_PERIOD, &Node::first);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), kPaymentPeriod, &Node::first);
         break;
     case TreeEnumStakeholder::kTaxRate:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), TAX_RATE, &Node::second);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), kTaxRate, &Node::second);
         break;
     default:
         return false;
@@ -488,7 +488,7 @@ bool TreeModelStakeholder::dropMimeData(const QMimeData* data, Qt::DropAction ac
 
     int node_id {};
 
-    if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
+    if (auto mime { data->data(kNodeID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
     auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
@@ -511,9 +511,9 @@ bool TreeModelStakeholder::dropMimeData(const QMimeData* data, Qt::DropAction ac
     sql_->DragNode(destination_parent->id, node_id);
     TreeModelUtils::UpdatePathFPTS(leaf_path_, branch_path_, support_path_, root_, node, separator_);
     TreeModelUtils::UpdateModel(leaf_path_, leaf_model_, support_path_, support_model_, node);
-    TreeModelUtils::UpdateUnitModel(leaf_path_, cmodel_, node, UNIT_CUST, Filter::kIncludeSpecific);
-    TreeModelUtils::UpdateUnitModel(leaf_path_, vmodel_, node, UNIT_VEND, Filter::kIncludeSpecific);
-    TreeModelUtils::UpdateUnitModel(leaf_path_, emodel_, node, UNIT_EMP, Filter::kIncludeSpecific);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, cmodel_, node, kUnitCust, Filter::kIncludeSpecific);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, vmodel_, node, kUnitVend, Filter::kIncludeSpecific);
+    TreeModelUtils::UpdateUnitModel(leaf_path_, emodel_, node, kUnitEmp, Filter::kIncludeSpecific);
 
     emit SUpdateName(node_id, node->name, node->type == kTypeBranch);
     emit SResizeColumnToContents(std::to_underlying(TreeEnumStakeholder::kName));

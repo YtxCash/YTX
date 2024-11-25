@@ -41,7 +41,7 @@ protected:
     void keyPressEvent(QKeyEvent* event) override
     {
         if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Semicolon)
-            return insertPlainText(QDate::currentDate().toString(DATE_FST));
+            return insertPlainText(QDate::currentDate().toString(kDateFST));
 
         QPlainTextEdit::keyPressEvent(event);
     }

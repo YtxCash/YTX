@@ -155,10 +155,10 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
 
     switch (kColumn) {
     case TableEnumOrder::kCode:
-        UpdateField(trans_shadow, value.toString(), CODE, &TransShadow::code);
+        UpdateField(trans_shadow, value.toString(), kCode, &TransShadow::code);
         break;
     case TableEnumOrder::kDescription:
-        UpdateField(trans_shadow, value.toString(), DESCRIPTION, &TransShadow::description);
+        UpdateField(trans_shadow, value.toString(), kDescription, &TransShadow::description);
         break;
     case TableEnumOrder::kInsideProduct:
         ins_changed = UpdateInsideProduct(trans_shadow, value.toInt());
@@ -170,7 +170,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         sec_changed = UpdateSecond(trans_shadow, value.toDouble());
         break;
     case TableEnumOrder::kFirst:
-        fir_changed = UpdateField(trans_shadow, value.toDouble(), FIRST, &TransShadow::lhs_debit);
+        fir_changed = UpdateField(trans_shadow, value.toDouble(), kFirst, &TransShadow::lhs_debit);
         break;
     case TableEnumOrder::kDiscountPrice:
         dis_changed = UpdateDiscountPrice(trans_shadow, value.toDouble());
@@ -194,11 +194,11 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
             emit SUpdateLeafValue(*trans_shadow->lhs_node, *trans_shadow->lhs_debit, *trans_shadow->lhs_credit, *trans_shadow->rhs_credit,
                 *trans_shadow->rhs_debit, *trans_shadow->settled);
         } else
-            sql_->UpdateField(info_.transaction, value.toInt(), INSIDE_PRODUCT, *trans_shadow->id);
+            sql_->UpdateField(info_.transaction, value.toInt(), kInsideProduct, *trans_shadow->id);
     }
 
     if (fir_changed)
-        emit SUpdateLeafValueOne(*trans_shadow->lhs_node, value.toDouble() - old_first, FIRST);
+        emit SUpdateLeafValueOne(*trans_shadow->lhs_node, value.toDouble() - old_first, kFirst);
 
     if (sec_changed) {
         double second_diff { value.toDouble() - old_second };
@@ -329,7 +329,7 @@ bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
 
     SearchPrice(trans_shadow, value, false);
 
-    sql_->UpdateField(info_.transaction, value, OUTSIDE_PRODUCT, *trans_shadow->id);
+    sql_->UpdateField(info_.transaction, value, kOutsideProduct, *trans_shadow->id);
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kUnitPrice));
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kInsideProduct));
     return true;
@@ -352,7 +352,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->rhs_node == 0)
         return false;
 
-    sql_->UpdateField(info_.transaction, value, UNIT_PRICE, *trans_shadow->id);
+    sql_->UpdateField(info_.transaction, value, kUnitPrice, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
     return true;
 }
@@ -373,7 +373,7 @@ bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double valu
     if (*trans_shadow->lhs_node == 0 || *trans_shadow->rhs_node == 0)
         return false;
 
-    sql_->UpdateField(info_.transaction, value, DISCOUNT_PRICE, *trans_shadow->id);
+    sql_->UpdateField(info_.transaction, value, kDiscountPrice, *trans_shadow->id);
     sql_->UpdateTransValue(trans_shadow);
     return true;
 }

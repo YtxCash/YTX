@@ -42,8 +42,8 @@ protected:
     void wheelEvent(QWheelEvent* event) override { event->ignore(); };
     void keyPressEvent(QKeyEvent* event) override
     {
-        if (event->text() == QString::fromUtf8(FULL_WIDTH_PERIOD)) {
-            QKeyEvent new_event(QEvent::KeyPress, Qt::Key_Period, Qt::NoModifier, HALF_WIDTH_PERIOD);
+        if (event->text() == QString::fromUtf8(kFullWidthPeriod)) {
+            QKeyEvent new_event(QEvent::KeyPress, Qt::Key_Period, Qt::NoModifier, kHalfWidthPeriod);
             QDoubleSpinBox::keyPressEvent(&new_event);
             return;
         }

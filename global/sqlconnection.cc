@@ -14,8 +14,8 @@ bool SqlConnection::SetDatabaseName(const QString& file_path)
 {
     QMutexLocker locker(&mutex_);
 
-    if (file_path.endsWith(SFX_YTX, Qt::CaseInsensitive)) {
-        auto db { QSqlDatabase::addDatabase(QSQLITE, QString::number(0)) };
+    if (file_path.endsWith(kSuffixYTX, Qt::CaseInsensitive)) {
+        auto db { QSqlDatabase::addDatabase(kQSQLITE, QString::number(0)) };
         db.setDatabaseName(file_path);
 
         if (db.open()) {
@@ -41,7 +41,7 @@ QSqlDatabase* SqlConnection::Allocate(Section section)
     }
 
     if (!hash_.contains(section)) {
-        auto db { QSqlDatabase::addDatabase(QSQLITE, QString::number(std::to_underlying(section))) };
+        auto db { QSqlDatabase::addDatabase(kQSQLITE, QString::number(std::to_underlying(section))) };
         db.setDatabaseName(file_path_);
 
         if (db.open())

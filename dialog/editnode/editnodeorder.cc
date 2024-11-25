@@ -15,7 +15,7 @@ EditNodeOrder::EditNodeOrder(
     , party_unit_ { party_unit }
     , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_model) }
     , settings_ { settings }
-    , info_node_ { party_unit == UNIT_CUST ? SALES : PURCHASE }
+    , info_node_ { party_unit == kUnitCust ? kSales : kPurchase }
     , node_id_ { *node_shadow->id }
 {
     ui->setupUi(this);
@@ -64,7 +64,7 @@ void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVarian
         break;
     }
     case TreeEnumOrder::kDateTime:
-        ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), DATE_TIME_FST));
+        ui->dateTimeEdit->setDateTime(QDateTime::fromString(value.toString(), kDateTimeFST));
         break;
     case TreeEnumOrder::kFinished: {
         bool finished { value.toBool() };
@@ -96,7 +96,7 @@ void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double 
     ui->dSpinSecond->setValue(ui->dSpinSecond->value() + second_diff);
     ui->dSpinAmount->setValue(ui->dSpinAmount->value() + amount_diff);
     ui->dSpinDiscount->setValue(ui->dSpinDiscount->value() + discount_diff);
-    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + (*node_shadow_->unit == UNIT_IM ? settled_diff : 0.0));
+    ui->dSpinSettled->setValue(ui->dSpinSettled->value() + (*node_shadow_->unit == kUnitIM ? settled_diff : 0.0));
 }
 
 QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
@@ -107,20 +107,20 @@ void EditNodeOrder::IniDialog()
     ui->comboParty->setModel(combo_model_party_);
     ui->comboParty->setCurrentIndex(-1);
 
-    combo_model_employee_ = stakeholder_tree_->UnitModelPS(UNIT_EMP);
+    combo_model_employee_ = stakeholder_tree_->UnitModelPS(kUnitEmp);
     ui->comboEmployee->setModel(combo_model_employee_);
     ui->comboEmployee->setCurrentIndex(-1);
 
-    ui->dateTimeEdit->setDisplayFormat(DATE_TIME_FST);
+    ui->dateTimeEdit->setDisplayFormat(kDateTimeFST);
     ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
-    *node_shadow_->date_time = ui->dateTimeEdit->dateTime().toString(DATE_TIME_FST);
+    *node_shadow_->date_time = ui->dateTimeEdit->dateTime().toString(kDateTimeFST);
     ui->comboParty->lineEdit()->setValidator(&LineEdit::kInputValidator);
 
-    ui->dSpinDiscount->setRange(DMIN, DMAX);
-    ui->dSpinAmount->setRange(DMIN, DMAX);
-    ui->dSpinSettled->setRange(DMIN, DMAX);
-    ui->dSpinSecond->setRange(DMIN, DMAX);
-    ui->dSpinFirst->setRange(DMIN, DMAX);
+    ui->dSpinDiscount->setRange(kDoubleMin, kDoubleMax);
+    ui->dSpinAmount->setRange(kDoubleMin, kDoubleMax);
+    ui->dSpinSettled->setRange(kDoubleMin, kDoubleMax);
+    ui->dSpinSecond->setRange(kDoubleMin, kDoubleMax);
+    ui->dSpinFirst->setRange(kDoubleMin, kDoubleMax);
 
     ui->dSpinDiscount->setDecimals(settings_.amount_decimal);
     ui->dSpinAmount->setDecimals(settings_.amount_decimal);
@@ -192,13 +192,13 @@ void EditNodeOrder::LockWidgets(bool finished, bool branch)
 void EditNodeOrder::IniUnit(int unit)
 {
     switch (unit) {
-    case UNIT_IM:
+    case kUnitIM:
         ui->rBtnCash->setChecked(true);
         break;
-    case UNIT_MS:
+    case kUnitMS:
         ui->rBtnMonthly->setChecked(true);
         break;
-    case UNIT_PEND:
+    case kUnitPEND:
         ui->rBtnPending->setChecked(true);
         break;
     default:
@@ -234,7 +234,7 @@ void EditNodeOrder::on_comboParty_editTextChanged(const QString& arg1)
     }
 
     if (node_id_ != 0)
-        sql_->UpdateField(info_node_, arg1, NAME, node_id_);
+        sql_->UpdateField(info_node_, arg1, kName, node_id_);
 }
 
 void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
@@ -255,7 +255,7 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     }
 
     if (node_id_ != 0)
-        sql_->UpdateField(info_node_, party_id, PARTY, node_id_);
+        sql_->UpdateField(info_node_, party_id, kParty, node_id_);
 
     if (ui->comboEmployee->currentIndex() != -1)
         return;
@@ -263,8 +263,8 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     int employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == RULE_IM);
-    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == RULE_MS);
+    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == kRuleIM);
+    ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == kRuleMS);
 }
 
 void EditNodeOrder::on_chkBoxRefund_toggled(bool checked)
@@ -272,7 +272,7 @@ void EditNodeOrder::on_chkBoxRefund_toggled(bool checked)
     *node_shadow_->rule = checked;
 
     if (node_id_ != 0)
-        sql_->UpdateField(info_node_, checked, RULE, node_id_);
+        sql_->UpdateField(info_node_, checked, kRule, node_id_);
 }
 
 void EditNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
@@ -280,7 +280,7 @@ void EditNodeOrder::on_comboEmployee_currentIndexChanged(int /*index*/)
     *node_shadow_->employee = ui->comboEmployee->currentData().toInt();
 
     if (node_id_ != 0)
-        sql_->UpdateField(info_node_, *node_shadow_->employee, EMPLOYEE, node_id_);
+        sql_->UpdateField(info_node_, *node_shadow_->employee, kEmployee, node_id_);
 }
 
 void EditNodeOrder::on_rBtnCash_toggled(bool checked)
@@ -288,14 +288,14 @@ void EditNodeOrder::on_rBtnCash_toggled(bool checked)
     if (!checked)
         return;
 
-    *node_shadow_->unit = UNIT_IM;
+    *node_shadow_->unit = kUnitIM;
 
     *node_shadow_->final_total = *node_shadow_->initial_total - *node_shadow_->discount;
     ui->dSpinSettled->setValue(*node_shadow_->final_total);
 
     if (node_id_ != 0) {
-        sql_->UpdateField(info_node_, UNIT_IM, UNIT, node_id_);
-        sql_->UpdateField(info_node_, *node_shadow_->final_total, SETTLED, node_id_);
+        sql_->UpdateField(info_node_, kUnitIM, kUnit, node_id_);
+        sql_->UpdateField(info_node_, *node_shadow_->final_total, kSettled, node_id_);
     }
 }
 
@@ -304,14 +304,14 @@ void EditNodeOrder::on_rBtnMonthly_toggled(bool checked)
     if (!checked)
         return;
 
-    *node_shadow_->unit = UNIT_MS;
+    *node_shadow_->unit = kUnitMS;
 
     *node_shadow_->final_total = 0.0;
     ui->dSpinSettled->setValue(0.0);
 
     if (node_id_ != 0) {
-        sql_->UpdateField(info_node_, UNIT_MS, UNIT, node_id_);
-        sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
+        sql_->UpdateField(info_node_, kUnitMS, kUnit, node_id_);
+        sql_->UpdateField(info_node_, 0.0, kSettled, node_id_);
     }
 }
 
@@ -320,14 +320,14 @@ void EditNodeOrder::on_rBtnPending_toggled(bool checked)
     if (!checked)
         return;
 
-    *node_shadow_->unit = UNIT_PEND;
+    *node_shadow_->unit = kUnitPEND;
 
     *node_shadow_->final_total = 0.0;
     ui->dSpinSettled->setValue(0.0);
 
     if (node_id_ != 0) {
-        sql_->UpdateField(info_node_, UNIT_PEND, UNIT, node_id_);
-        sql_->UpdateField(info_node_, 0.0, SETTLED, node_id_);
+        sql_->UpdateField(info_node_, kUnitPEND, kUnit, node_id_);
+        sql_->UpdateField(info_node_, 0.0, kSettled, node_id_);
     }
 }
 
@@ -352,10 +352,10 @@ void EditNodeOrder::on_pBtnInsertParty_clicked()
 
 void EditNodeOrder::on_dateTimeEdit_dateTimeChanged(const QDateTime& date_time)
 {
-    *node_shadow_->date_time = date_time.toString(DATE_TIME_FST);
+    *node_shadow_->date_time = date_time.toString(kDateTimeFST);
 
     if (node_id_ != 0)
-        sql_->UpdateField(info_node_, *node_shadow_->date_time, DATE_TIME, node_id_);
+        sql_->UpdateField(info_node_, *node_shadow_->date_time, kDateTime, node_id_);
 }
 
 void EditNodeOrder::on_pBtnFinishOrder_toggled(bool checked)
@@ -364,7 +364,7 @@ void EditNodeOrder::on_pBtnFinishOrder_toggled(bool checked)
 
     *node_shadow_->finished = checked;
 
-    sql_->UpdateField(info_node_, checked, FINISHED, node_id_);
+    sql_->UpdateField(info_node_, checked, kFinished, node_id_);
     if (*node_shadow_->type == kTypeLeaf)
         emit SUpdateFinished(node_id_, checked);
 
@@ -396,7 +396,7 @@ void EditNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1
     if (enable)
         node_shadow_->date_time->clear();
     else
-        *node_shadow_->date_time = ui->dateTimeEdit->dateTime().toString(DATE_TIME_FST);
+        *node_shadow_->date_time = ui->dateTimeEdit->dateTime().toString(kDateTimeFST);
 
     ui->chkBoxRefund->setChecked(false);
     ui->tableViewOrder->clearSelection();
@@ -408,5 +408,5 @@ void EditNodeOrder::on_lineDescription_editingFinished()
     *node_shadow_->description = ui->lineDescription->text();
 
     if (node_id_ != 0)
-        sql_->UpdateField(info_node_, *node_shadow_->description, DESCRIPTION, node_id_);
+        sql_->UpdateField(info_node_, *node_shadow_->description, kDescription, node_id_);
 }

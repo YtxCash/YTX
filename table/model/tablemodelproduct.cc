@@ -69,20 +69,20 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
 
     switch (kColumn) {
     case TableEnumProduct::kDateTime:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), DATE_TIME, &TransShadow::date_time);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), kDateTime, &TransShadow::date_time);
         break;
     case TableEnumProduct::kCode:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), CODE, &TransShadow::code);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toString(), kCode, &TransShadow::code);
         break;
     case TableEnumProduct::kState:
-        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), STATE, &TransShadow::state);
+        TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toBool(), kState, &TransShadow::state);
         break;
     case TableEnumProduct::kDescription:
         TableModelUtils::UpdateField(
-            sql_, trans_shadow, info_.transaction, value.toString(), DESCRIPTION, &TransShadow::description, [this]() { emit SSearch(); });
+            sql_, trans_shadow, info_.transaction, value.toString(), kDescription, &TransShadow::description, [this]() { emit SSearch(); });
         break;
     case TableEnumProduct::kSupportID:
-        sup_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), SUPPORT_ID, &TransShadow::support_id);
+        sup_changed = TableModelUtils::UpdateField(sql_, trans_shadow, info_.transaction, value.toInt(), kSupportID, &TransShadow::support_id);
         break;
     case TableEnumProduct::kUnitCost:
         rat_changed = UpdateRatio(trans_shadow, value.toDouble());
@@ -108,8 +108,8 @@ bool TableModelProduct::setData(const QModelIndex& index, const QVariant& value,
             emit SResizeColumnToContents(std::to_underlying(TableEnumProduct::kSubtotal));
             emit SAppendOneTrans(info_.section, trans_shadow);
 
-            emit SUpdateLeafValueOne(*trans_shadow->rhs_node, *trans_shadow->unit_price, UNIT_COST);
-            emit SUpdateLeafValueOne(node_id_, *trans_shadow->unit_price, UNIT_COST);
+            emit SUpdateLeafValueOne(*trans_shadow->rhs_node, *trans_shadow->unit_price, kUnitCost);
+            emit SUpdateLeafValueOne(node_id_, *trans_shadow->unit_price, kUnitCost);
 
             double ratio { *trans_shadow->lhs_ratio };
             double debit { *trans_shadow->lhs_debit };
@@ -338,7 +338,7 @@ bool TableModelProduct::UpdateRatio(TransShadow* trans_shadow, double value)
     if (*trans_shadow->rhs_node == 0)
         return false;
 
-    sql_->UpdateField(info_.transaction, value, UNIT_COST, *trans_shadow->id);
+    sql_->UpdateField(info_.transaction, value, kUnitCost, *trans_shadow->id);
 
     emit SUpdateLeafValue(node_id_, 0, 0, *trans_shadow->lhs_debit * diff, *trans_shadow->lhs_credit * diff);
     emit SUpdateLeafValue(*trans_shadow->rhs_node, 0, 0, *trans_shadow->rhs_debit * diff, *trans_shadow->rhs_credit * diff);

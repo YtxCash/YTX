@@ -171,9 +171,9 @@ void TreeModelFinance::UpdateNodeFPTS(const Node* tmp_node)
         emit SUpdateName(node->id, node->name, node->type == kTypeBranch);
     }
 
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, kDescription, &Node::description);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, kCode, &Node::code);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, kNote, &Node::note);
 }
 
 void TreeModelFinance::UpdateDefaultUnit(int default_unit)
@@ -240,13 +240,13 @@ bool TreeModelFinance::setData(const QModelIndex& index, const QVariant& value, 
 
     switch (kColumn) {
     case TreeEnumFinance::kCode:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kCode, &Node::code);
         break;
     case TreeEnumFinance::kDescription:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kDescription, &Node::description);
         break;
     case TreeEnumFinance::kNote:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kNote, &Node::note);
         break;
     case TreeEnumFinance::kRule:
         UpdateRuleFPTO(node, value.toBool());
@@ -337,7 +337,7 @@ bool TreeModelFinance::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     int node_id {};
 
-    if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
+    if (auto mime { data->data(kNodeID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
     auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
@@ -419,7 +419,7 @@ bool TreeModelFinance::UpdateUnit(Node* node, int value)
         return false;
 
     node->unit = value;
-    sql_->UpdateField(info_.node, value, UNIT, node_id);
+    sql_->UpdateField(info_.node, value, kUnit, node_id);
 
     if (node->type == kTypeBranch)
         TreeModelUtils::UpdateBranchUnitF(root_, node);

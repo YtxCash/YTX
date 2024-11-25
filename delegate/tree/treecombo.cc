@@ -67,5 +67,5 @@ QString TreeCombo::MapValue(int key) const
 {
     auto it { map_.constFind(key) };
 
-    return (it != map_.constEnd()) ? it.value() : EMPTYSTRING;
+    return (it != map_.constEnd()) ? it.value() : kEmptyString;
 }

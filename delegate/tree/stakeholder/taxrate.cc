@@ -17,7 +17,7 @@ QWidget* TaxRate::createEditor(QWidget* parent, const QStyleOptionViewItem& opti
     Q_UNUSED(index);
 
     auto* editor { new DoubleSpinBox(parent) };
-    editor->setSuffix(SFX_PERCENT);
+    editor->setSuffix(kSuffixPERCENT);
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);
     editor->setMaximum(max_);
@@ -29,26 +29,26 @@ QWidget* TaxRate::createEditor(QWidget* parent, const QStyleOptionViewItem& opti
 void TaxRate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
-    cast_editor->setValue(index.data().toDouble() * HUNDRED);
+    cast_editor->setValue(index.data().toDouble() * kHundred);
 }
 
 void TaxRate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
-    model->setData(index, cast_editor->value() / HUNDRED);
+    model->setData(index, cast_editor->value() / kHundred);
 }
 
 void TaxRate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const double value { index.data().toDouble() * HUNDRED };
+    const double value { index.data().toDouble() * kHundred };
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintText(locale_.toString(value, 'f', decimal_) + SFX_PERCENT, painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
+    PaintText(locale_.toString(value, 'f', decimal_) + kSuffixPERCENT, painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
 QSize TaxRate::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
-    const double value { index.data().toDouble() * HUNDRED };
-    return CalculateTextSize(locale_.toString(value, 'f', decimal_) + SFX_PERCENT);
+    const double value { index.data().toDouble() * kHundred };
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_) + kSuffixPERCENT);
 }

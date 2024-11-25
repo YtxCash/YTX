@@ -90,9 +90,9 @@ MainWindow::MainWindow(CString& dir_path, QWidget* parent)
     qApp->setWindowIcon(QIcon(":/logo/logo/logo.png"));
     this->setAcceptDrops(true);
 
-    RestoreState(ui->splitter, shared_interface_, WINDOW, SPLITTER_STATE);
-    RestoreState(this, shared_interface_, WINDOW, MAINWINDOW_STATE);
-    RestoreGeometry(this, shared_interface_, WINDOW, MAINWINDOW_GEOMETRY);
+    RestoreState(ui->splitter, shared_interface_, kWindow, kSplitterState);
+    RestoreState(this, shared_interface_, kWindow, kMainwindowState);
+    RestoreGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
 
     Recent();
 
@@ -105,49 +105,49 @@ MainWindow::MainWindow(CString& dir_path, QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    SaveState(ui->splitter, shared_interface_, WINDOW, SPLITTER_STATE);
-    SaveState(this, shared_interface_, WINDOW, MAINWINDOW_STATE);
-    SaveGeometry(this, shared_interface_, WINDOW, MAINWINDOW_GEOMETRY);
-    shared_interface_->setValue(START_SECTION, std::to_underlying(start_));
+    SaveState(ui->splitter, shared_interface_, kWindow, kSplitterState);
+    SaveState(this, shared_interface_, kWindow, kMainwindowState);
+    SaveGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
+    shared_interface_->setValue(kStartSection, std::to_underlying(start_));
 
     if (finance_tree_) {
-        SaveTab(finance_table_hash_, finance_data_.info.node, VIEW);
-        SaveState(finance_tree_->View()->header(), exclusive_interface_, finance_data_.info.node, HEADER_STATE);
+        SaveTab(finance_table_hash_, finance_data_.info.node, kView);
+        SaveState(finance_tree_->View()->header(), exclusive_interface_, finance_data_.info.node, kHeaderState);
 
         finance_dialog_list_.clear();
     }
 
     if (product_tree_) {
-        SaveTab(product_table_hash_, product_data_.info.node, VIEW);
-        SaveState(product_tree_->View()->header(), exclusive_interface_, product_data_.info.node, HEADER_STATE);
+        SaveTab(product_table_hash_, product_data_.info.node, kView);
+        SaveState(product_tree_->View()->header(), exclusive_interface_, product_data_.info.node, kHeaderState);
 
         product_dialog_list_.clear();
     }
 
     if (stakeholder_tree_) {
-        SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, VIEW);
-        SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, stakeholder_data_.info.node, HEADER_STATE);
+        SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, kView);
+        SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, stakeholder_data_.info.node, kHeaderState);
 
         stakeholder_dialog_list_.clear();
     }
 
     if (task_tree_) {
-        SaveTab(task_table_hash_, task_data_.info.node, VIEW);
-        SaveState(task_tree_->View()->header(), exclusive_interface_, task_data_.info.node, HEADER_STATE);
+        SaveTab(task_table_hash_, task_data_.info.node, kView);
+        SaveState(task_tree_->View()->header(), exclusive_interface_, task_data_.info.node, kHeaderState);
 
         task_dialog_list_.clear();
     }
 
     if (sales_tree_) {
         // SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
-        SaveState(sales_tree_->View()->header(), exclusive_interface_, sales_data_.info.node, HEADER_STATE);
+        SaveState(sales_tree_->View()->header(), exclusive_interface_, sales_data_.info.node, kHeaderState);
 
         sales_dialog_list_.clear();
     }
 
     if (purchase_tree_) {
         // SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
-        SaveState(purchase_tree_->View()->header(), exclusive_interface_, purchase_data_.info.node, HEADER_STATE);
+        SaveState(purchase_tree_->View()->header(), exclusive_interface_, purchase_data_.info.node, kHeaderState);
 
         purchase_dialog_list_.clear();
     }
@@ -181,12 +181,12 @@ void MainWindow::ROpenFile(CString& file_path)
         SetSalesData();
         SetPurchaseData();
 
-        CreateSection(finance_tree_, finance_table_hash_, finance_data_, finance_settings_, tr(Finance));
-        CreateSection(stakeholder_tree_, stakeholder_table_hash_, stakeholder_data_, stakeholder_settings_, tr(Stakeholder));
-        CreateSection(product_tree_, product_table_hash_, product_data_, product_settings_, tr(Product));
-        CreateSection(task_tree_, task_table_hash_, task_data_, task_settings_, tr(Task));
-        CreateSection(sales_tree_, sales_table_hash_, sales_data_, sales_settings_, tr(Sales));
-        CreateSection(purchase_tree_, purchase_table_hash_, purchase_data_, purchase_settings_, tr(Purchase));
+        CreateSection(finance_tree_, finance_table_hash_, finance_data_, finance_settings_, tr(kFINANCE));
+        CreateSection(stakeholder_tree_, stakeholder_table_hash_, stakeholder_data_, stakeholder_settings_, tr(kSTAKEHOLDER));
+        CreateSection(product_tree_, product_table_hash_, product_data_, product_settings_, tr(kPRODUCT));
+        CreateSection(task_tree_, task_table_hash_, task_data_, task_settings_, tr(kTASK));
+        CreateSection(sales_tree_, sales_table_hash_, sales_data_, sales_settings_, tr(kSALES));
+        CreateSection(purchase_tree_, purchase_table_hash_, purchase_data_, purchase_settings_, tr(kPURCHASE));
 
         switch (start_) {
         case Section::kFinance:
@@ -233,7 +233,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasUrls()) {
         auto suffix { QFileInfo(event->mimeData()->urls().at(0).fileName()).suffix().toLower() };
-        if (suffix == YTX)
+        if (suffix == kYTX)
             return event->acceptProposedAction();
     }
 
@@ -325,7 +325,7 @@ void MainWindow::SwitchTab(int node_id, int trans_id) const
 
 bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name) const
 {
-    auto lock_file_path { absolute_path + SLASH + complete_base_name + SFX_LOCK };
+    auto lock_file_path { absolute_path + kSlash + complete_base_name + kSuffixLOCK };
 
     static QLockFile lock_file { lock_file_path };
     if (!lock_file.tryLock(100))
@@ -541,11 +541,11 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto* amount { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* amount { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDebit), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kCredit), amount);
 
-    auto* fx_rate { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* fx_rate { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kLhsRatio), fx_rate);
 
     auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
@@ -570,11 +570,11 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kCredit), quantity);
 
-    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kUnitCost), unit_cost);
 
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
@@ -602,11 +602,11 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kCredit), quantity);
 
-    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kUnitCost), unit_cost);
 
     auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
@@ -619,7 +619,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
     auto* inside_product { new SpecificUnit(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
-    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
     auto* date_time { new TableDateTime(interface_.date_format, table_view) };
@@ -657,11 +657,11 @@ void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) cons
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
 
-    auto* price { new TableDoubleSpin(settings->amount_decimal, DMIN, DMAX, table_view) };
+    auto* price { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
 
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, DMIN, DMAX, table_view) };
+    auto* quantity { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
 
@@ -684,8 +684,8 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info.section, 0 }));
 
-    RestoreState(view->header(), exclusive_interface_, info.node, HEADER_STATE);
-    RestoreTab(model, table_hash, data, settings, VIEW);
+    RestoreState(view->header(), exclusive_interface_, info.node, kHeaderState);
+    RestoreTab(model, table_hash, data, settings, kView);
 
     SetView(view);
     // view->setColumnHidden(1, true);
@@ -753,7 +753,7 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
     auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
-    auto* unit_cost { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
+    auto* unit_cost { new TreeDoubleSpin(settings.amount_decimal, kDoubleMin, kDoubleMax, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
 
     auto* color { new Color(tree_view) };
@@ -774,7 +774,7 @@ void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) cons
     auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
 
-    auto* price { new TreeDoubleSpin(settings.amount_decimal, DMIN, DMAX, tree_view) };
+    auto* price { new TreeDoubleSpin(settings.amount_decimal, kDoubleMin, kDoubleMax, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
 
@@ -784,16 +784,16 @@ void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) cons
 
 void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const
 {
-    auto* payment_period { new PaymentPeriod(0, IMAX, tree_view) };
+    auto* payment_period { new PaymentPeriod(0, kIntMax, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
 
-    auto* tax_rate { new TaxRate(settings.amount_decimal, 0.0, DMAX, tree_view) };
+    auto* tax_rate { new TaxRate(settings.amount_decimal, 0.0, kDoubleMax, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
 
-    auto* deadline { new DeadLine(DD, tree_view) };
+    auto* deadline { new DeadLine(kDD, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kDeadline), deadline);
 
-    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), stakeholder_tree_->Model()->UnitModelPS(UNIT_EMP), tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_->Model(), stakeholder_tree_->Model()->UnitModelPS(kUnitEmp), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kEmployee), employee);
 }
 
@@ -815,7 +815,7 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
 
     auto stakeholder_tree_model { stakeholder_tree_->Model() };
 
-    auto* employee { new SpecificUnit(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(UNIT_EMP), tree_view) };
+    auto* employee { new SpecificUnit(stakeholder_tree_model, stakeholder_tree_model->UnitModelPS(kUnitEmp), tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kEmployee), employee);
 
     auto* name { new OrderNameR(stakeholder_tree_model, tree_view) };
@@ -1061,7 +1061,7 @@ QStandardItemModel* MainWindow::CreateModelFromList(QStringList& list, QObject* 
 
 void MainWindow::Recent()
 {
-    recent_list_ = shared_interface_->value(RECENT_FILE).toStringList();
+    recent_list_ = shared_interface_->value(kRecentFile).toStringList();
 
     auto* recent_menu { ui->menuRecent };
     QStringList valid_list {};
@@ -1121,7 +1121,7 @@ void MainWindow::SetTabWidget()
     tab_widget->setTabsClosable(true);
     tab_widget->setElideMode(Qt::ElideNone);
 
-    start_ = Section(shared_interface_->value(START_SECTION, 0).toInt());
+    start_ = Section(shared_interface_->value(kStartSection, 0).toInt());
 
     switch (start_) {
     case Section::kFinance:
@@ -1161,7 +1161,7 @@ void MainWindow::SetView(PQTableView view) const
     h_header->setSectionResizeMode(std::to_underlying(TableEnum::kDescription), QHeaderView::Stretch);
 
     auto* v_header { view->verticalHeader() };
-    v_header->setDefaultSectionSize(ROW_HEIGHT);
+    v_header->setDefaultSectionSize(kRowHeight);
     v_header->setSectionResizeMode(QHeaderView::Fixed);
     v_header->setHidden(true);
 
@@ -1184,7 +1184,7 @@ void MainWindow::SetSupportView(PQTableView view) const
     h_header->setSectionResizeMode(std::to_underlying(TableEnumSupport::kDescription), QHeaderView::Stretch);
 
     auto* v_header { view->verticalHeader() };
-    v_header->setDefaultSectionSize(ROW_HEIGHT);
+    v_header->setDefaultSectionSize(kRowHeight);
     v_header->setSectionResizeMode(QHeaderView::Fixed);
     v_header->setHidden(true);
 
@@ -1256,9 +1256,9 @@ void MainWindow::SetFinanceData()
     auto& sql { finance_data_.sql };
 
     info.section = section;
-    info.node = FINANCE;
-    info.path = FINANCE_PATH;
-    info.transaction = FINANCE_TRANSACTION;
+    info.node = kFinance;
+    info.path = kFinancePath;
+    info.transaction = kFinanceTransaction;
 
     QStringList unit_list { "CNY", "HKD", "USD", "GBP", "JPY", "CAD", "AUD", "EUR" };
     QStringList unit_symbol_list { "¥", "$", "$", "£", "¥", "$", "$", "€" };
@@ -1297,9 +1297,9 @@ void MainWindow::SetProductData()
     auto& sql { product_data_.sql };
 
     info.section = section;
-    info.node = PRODUCT;
-    info.path = PRODUCT_PATH;
-    info.transaction = PRODUCT_TRANSACTION;
+    info.node = kProduct;
+    info.path = kProductPath;
+    info.transaction = kProductTransaction;
 
     // POS: Position, PC: Piece, SF: SquareFeet
     QStringList unit_list { {}, tr("POS"), tr("BOX"), tr("PC"), tr("SET"), tr("SF") };
@@ -1336,9 +1336,9 @@ void MainWindow::SetStakeholderData()
     auto& sql { stakeholder_data_.sql };
 
     info.section = section;
-    info.node = STAKEHOLDER;
-    info.path = STAKEHOLDER_PATH;
-    info.transaction = STAKEHOLDER_TRANSACTION;
+    info.node = kStakeholder;
+    info.path = kStakeholderPath;
+    info.transaction = kStakeholderTransaction;
 
     // EMP: EMPLOYEE, CUST: CUSTOMER, VEND: VENDOR, PROD: PRODUCT
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
@@ -1379,9 +1379,9 @@ void MainWindow::SetTaskData()
     auto& sql { task_data_.sql };
 
     info.section = section;
-    info.node = TASK;
-    info.path = TASK_PATH;
-    info.transaction = TASK_TRANSACTION;
+    info.node = kTask;
+    info.path = kTaskPath;
+    info.transaction = kTaskTransaction;
 
     // PROD: PRODUCT, STKH: STAKEHOLDER
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
@@ -1417,9 +1417,9 @@ void MainWindow::SetSalesData()
     auto& sql { sales_data_.sql };
 
     info.section = section;
-    info.node = SALES;
-    info.path = SALES_PATH;
-    info.transaction = SALES_TRANSACTION;
+    info.node = kSales;
+    info.path = kSalesPath;
+    info.transaction = kSalesTransaction;
 
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
@@ -1458,9 +1458,9 @@ void MainWindow::SetPurchaseData()
     auto& sql { purchase_data_.sql };
 
     info.section = section;
-    info.node = PURCHASE;
-    info.path = PURCHASE_PATH;
-    info.transaction = PURCHASE_TRANSACTION;
+    info.node = kPurchase;
+    info.path = kPurchasePath;
+    info.transaction = kPurchaseTransaction;
 
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
@@ -1566,9 +1566,9 @@ void MainWindow::SetAction() const
     ui->actionCheckNone->setIcon(QIcon(":/solarized_dark/solarized_dark/check-none.png"));
     ui->actionCheckReverse->setIcon(QIcon(":/solarized_dark/solarized_dark/check-reverse.png"));
 
-    ui->actionCheckAll->setProperty(CHECK, std::to_underlying(Check::kAll));
-    ui->actionCheckNone->setProperty(CHECK, std::to_underlying(Check::kNone));
-    ui->actionCheckReverse->setProperty(CHECK, std::to_underlying(Check::kReverse));
+    ui->actionCheckAll->setProperty(kCheck, std::to_underlying(Check::kAll));
+    ui->actionCheckNone->setProperty(kCheck, std::to_underlying(Check::kNone));
+    ui->actionCheckReverse->setProperty(kCheck, std::to_underlying(Check::kReverse));
 }
 
 void MainWindow::SetView(PQTreeView tree_view) const
@@ -1766,7 +1766,7 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
         dialog = new EditNodeFinance(node, unit_model, parent_path, name_list, true, true, this);
         break;
     case Section::kTask:
-        node->date_time = QDateTime::currentDateTime().toString(DATE_TIME_FST);
+        node->date_time = QDateTime::currentDateTime().toString(kDateTimeFST);
         dialog = new EditNodeFinance(node, unit_model, parent_path, name_list, true, true, this);
         break;
     case Section::kStakeholder:
@@ -1808,12 +1808,12 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
 
     switch (section) {
     case Section::kSales:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_CUST, this);
-        dialog->setWindowTitle(tr(Sales));
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, kUnitCust, this);
+        dialog->setWindowTitle(tr(kSALES));
         break;
     case Section::kPurchase:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, UNIT_VEND, this);
-        dialog->setWindowTitle(tr(Purchase));
+        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, kUnitVend, this);
+        dialog->setWindowTitle(tr(kPURCHASE));
         break;
     default:
         ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
@@ -1886,7 +1886,7 @@ void MainWindow::REditDocument()
     auto* dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
 
     if (dialog->exec() == QDialog::Accepted)
-        data_->sql->UpdateField(data_->info.transaction, document_pointer->join(SEMICOLON), DOCUMENT, trans_id);
+        data_->sql->UpdateField(data_->info.transaction, document_pointer->join(kSemicolon), kDocument, trans_id);
 }
 
 void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
@@ -1977,7 +1977,7 @@ void MainWindow::UpdateInterface(CInterface& interface)
 {
     auto new_language { interface.language };
     if (interface_.language != new_language) {
-        if (new_language == EN_US) {
+        if (new_language == kEnUS) {
             qApp->removeTranslator(&cash_translator_);
             qApp->removeTranslator(&base_translator_);
         } else
@@ -2006,10 +2006,10 @@ void MainWindow::UpdateInterface(CInterface& interface)
 
     interface_ = interface;
 
-    shared_interface_->beginGroup(INTERFACE);
-    shared_interface_->setValue(LANGUAGE, interface.language);
-    shared_interface_->setValue(SEPARATOR, interface.separator);
-    shared_interface_->setValue(DATE_FORMAT, interface.date_format);
+    shared_interface_->beginGroup(kInterface);
+    shared_interface_->setValue(kLanguage, interface.language);
+    shared_interface_->setValue(kSeparator, interface.separator);
+    shared_interface_->setValue(kDateFormat, interface.date_format);
     shared_interface_->endGroup();
 }
 
@@ -2029,16 +2029,22 @@ void MainWindow::UpdateTranslate() const
             Section section { tab_id.section };
             switch (section) {
             case Section::kFinance:
-                tab_widget->setTabText(index, tr(Finance));
+                tab_widget->setTabText(index, tr(kFINANCE));
                 break;
             case Section::kStakeholder:
-                tab_widget->setTabText(index, tr(Stakeholder));
+                tab_widget->setTabText(index, tr(kSTAKEHOLDER));
                 break;
             case Section::kProduct:
-                tab_widget->setTabText(index, tr(Product));
+                tab_widget->setTabText(index, tr(kPRODUCT));
                 break;
             case Section::kTask:
-                tab_widget->setTabText(index, tr(Task));
+                tab_widget->setTabText(index, tr(kTASK));
+                break;
+            case Section::kSales:
+                tab_widget->setTabText(index, tr(kSALES));
+                break;
+            case Section::kPurchase:
+                tab_widget->setTabText(index, tr(kPURCHASE));
                 break;
             default:
                 break;
@@ -2047,7 +2053,7 @@ void MainWindow::UpdateTranslate() const
     }
 }
 
-void MainWindow::UpdateRecent() const { shared_interface_->setValue(RECENT_FILE, recent_list_); }
+void MainWindow::UpdateRecent() const { shared_interface_->setValue(kRecentFile, recent_list_); }
 
 void MainWindow::UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool branch) const
 {
@@ -2112,11 +2118,11 @@ void MainWindow::UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool br
 
 void MainWindow::LoadAndInstallTranslator(CString& language)
 {
-    QString cash_language { QString(":/I18N/I18N/") + YTX + "_" + language + SFX_QM };
+    QString cash_language { QString(":/I18N/I18N/") + kYTX + "_" + language + kSuffixQM };
     if (cash_translator_.load(cash_language))
         qApp->installTranslator(&cash_translator_);
 
-    QString base_language { ":/I18N/I18N/qtbase_" + language + SFX_QM };
+    QString base_language { ":/I18N/I18N/qtbase_" + language + kSuffixQM };
     if (base_translator_.load(base_language))
         qApp->installTranslator(&base_translator_);
 }
@@ -2131,28 +2137,28 @@ void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
 
 void MainWindow::SharedInterface(CString& dir_path)
 {
-    static QSettings shared_interface(dir_path + SLASH + YTX + SFX_INI, QSettings::IniFormat);
+    static QSettings shared_interface(dir_path + kSlash + kYTX + kSuffixINI, QSettings::IniFormat);
     shared_interface_ = &shared_interface;
 
     QString language_code {};
 
     switch (QLocale::system().language()) {
     case QLocale::English:
-        language_code = EN_US;
+        language_code = kEnUS;
         break;
     case QLocale::Chinese:
-        language_code = ZH_CN;
+        language_code = kZhCN;
         break;
     default:
-        language_code = EN_US;
+        language_code = kEnUS;
         break;
     }
 
-    shared_interface.beginGroup(INTERFACE);
-    interface_.language = shared_interface.value(LANGUAGE, language_code).toString();
-    interface_.theme = shared_interface.value(THEME, SOLARIZED_DARK).toString();
-    interface_.date_format = shared_interface.value(DATE_FORMAT, DATE_TIME_FST).toString();
-    interface_.separator = shared_interface.value(SEPARATOR, DASH).toString();
+    shared_interface.beginGroup(kInterface);
+    interface_.language = shared_interface.value(kLanguage, language_code).toString();
+    interface_.theme = shared_interface.value(kTheme, kSolarizedDark).toString();
+    interface_.date_format = shared_interface.value(kDateFormat, kDateTimeFST).toString();
+    interface_.separator = shared_interface.value(kSeparator, kDash).toString();
     shared_interface.endGroup();
 
     LoadAndInstallTranslator(interface_.language);
@@ -2160,7 +2166,7 @@ void MainWindow::SharedInterface(CString& dir_path)
 #ifdef Q_OS_WIN
     QString theme { "file:///:/theme/theme/" + interface_.theme + " Win" + SFX_QSS };
 #elif defined(Q_OS_MACOS)
-    QString theme { "file:///:/theme/theme/" + interface_.theme + " Mac" + SFX_QSS };
+    QString theme { "file:///:/theme/theme/" + interface_.theme + " Mac" + kSuffixQSS };
 #endif
 
     qApp->setStyleSheet(theme);
@@ -2173,7 +2179,7 @@ void MainWindow::SharedInterface(CString& dir_path)
 
 void MainWindow::ExclusiveInterface(CString& dir_path, CString& base_name)
 {
-    static QSettings exclusive_interface(dir_path + SLASH + base_name + SFX_INI, QSettings::IniFormat);
+    static QSettings exclusive_interface(dir_path + kSlash + base_name + kSuffixINI, QSettings::IniFormat);
     exclusive_interface_ = &exclusive_interface;
 }
 
@@ -2319,8 +2325,8 @@ void MainWindow::RNewTriggered()
     if (file_path.isEmpty())
         return;
 
-    if (!file_path.endsWith(SFX_YTX, Qt::CaseInsensitive))
-        file_path += SFX_YTX;
+    if (!file_path.endsWith(kSuffixYTX, Qt::CaseInsensitive))
+        file_path += kSuffixYTX;
 
     sql_.NewFile(file_path);
     ROpenFile(file_path);
@@ -2363,7 +2369,7 @@ void MainWindow::RUpdateState()
         return;
 
     auto table_model { GetTableModel(current_widget) };
-    table_model->UpdateAllState(Check { QObject::sender()->property(CHECK).toInt() });
+    table_model->UpdateAllState(Check { QObject::sender()->property(kCheck).toInt() });
 }
 
 void MainWindow::SwitchSection(CTab& last_tab) const

@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     QString dir_path { QDir::homePath() + "/AppData/Roaming/" + YTX };
 #elif defined(Q_OS_MACOS)
     Application application(argc, argv);
-    QString dir_path { QDir::homePath() + "/.config/" + YTX };
+    QString dir_path { QDir::homePath() + "/.config/" + kYTX };
 #endif
 
     if (QDir dir { dir_path }; !dir.exists()) {
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
     if (!file_path.isEmpty()) {
         QFileInfo file_info(file_path);
-        auto lock_file_path { file_info.absolutePath() + SLASH + file_info.completeBaseName() + SFX_LOCK };
+        auto lock_file_path { file_info.absolutePath() + kSlash + file_info.completeBaseName() + kSuffixLOCK };
 
         static QLockFile lock_file { lock_file_path };
         if (!lock_file.tryLock(100))

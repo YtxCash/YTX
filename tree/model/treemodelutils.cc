@@ -176,7 +176,7 @@ void TreeModelUtils::ShowTemporaryTooltipFPTS(CString& message, int duration)
 bool TreeModelUtils::IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message)
 {
     if (sql->InternalReference(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is internal referenced.").arg(message), THREE_THOUSAND);
+        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is internal referenced.").arg(message), kThreeThousand);
         return true;
     }
 
@@ -186,7 +186,7 @@ bool TreeModelUtils::IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString&
 bool TreeModelUtils::IsSupportReferencedFPTS(Sqlite* sql, int node_id, CString& message)
 {
     if (sql->SupportReferenceFPTS(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is support referenced.").arg(message), THREE_THOUSAND);
+        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is support referenced.").arg(message), kThreeThousand);
         return true;
     }
 
@@ -196,7 +196,7 @@ bool TreeModelUtils::IsSupportReferencedFPTS(Sqlite* sql, int node_id, CString& 
 bool TreeModelUtils::IsExternalReferencedPS(Sqlite* sql, int node_id, CString& message)
 {
     if (sql->ExternalReference(node_id)) {
-        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is external referenced.").arg(message), THREE_THOUSAND);
+        TreeModelUtils::ShowTemporaryTooltipFPTS(QObject::tr("%1 it is external referenced.").arg(message), kThreeThousand);
         return true;
     }
 
@@ -206,7 +206,7 @@ bool TreeModelUtils::IsExternalReferencedPS(Sqlite* sql, int node_id, CString& m
 bool TreeModelUtils::HasChildrenFPTS(Node* node, CString& message)
 {
     if (!node->children.isEmpty()) {
-        ShowTemporaryTooltipFPTS(QObject::tr("%1 it has children nodes.").arg(message), THREE_THOUSAND);
+        ShowTemporaryTooltipFPTS(QObject::tr("%1 it has children nodes.").arg(message), kThreeThousand);
         return true;
     }
 
@@ -216,7 +216,7 @@ bool TreeModelUtils::HasChildrenFPTS(Node* node, CString& message)
 bool TreeModelUtils::IsOpenedFPTS(CTableHash& hash, int node_id, CString& message)
 {
     if (hash.contains(node_id)) {
-        ShowTemporaryTooltipFPTS(QObject::tr("%1 it is opened.").arg(message), THREE_THOUSAND);
+        ShowTemporaryTooltipFPTS(QObject::tr("%1 it is opened.").arg(message), kThreeThousand);
         return true;
     }
 

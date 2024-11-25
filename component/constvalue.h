@@ -21,150 +21,144 @@
 #define CONSTVALUE_H
 
 // Constants for values
-inline constexpr long long BATCH_SIZE = 50;
-inline constexpr double DMAX = 1'000'000'000.00;
-inline constexpr double DMIN = -1'000'000'000.00;
-inline constexpr int HUNDRED = 100;
-inline constexpr int IMAX = 1'000'000'000;
-inline constexpr int IMIN = -1'000'000'000;
-inline constexpr int ROW_HEIGHT = 24;
-inline constexpr int THIRTY_ONE = 31;
-inline constexpr int THREE_THOUSAND = 3000;
+inline constexpr long long kBatchSize = 50;
+inline constexpr double kDoubleMax = 1'000'000'000.00;
+inline constexpr double kDoubleMin = -1'000'000'000.00;
+inline constexpr int kHundred = 100;
+inline constexpr int kIntMax = 1'000'000'000;
+inline constexpr int kRowHeight = 24;
+inline constexpr int kThreeThousand = 3000;
 
 // Constants for unit
-inline constexpr int UNIT_IM = 0;
-inline constexpr int UNIT_MS = 1;
-inline constexpr int UNIT_PEND = 2;
+inline constexpr int kUnitIM = 0;
+inline constexpr int kUnitMS = 1;
+inline constexpr int kUnitPEND = 2;
 
 // Constants for node type
 inline constexpr int kTypeLeaf = 0;
 inline constexpr int kTypeBranch = 1;
 inline constexpr int kTypeSupport = 2;
 
-inline constexpr int UNIT_CUST = 0;
-inline constexpr int UNIT_EMP = 1;
-inline constexpr int UNIT_VEND = 2;
-inline constexpr int UNIT_PROD = 3;
+inline constexpr int kUnitCust = 0;
+inline constexpr int kUnitEmp = 1;
+inline constexpr int kUnitVend = 2;
+inline constexpr int kUnitProd = 3;
 
-inline constexpr int UNIT_POS = 1;
+inline constexpr int kUnitPos = 1;
 
 // Constants for rule
-inline constexpr int RULE_IM = 0;
-inline constexpr int RULE_MS = 1;
+inline constexpr int kRuleIM = 0;
+inline constexpr int kRuleMS = 1;
 
 // Constants for datetime
-inline constexpr char DATE_FORMAT[] = "date_format";
-inline constexpr char DATE_TIME[] = "date_time";
-inline constexpr char DATE_TIME_FST[] = "yyyy-MM-dd hh:mm";
-inline constexpr char DATE_FST[] = "yyyy-MM-dd";
-inline constexpr char DD[] = "dd";
+inline constexpr char kDateFormat[] = "date_format";
+inline constexpr char kDateTime[] = "date_time";
+inline constexpr char kDateTimeFST[] = "yyyy-MM-dd hh:mm";
+inline constexpr char kDateFST[] = "yyyy-MM-dd";
+inline constexpr char kDD[] = "dd";
 
-inline constexpr char FULL_WIDTH_PERIOD[] = u8"。";
-inline constexpr char HALF_WIDTH_PERIOD[] = u8".";
+inline constexpr char kFullWidthPeriod[] = u8"。";
+inline constexpr char kHalfWidthPeriod[] = u8".";
 
 // Constants for separators
-inline constexpr char COLON[] = ":";
-inline constexpr char DASH[] = "-";
-inline constexpr char SEPARATOR[] = "separator";
-inline constexpr char SLASH[] = "/";
+inline constexpr char kColon[] = ":";
+inline constexpr char kDash[] = "-";
+inline constexpr char kSeparator[] = "separator";
+inline constexpr char kSlash[] = "/";
 
 // Constants for operators
-inline constexpr char MINUS[] = "-";
-inline constexpr char PLUS[] = "+";
+inline constexpr char kMinux[] = "-";
+inline constexpr char kPlus[] = "+";
 
 // Constants for table column check state, kState
-inline constexpr char CHECK[] = "check";
+inline constexpr char kCheck[] = "check";
 
 // Constants for files' suffix
-inline constexpr char SFX_INI[] = ".ini";
-inline constexpr char SFX_LOCK[] = ".lock";
-inline constexpr char SFX_QM[] = ".qm";
-inline constexpr char SFX_QSS[] = ".qss";
-inline constexpr char SFX_YTX[] = ".ytx";
-inline constexpr char SFX_PERCENT[] = "%";
+inline constexpr char kSuffixINI[] = ".ini";
+inline constexpr char kSuffixLOCK[] = ".lock";
+inline constexpr char kSuffixQM[] = ".qm";
+inline constexpr char kSuffixQSS[] = ".qss";
+inline constexpr char kSuffixYTX[] = ".ytx";
+inline constexpr char kSuffixPERCENT[] = "%";
 
 // Constants for app's language
-inline constexpr char EN_US[] = "en_US";
-inline constexpr char LANGUAGE[] = "language";
-inline constexpr char ZH_CN[] = "zh_CN";
+inline constexpr char kEnUS[] = "en_US";
+inline constexpr char kLanguage[] = "language";
+inline constexpr char kZhCN[] = "zh_CN";
 
 // Constants for tree and table's column
-inline constexpr char TYPE[] = "type";
-inline constexpr char CODE[] = "code";
-inline constexpr char COLOR[] = "color";
-inline constexpr char COMMISSION[] = "commission";
-inline constexpr char DEADLINE[] = "deadline";
-inline constexpr char DESCRIPTION[] = "description";
-inline constexpr char DISCOUNT[] = "discount";
-inline constexpr char DOCUMENT[] = "document";
-inline constexpr char EMPLOYEE[] = "employee";
-inline constexpr char FINAL_TOTAL[] = "final_total";
-inline constexpr char FIRST[] = "first";
-inline constexpr char INITIAL_TOTAL[] = "initial_total";
-inline constexpr char INITIAL_SUBTOTAL[] = "initial_subtotal";
-inline constexpr char AMOUNT[] = "amount";
-inline constexpr char NAME[] = "name";
-inline constexpr char NODE_ID[] = "node/id";
-inline constexpr char RULE[] = "rule";
-inline constexpr char NOTE[] = "note";
-inline constexpr char PAYMENT_PERIOD[] = "payment_period";
-inline constexpr char FINISHED[] = "finished";
-inline constexpr char SECOND[] = "second";
-inline constexpr char STATE[] = "state";
-inline constexpr char SETTLED[] = "settled";
-inline constexpr char TAX_RATE[] = "tax_rate";
-inline constexpr char UNIT[] = "unit";
-inline constexpr char LHS_RATIO[] = "lhs_ratio";
-inline constexpr char UNIT_PRICE[] = "unit_price";
-inline constexpr char DISCOUNT_PRICE[] = "discount_price";
-inline constexpr char UNIT_COST[] = "unit_cost";
-inline constexpr char INSIDE_PRODUCT[] = "inside_product";
-inline constexpr char OUTSIDE_PRODUCT[] = "outside_product";
-inline constexpr char SUPPORT_ID[] = "support_id";
+inline constexpr char kType[] = "type";
+inline constexpr char kCode[] = "code";
+inline constexpr char kColor[] = "color";
+inline constexpr char kCommission[] = "commission";
+inline constexpr char kDeadline[] = "deadline";
+inline constexpr char kDescription[] = "description";
+inline constexpr char kDiscount[] = "discount";
+inline constexpr char kDocument[] = "document";
+inline constexpr char kEmployee[] = "employee";
+inline constexpr char kFirst[] = "first";
+inline constexpr char kAmount[] = "amount";
+inline constexpr char kName[] = "name";
+inline constexpr char kNodeID[] = "node/id";
+inline constexpr char kRule[] = "rule";
+inline constexpr char kNote[] = "note";
+inline constexpr char kParty[] = "party";
+inline constexpr char kPaymentPeriod[] = "payment_period";
+inline constexpr char kFinished[] = "finished";
+inline constexpr char kSecond[] = "second";
+inline constexpr char kState[] = "state";
+inline constexpr char kSettled[] = "settled";
+inline constexpr char kTaxRate[] = "tax_rate";
+inline constexpr char kUnit[] = "unit";
+inline constexpr char kUnitPrice[] = "unit_price";
+inline constexpr char kDiscountPrice[] = "discount_price";
+inline constexpr char kUnitCost[] = "unit_cost";
+inline constexpr char kInsideProduct[] = "inside_product";
+inline constexpr char kOutsideProduct[] = "outside_product";
+inline constexpr char kSupportID[] = "support_id";
 
 // Constants for app's state
-inline constexpr char HEADER_STATE[] = "header_state";
-inline constexpr char INTERFACE[] = "interface";
-inline constexpr char MAINWINDOW_GEOMETRY[] = "mainwindow_geometry";
-inline constexpr char MAINWINDOW_STATE[] = "mainwindow_state";
-inline constexpr char SOLARIZED_DARK[] = "Solarized Dark";
-inline constexpr char SPLITTER_STATE[] = "splitter_state";
-inline constexpr char THEME[] = "theme";
-inline constexpr char VIEW[] = "view";
-inline constexpr char WINDOW[] = "window";
+inline constexpr char kHeaderState[] = "header_state";
+inline constexpr char kInterface[] = "interface";
+inline constexpr char kMainwindowGeometry[] = "mainwindow_geometry";
+inline constexpr char kMainwindowState[] = "mainwindow_state";
+inline constexpr char kSolarizedDark[] = "Solarized Dark";
+inline constexpr char kSplitterState[] = "splitter_state";
+inline constexpr char kTheme[] = "theme";
+inline constexpr char kView[] = "view";
+inline constexpr char kWindow[] = "window";
 
 // Constants for others
-inline constexpr char QSQLITE[] = "QSQLITE";
-inline constexpr char RECENT_FILE[] = "recent/file";
-inline constexpr char SEMICOLON[] = ";";
-inline constexpr char START_SECTION[] = "start/section";
-inline constexpr char YTX[] = "ytx";
+inline constexpr char kQSQLITE[] = "QSQLITE";
+inline constexpr char kRecentFile[] = "recent/file";
+inline constexpr char kSemicolon[] = ";";
+inline constexpr char kStartSection[] = "start/section";
+inline constexpr char kYTX[] = "ytx";
 
 // Constants for sections
-inline constexpr char Finance[] = "Finance";
-inline constexpr char FINANCE[] = "finance";
-inline constexpr char FINANCE_PATH[] = "finance_path";
-inline constexpr char FINANCE_TRANSACTION[] = "finance_transaction";
-inline constexpr char PARTY[] = "party";
-inline constexpr char Product[] = "Product";
-inline constexpr char PRODUCT[] = "product";
-inline constexpr char PRODUCT_PATH[] = "product_path";
-inline constexpr char PRODUCT_TRANSACTION[] = "product_transaction";
-inline constexpr char Purchase[] = "Purchase";
-inline constexpr char PURCHASE[] = "purchase";
-inline constexpr char PURCHASE_PATH[] = "purchase_path";
-inline constexpr char PURCHASE_TRANSACTION[] = "purchase_transaction";
-inline constexpr char Sales[] = "Sales";
-inline constexpr char SALES[] = "sales";
-inline constexpr char SALES_PATH[] = "sales_path";
-inline constexpr char SALES_TRANSACTION[] = "sales_transaction";
-inline constexpr char Stakeholder[] = "Stakeholder";
-inline constexpr char STAKEHOLDER[] = "stakeholder";
-inline constexpr char STAKEHOLDER_PATH[] = "stakeholder_path";
-inline constexpr char STAKEHOLDER_TRANSACTION[] = "stakeholder_transaction";
-inline constexpr char Task[] = "Task";
-inline constexpr char TASK[] = "task";
-inline constexpr char TASK_PATH[] = "task_path";
-inline constexpr char TASK_TRANSACTION[] = "task_transaction";
+inline constexpr char kFINANCE[] = "FINANCE";
+inline constexpr char kFinance[] = "finance";
+inline constexpr char kFinancePath[] = "finance_path";
+inline constexpr char kFinanceTransaction[] = "finance_transaction";
+inline constexpr char kPRODUCT[] = "PRODUCT";
+inline constexpr char kProduct[] = "product";
+inline constexpr char kProductPath[] = "product_path";
+inline constexpr char kProductTransaction[] = "product_transaction";
+inline constexpr char kPURCHASE[] = "PURCHASE";
+inline constexpr char kPurchase[] = "purchase";
+inline constexpr char kPurchasePath[] = "purchase_path";
+inline constexpr char kPurchaseTransaction[] = "purchase_transaction";
+inline constexpr char kSALES[] = "SALES";
+inline constexpr char kSales[] = "sales";
+inline constexpr char kSalesPath[] = "sales_path";
+inline constexpr char kSalesTransaction[] = "sales_transaction";
+inline constexpr char kSTAKEHOLDER[] = "STAKEHOLDER";
+inline constexpr char kStakeholder[] = "stakeholder";
+inline constexpr char kStakeholderPath[] = "stakeholder_path";
+inline constexpr char kStakeholderTransaction[] = "stakeholder_transaction";
+inline constexpr char kTASK[] = "TASK";
+inline constexpr char kTask[] = "task";
+inline constexpr char kTaskPath[] = "task_path";
+inline constexpr char kTaskTransaction[] = "task_transaction";
 
 #endif // CONSTVALUE_H

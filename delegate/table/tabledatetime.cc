@@ -19,7 +19,7 @@ QWidget* TableDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem
 
 void TableDateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto date_time { QDateTime::fromString(index.data().toString(), DATE_TIME_FST) };
+    auto date_time { QDateTime::fromString(index.data().toString(), kDateTimeFST) };
     if (!date_time.isValid())
         date_time = last_date_time_.isValid() ? last_date_time_.addSecs(1) : QDateTime::currentDateTime();
 
@@ -33,7 +33,7 @@ void TableDateTime::setModelData(QWidget* editor, QAbstractItemModel* model, con
     auto date_time { cast_ediotr->dateTime() };
 
     last_date_time_ = date_time.date() == QDate::currentDate() ? QDateTime() : date_time;
-    model->setData(index, date_time.toString(DATE_TIME_FST));
+    model->setData(index, date_time.toString(kDateTimeFST));
 }
 
 void TableDateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

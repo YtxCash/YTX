@@ -26,8 +26,8 @@ bool SqliteOrder::ReadNode(NodeHash& node_hash, const QDate& start_date, const Q
     query.setForwardOnly(true);
     query.prepare(string);
 
-    query.bindValue(":start_date", start_date.toString(DATE_FST));
-    query.bindValue(":end_date", end_date.toString(DATE_FST));
+    query.bindValue(":start_date", start_date.toString(kDateFST));
+    query.bindValue(":end_date", end_date.toString(kDateFST));
 
     if (!query.exec()) {
         qWarning() << "Section: " << std::to_underlying(info_.section) << "Failed in ReadNode" << query.lastError().text();
@@ -70,7 +70,7 @@ bool SqliteOrder::SearchNode(QList<const Node*>& node_list, const QList<int>& pa
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    const qsizetype batch_size { BATCH_SIZE };
+    const qsizetype batch_size { kBatchSize };
     const auto total_batches { (party_id_list.size() + batch_size - 1) / batch_size };
 
     Node* node {};

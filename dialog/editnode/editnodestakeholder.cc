@@ -32,19 +32,19 @@ void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, TreeModel* s
     ui->comboUnit->setModel(unit_model);
     IniComboEmployee(stakeholder_tree);
 
-    ui->dSpinPaymentPeriod->setRange(0, IMAX);
-    ui->dSpinTaxRate->setRange(0.0, DMAX);
+    ui->dSpinPaymentPeriod->setRange(0, kIntMax);
+    ui->dSpinTaxRate->setRange(0.0, kDoubleMax);
     ui->dSpinTaxRate->setDecimals(amount_decimal);
 
     ui->deadline->setDateTime(QDateTime::currentDateTime());
-    ui->deadline->setDisplayFormat(DD);
+    ui->deadline->setDisplayFormat(kDD);
     ui->deadline->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
 }
 
 void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
 {
     ui->comboEmployee->clear();
-    ui->comboEmployee->setModel(stakeholder_tree->UnitModelPS(UNIT_EMP));
+    ui->comboEmployee->setModel(stakeholder_tree->UnitModelPS(kUnitEmp));
     ui->comboEmployee->setCurrentIndex(0);
 }
 
@@ -72,8 +72,8 @@ void EditNodeStakeholder::Data(Node* node, bool type_enable, bool unit_enable)
     ui->lineEditDescription->setText(node->description);
     ui->plainTextEdit->setPlainText(node->note);
     ui->dSpinPaymentPeriod->setValue(node->first);
-    ui->dSpinTaxRate->setValue(node->second * HUNDRED);
-    ui->deadline->setDateTime(QDateTime::fromString(node->date_time, DATE_TIME_FST));
+    ui->dSpinTaxRate->setValue(node->second * kHundred);
+    ui->deadline->setDateTime(QDateTime::fromString(node->date_time, kDateTimeFST));
 
     switch (node->type) {
     case kTypeBranch:
@@ -117,7 +117,7 @@ void EditNodeStakeholder::on_comboUnit_currentIndexChanged(int index)
 
 void EditNodeStakeholder::on_dSpinPaymentPeriod_editingFinished() { node_->first = ui->dSpinPaymentPeriod->value(); }
 
-void EditNodeStakeholder::on_dSpinTaxRate_editingFinished() { node_->second = ui->dSpinTaxRate->value() / HUNDRED; }
+void EditNodeStakeholder::on_dSpinTaxRate_editingFinished() { node_->second = ui->dSpinTaxRate->value() / kHundred; }
 
 void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
 {
@@ -127,7 +127,7 @@ void EditNodeStakeholder::on_comboEmployee_currentIndexChanged(int index)
 
 void EditNodeStakeholder::on_rBtnMonthly_toggled(bool checked) { node_->rule = checked; }
 
-void EditNodeStakeholder::on_deadline_editingFinished() { node_->date_time = ui->deadline->dateTime().toString(DATE_TIME_FST); }
+void EditNodeStakeholder::on_deadline_editingFinished() { node_->date_time = ui->deadline->dateTime().toString(kDateTimeFST); }
 
 void EditNodeStakeholder::on_rBtnLeaf_toggled(bool checked)
 {

@@ -76,33 +76,33 @@ void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
 
 void MainwindowSqlite::NewFile(CString& file_path)
 {
-    QSqlDatabase db { QSqlDatabase::addDatabase(QSQLITE) };
+    QSqlDatabase db { QSqlDatabase::addDatabase(kQSQLITE) };
     db.setDatabaseName(file_path);
     if (!db.open())
         return;
 
     QString finance = NodeFinance();
-    QString finance_path = Path(FINANCE_PATH);
+    QString finance_path = Path(kFinancePath);
     QString finance_transaction = TransactionFinance();
 
     QString product = NodeProduct();
-    QString product_path = Path(PRODUCT_PATH);
+    QString product_path = Path(kProductPath);
     QString product_transaction = TransactionProduct();
 
     QString task = NodeTask();
-    QString task_path = Path(TASK_PATH);
+    QString task_path = Path(kTaskPath);
     QString task_transaction = TransactionTask();
 
     QString stakeholder = NodeStakeholder();
-    QString stakeholder_path = Path(STAKEHOLDER_PATH);
+    QString stakeholder_path = Path(kStakeholderPath);
     QString stakeholder_transaction = TransactionStakeholder();
 
     QString purchase = NodePurchase();
-    QString purchase_path = Path(PURCHASE_PATH);
+    QString purchase_path = Path(kPurchasePath);
     QString purchase_transaction = TransactionPurchase();
 
     QString sales = NodeSales();
-    QString sales_path = Path(SALES_PATH);
+    QString sales_path = Path(kSalesPath);
     QString sales_transaction = TransactionSales();
 
     QString settings = QStringLiteral(R"(

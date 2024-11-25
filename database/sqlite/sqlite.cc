@@ -925,7 +925,7 @@ bool Sqlite::ReadTransRange(TransShadowList& trans_shadow_list, int node_id, con
     QSqlQuery query(*db_);
     query.setForwardOnly(true);
 
-    const qsizetype batch_size { BATCH_SIZE };
+    const qsizetype batch_size { kBatchSize };
     const auto total_batches { (trans_id_list.size() + batch_size - 1) / batch_size };
 
     for (int batch_index = 0; batch_index != total_batches; ++batch_index) {

@@ -22,7 +22,7 @@ QWidget* DeadLine::createEditor(QWidget* parent, const QStyleOptionViewItem& /*o
 
 void DeadLine::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto date_time { QDateTime::fromString(index.data().toString(), DATE_TIME_FST) };
+    auto date_time { QDateTime::fromString(index.data().toString(), kDateTimeFST) };
     auto* cast_ediotr { static_cast<DateTimeEdit*>(editor) };
     cast_ediotr->setDateTime(date_time);
 }
@@ -31,7 +31,7 @@ void DeadLine::setModelData(QWidget* editor, QAbstractItemModel* model, const QM
 {
     auto* cast_ediotr { static_cast<DateTimeEdit*>(editor) };
     const auto& date_time { cast_ediotr->dateTime() };
-    model->setData(index, date_time.toString(DATE_TIME_FST));
+    model->setData(index, date_time.toString(kDateTimeFST));
 }
 
 void DeadLine::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -43,7 +43,7 @@ void DeadLine::paint(QPainter* painter, const QStyleOptionViewItem& option, cons
     PaintText(date_time, painter, option, index, Qt::AlignCenter);
 }
 
-QSize DeadLine::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const { return CalculateTextSize(DD); }
+QSize DeadLine::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const { return CalculateTextSize(kDD); }
 
 bool DeadLine::Skip(const QModelIndex& index) const
 {
@@ -51,5 +51,5 @@ bool DeadLine::Skip(const QModelIndex& index) const
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
     const bool rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
 
-    return type != kTypeLeaf || unit == UNIT_PROD || rule == RULE_IM;
+    return type != kTypeLeaf || unit == kUnitProd || rule == kRuleIM;
 }

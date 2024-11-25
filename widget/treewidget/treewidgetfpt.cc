@@ -12,8 +12,8 @@ TreeWidgetFPT::TreeWidgetFPT(TreeModel* model, CInfo& info, CSettings& settings,
 {
     ui->setupUi(this);
     ui->treeViewFPT->setModel(model);
-    ui->dspin_box_dynamic_->setRange(DMIN, DMAX);
-    ui->dspin_box_static_->setRange(DMIN, DMAX);
+    ui->dspin_box_dynamic_->setRange(kDoubleMin, kDoubleMax);
+    ui->dspin_box_static_->setRange(kDoubleMin, kDoubleMax);
     SetStatus();
 }
 
@@ -60,7 +60,7 @@ void TreeWidgetFPT::DynamicStatus(int lhs_node_id, int rhs_node_id)
     double lhs_total { equal_unit ? model_->InitialTotalFPT(lhs_node_id) : model_->FinalTotalFPT(lhs_node_id) };
     double rhs_total { equal_unit ? model_->InitialTotalFPT(rhs_node_id) : model_->FinalTotalFPT(rhs_node_id) };
 
-    const auto& operation { settings_.operation.isEmpty() ? PLUS : settings_.operation };
+    const auto& operation { settings_.operation.isEmpty() ? kPlus : settings_.operation };
     double total { Operate(lhs_total, rhs_total, operation) };
 
     ui->dspin_box_dynamic_->setValue(total);

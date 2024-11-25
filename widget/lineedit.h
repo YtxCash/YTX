@@ -43,7 +43,7 @@ protected:
     void keyPressEvent(QKeyEvent* event) override
     {
         if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Semicolon) {
-            insert(QDate::currentDate().toString(DATE_FST));
+            insert(QDate::currentDate().toString(kDateFST));
             return;
         }
         QLineEdit::keyPressEvent(event);

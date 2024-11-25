@@ -14,7 +14,7 @@ TreeModelTask::~TreeModelTask() { qDeleteAll(node_hash_); }
 void TreeModelTask::RUpdateLeafValueOne(int node_id, double diff, CString& node_field)
 {
     auto* node { node_hash_.value(node_id) };
-    if (!node || node == root_ || node->type != kTypeLeaf || diff == 0.0 || node->unit != UNIT_PROD)
+    if (!node || node == root_ || node->type != kTypeLeaf || diff == 0.0 || node->unit != kUnitProd)
         return;
 
     node->first += (node->rule ? 1 : -1) * diff;
@@ -133,13 +133,13 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
 
     switch (kColumn) {
     case TreeEnumTask::kCode:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kCode, &Node::code);
         break;
     case TreeEnumTask::kDescription:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kDescription, &Node::description);
         break;
     case TreeEnumTask::kNote:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kNote, &Node::note);
         break;
     case TreeEnumTask::kRule:
         UpdateRuleFPTO(node, value.toBool());
@@ -150,19 +150,19 @@ bool TreeModelTask::setData(const QModelIndex& index, const QVariant& value, int
             index.siblingAtColumn(std::to_underlying(TreeEnumTask::kDateTime)), index.siblingAtColumn(std::to_underlying(TreeEnumTask::kDateTime)));
         break;
     case TreeEnumTask::kColor:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), COLOR, &Node::color);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kColor, &Node::color);
         break;
     case TreeEnumTask::kDateTime:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DATE_TIME, &Node::date_time);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kDateTime, &Node::date_time);
         break;
     case TreeEnumTask::kUnit:
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumTask::kUnitCost:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), UNIT_COST, &Node::first);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), kUnitCost, &Node::first);
         break;
     case TreeEnumTask::kFinished:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toBool(), FINISHED, &Node::finished);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toBool(), kFinished, &Node::finished);
         break;
     default:
         return false;
@@ -258,7 +258,7 @@ bool TreeModelTask::dropMimeData(const QMimeData* data, Qt::DropAction action, i
 
     int node_id {};
 
-    if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
+    if (auto mime { data->data(kNodeID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
     auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
@@ -308,11 +308,11 @@ void TreeModelTask::UpdateNodeFPTS(const Node* tmp_node)
         emit SUpdateName(node->id, node->name, node->type == kTypeBranch);
     }
 
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, DESCRIPTION, &Node::description);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, CODE, &Node::code);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, NOTE, &Node::note);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->color, COLOR, &Node::color);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->date_time, DATE_TIME, &Node::date_time);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, kDescription, &Node::description);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, kCode, &Node::code);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, kNote, &Node::note);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->color, kColor, &Node::color);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->date_time, kDateTime, &Node::date_time);
 }
 
 bool TreeModelTask::RemoveNode(int row, const QModelIndex& parent)
@@ -419,7 +419,7 @@ bool TreeModelTask::UpdateUnit(Node* node, int value)
         return false;
 
     node->unit = value;
-    sql_->UpdateField(info_.node, value, UNIT, node_id);
+    sql_->UpdateField(info_.node, value, kUnit, node_id);
 
     return true;
 }

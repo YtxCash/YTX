@@ -393,7 +393,7 @@ void SqliteStakeholder::WriteTransBind(Trans* trans, QSqlQuery& query) const
     query.bindValue(":unit_price", trans->unit_price);
     query.bindValue(":description", trans->description);
     query.bindValue(":state", trans->state);
-    query.bindValue(":document", trans->document.join(SEMICOLON));
+    query.bindValue(":document", trans->document.join(kSemicolon));
     query.bindValue(":inside_product", trans->rhs_node);
     query.bindValue(":outside_product", trans->support_id);
 }
@@ -425,7 +425,7 @@ void SqliteStakeholder::WriteTransBind(TransShadow* trans_shadow, QSqlQuery& que
     query.bindValue(":unit_price", *trans_shadow->unit_price);
     query.bindValue(":description", *trans_shadow->description);
     query.bindValue(":state", *trans_shadow->state);
-    query.bindValue(":document", trans_shadow->document->join(SEMICOLON));
+    query.bindValue(":document", trans_shadow->document->join(kSemicolon));
     query.bindValue(":inside_product", *trans_shadow->rhs_node);
     query.bindValue(":outside_product", *trans_shadow->support_id);
 }
@@ -496,6 +496,6 @@ void SqliteStakeholder::ReadTransQuery(Trans* trans, const QSqlQuery& query) con
     trans->code = query.value("code").toString();
     trans->description = query.value("description").toString();
     trans->state = query.value("state").toBool();
-    trans->document = query.value("document").toString().split(SEMICOLON, Qt::SkipEmptyParts);
+    trans->document = query.value("document").toString().split(kSemicolon, Qt::SkipEmptyParts);
     trans->date_time = query.value("date_time").toString();
 }

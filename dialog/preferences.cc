@@ -100,20 +100,20 @@ void Preferences::DataCombo(QComboBox* combo, CString& string)
 
 void Preferences::IniStringList()
 {
-    language_list_.emplaceBack(EN_US);
-    language_list_.emplaceBack(ZH_CN);
+    language_list_.emplaceBack(kEnUS);
+    language_list_.emplaceBack(kZhCN);
 
-    separator_list_.emplaceBack(DASH);
-    separator_list_.emplaceBack(COLON);
-    separator_list_.emplaceBack(SLASH);
+    separator_list_.emplaceBack(kDash);
+    separator_list_.emplaceBack(kColon);
+    separator_list_.emplaceBack(kSlash);
 
-    theme_list_.emplaceBack(SOLARIZED_DARK);
+    theme_list_.emplaceBack(kSolarizedDark);
 
-    operation_list_.emplaceBack(PLUS);
-    operation_list_.emplaceBack(MINUS);
+    operation_list_.emplaceBack(kPlus);
+    operation_list_.emplaceBack(kMinux);
 
-    date_format_list_.emplaceBack(DATE_TIME_FST);
-    date_format_list_.emplaceBack(DATE_FST);
+    date_format_list_.emplaceBack(kDateTimeFST);
+    date_format_list_.emplaceBack(kDateFST);
 }
 
 void Preferences::on_pBtnApply_clicked() { emit SUpdateSettings(settings_, interface_); }

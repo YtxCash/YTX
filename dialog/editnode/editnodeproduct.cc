@@ -31,8 +31,8 @@ void EditNodeProduct::IniDialog(QStandardItemModel* unit_model, int amount_decim
 
     ui->comboUnit->setModel(unit_model);
 
-    ui->dSpinBoxUnitPrice->setRange(0.0, DMAX);
-    ui->dSpinBoxCommission->setRange(0.0, DMAX);
+    ui->dSpinBoxUnitPrice->setRange(0.0, kDoubleMax);
+    ui->dSpinBoxCommission->setRange(0.0, kDoubleMax);
     ui->dSpinBoxUnitPrice->setDecimals(amount_decimal);
     ui->dSpinBoxCommission->setDecimals(amount_decimal);
 }

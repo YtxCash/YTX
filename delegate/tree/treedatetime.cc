@@ -24,7 +24,7 @@ QWidget* TreeDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem&
 
 void TreeDateTime::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    auto date_time { QDateTime::fromString(index.data().toString(), DATE_TIME_FST) };
+    auto date_time { QDateTime::fromString(index.data().toString(), kDateTimeFST) };
     if (!date_time.isValid())
         date_time = QDateTime::currentDateTime();
 
@@ -37,7 +37,7 @@ void TreeDateTime::setModelData(QWidget* editor, QAbstractItemModel* model, cons
     auto* cast_ediotr { static_cast<DateTimeEdit*>(editor) };
     auto date_time { cast_ediotr->dateTime() };
 
-    model->setData(index, date_time.toString(DATE_TIME_FST));
+    model->setData(index, date_time.toString(kDateTimeFST));
 }
 
 void TreeDateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

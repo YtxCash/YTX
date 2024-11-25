@@ -58,5 +58,5 @@ bool PaymentPeriod::Skip(const QModelIndex& index) const
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kUnit)).data().toInt() };
     const bool rule { index.siblingAtColumn(std::to_underlying(TreeEnumStakeholder::kRule)).data().toBool() };
 
-    return type != kTypeLeaf || unit == UNIT_PROD || rule == RULE_IM;
+    return type != kTypeLeaf || unit == kUnitProd || rule == kRuleIM;
 }

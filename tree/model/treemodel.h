@@ -94,11 +94,11 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
     Qt::DropActions supportedDropActions() const override { return Qt::CopyAction | Qt::MoveAction; }
-    QStringList mimeTypes() const override { return QStringList { NODE_ID }; }
+    QStringList mimeTypes() const override { return QStringList { kNodeID }; }
 
     bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int /*row*/, int /*column*/, const QModelIndex& /*parent*/) const override
     {
-        return data && data->hasFormat(NODE_ID) && action != Qt::IgnoreAction;
+        return data && data->hasFormat(kNodeID) && action != Qt::IgnoreAction;
     }
     int columnCount(const QModelIndex& parent = QModelIndex()) const override
     {

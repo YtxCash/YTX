@@ -23,7 +23,7 @@ QSize TreeDoubleSpinUnitR::sizeHint(const QStyleOptionViewItem& /*option*/, cons
 QString TreeDoubleSpinUnitR::Format(const QModelIndex& index) const
 {
     auto it { unit_symbol_map_.constFind(unit_) };
-    auto symbol { (it != unit_symbol_map_.constEnd()) ? it.value() : EMPTYSTRING };
+    auto symbol { (it != unit_symbol_map_.constEnd()) ? it.value() : kEmptyString };
 
     return symbol + locale_.toString(index.data().toDouble(), 'f', decimal_);
 }

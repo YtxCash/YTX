@@ -37,7 +37,7 @@ void TreeModelOrder::RUpdateLeafValue(int node_id, double first_diff, double sec
     if (first_diff == 0 && second_diff == 0 && amount_diff == 0 && discount_diff == 0 && settled_diff == 0)
         return;
 
-    double settled { node->unit == UNIT_IM ? settled_diff : 0.0 };
+    double settled { node->unit == kUnitIM ? settled_diff : 0.0 };
 
     node->first += first_diff;
     node->second += second_diff;
@@ -174,7 +174,7 @@ bool TreeModelOrder::UpdateRuleFPTO(Node* node, bool value)
         return false;
 
     node->rule = value;
-    sql_->UpdateField(info_.node, value, RULE, node->id);
+    sql_->UpdateField(info_.node, value, kRule, node->id);
 
     node->first = -node->first;
     node->second = -node->second;
@@ -185,11 +185,11 @@ bool TreeModelOrder::UpdateRuleFPTO(Node* node, bool value)
     auto index { GetIndex(node->id) };
     emit dataChanged(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kFirst)), index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kSettled)));
 
-    sql_->UpdateField(info_.node, node->first, FIRST, node->id);
-    sql_->UpdateField(info_.node, node->second, SECOND, node->id);
-    sql_->UpdateField(info_.node, node->discount, DISCOUNT, node->id);
-    sql_->UpdateField(info_.node, node->initial_total, AMOUNT, node->id);
-    sql_->UpdateField(info_.node, node->final_total, SETTLED, node->id);
+    sql_->UpdateField(info_.node, node->first, kFirst, node->id);
+    sql_->UpdateField(info_.node, node->second, kSecond, node->id);
+    sql_->UpdateField(info_.node, node->discount, kDiscount, node->id);
+    sql_->UpdateField(info_.node, node->initial_total, kAmount, node->id);
+    sql_->UpdateField(info_.node, node->final_total, kSettled, node->id);
 
     return true;
 }
@@ -204,19 +204,19 @@ bool TreeModelOrder::UpdateUnit(Node* node, int value)
     node->unit = value;
 
     switch (value) {
-    case UNIT_IM:
+    case kUnitIM:
         node->final_total = node->initial_total - node->discount;
         break;
-    case UNIT_PEND:
-    case UNIT_MS:
+    case kUnitPEND:
+    case kUnitMS:
         node->final_total = 0.0;
         break;
     default:
         return false;
     }
 
-    sql_->UpdateField(info_.node, value, UNIT, node->id);
-    sql_->UpdateField(info_.node, node->final_total, AMOUNT, node->id);
+    sql_->UpdateField(info_.node, value, kUnit, node->id);
+    sql_->UpdateField(info_.node, node->final_total, kAmount, node->id);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kSettled));
     return true;
@@ -234,14 +234,14 @@ bool TreeModelOrder::UpdateFinished(Node* node, bool value)
 
     node->finished = value;
     emit SUpdateData(node->id, TreeEnumOrder::kFinished, value);
-    sql_->UpdateField(info_.node, value, FINISHED, node->id);
+    sql_->UpdateField(info_.node, value, kFinished, node->id);
     return true;
 }
 
 bool TreeModelOrder::UpdateName(Node* node, CString& value)
 {
     node->name = value;
-    sql_->UpdateField(info_.node, value, NAME, node->id);
+    sql_->UpdateField(info_.node, value, kName, node->id);
 
     emit SResizeColumnToContents(std::to_underlying(TreeEnumOrder::kName));
     emit SSearch();
@@ -439,13 +439,13 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
 
     switch (kColumn) {
     case TreeEnumOrder::kCode:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), CODE, &Node::code);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kCode, &Node::code);
         break;
     case TreeEnumOrder::kDescription:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DESCRIPTION, &Node::description);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kDescription, &Node::description);
         break;
     case TreeEnumOrder::kNote:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), NOTE, &Node::note);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kNote, &Node::note);
         break;
     case TreeEnumOrder::kRule:
         UpdateRuleFPTO(node, value.toBool());
@@ -454,13 +454,13 @@ bool TreeModelOrder::setData(const QModelIndex& index, const QVariant& value, in
         UpdateUnit(node, value.toInt());
         break;
     case TreeEnumOrder::kParty:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), PARTY, &Node::party);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), kParty, &Node::party);
         break;
     case TreeEnumOrder::kEmployee:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), EMPLOYEE, &Node::employee);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), kEmployee, &Node::employee);
         break;
     case TreeEnumOrder::kDateTime:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), DATE_TIME, &Node::date_time);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toString(), kDateTime, &Node::date_time);
         break;
     case TreeEnumOrder::kFinished:
         UpdateFinished(node, value.toBool());
@@ -518,7 +518,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
     int node_id {};
 
-    if (auto mime { data->data(NODE_ID) }; !mime.isEmpty())
+    if (auto mime { data->data(kNodeID) }; !mime.isEmpty())
         node_id = QVariant(mime).toInt();
 
     auto* node { TreeModelUtils::GetNodeByID(node_hash_, node_id) };
@@ -542,7 +542,7 @@ bool TreeModelOrder::dropMimeData(const QMimeData* data, Qt::DropAction action, 
         destination_parent->children.insert(begin_row, node);
         node->unit = destination_parent->unit;
         node->parent = destination_parent;
-        node->final_total = node->unit == UNIT_IM ? node->initial_total - node->discount : 0.0;
+        node->final_total = node->unit == kUnitIM ? node->initial_total - node->discount : 0.0;
 
         if (node->finished)
             UpdateAncestorValueOrder(node, node->first, node->second, node->initial_total, node->discount, node->final_total);
