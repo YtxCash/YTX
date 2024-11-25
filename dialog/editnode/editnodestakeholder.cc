@@ -58,6 +58,7 @@ void EditNodeStakeholder::Data(Node* node, bool type_enable, bool unit_enable)
 
     ui->rBtnMonthly->setChecked(node->rule);
     ui->rBtnCash->setChecked(!node->rule);
+    ui->rBtnLeaf->setChecked(true);
 
     if (node->name.isEmpty()) {
         ui->pBtnOk->setEnabled(false);

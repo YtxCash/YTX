@@ -47,8 +47,8 @@ inline constexpr int kUnitProd = 3;
 inline constexpr int kUnitPos = 1;
 
 // Constants for rule
-inline constexpr int kRuleIM = 0;
-inline constexpr int kRuleMS = 1;
+inline constexpr bool kRuleIM = 0;
+inline constexpr bool kRuleMS = 1;
 
 // Constants for datetime
 inline constexpr char kDateFormat[] = "date_format";

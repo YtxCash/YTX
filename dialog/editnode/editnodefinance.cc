@@ -41,6 +41,7 @@ void EditNodeFinance::Data(Node* node, bool type_enable, bool unit_enable)
 
     ui->rBtnDDCI->setChecked(node->rule);
     ui->rBtnDICD->setChecked(!node->rule);
+    ui->rBtnLeaf->setChecked(true);
 
     if (node->name.isEmpty())
         return ui->pBtnOk->setEnabled(false);
