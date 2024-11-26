@@ -29,23 +29,6 @@ inline constexpr int kIntMax = 1'000'000'000;
 inline constexpr int kRowHeight = 24;
 inline constexpr int kThreeThousand = 3000;
 
-// Constants for unit
-inline constexpr int kUnitIM = 0;
-inline constexpr int kUnitMS = 1;
-inline constexpr int kUnitPEND = 2;
-
-// Constants for node type
-inline constexpr int kTypeLeaf = 0;
-inline constexpr int kTypeBranch = 1;
-inline constexpr int kTypeSupport = 2;
-
-inline constexpr int kUnitCust = 0;
-inline constexpr int kUnitEmp = 1;
-inline constexpr int kUnitVend = 2;
-inline constexpr int kUnitProd = 3;
-
-inline constexpr int kUnitPos = 1;
-
 // Constants for rule
 inline constexpr bool kRuleIM = 0;
 inline constexpr bool kRuleMS = 1;

@@ -1,6 +1,7 @@
 #include "editnodeproduct.h"
 
 #include "component/constvalue.h"
+#include "component/enumclass.h"
 #include "dialog/signalblocker.h"
 #include "ui_editnodeproduct.h"
 

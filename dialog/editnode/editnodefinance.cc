@@ -1,5 +1,6 @@
 #include "editnodefinance.h"
 
+#include "component/enumclass.h"
 #include "dialog/signalblocker.h"
 #include "ui_editnodefinance.h"
 

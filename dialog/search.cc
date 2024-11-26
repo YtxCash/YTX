@@ -10,6 +10,7 @@
 #include "delegate/table/colorr.h"
 #include "delegate/table/tabledbclick.h"
 #include "delegate/table/tabledoublespinr.h"
+#include "delegate/tree/treecombo.h"
 #include "delegate/tree/treecombor.h"
 #include "delegate/tree/treedoublespinr.h"
 #include "dialog/signalblocker.h"
@@ -167,8 +168,10 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kDiscount), total);
 
     auto* check { new CheckBoxR(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kType), check);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFinished), check);
+
+    auto* type { new TreeCombo(info_.type_map, info_.type_model, false, view) };
+    view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kType), type);
 
     auto* name { new SearchPathTreeR(tree_, std::to_underlying(TreeEnumSearch::kID), view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kName), name);

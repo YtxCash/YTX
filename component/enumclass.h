@@ -20,6 +20,16 @@
 #ifndef ENUMCLASS_H
 #define ENUMCLASS_H
 
+// Enum
+
+enum UnitOrder { kUnitIM, kUnitMS, kUnitPEND };
+
+enum UnitStakeholder { kUnitCust, kUnitEmp, kUnitVend, kUnitProd };
+
+enum UnitProduct { kPlaceholder, kUnitPos };
+
+enum NodeType { kTypeLeaf, kTypeBranch, kTypeSupport };
+
 // Enum class defining sections
 enum class Section { kFinance, kProduct, kTask, kStakeholder, kSales, kPurchase };
 
