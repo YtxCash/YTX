@@ -16,7 +16,11 @@ protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& /*source_parent*/) const override
     {
         assert(dynamic_cast<QStandardItemModel*>(sourceModel()) && "sourceModel() is not QStandardItemModel");
-        return static_cast<QStandardItemModel*>(sourceModel())->item(source_row)->data(Qt::UserRole).toInt() != leaf_id_;
+        auto* item { static_cast<QStandardItemModel*>(sourceModel())->item(source_row) };
+        if (!item)
+            return false;
+
+        return item->data(Qt::UserRole).toInt() != leaf_id_;
     }
 
 private:
