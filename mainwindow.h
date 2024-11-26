@@ -46,12 +46,6 @@ struct Data {
 using PDialog = QPointer<QDialog>;
 using CData = const Data;
 
-template <typename T>
-concept InheritQAbstractItemView = std::is_base_of_v<QAbstractItemView, T>;
-
-template <typename T>
-concept InheritQWidget = std::is_base_of_v<QWidget, T>;
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -111,26 +105,6 @@ private slots:
     void on_rBtnStakeholder_toggled(bool checked);
     void on_rBtnProduct_toggled(bool checked);
     void on_rBtnPurchase_toggled(bool checked);
-
-private:
-    inline bool IsTreeWidget(const QWidget* widget) const { return widget && widget->inherits("TreeWidget"); }
-    inline bool IsTableWidget(const QWidget* widget) const { return widget && widget->inherits("TableWidget"); }
-    inline PTableModel GetTableModel(QWidget* widget) const
-    {
-        if (!widget)
-            return nullptr;
-
-        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-        return static_cast<TableWidget*>(widget)->Model();
-    }
-    inline PQTableView GetQTableView(QWidget* widget) const
-    {
-        if (!widget)
-            return nullptr;
-
-        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-        return static_cast<TableWidget*>(widget)->View();
-    }
 
 private:
     void SetHeader();
@@ -213,60 +187,6 @@ private:
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
 
     QStandardItemModel* CreateModelFromList(QStringList& list, QObject* parent = nullptr);
-
-    template <InheritQAbstractItemView T> bool HasSelection(QPointer<T> view) const
-    {
-        return view && view->selectionModel() && view->selectionModel()->hasSelection();
-    }
-
-    template <InheritQWidget T> void FreeWidget(T*& widget)
-    {
-        if (widget) {
-            if (auto model = widget->Model())
-                delete model;
-
-            delete widget;
-            widget = nullptr;
-        }
-    }
-
-    template <InheritQWidget T> void SaveState(T* widget, QSettings* interface, CString& section_name, CString& property) const
-    {
-        auto state { widget->saveState() };
-        interface->setValue(QString("%1/%2").arg(section_name, property), state);
-    }
-
-    template <InheritQWidget T> void RestoreState(T* widget, QSettings* interface, CString& section_name, CString& property) const
-    {
-        auto state { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
-
-        if (!state.isEmpty())
-            widget->restoreState(state);
-    }
-
-    template <InheritQWidget T> void SaveGeometry(T* widget, QSettings* interface, CString& section_name, CString& property) const
-    {
-        auto geometry { widget->saveGeometry() };
-        interface->setValue(QString("%1/%2").arg(section_name, property), geometry);
-    }
-
-    template <InheritQWidget T> void RestoreGeometry(T* widget, QSettings* interface, CString& section_name, CString& property) const
-    {
-        auto geometry { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
-        if (!geometry.isEmpty())
-            widget->restoreGeometry(geometry);
-    }
-
-    template <typename Container> void SwitchDialog(Container* container, bool enable) const
-    {
-        if (container) {
-            for (auto dialog : *container) {
-                if (dialog) {
-                    dialog->setVisible(enable);
-                }
-            }
-        }
-    }
 
 private:
     Ui::MainWindow* ui {};

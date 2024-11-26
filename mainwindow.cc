@@ -54,6 +54,7 @@
 #include "global/resourcepool.h"
 #include "global/signalstation.h"
 #include "global/sqlconnection.h"
+#include "mainwindowutils.h"
 #include "table/model/sortfilterproxymodel.h"
 #include "table/model/tablemodelfinance.h"
 #include "table/model/tablemodelproduct.h"
@@ -88,9 +89,9 @@ MainWindow::MainWindow(CString& dir_path, QWidget* parent)
     qApp->setWindowIcon(QIcon(":/logo/logo/logo.png"));
     this->setAcceptDrops(true);
 
-    RestoreState(ui->splitter, shared_interface_, kWindow, kSplitterState);
-    RestoreState(this, shared_interface_, kWindow, kMainwindowState);
-    RestoreGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
+    MainWindowUtils::RestoreState(ui->splitter, shared_interface_, kWindow, kSplitterState);
+    MainWindowUtils::RestoreState(this, shared_interface_, kWindow, kMainwindowState);
+    MainWindowUtils::RestoreGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
 
     Recent();
 
@@ -103,49 +104,49 @@ MainWindow::MainWindow(CString& dir_path, QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    SaveState(ui->splitter, shared_interface_, kWindow, kSplitterState);
-    SaveState(this, shared_interface_, kWindow, kMainwindowState);
-    SaveGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
+    MainWindowUtils::SaveState(ui->splitter, shared_interface_, kWindow, kSplitterState);
+    MainWindowUtils::SaveState(this, shared_interface_, kWindow, kMainwindowState);
+    MainWindowUtils::SaveGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
     shared_interface_->setValue(kStartSection, std::to_underlying(start_));
 
     if (finance_tree_) {
         SaveTab(finance_table_hash_, finance_data_.info.node, kView);
-        SaveState(finance_tree_->View()->header(), exclusive_interface_, finance_data_.info.node, kHeaderState);
+        MainWindowUtils::SaveState(finance_tree_->View()->header(), exclusive_interface_, finance_data_.info.node, kHeaderState);
 
         finance_dialog_list_.clear();
     }
 
     if (product_tree_) {
         SaveTab(product_table_hash_, product_data_.info.node, kView);
-        SaveState(product_tree_->View()->header(), exclusive_interface_, product_data_.info.node, kHeaderState);
+        MainWindowUtils::SaveState(product_tree_->View()->header(), exclusive_interface_, product_data_.info.node, kHeaderState);
 
         product_dialog_list_.clear();
     }
 
     if (stakeholder_tree_) {
         SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, kView);
-        SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, stakeholder_data_.info.node, kHeaderState);
+        MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, stakeholder_data_.info.node, kHeaderState);
 
         stakeholder_dialog_list_.clear();
     }
 
     if (task_tree_) {
         SaveTab(task_table_hash_, task_data_.info.node, kView);
-        SaveState(task_tree_->View()->header(), exclusive_interface_, task_data_.info.node, kHeaderState);
+        MainWindowUtils::SaveState(task_tree_->View()->header(), exclusive_interface_, task_data_.info.node, kHeaderState);
 
         task_dialog_list_.clear();
     }
 
     if (sales_tree_) {
         // SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
-        SaveState(sales_tree_->View()->header(), exclusive_interface_, sales_data_.info.node, kHeaderState);
+        MainWindowUtils::SaveState(sales_tree_->View()->header(), exclusive_interface_, sales_data_.info.node, kHeaderState);
 
         sales_dialog_list_.clear();
     }
 
     if (purchase_tree_) {
         // SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
-        SaveState(purchase_tree_->View()->header(), exclusive_interface_, purchase_data_.info.node, kHeaderState);
+        MainWindowUtils::SaveState(purchase_tree_->View()->header(), exclusive_interface_, purchase_data_.info.node, kHeaderState);
 
         purchase_dialog_list_.clear();
     }
@@ -246,7 +247,7 @@ void MainWindow::RInsertTriggered()
     if (!widget)
         return;
 
-    if (IsTreeWidget(widget)) {
+    if (MainWindowUtils::IsTreeWidget(widget)) {
         assert(dynamic_cast<TreeWidget*>(widget) && "Widget is not TreeWidget");
         InsertNode(static_cast<TreeWidget*>(widget));
     }
@@ -254,7 +255,7 @@ void MainWindow::RInsertTriggered()
     if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
         return;
 
-    if (IsTableWidget(widget)) {
+    if (MainWindowUtils::IsTableWidget(widget)) {
         assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
         AppendTrans(static_cast<TableWidget*>(widget));
     }
@@ -316,7 +317,7 @@ void MainWindow::SwitchTab(int node_id, int trans_id) const
         return;
 
     auto view { widget->View() };
-    auto index { GetTableModel(widget)->GetIndex(trans_id) };
+    auto index { MainWindowUtils::GetTableModel(widget)->GetIndex(trans_id) };
     view->setCurrentIndex(index);
     view->scrollTo(index.siblingAtColumn(std::to_underlying(TableEnum::kDateTime)), QAbstractItemView::PositionAtCenter);
 }
@@ -682,7 +683,7 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info.section, 0 }));
 
-    RestoreState(view->header(), exclusive_interface_, info.node, kHeaderState);
+    MainWindowUtils::RestoreState(view->header(), exclusive_interface_, info.node, kHeaderState);
     RestoreTab(model, table_hash, data, settings, kView);
 
     SetView(view);
@@ -884,12 +885,12 @@ void MainWindow::RRemoveTriggered()
     if (!widget)
         return;
 
-    if (IsTreeWidget(widget)) {
+    if (MainWindowUtils::IsTreeWidget(widget)) {
         assert(dynamic_cast<TreeWidget*>(widget) && "Widget is not TreeWidget");
         RemoveNode(static_cast<TreeWidget*>(widget));
     }
 
-    if (IsTableWidget(widget)) {
+    if (MainWindowUtils::IsTableWidget(widget)) {
         assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
         RemoveTrans(static_cast<TableWidget*>(widget));
     }
@@ -898,7 +899,7 @@ void MainWindow::RRemoveTriggered()
 void MainWindow::RemoveNode(TreeWidget* tree_widget)
 {
     auto view { tree_widget->View() };
-    if (!view || !HasSelection(view))
+    if (!view || !MainWindowUtils::HasSelection(view))
         return;
 
     auto index { view->currentIndex() };
@@ -943,7 +944,7 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
 {
     // 1. 获取视图和检查选择
     auto view { table_widget->View() };
-    if (!view || !HasSelection(view)) {
+    if (!view || !MainWindowUtils::HasSelection(view)) {
         return;
     }
 
@@ -993,7 +994,7 @@ void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int
     auto* widget { table_hash_->value(node_id) };
 
     if (widget) {
-        FreeWidget(widget);
+        MainWindowUtils::FreeWidget(widget);
         table_hash_->remove(node_id);
         SignalStation::Instance().DeregisterModel(data_->info.section, node_id);
     }
@@ -1100,7 +1101,7 @@ void MainWindow::RTabCloseRequested(int index)
     int node_id { ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id };
     auto* widget { table_hash_->value(node_id) };
 
-    FreeWidget(widget);
+    MainWindowUtils::FreeWidget(widget);
     table_hash_->remove(node_id);
 
     SignalStation::Instance().DeregisterModel(data_->info.section, node_id);
@@ -1590,11 +1591,11 @@ void MainWindow::SetView(PQTreeView tree_view) const
 void MainWindow::RAppendNodeTriggered()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !IsTreeWidget(current_widget))
+    if (!current_widget || !MainWindowUtils::IsTreeWidget(current_widget))
         return;
 
     auto view { tree_widget_->View() };
-    if (!HasSelection(view))
+    if (!MainWindowUtils::HasSelection(view))
         return;
 
     auto parent_index { view->currentIndex() };
@@ -1639,11 +1640,11 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
 void MainWindow::RJumpTriggered()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !IsTableWidget(current_widget))
+    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
         return;
 
-    auto view { GetQTableView(current_widget) };
-    if (!HasSelection(view))
+    auto view { MainWindowUtils::GetQTableView(current_widget) };
+    if (!MainWindowUtils::HasSelection(view))
         return;
 
     auto index { view->currentIndex() };
@@ -1682,11 +1683,11 @@ void MainWindow::REditNode()
         return;
 
     const auto* widget { ui->tabWidget->currentWidget() };
-    if (!widget || !IsTreeWidget(widget))
+    if (!widget || !MainWindowUtils::IsTreeWidget(widget))
         return;
 
     const auto view { tree_widget_->View() };
-    if (!HasSelection(view))
+    if (!MainWindowUtils::HasSelection(view))
         return;
 
     const auto index { view->currentIndex() };
@@ -1865,11 +1866,11 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
 void MainWindow::REditDocument()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !IsTableWidget(current_widget))
+    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
         return;
 
-    auto view { GetQTableView(current_widget) };
-    if (!HasSelection(view))
+    auto view { MainWindowUtils::GetQTableView(current_widget) };
+    if (!MainWindowUtils::HasSelection(view))
         return;
 
     auto trans_index { view->currentIndex() };
@@ -1877,7 +1878,7 @@ void MainWindow::REditDocument()
         return;
 
     auto document_dir { settings_->document_dir };
-    auto model { GetTableModel(current_widget) };
+    auto model { MainWindowUtils::GetTableModel(current_widget) };
     auto* document_pointer { model->GetDocumentPointer(trans_index) };
     const int trans_id { trans_index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
@@ -1954,9 +1955,9 @@ void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
 
     if (resize_column) {
         auto* current_widget { ui->tabWidget->currentWidget() };
-        if (IsTableWidget(current_widget))
-            ResizeColumn(GetQTableView(current_widget)->horizontalHeader(), true);
-        if (IsTreeWidget(current_widget))
+        if (MainWindowUtils::IsTableWidget(current_widget))
+            ResizeColumn(MainWindowUtils::GetQTableView(current_widget)->horizontalHeader(), true);
+        if (MainWindowUtils::IsTreeWidget(current_widget))
             ResizeColumn(tree_widget_->View()->header(), false);
     }
 }
@@ -1965,7 +1966,7 @@ void MainWindow::RFreeView(int node_id)
     auto* view { table_hash_->value(node_id) };
 
     if (view) {
-        FreeWidget(view);
+        MainWindowUtils::FreeWidget(view);
         table_hash_->remove(node_id);
         SignalStation::Instance().DeregisterModel(data_->info.section, node_id);
     }
@@ -2023,7 +2024,7 @@ void MainWindow::UpdateTranslate() const
         widget = tab_widget->widget(index);
         tab_id = tab_bar->tabData(index).value<Tab>();
 
-        if (IsTreeWidget(widget)) {
+        if (MainWindowUtils::IsTreeWidget(widget)) {
             Section section { tab_id.section };
             switch (section) {
             case Section::kFinance:
@@ -2362,10 +2363,10 @@ void MainWindow::RTabBarDoubleClicked(int index) { RTreeLocation(ui->tabWidget->
 void MainWindow::RUpdateState()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !IsTableWidget(current_widget))
+    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
         return;
 
-    auto table_model { GetTableModel(current_widget) };
+    auto table_model { MainWindowUtils::GetTableModel(current_widget) };
     table_model->UpdateAllState(Check { QObject::sender()->property(kCheck).toInt() });
 }
 
@@ -2384,8 +2385,8 @@ void MainWindow::SwitchSection(CTab& last_tab) const
             tab_widget->setCurrentIndex(index);
     }
 
-    SwitchDialog(dialog_list_, true);
-    SwitchDialog(dialog_hash_, true);
+    MainWindowUtils::SwitchDialog(dialog_list_, true);
+    MainWindowUtils::SwitchDialog(dialog_hash_, true);
 }
 
 void MainWindow::UpdateLastTab() const
@@ -2406,8 +2407,8 @@ void MainWindow::on_rBtnFinance_toggled(bool checked)
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    SwitchDialog(dialog_list_, false);
-    SwitchDialog(dialog_hash_, false);
+    MainWindowUtils::SwitchDialog(dialog_list_, false);
+    MainWindowUtils::SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_widget_ = finance_tree_;
@@ -2430,8 +2431,8 @@ void MainWindow::on_rBtnSales_toggled(bool checked)
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    SwitchDialog(dialog_list_, false);
-    SwitchDialog(dialog_hash_, false);
+    MainWindowUtils::SwitchDialog(dialog_list_, false);
+    MainWindowUtils::SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_widget_ = sales_tree_;
@@ -2454,8 +2455,8 @@ void MainWindow::on_rBtnTask_toggled(bool checked)
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    SwitchDialog(dialog_list_, false);
-    SwitchDialog(dialog_hash_, false);
+    MainWindowUtils::SwitchDialog(dialog_list_, false);
+    MainWindowUtils::SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_widget_ = task_tree_;
@@ -2478,8 +2479,8 @@ void MainWindow::on_rBtnStakeholder_toggled(bool checked)
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    SwitchDialog(dialog_list_, false);
-    SwitchDialog(dialog_hash_, false);
+    MainWindowUtils::SwitchDialog(dialog_list_, false);
+    MainWindowUtils::SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_widget_ = stakeholder_tree_;
@@ -2502,8 +2503,8 @@ void MainWindow::on_rBtnProduct_toggled(bool checked)
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    SwitchDialog(dialog_list_, false);
-    SwitchDialog(dialog_hash_, false);
+    MainWindowUtils::SwitchDialog(dialog_list_, false);
+    MainWindowUtils::SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_widget_ = product_tree_;
@@ -2526,8 +2527,8 @@ void MainWindow::on_rBtnPurchase_toggled(bool checked)
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    SwitchDialog(dialog_list_, false);
-    SwitchDialog(dialog_hash_, false);
+    MainWindowUtils::SwitchDialog(dialog_list_, false);
+    MainWindowUtils::SwitchDialog(dialog_hash_, false);
     UpdateLastTab();
 
     tree_widget_ = purchase_tree_;
