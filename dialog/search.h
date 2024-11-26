@@ -24,7 +24,6 @@
 #include <QTableView>
 
 #include "component/settings.h"
-#include "component/using.h"
 #include "table/searchnodemodel.h"
 #include "table/searchtransmodel.h"
 
@@ -36,8 +35,7 @@ class Search final : public QDialog {
     Q_OBJECT
 
 public:
-    Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, Sqlite* sql, CStringMap& rule_map, CSettings& settings,
-        QWidget* parent = nullptr);
+    Search(CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, CSettings* settings, Sqlite* sql, CInfo& info, QWidget* parent = nullptr);
     ~Search();
 
 signals:
@@ -78,9 +76,8 @@ private:
     CTreeModel* stakeholder_tree_ {};
     CTreeModel* product_tree_ {};
 
-    CSettings& settings_;
+    CSettings* settings_;
     CInfo& info_;
-    CStringMap& rule_map_;
 };
 
 #endif // SEARCH_H

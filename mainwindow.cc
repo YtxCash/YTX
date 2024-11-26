@@ -2233,8 +2233,7 @@ void MainWindow::RSearchTriggered()
     if (!SqlConnection::Instance().DatabaseEnable())
         return;
 
-    auto* dialog { new Search(
-        data_->info, tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), data_->sql, data_->info.rule_map, *settings_, this) };
+    auto* dialog { new Search(tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), settings_, data_->sql, data_->info, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
     connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);

@@ -13,8 +13,7 @@
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
-Search::Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, Sqlite* sql, CStringMap& rule_map, CSettings& settings,
-    QWidget* parent)
+Search::Search(CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, CSettings* settings, Sqlite* sql, CInfo& info, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::Search)
     , sql_ { sql }
@@ -23,7 +22,6 @@ Search::Search(CInfo& info, CTreeModel* tree, CTreeModel* stakeholder_tree, CTre
     , product_tree_ { product_tree }
     , settings_ { settings }
     , info_ { info }
-    , rule_map_ { rule_map }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
@@ -159,7 +157,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     auto* rule { new StringMapR(info_.rule_map, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kRule), rule);
 
-    auto* total { new DoubleSpinR(settings_.amount_decimal, true, view) };
+    auto* total { new DoubleSpinR(settings_->amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kInitialTotal), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFinalTotal), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kDiscount), total);
@@ -182,7 +180,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kParty), stakeholder);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kEmployee), stakeholder);
 
-    auto* value { new DoubleSpinR(settings_.amount_decimal, true, view) };
+    auto* value { new DoubleSpinR(settings_->amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFirst), value);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kSecond), value);
 
@@ -193,14 +191,14 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
 {
     view->setModel(model);
 
-    auto* value { new DoubleSpinR(settings_.amount_decimal, true, view) };
+    auto* value { new DoubleSpinR(settings_->amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kSettled), value);
 
-    auto* ratio { new DoubleSpinR(settings_.common_decimal, true, view) };
+    auto* ratio { new DoubleSpinR(settings_->common_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDiscountPrice), ratio);
