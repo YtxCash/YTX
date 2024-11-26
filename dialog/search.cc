@@ -3,16 +3,13 @@
 #include <QHeaderView>
 
 #include "component/enumclass.h"
-#include "delegate/checkbox.h"
-#include "delegate/checkboxr.h"
+#include "delegate/readonly/checkboxr.h"
+#include "delegate/readonly/colorr.h"
+#include "delegate/readonly/doublespinr.h"
+#include "delegate/readonly/stringmapr.h"
 #include "delegate/search/searchpathtabler.h"
 #include "delegate/search/searchpathtreer.h"
-#include "delegate/table/colorr.h"
 #include "delegate/table/tabledbclick.h"
-#include "delegate/table/tabledoublespinr.h"
-#include "delegate/tree/treecombo.h"
-#include "delegate/tree/treecombor.h"
-#include "delegate/tree/treedoublespinr.h"
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
@@ -156,13 +153,13 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
 {
     view->setModel(model);
 
-    auto* unit { new TreeComboR(info_.unit_map, view) };
+    auto* unit { new StringMapR(info_.unit_map, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kUnit), unit);
 
-    auto* rule { new TreeComboR(rule_map_, view) };
+    auto* rule { new StringMapR(info_.rule_map, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kRule), rule);
 
-    auto* total { new TreeDoubleSpinR(settings_.amount_decimal, true, view) };
+    auto* total { new DoubleSpinR(settings_.amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kInitialTotal), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFinalTotal), total);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kDiscount), total);
@@ -170,7 +167,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     auto* check { new CheckBoxR(view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFinished), check);
 
-    auto* type { new TreeCombo(info_.type_map, info_.type_model, false, view) };
+    auto* type { new StringMapR(info_.type_map, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kType), type);
 
     auto* name { new SearchPathTreeR(tree_, std::to_underlying(TreeEnumSearch::kID), view) };
@@ -185,7 +182,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kParty), stakeholder);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kEmployee), stakeholder);
 
-    auto* value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
+    auto* value { new DoubleSpinR(settings_.amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFirst), value);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kSecond), value);
 
@@ -196,14 +193,14 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
 {
     view->setModel(model);
 
-    auto* value { new TableDoubleSpinR(settings_.amount_decimal, false, view) };
+    auto* value { new DoubleSpinR(settings_.amount_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsDebit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsCredit), value);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kSettled), value);
 
-    auto* ratio { new TableDoubleSpinR(settings_.common_decimal, false, view) };
+    auto* ratio { new DoubleSpinR(settings_.common_decimal, true, view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kLhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsRatio), ratio);
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDiscountPrice), ratio);
@@ -231,7 +228,7 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
         view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kRhsNode), lhs_node_name);
     }
 
-    auto* state { new CheckBox(QEvent::MouseButtonDblClick, view) };
+    auto* state { new CheckBoxR(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kState), state);
 
     auto* document { new TableDbClick(view) };

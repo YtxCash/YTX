@@ -21,16 +21,17 @@
 #include "database/sqlite/sqlitestakeholder.h"
 #include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
+#include "delegate/doublespin.h"
 #include "delegate/line.h"
+#include "delegate/readonly/colorr.h"
+#include "delegate/readonly/doublespinr.h"
+#include "delegate/readonly/doublespinunitr.h"
 #include "delegate/search/searchpathtabler.h"
 #include "delegate/specificunit.h"
-#include "delegate/table/colorr.h"
 #include "delegate/table/supportid.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledatetime.h"
 #include "delegate/table/tabledbclick.h"
-#include "delegate/table/tabledoublespin.h"
-#include "delegate/table/tabledoublespinr.h"
 #include "delegate/tree/color.h"
 #include "delegate/tree/finance/financeforeignr.h"
 #include "delegate/tree/order/finished.h"
@@ -40,9 +41,6 @@
 #include "delegate/tree/stakeholder/taxrate.h"
 #include "delegate/tree/treecombo.h"
 #include "delegate/tree/treedatetime.h"
-#include "delegate/tree/treedoublespin.h"
-#include "delegate/tree/treedoublespinr.h"
-#include "delegate/tree/treedoublespinunitr.h"
 #include "delegate/tree/treeplaintext.h"
 #include "dialog/about.h"
 #include "dialog/editdocument.h"
@@ -541,14 +539,14 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto* amount { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* amount { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDebit), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kCredit), amount);
 
-    auto* fx_rate { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* fx_rate { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kLhsRatio), fx_rate);
 
-    auto* subtotal { new TableDoubleSpinR(settings->amount_decimal, true, table_view) };
+    auto* subtotal { new DoubleSpinR(settings->amount_decimal, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSubtotal), subtotal);
 
     auto* support_node { new SupportID(tree_model, table_view) };
@@ -570,14 +568,14 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* quantity { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kCredit), quantity);
 
-    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* unit_cost { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kUnitCost), unit_cost);
 
-    auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
+    auto* subtotal { new DoubleSpinR(settings->common_decimal, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSubtotal), subtotal);
 
     auto* support_node { new SupportID(tree_model, table_view) };
@@ -602,14 +600,14 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* quantity { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDebit), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kCredit), quantity);
 
-    auto* unit_cost { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* unit_cost { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kUnitCost), unit_cost);
 
-    auto* subtotal { new TableDoubleSpinR(settings->common_decimal, true, table_view) };
+    auto* subtotal { new DoubleSpinR(settings->common_decimal, false, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kSubtotal), subtotal);
 }
 
@@ -619,7 +617,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
     auto* inside_product { new SpecificUnit(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
 
-    auto* unit_price { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* unit_price { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
     auto* date_time { new TableDateTime(interface_.date_format, table_view) };
@@ -657,15 +655,15 @@ void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) cons
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kCode), line);
 
-    auto* price { new TableDoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* price { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kUnitPrice), price);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscountPrice), price);
 
-    auto* quantity { new TableDoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
+    auto* quantity { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kFirst), quantity);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSecond), quantity);
 
-    auto* amount { new TableDoubleSpinR(settings->amount_decimal, false, table_view) };
+    auto* amount { new DoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kAmount), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kDiscount), amount);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumOrder::kSettled), amount);
@@ -738,7 +736,7 @@ void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
 
 void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    auto* final_total { new TreeDoubleSpinUnitR(settings.amount_decimal, false, settings.default_unit, info.unit_symbol_map, tree_view) };
+    auto* final_total { new DoubleSpinUnitR(settings.amount_decimal, false, settings.default_unit, info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumFinance::kFinalTotal), final_total);
 
     auto* initial_total { new FinanceForeignR(settings.amount_decimal, settings.default_unit, info.unit_symbol_map, tree_view) };
@@ -747,13 +745,13 @@ void MainWindow::DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& s
 
 void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 {
-    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, false, tree_view) };
+    auto* quantity { new DoubleSpinR(settings.common_decimal, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kQuantity), quantity);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
+    auto* amount { new DoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kAmount), amount);
 
-    auto* unit_cost { new TreeDoubleSpin(settings.amount_decimal, kDoubleMin, kDoubleMax, tree_view) };
+    auto* unit_cost { new DoubleSpin(settings.amount_decimal, kDoubleMin, kDoubleMax, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kUnitCost), unit_cost);
 
     auto* color { new Color(tree_view) };
@@ -768,15 +766,15 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
 {
-    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, false, tree_view) };
+    auto* quantity { new DoubleSpinR(settings.common_decimal, false, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kQuantity), quantity);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
+    auto* amount { new DoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kAmount), amount);
 
-    auto* price { new TreeDoubleSpin(settings.amount_decimal, kDoubleMin, kDoubleMax, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), price);
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), price);
+    auto* unit_price { new DoubleSpin(settings.amount_decimal, kDoubleMin, kDoubleMax, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kUnitPrice), unit_price);
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kCommission), unit_price);
 
     auto* color { new Color(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumProduct::kColor), color);
@@ -802,14 +800,14 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
     auto* rule { new TreeCombo(info.rule_map, info.rule_model, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kRule), rule);
 
-    auto* amount { new TreeDoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
+    auto* amount { new DoubleSpinUnitR(settings.amount_decimal, false, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kAmount), amount);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSettled), amount);
 
-    auto* discount { new TreeDoubleSpinUnitR(settings.amount_decimal, true, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
+    auto* discount { new DoubleSpinUnitR(settings.amount_decimal, true, finance_settings_.default_unit, finance_data_.info.unit_symbol_map, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDiscount), discount);
 
-    auto* quantity { new TreeDoubleSpinR(settings.common_decimal, true, tree_view) };
+    auto* quantity { new DoubleSpinR(settings.common_decimal, true, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kSecond), quantity);
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kFirst), quantity);
 
@@ -1209,13 +1207,13 @@ void MainWindow::DelegateSupport(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDocument), document);
     connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
 
-    auto* value { new TableDoubleSpinR(settings->amount_decimal, false, table_view) };
+    auto* value { new DoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsDebit), value);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kRhsDebit), value);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsCredit), value);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kRhsCredit), value);
 
-    auto* ratio { new TableDoubleSpinR(settings->common_decimal, false, table_view) };
+    auto* ratio { new DoubleSpinR(settings->common_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsRatio), ratio);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kRhsRatio), ratio);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kUnitPrice), ratio);

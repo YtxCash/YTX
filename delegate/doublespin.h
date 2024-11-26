@@ -17,14 +17,14 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TABLEDOUBLESPIN_H
-#define TABLEDOUBLESPIN_H
+#ifndef DOUBLESPIN_H
+#define DOUBLESPIN_H
 
 #include "delegate/styleditemdelegate.h"
 
-class TableDoubleSpin final : public StyledItemDelegate {
+class DoubleSpin final : public StyledItemDelegate {
 public:
-    TableDoubleSpin(const int& decimal, double min, double max, QObject* parent = nullptr);
+    DoubleSpin(const int& decimal, double min, double max, QObject* parent = nullptr);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -37,4 +37,4 @@ private:
     double min_ {};
 };
 
-#endif // TABLEDOUBLESPIN_H
+#endif // DOUBLESPIN_H

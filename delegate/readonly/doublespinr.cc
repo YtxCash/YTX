@@ -1,13 +1,13 @@
-#include "treedoublespinr.h"
+#include "doublespinr.h"
 
-TreeDoubleSpinR::TreeDoubleSpinR(const int& decimal, bool ignore_zero, QObject* parent)
+DoubleSpinR::DoubleSpinR(const int& decimal, bool ignore_zero, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , ignore_zero_ { ignore_zero }
 {
 }
 
-void TreeDoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void DoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() };
     if (ignore_zero_ && value == 0.0)
@@ -16,7 +16,7 @@ void TreeDoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& optio
     PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpinR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize DoubleSpinR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() };
     return CalculateTextSize(locale_.toString(value, 'f', decimal_));

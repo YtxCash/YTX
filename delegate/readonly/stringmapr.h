@@ -17,22 +17,23 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TREEDOUBLESPINR_H
-#define TREEDOUBLESPINR_H
+#ifndef STRINGMAPR_H
+#define STRINGMAPR_H
 
-// read only
-
+#include "component/using.h"
 #include "delegate/styleditemdelegate.h"
 
-class TreeDoubleSpinR final : public StyledItemDelegate {
+class StringMapR final : public StyledItemDelegate {
 public:
-    TreeDoubleSpinR(const int& decimal, bool ignore_zero, QObject* parent = nullptr);
+    StringMapR(CStringMap& map, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    const int& decimal_ {};
-    bool ignore_zero_ {};
+    QString MapValue(int key) const;
+
+private:
+    CStringMap& map_;
 };
 
-#endif // TREEDOUBLESPINR_H
+#endif // STRINGMAPR_H

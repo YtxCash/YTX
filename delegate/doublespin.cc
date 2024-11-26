@@ -1,8 +1,8 @@
-#include "treedoublespin.h"
+#include "doublespin.h"
 
 #include "widget/doublespinbox.h"
 
-TreeDoubleSpin::TreeDoubleSpin(const int& decimal, double min, double max, QObject* parent)
+DoubleSpin::DoubleSpin(const int& decimal, double min, double max, QObject* parent)
     : StyledItemDelegate { parent }
     , decimal_ { decimal }
     , max_ { max }
@@ -10,7 +10,7 @@ TreeDoubleSpin::TreeDoubleSpin(const int& decimal, double min, double max, QObje
 {
 }
 
-QWidget* TreeDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+QWidget* DoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
 {
     auto* editor { new DoubleSpinBox(parent) };
     editor->setDecimals(decimal_);
@@ -21,19 +21,19 @@ QWidget* TreeDoubleSpin::createEditor(QWidget* parent, const QStyleOptionViewIte
     return editor;
 }
 
-void TreeDoubleSpin::setEditorData(QWidget* editor, const QModelIndex& index) const
+void DoubleSpin::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
     cast_editor->setValue(index.data().toDouble());
 }
 
-void TreeDoubleSpin::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void DoubleSpin::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
     auto* cast_editor { static_cast<DoubleSpinBox*>(editor) };
     model->setData(index, cast_editor->value());
 }
 
-void TreeDoubleSpin::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void DoubleSpin::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() };
     if (value == 0)
@@ -42,7 +42,7 @@ void TreeDoubleSpin::paint(QPainter* painter, const QStyleOptionViewItem& option
     PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TreeDoubleSpin::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize DoubleSpin::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() };
     return CalculateTextSize(locale_.toString(value, 'f', decimal_));

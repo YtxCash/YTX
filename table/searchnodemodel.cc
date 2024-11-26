@@ -81,9 +81,9 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
     case TreeEnumSearch::kFinished:
         return node->finished ? node->finished : QVariant();
     case TreeEnumSearch::kInitialTotal:
-        return node->initial_total;
+        return node->initial_total == 0 ? QVariant() : node->initial_total;
     case TreeEnumSearch::kFinalTotal:
-        return node->final_total;
+        return node->final_total == 0 ? QVariant() : node->final_total;
     default:
         return QVariant();
     }

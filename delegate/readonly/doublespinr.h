@@ -17,28 +17,20 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TREEDOUBLESPINUNITR_H
-#define TREEDOUBLESPINUNITR_H
+#ifndef DOUBLESPINR_H
+#define DOUBLESPINR_H
 
-// read only
-
-#include "component/using.h"
 #include "delegate/styleditemdelegate.h"
 
-class TreeDoubleSpinUnitR final : public StyledItemDelegate {
+class DoubleSpinR final : public StyledItemDelegate {
 public:
-    TreeDoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringMap& unit_symbol_map, QObject* parent = nullptr);
+    DoubleSpinR(const int& decimal, bool ignore_zero, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    QString Format(const QModelIndex& index) const;
-
-private:
     const int& decimal_ {};
-    const int& unit_ {};
-    CStringMap& unit_symbol_map_;
     bool ignore_zero_ {};
 };
 
-#endif // TREEDOUBLESPINUNITR_H
+#endif // DOUBLESPINR_H

@@ -17,23 +17,26 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TREECOMBOR_H
-#define TREECOMBOR_H
+#ifndef DOUBLESPINUNITR_H
+#define DOUBLESPINUNITR_H
 
 #include "component/using.h"
 #include "delegate/styleditemdelegate.h"
 
-class TreeComboR final : public StyledItemDelegate {
+class DoubleSpinUnitR final : public StyledItemDelegate {
 public:
-    TreeComboR(CStringMap& map, QObject* parent = nullptr);
+    DoubleSpinUnitR(const int& decimal, bool ignore_zero, const int& unit, CStringMap& unit_symbol_map, QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    QString MapValue(int key) const;
+    QString Format(const QModelIndex& index) const;
 
 private:
-    CStringMap& map_;
+    const int& decimal_ {};
+    const int& unit_ {};
+    CStringMap& unit_symbol_map_;
+    bool ignore_zero_ {};
 };
 
-#endif // TREECOMBOR_H
+#endif // DOUBLESPINUNITR_H
