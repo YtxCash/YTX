@@ -1,9 +1,7 @@
 #include "treecombo.h"
 
-#include <widget/combobox.h>
-
-#include "component/constvalue.h"
 #include "component/enumclass.h"
+#include "widget/combobox.h"
 
 TreeCombo::TreeCombo(CStringMap& map, QStandardItemModel* model, bool skip_branch, QObject* parent)
     : StyledItemDelegate { parent }

@@ -49,7 +49,7 @@ private slots:
     void RDoubleClicked(const QModelIndex& index);
 
     void on_rBtnNode_toggled(bool checked);
-    void on_rBtnTransaction_toggled(bool checked);
+    void on_rBtnTrans_toggled(bool checked);
 
 private:
     void IniDialog();

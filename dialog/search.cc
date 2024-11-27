@@ -9,7 +9,6 @@
 #include "delegate/readonly/stringmapr.h"
 #include "delegate/search/searchpathtabler.h"
 #include "delegate/search/searchpathtreer.h"
-#include "delegate/table/tabledbclick.h"
 #include "dialog/signalblocker.h"
 #include "ui_search.h"
 
@@ -29,19 +28,19 @@ Search::Search(CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* produ
     search_tree_ = new SearchNodeModel(info_, tree_, stakeholder_tree, sql, this);
     search_table_ = new SearchTransModel(&info, sql, this);
 
-    TreeViewDelegate(ui->treeView, search_tree_);
-    TableViewDelegate(ui->tableView, search_table_);
+    TreeViewDelegate(ui->searchViewNode, search_tree_);
+    TableViewDelegate(ui->searchViewTrans, search_table_);
     IniConnect();
 
-    IniView(ui->treeView);
-    IniView(ui->tableView);
+    IniView(ui->searchViewNode);
+    IniView(ui->searchViewTrans);
 
-    ResizeTreeColumn(ui->treeView->horizontalHeader());
-    ResizeTableColumn(ui->tableView->horizontalHeader());
+    ResizeTreeColumn(ui->searchViewNode->horizontalHeader());
+    ResizeTableColumn(ui->searchViewTrans->horizontalHeader());
 
     IniDialog();
-    HideTreeColumn(ui->treeView, info.section);
-    HideTableColumn(ui->tableView, info.section);
+    HideTreeColumn(ui->searchViewNode, info.section);
+    HideTableColumn(ui->searchViewTrans, info.section);
 }
 
 Search::~Search() { delete ui; }
@@ -50,10 +49,7 @@ void Search::IniDialog()
 {
     ui->rBtnNode->setChecked(true);
     ui->stackedWidget->setCurrentIndex(0);
-
     ui->pBtnCancel->setAutoDefault(false);
-    ui->page->setContentsMargins(0, 0, 0, 0);
-    ui->page2->setContentsMargins(0, 0, 0, 0);
     this->setWindowTitle(tr("Search"));
 }
 
@@ -61,8 +57,8 @@ void Search::IniConnect()
 {
     connect(ui->pBtnCancel, &QPushButton::clicked, this, &Search::close);
     connect(ui->lineEdit, &QLineEdit::returnPressed, this, &Search::RSearch);
-    connect(ui->treeView, &QTableView::doubleClicked, this, &Search::RDoubleClicked);
-    connect(ui->tableView, &QTableView::doubleClicked, this, &Search::RDoubleClicked);
+    connect(ui->searchViewNode, &QTableView::doubleClicked, this, &Search::RDoubleClicked);
+    connect(ui->searchViewTrans, &QTableView::doubleClicked, this, &Search::RDoubleClicked);
 }
 
 void Search::HideTreeColumn(QTableView* view, Section section)
@@ -184,7 +180,7 @@ void Search::TreeViewDelegate(QTableView* view, SearchNodeModel* model)
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kFirst), value);
     view->setItemDelegateForColumn(std::to_underlying(TreeEnumSearch::kSecond), value);
 
-    // view->setColumnHidden(std::to_underlying(TreeEnum::kID), true);
+    view->setColumnHidden(std::to_underlying(TreeEnumSearch::kID), false);
 }
 
 void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
@@ -229,10 +225,7 @@ void Search::TableViewDelegate(QTableView* view, SearchTransModel* model)
     auto* state { new CheckBoxR(view) };
     view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kState), state);
 
-    auto* document { new TableDbClick(view) };
-    view->setItemDelegateForColumn(std::to_underlying(TableEnumSearch::kDocument), document);
-
-    // view->setColumnHidden(std::to_underlying(TableEnumSearch::kID), true);
+    view->setColumnHidden(std::to_underlying(TableEnumSearch::kID), false);
 }
 
 void Search::IniView(QTableView* view)
@@ -263,12 +256,12 @@ void Search::RSearch()
 
     if (ui->rBtnNode->isChecked()) {
         search_tree_->Query(kText);
-        ResizeTreeColumn(ui->treeView->horizontalHeader());
+        ResizeTreeColumn(ui->searchViewNode->horizontalHeader());
     }
 
-    if (ui->rBtnTransaction->isChecked()) {
+    if (ui->rBtnTrans->isChecked()) {
         search_table_->Query(kText);
-        ResizeTableColumn(ui->tableView->horizontalHeader());
+        ResizeTableColumn(ui->searchViewTrans->horizontalHeader());
     }
 }
 
@@ -279,7 +272,7 @@ void Search::RDoubleClicked(const QModelIndex& index)
         emit STreeLocation(node_id);
     }
 
-    if (ui->rBtnTransaction->isChecked()) {
+    if (ui->rBtnTrans->isChecked()) {
         int lhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kLhsNode)).data().toInt() };
         int rhs_node_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kRhsNode)).data().toInt() };
         int trans_id { index.siblingAtColumn(std::to_underlying(TableEnumSearch::kID)).data().toInt() };
@@ -306,7 +299,7 @@ void Search::on_rBtnNode_toggled(bool checked)
         ui->stackedWidget->setCurrentIndex(0);
 }
 
-void Search::on_rBtnTransaction_toggled(bool checked)
+void Search::on_rBtnTrans_toggled(bool checked)
 {
     if (checked)
         ui->stackedWidget->setCurrentIndex(1);

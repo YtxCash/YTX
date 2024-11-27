@@ -352,7 +352,13 @@ QTreeView#treeViewStakeholder QScrollBar::add-line:horizontal,
 QTreeView#treeViewStakeholder QScrollBar::sub-line:horizontal,
 QTreeView#treeViewOrder QScrollBar::handle:horizontal,
 QTreeView#treeViewOrder QScrollBar::add-line:horizontal,
-QTreeView#treeViewOrder QScrollBar::sub-line:horizontal
+QTreeView#treeViewOrder QScrollBar::sub-line:horizontal,
+QTableView#searchViewTrans QScrollBar::handle:horizontal,
+QTableView#searchViewTrans QScrollBar::add-line:horizontal,
+QTableView#searchViewTrans QScrollBar::sub-line:horizontal,
+QTableView#searchViewNode QScrollBar::handle:horizontal,
+QTableView#searchViewNode QScrollBar::add-line:horizontal,
+QTableView#searchViewNode QScrollBar::sub-line:horizontal
 {
     border-bottom: none;
 }

@@ -303,7 +303,7 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+13"/>
         <source>Support</source>
-        <translation>辅助</translation>
+        <translation>辅助节点</translation>
     </message>
     <message>
         <source>&amp;Branch</source>
@@ -564,12 +564,12 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+13"/>
         <source>Branch</source>
-        <translation>分支</translation>
+        <translation>枝节点</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Support</source>
-        <translation>辅助</translation>
+        <translation>辅助节点</translation>
     </message>
     <message>
         <location line="+33"/>
@@ -686,7 +686,7 @@ Rage, rage against the dying of the light.</source>
     <message>
         <location line="+13"/>
         <source>Support</source>
-        <translation>辅助</translation>
+        <translation>辅助节点</translation>
     </message>
     <message>
         <location line="+60"/>
@@ -1701,13 +1701,11 @@ Rage, rage against the dying of the light.</source>
         <location line="+42"/>
         <location line="+39"/>
         <location line="+41"/>
-        <location line="+68"/>
-        <location line="+6"/>
         <source>Branch</source>
         <translation>枝</translation>
     </message>
     <message>
-        <location line="-277"/>
+        <location line="-203"/>
         <location line="+41"/>
         <location line="+40"/>
         <location line="+42"/>
@@ -1864,11 +1862,13 @@ Rage, rage against the dying of the light.</source>
         <location line="+6"/>
         <location line="+4"/>
         <location line="+5"/>
+        <location line="+4"/>
+        <location line="+6"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-34"/>
+        <location line="-44"/>
         <location line="+2"/>
         <location line="+4"/>
         <location line="+5"/>
@@ -2681,7 +2681,7 @@ Rage, rage against the dying of the light.</source>
 <context>
     <name>Search</name>
     <message>
-        <location filename="../../dialog/search.cc" line="+57"/>
+        <location filename="../../dialog/search.cc" line="+53"/>
         <source>Search</source>
         <translation>搜索</translation>
     </message>
@@ -2692,15 +2692,19 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="+10"/>
-        <source>Transaction</source>
+        <source>Trans</source>
         <translation>交易</translation>
+    </message>
+    <message>
+        <source>Transaction</source>
+        <translation type="vanished">交易</translation>
     </message>
     <message>
         <source>Close  On Jump</source>
         <translation type="vanished">跳转时关闭</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+82"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
