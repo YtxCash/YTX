@@ -181,12 +181,12 @@ void MainWindow::ROpenFile(CString& file_path)
         SetSalesData();
         SetPurchaseData();
 
-        CreateSection(finance_tree_, finance_table_hash_, finance_data_, finance_settings_, tr(kFINANCE));
-        CreateSection(stakeholder_tree_, stakeholder_table_hash_, stakeholder_data_, stakeholder_settings_, tr(kSTAKEHOLDER));
-        CreateSection(product_tree_, product_table_hash_, product_data_, product_settings_, tr(kPRODUCT));
-        CreateSection(task_tree_, task_table_hash_, task_data_, task_settings_, tr(kTASK));
-        CreateSection(sales_tree_, sales_table_hash_, sales_data_, sales_settings_, tr(kSALES));
-        CreateSection(purchase_tree_, purchase_table_hash_, purchase_data_, purchase_settings_, tr(kPURCHASE));
+        CreateSection(finance_tree_, finance_table_hash_, finance_data_, finance_settings_, tr("Finance"));
+        CreateSection(stakeholder_tree_, stakeholder_table_hash_, stakeholder_data_, stakeholder_settings_, tr("Stakeholder"));
+        CreateSection(product_tree_, product_table_hash_, product_data_, product_settings_, tr("Product"));
+        CreateSection(task_tree_, task_table_hash_, task_data_, task_settings_, tr("Task"));
+        CreateSection(sales_tree_, sales_table_hash_, sales_data_, sales_settings_, tr("Sales"));
+        CreateSection(purchase_tree_, purchase_table_hash_, purchase_data_, purchase_settings_, tr("Purchase"));
 
         switch (start_) {
         case Section::kFinance:
@@ -2024,22 +2024,22 @@ void MainWindow::UpdateTranslate() const
             Section section { tab_id.section };
             switch (section) {
             case Section::kFinance:
-                tab_widget->setTabText(index, tr(kFINANCE));
+                tab_widget->setTabText(index, tr("Finance"));
                 break;
             case Section::kStakeholder:
-                tab_widget->setTabText(index, tr(kSTAKEHOLDER));
+                tab_widget->setTabText(index, tr("Stakeholder"));
                 break;
             case Section::kProduct:
-                tab_widget->setTabText(index, tr(kPRODUCT));
+                tab_widget->setTabText(index, tr("Product"));
                 break;
             case Section::kTask:
-                tab_widget->setTabText(index, tr(kTASK));
+                tab_widget->setTabText(index, tr("Task"));
                 break;
             case Section::kSales:
-                tab_widget->setTabText(index, tr(kSALES));
+                tab_widget->setTabText(index, tr("Sales"));
                 break;
             case Section::kPurchase:
-                tab_widget->setTabText(index, tr(kPURCHASE));
+                tab_widget->setTabText(index, tr("Purchase"));
                 break;
             default:
                 break;

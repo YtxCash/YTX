@@ -119,27 +119,21 @@ inline constexpr char kStartSection[] = "start/section";
 inline constexpr char kYTX[] = "ytx";
 
 // Constants for sections
-inline constexpr char kFINANCE[] = "FINANCE";
 inline constexpr char kFinance[] = "finance";
 inline constexpr char kFinancePath[] = "finance_path";
 inline constexpr char kFinanceTransaction[] = "finance_transaction";
-inline constexpr char kPRODUCT[] = "PRODUCT";
 inline constexpr char kProduct[] = "product";
 inline constexpr char kProductPath[] = "product_path";
 inline constexpr char kProductTransaction[] = "product_transaction";
-inline constexpr char kPURCHASE[] = "PURCHASE";
 inline constexpr char kPurchase[] = "purchase";
 inline constexpr char kPurchasePath[] = "purchase_path";
 inline constexpr char kPurchaseTransaction[] = "purchase_transaction";
-inline constexpr char kSALES[] = "SALES";
 inline constexpr char kSales[] = "sales";
 inline constexpr char kSalesPath[] = "sales_path";
 inline constexpr char kSalesTransaction[] = "sales_transaction";
-inline constexpr char kSTAKEHOLDER[] = "STAKEHOLDER";
 inline constexpr char kStakeholder[] = "stakeholder";
 inline constexpr char kStakeholderPath[] = "stakeholder_path";
 inline constexpr char kStakeholderTransaction[] = "stakeholder_transaction";
-inline constexpr char kTASK[] = "TASK";
 inline constexpr char kTask[] = "task";
 inline constexpr char kTaskPath[] = "task_path";
 inline constexpr char kTaskTransaction[] = "task_transaction";

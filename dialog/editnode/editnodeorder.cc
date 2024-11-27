@@ -30,7 +30,7 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     ui->comboParty->setFocus();
 
     IniUnit(*params.node_shadow->unit);
-    setWindowTitle(params.section == Section::kSales ? tr(kSALES) : tr(kPURCHASE));
+    setWindowTitle(params.section == Section::kSales ? tr("Sales") : tr("Purchase"));
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }
