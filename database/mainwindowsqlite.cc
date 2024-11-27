@@ -188,7 +188,7 @@ QString MainwindowSqlite::NodeStakeholder()
         unit              INTEGER,
         deadline          TEXT,
         employee          INTEGER,
-        payment_period    INTEGER,
+        payment_term      INTEGER,
         tax_rate          NUMERIC,
         removed           BOOLEAN    DEFAULT 0
     );

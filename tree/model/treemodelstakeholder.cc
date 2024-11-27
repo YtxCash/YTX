@@ -43,7 +43,7 @@ void TreeModelStakeholder::UpdateNodeFPTS(const Node* tmp_node)
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->description, kDescription, &Node::description);
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->code, kCode, &Node::code);
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, kNote, &Node::note);
-    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->first, kPaymentPeriod, &Node::first);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->first, kPaymentTerm, &Node::first);
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->second, kTaxRate, &Node::second);
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->date_time, kDeadline, &Node::date_time);
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->rule, kRule, &Node::rule);
@@ -443,7 +443,7 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
         TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), kEmployee, &Node::employee);
         break;
     case TreeEnumStakeholder::kPaymentPeriod:
-        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), kPaymentPeriod, &Node::first);
+        TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), kPaymentTerm, &Node::first);
         break;
     case TreeEnumStakeholder::kTaxRate:
         TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), kTaxRate, &Node::second);

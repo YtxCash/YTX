@@ -148,7 +148,7 @@ bool SqliteStakeholder::ReadTrans(int node_id)
 QString SqliteStakeholder::QSReadNode() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, type, unit, employee, deadline, payment_period, tax_rate
+    SELECT name, id, code, description, note, rule, type, unit, employee, deadline, payment_term, tax_rate
     FROM stakeholder
     WHERE removed = 0
     )");
@@ -157,8 +157,8 @@ QString SqliteStakeholder::QSReadNode() const
 QString SqliteStakeholder::QSWriteNode() const
 {
     return QStringLiteral(R"(
-    INSERT INTO stakeholder (name, code, description, note, rule, type, unit, employee, deadline, payment_period, tax_rate)
-    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :employee, :deadline, :payment_period, :tax_rate)
+    INSERT INTO stakeholder (name, code, description, note, rule, type, unit, employee, deadline, payment_term, tax_rate)
+    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :employee, :deadline, :payment_term, :tax_rate)
     )");
 }
 
@@ -173,7 +173,7 @@ void SqliteStakeholder::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":unit", node->unit);
     query.bindValue(":employee", node->employee);
     query.bindValue(":deadline", node->date_time);
-    query.bindValue(":payment_period", node->first);
+    query.bindValue(":payment_term", node->first);
     query.bindValue(":tax_rate", node->second);
 }
 
@@ -483,7 +483,7 @@ void SqliteStakeholder::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->unit = query.value("unit").toInt();
     node->employee = query.value("employee").toInt();
     node->date_time = query.value("deadline").toString();
-    node->first = query.value("payment_period").toInt();
+    node->first = query.value("payment_term").toInt();
     node->second = query.value("tax_rate").toDouble();
 }
 
