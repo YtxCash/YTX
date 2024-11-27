@@ -52,7 +52,7 @@ QHeaderView::section:disabled {
 
 /*-------------------------------------border none-----------------------------------------------*/
 
-QPushButton#pBtnLink, QDialog#Preferences QGroupBox,
+QPushButton#pBtnLink, QDialog#Preferences QGroupBox, QPushButton#pBtnColor,
 QTableView QComboBox, QTableView QLineEdit,
 QTreeView::item
 {

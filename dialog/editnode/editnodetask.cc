@@ -28,6 +28,7 @@ void EditNodeTask::IniDialog(QStandardItemModel* unit_model, int amount_decimal,
     ui->lineEditName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
+    this->setFixedSize(350, 600);
 
     ui->comboUnit->setModel(unit_model);
 
@@ -108,7 +109,7 @@ void EditNodeTask::on_rBtnDDCI_toggled(bool checked)
 
 void EditNodeTask::on_plainTextEdit_textChanged() { node_->note = ui->plainTextEdit->toPlainText(); }
 
-void EditNodeTask::on_dSpinBoxUnitPrice_editingFinished() { node_->first = ui->dSpinBoxUnitCost->value(); }
+void EditNodeTask::on_dSpinBoxUnitCost_editingFinished() { node_->first = ui->dSpinBoxUnitCost->value(); }
 
 void EditNodeTask::on_rBtnLeaf_toggled(bool checked)
 {

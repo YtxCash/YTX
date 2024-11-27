@@ -42,7 +42,7 @@ private slots:
     void on_lineEditName_editingFinished();
     void on_lineEditCode_editingFinished();
     void on_lineEditDescription_editingFinished();
-    void on_dSpinBoxUnitPrice_editingFinished();
+    void on_dSpinBoxUnitCost_editingFinished();
 
     void on_comboUnit_currentIndexChanged(int index);
 

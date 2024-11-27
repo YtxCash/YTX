@@ -28,6 +28,7 @@ void EditNodeProduct::IniDialog(QStandardItemModel* unit_model, int amount_decim
     ui->lineEditName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
+    this->setFixedSize(350, 600);
 
     ui->comboUnit->setModel(unit_model);
 

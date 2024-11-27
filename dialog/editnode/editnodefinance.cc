@@ -27,6 +27,7 @@ void EditNodeFinance::IniDialog(QStandardItemModel* unit_model)
     ui->lineName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
+    this->setFixedSize(350, 525);
 
     ui->comboUnit->setModel(unit_model);
 }
