@@ -20,6 +20,7 @@
 #ifndef TABLEWIDGETORDER_H
 #define TABLEWIDGETORDER_H
 
+#include "component/classparams.h"
 #include "component/settings.h"
 #include "table/model/tablemodel.h"
 #include "tree/model/treemodelstakeholder.h"
@@ -33,8 +34,7 @@ class TableWidgetOrder final : public TableWidget {
     Q_OBJECT
 
 public:
-    TableWidgetOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, Section section,
-        QWidget* parent = nullptr);
+    TableWidgetOrder(CEditNodeParamsOrder& params, QWidget* parent = nullptr);
     ~TableWidgetOrder();
 
 signals:

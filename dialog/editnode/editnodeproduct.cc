@@ -5,20 +5,19 @@
 #include "dialog/signalblocker.h"
 #include "ui_editnodeproduct.h"
 
-EditNodeProduct::EditNodeProduct(Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
-    int amount_decimal, QWidget* parent)
+EditNodeProduct::EditNodeProduct(CEditNodeParamsFPTS& params, int amount_decimal, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeProduct)
-    , node_ { node }
-    , parent_path_ { parent_path }
-    , name_list_ { name_list }
+    , node_ { params.node }
+    , parent_path_ { params.parent_path }
+    , name_list_ { params.name_list }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_model, amount_decimal);
+    IniDialog(params.unit_model, amount_decimal);
     IniConnect();
-    Data(node, branch_enable, unit_enable);
+    Data(params.node, params.type_enable, params.unit_enable);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }

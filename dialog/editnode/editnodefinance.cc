@@ -4,20 +4,19 @@
 #include "dialog/signalblocker.h"
 #include "ui_editnodefinance.h"
 
-EditNodeFinance::EditNodeFinance(
-    Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool type_enable, bool unit_enable, QWidget* parent)
+EditNodeFinance::EditNodeFinance(CEditNodeParamsFPTS& params, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeFinance)
-    , node_ { node }
-    , parent_path_ { parent_path }
-    , name_list_ { name_list }
+    , node_ { params.node }
+    , parent_path_ { params.parent_path }
+    , name_list_ { params.name_list }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_model);
+    IniDialog(params.unit_model);
     IniConnect();
-    Data(node, type_enable, unit_enable);
+    Data(params.node, params.type_enable, params.unit_enable);
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }

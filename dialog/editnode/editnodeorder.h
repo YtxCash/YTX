@@ -22,6 +22,7 @@
 
 #include <QDialog>
 
+#include "component/classparams.h"
 #include "component/settings.h"
 #include "tree/model/treemodelstakeholder.h"
 
@@ -33,8 +34,7 @@ class EditNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings* settings, Section section,
-        QWidget* parent = nullptr);
+    EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent = nullptr);
     ~EditNodeOrder();
 
 signals:

@@ -1,28 +1,28 @@
 #include "editnodestakeholder.h"
 
 #include "component/constvalue.h"
+#include "component/enumclass.h"
 #include "dialog/signalblocker.h"
 #include "ui_editnodestakeholder.h"
 
-EditNodeStakeholder::EditNodeStakeholder(Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool branch_enable,
-    bool unit_enable, int amount_decimal, TreeModel* stakeholder_tree, QWidget* parent)
+EditNodeStakeholder::EditNodeStakeholder(CEditNodeParamsFPTS& params, QStandardItemModel* employee_model, int amount_decimal, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeStakeholder)
-    , node_ { node }
-    , parent_path_ { parent_path }
-    , name_list_ { name_list }
+    , node_ { params.node }
+    , parent_path_ { params.parent_path }
+    , name_list_ { params.name_list }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(unit_model, stakeholder_tree, amount_decimal);
+    IniDialog(params.unit_model, employee_model, amount_decimal);
     IniConnect();
-    Data(node, branch_enable, unit_enable);
+    Data(params.node, params.type_enable, params.unit_enable);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
 
-void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, TreeModel* stakeholder_tree, int amount_decimal)
+void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, QStandardItemModel* employee_model, int amount_decimal)
 {
     ui->lineEditName->setFocus();
     ui->lineEditName->setValidator(&LineEdit::kInputValidator);
@@ -30,7 +30,8 @@ void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, TreeModel* s
     this->setWindowTitle(parent_path_ + node_->name);
 
     ui->comboUnit->setModel(unit_model);
-    IniComboEmployee(stakeholder_tree);
+    ui->comboEmployee->setModel(employee_model);
+    ui->comboEmployee->setCurrentIndex(0);
 
     ui->dSpinPaymentPeriod->setRange(0, kIntMax);
     ui->dSpinTaxRate->setRange(0.0, kDoubleMax);
@@ -39,13 +40,6 @@ void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, TreeModel* s
     ui->deadline->setDateTime(QDateTime::currentDateTime());
     ui->deadline->setDisplayFormat(kDD);
     ui->deadline->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
-}
-
-void EditNodeStakeholder::IniComboEmployee(TreeModel* stakeholder_tree)
-{
-    ui->comboEmployee->clear();
-    ui->comboEmployee->setModel(stakeholder_tree->UnitModelPS(kUnitEmp));
-    ui->comboEmployee->setCurrentIndex(0);
 }
 
 void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::RNameEdited); }

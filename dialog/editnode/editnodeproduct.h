@@ -21,10 +21,9 @@
 #define EDITNODEPRODUCT_H
 
 #include <QDialog>
-#include <QStandardItemModel>
 
+#include "component/classparams.h"
 #include "component/using.h"
-#include "tree/node.h"
 
 namespace Ui {
 class EditNodeProduct;
@@ -34,8 +33,7 @@ class EditNodeProduct final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeProduct(Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
-        int amount_decimal, QWidget* parent = nullptr);
+    EditNodeProduct(CEditNodeParamsFPTS& params, int amount_decimal, QWidget* parent = nullptr);
     ~EditNodeProduct();
 
 private slots:
@@ -60,7 +58,7 @@ private slots:
 private:
     void IniDialog(QStandardItemModel* unit_model, int amount_decimal);
     void IniConnect();
-    void Data(Node* node, bool branch_enable, bool unit_enable);
+    void Data(Node* node, bool type_enable, bool unit_enable);
 
 private:
     Ui::EditNodeProduct* ui;

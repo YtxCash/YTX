@@ -6,32 +6,31 @@
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
 
-EditNodeOrder::EditNodeOrder(
-    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, Section section, QWidget* parent)
+EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeOrder)
-    , node_shadow_ { node_shadow }
-    , sql_ { sql }
-    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_tree) }
-    , info_node_ { section == Section::kSales ? kSales : kPurchase }
-    , party_unit_ { section == Section::kSales ? kUnitCust : kUnitVend }
-    , node_id_ { *node_shadow->id }
+    , node_shadow_ { params.node_shadow }
+    , sql_ { params.sql }
+    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(params.stakeholder_tree) }
+    , info_node_ { params.section == Section::kSales ? kSales : kPurchase }
+    , party_unit_ { params.section == Section::kSales ? kUnitCust : kUnitVend }
+    , node_id_ { *params.node_shadow->id }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog(settings);
+    IniDialog(params.settings);
     IniConnect();
 
-    ui->tableViewOrder->setModel(order_table);
+    ui->tableViewOrder->setModel(params.order_table);
     ui->pBtnSaveOrder->setEnabled(false);
     ui->pBtnFinishOrder->setEnabled(false);
 
     ui->labelParty->setText(tr("Party"));
     ui->comboParty->setFocus();
 
-    IniUnit(*node_shadow->unit);
-    setWindowTitle(section == Section::kSales ? tr(kSALES) : tr(kPURCHASE));
+    IniUnit(*params.node_shadow->unit);
+    setWindowTitle(params.section == Section::kSales ? tr(kSALES) : tr(kPURCHASE));
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }

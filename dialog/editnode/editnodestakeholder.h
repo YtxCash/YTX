@@ -20,13 +20,10 @@
 #ifndef EDITNODESTAKEHOLDER_H
 #define EDITNODESTAKEHOLDER_H
 
-#include <QComboBox>
 #include <QDialog>
-#include <QStandardItemModel>
 
+#include "component/classparams.h"
 #include "component/using.h"
-#include "tree/model/treemodel.h"
-#include "tree/node.h"
 
 namespace Ui {
 class EditNodeStakeholder;
@@ -36,8 +33,7 @@ class EditNodeStakeholder final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeStakeholder(Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool branch_enable, bool unit_enable,
-        int amount_decimal, TreeModel* stakeholder_tree, QWidget* parent = nullptr);
+    EditNodeStakeholder(CEditNodeParamsFPTS& params, QStandardItemModel* employee_model, int amount_decimal, QWidget* parent = nullptr);
     ~EditNodeStakeholder();
 
 private slots:
@@ -62,8 +58,7 @@ private slots:
     void on_rBtnSupport_toggled(bool checked);
 
 private:
-    void IniDialog(QStandardItemModel* unit_model, TreeModel* stakeholder_tree, int common_decimal);
-    void IniComboEmployee(TreeModel* stakeholder_tree);
+    void IniDialog(QStandardItemModel* unit_model, QStandardItemModel* employee_model, int common_decimal);
     void IniConnect();
     void Data(Node* node, bool branch_enable, bool unit_enable);
 
@@ -71,7 +66,7 @@ private:
     Ui::EditNodeStakeholder* ui;
     Node* node_ {};
 
-    QString parent_path_ {};
+    CString& parent_path_ {};
     CStringList& name_list_ {};
 };
 

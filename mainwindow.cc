@@ -13,6 +13,7 @@
 #include <QScrollBar>
 #include <QtConcurrent>
 
+#include "component/classparams.h"
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "database/sqlite/sqlitefinance.h"
@@ -447,7 +448,9 @@ void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, 
     auto* sql { data->sql };
 
     TableModelOrder* model { new TableModelOrder(sql, true, node_id, info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
-    TableWidgetOrder* widget { new TableWidgetOrder(node_shadow, sql, model, stakeholder_tree_->Model(), settings, section, this) };
+    auto params { EditNodeParamsOrder { node_shadow, sql, model, stakeholder_tree_->Model(), settings_, section } };
+
+    TableWidgetOrder* widget { new TableWidgetOrder(std::move(params), this) };
 
     int tab_index { ui->tabWidget->addTab(widget, stakeholder_tree_->Model()->Name(party_id)) };
     auto* tab_bar { ui->tabWidget->tabBar() };
@@ -1722,20 +1725,22 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
     bool branch_enable { is_not_referenced && model->ChildrenEmpty(node_id) && !table_hash_->contains(node_id) };
     bool unit_enable { is_not_referenced };
 
+    auto params { EditNodeParamsFPTS { tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable } };
+
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, this);
+        dialog = new EditNodeFinance(std::move(params), this);
         break;
     case Section::kTask:
-        dialog = new EditNodeFinance(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, this);
+        dialog = new EditNodeFinance(std::move(params), this);
         break;
     case Section::kStakeholder:
-        unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
-        dialog = new EditNodeStakeholder(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, model, this);
+        params.unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
+        dialog = new EditNodeStakeholder(std::move(params), model->UnitModelPS(kUnitEmp), settings_->amount_decimal, this);
         break;
     case Section::kProduct:
-        unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
-        dialog = new EditNodeProduct(tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable, settings_->amount_decimal, this);
+        params.unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
+        dialog = new EditNodeProduct(std::move(params), settings_->amount_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(tmp_node);
@@ -1759,21 +1764,22 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
     const auto& name_list { tree_model->ChildrenNameFPTS(parent_id, 0) };
 
     QDialog* dialog {};
+    const auto params { EditNodeParamsFPTS { node, unit_model, parent_path, name_list, true, true } };
 
     switch (section) {
     case Section::kFinance:
-        dialog = new EditNodeFinance(node, unit_model, parent_path, name_list, true, true, this);
+        dialog = new EditNodeFinance(std::move(params), this);
         break;
     case Section::kTask:
         node->date_time = QDateTime::currentDateTime().toString(kDateTimeFST);
-        dialog = new EditNodeFinance(node, unit_model, parent_path, name_list, true, true, this);
+        dialog = new EditNodeFinance(std::move(params), this);
         break;
     case Section::kStakeholder:
         node->unit = settings_->default_unit;
-        dialog = new EditNodeStakeholder(node, unit_model, parent_path, name_list, true, true, settings_->common_decimal, tree_model, this);
+        dialog = new EditNodeStakeholder(std::move(params), tree_model->UnitModelPS(kUnitEmp), settings_->amount_decimal, this);
         break;
     case Section::kProduct:
-        dialog = new EditNodeProduct(node, unit_model, parent_path, name_list, true, true, settings_->common_decimal, this);
+        dialog = new EditNodeProduct(std::move(params), settings_->common_decimal, this);
         break;
     default:
         return ResourcePool<Node>::Instance().Recycle(node);
@@ -1796,14 +1802,19 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
 
     auto* node_shadow { ResourcePool<NodeShadow>::Instance().Allocate() };
     tree_model->SetNodeShadowOrder(node_shadow, node);
-    if (!node_shadow->id)
+    if (!node_shadow->id) {
+        ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
+        ResourcePool<Node>::Instance().Recycle(node);
         return;
+    }
 
     auto section { data_->info.section };
     auto* sql { data_->sql };
 
     auto* table_model { new TableModelOrder(sql, node->rule, 0, data_->info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
-    auto* dialog { new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), settings_, section, this) };
+
+    auto params { EditNodeParamsOrder { node_shadow, sql, table_model, stakeholder_tree_->Model(), settings_, section } };
+    auto* dialog { new EditNodeOrder(std::move(params), this) };
 
     dialog->setAttribute(Qt::WA_DeleteOnClose);
 

@@ -6,23 +6,22 @@
 #include "global/resourcepool.h"
 #include "ui_tablewidgetorder.h"
 
-TableWidgetOrder::TableWidgetOrder(
-    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, Section section, QWidget* parent)
+TableWidgetOrder::TableWidgetOrder(CEditNodeParamsOrder& params, QWidget* parent)
     : TableWidget(parent)
     , ui(new Ui::TableWidgetOrder)
-    , node_shadow_ { node_shadow }
-    , sql_ { sql }
-    , order_table_ { order_table }
-    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_tree) }
-    , settings_ { settings }
-    , node_id_ { *node_shadow->id }
-    , info_node_ { section == Section::kSales ? kSales : kPurchase }
-    , party_unit_ { section == Section::kSales ? kUnitCust : kUnitVend }
+    , node_shadow_ { params.node_shadow }
+    , sql_ { params.sql }
+    , order_table_ { params.order_table }
+    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(params.stakeholder_tree) }
+    , settings_ { params.settings }
+    , node_id_ { *params.node_shadow->id }
+    , info_node_ { params.section == Section::kSales ? kSales : kPurchase }
+    , party_unit_ { params.section == Section::kSales ? kUnitCust : kUnitVend }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    bool finished { *node_shadow->finished };
+    bool finished { *params.node_shadow->finished };
 
     IniDialog();
     IniData();

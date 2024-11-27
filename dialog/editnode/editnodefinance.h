@@ -21,10 +21,9 @@
 #define EDITNODEFIANNCE_H
 
 #include <QDialog>
-#include <QStandardItemModel>
 
+#include "component/classparams.h"
 #include "component/using.h"
-#include "tree/node.h"
 
 namespace Ui {
 class EditNodeFinance;
@@ -34,8 +33,7 @@ class EditNodeFinance final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeFinance(Node* node, QStandardItemModel* unit_model, CString& parent_path, CStringList& name_list, bool type_enable, bool unit_enable,
-        QWidget* parent = nullptr);
+    EditNodeFinance(CEditNodeParamsFPTS& params, QWidget* parent = nullptr);
     ~EditNodeFinance();
 
 private slots:
