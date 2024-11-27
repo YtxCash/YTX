@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>364</width>
-    <height>674</height>
+    <height>673</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
@@ -78,7 +78,7 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="labMark">
+    <widget class="QLabel" name="labUnit">
      <property name="text">
       <string>Unit</string>
      </property>
@@ -107,7 +107,7 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QLabel" name="labelEmployee">
+    <widget class="QLabel" name="labEmployee">
      <property name="text">
       <string>Employee</string>
      </property>
@@ -133,7 +133,7 @@
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="labProperty_2">
+    <widget class="QLabel" name="labProperty">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -141,7 +141,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Finance</string>
+      <string>Property</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
@@ -246,7 +246,7 @@
     </widget>
    </item>
    <item row="6" column="0">
-    <widget class="QLabel" name="labProperty_3">
+    <widget class="QLabel" name="labType">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -341,7 +341,7 @@
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="labProperty">
+    <widget class="QLabel" name="labRule">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -349,7 +349,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Property</string>
+      <string>Rule</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
@@ -489,11 +489,6 @@
    <header location="global">widget/lineedit.h</header>
   </customwidget>
   <customwidget>
-   <class>PlainTextEdit</class>
-   <extends>QPlainTextEdit</extends>
-   <header location="global">widget/plaintextedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>DoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
    <header location="global">widget/doublespinbox.h</header>
@@ -502,6 +497,11 @@
    <class>DateTimeEdit</class>
    <extends>QDateTimeEdit</extends>
    <header location="global">widget/datetimeedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">widget/plaintextedit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

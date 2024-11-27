@@ -49,6 +49,7 @@
 #include "dialog/editnode/editnodeorder.h"
 #include "dialog/editnode/editnodeproduct.h"
 #include "dialog/editnode/editnodestakeholder.h"
+#include "dialog/editnode/editnodetask.h"
 #include "dialog/preferences.h"
 #include "dialog/removenode.h"
 #include "dialog/search.h"
@@ -1732,7 +1733,7 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
         dialog = new EditNodeFinance(std::move(params), this);
         break;
     case Section::kTask:
-        dialog = new EditNodeFinance(std::move(params), this);
+        dialog = new EditNodeTask(std::move(params), settings_->amount_decimal, interface_.date_format, this);
         break;
     case Section::kStakeholder:
         params.unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
@@ -1772,7 +1773,7 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
         break;
     case Section::kTask:
         node->date_time = QDateTime::currentDateTime().toString(kDateTimeFST);
-        dialog = new EditNodeFinance(std::move(params), this);
+        dialog = new EditNodeTask(std::move(params), settings_->amount_decimal, interface_.date_format, this);
         break;
     case Section::kStakeholder:
         node->unit = settings_->default_unit;

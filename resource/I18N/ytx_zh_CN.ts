@@ -760,6 +760,94 @@ Rage, rage against the dying of the light.</source>
     </message>
 </context>
 <context>
+    <name>EditNodeTask</name>
+    <message>
+        <location filename="../../dialog/editnode/editnodetask.ui" line="+23"/>
+        <source>&amp;Cancel</source>
+        <translation>取消(&amp;C)</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Note</source>
+        <translation>备注</translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <source>Leaf</source>
+        <translation>叶节点</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Branch</source>
+        <translation>枝节点</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Support</source>
+        <translation>辅助节点</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Finance</source>
+        <translation>财务</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Code</source>
+        <translation>编号</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Rule</source>
+        <translation>规则</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Description</source>
+        <translation>描述</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Unit</source>
+        <translation>单位</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>&amp;DICD</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>DDC&amp;I</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>&amp;Ok</source>
+        <translation>确认(&amp;O)</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>UnitPrice</source>
+        <translation>单价</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Commission</source>
+        <translation>提成</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+</context>
+<context>
     <name>EditOrder</name>
     <message>
         <source>Form</source>
@@ -1078,7 +1166,7 @@ Rage, rage against the dying of the light.</source>
     <name>MainWindow</name>
     <message>
         <location filename="../../mainwindow.ui" line="+85"/>
-        <location filename="../../mainwindow.cc" line="+184"/>
+        <location filename="../../mainwindow.cc" line="+185"/>
         <location line="+1843"/>
         <source>Finance</source>
         <translation>财务</translation>

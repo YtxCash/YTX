@@ -26,7 +26,7 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     ui->pBtnSaveOrder->setEnabled(false);
     ui->pBtnFinishOrder->setEnabled(false);
 
-    ui->labelParty->setText(tr("Party"));
+    ui->labParty->setText(tr("Party"));
     ui->comboParty->setFocus();
 
     IniUnit(*params.node_shadow->unit);
@@ -155,20 +155,20 @@ void EditNodeOrder::LockWidgets(bool finished, bool branch)
     bool basic_enable { !finished };
     bool not_branch_enable { !finished && !branch };
 
-    ui->labelParty->setEnabled(basic_enable);
+    ui->labParty->setEnabled(basic_enable);
     ui->comboParty->setEnabled(basic_enable);
 
     ui->pBtnInsertParty->setEnabled(not_branch_enable);
 
-    ui->labelSettled->setEnabled(not_branch_enable);
+    ui->labSettled->setEnabled(not_branch_enable);
     ui->dSpinSettled->setEnabled(not_branch_enable);
 
     ui->dSpinAmount->setEnabled(not_branch_enable);
 
-    ui->labelDiscount->setEnabled(not_branch_enable);
+    ui->labDiscount->setEnabled(not_branch_enable);
     ui->dSpinDiscount->setEnabled(not_branch_enable);
 
-    ui->labelEmployee->setEnabled(not_branch_enable);
+    ui->labEmployee->setEnabled(not_branch_enable);
     ui->comboEmployee->setEnabled(not_branch_enable);
     ui->tableViewOrder->setEnabled(not_branch_enable);
 
@@ -178,9 +178,9 @@ void EditNodeOrder::LockWidgets(bool finished, bool branch)
     ui->dateTimeEdit->setEnabled(not_branch_enable);
 
     ui->dSpinFirst->setEnabled(not_branch_enable);
-    ui->labelFirst->setEnabled(not_branch_enable);
+    ui->labFirst->setEnabled(not_branch_enable);
     ui->dSpinSecond->setEnabled(not_branch_enable);
-    ui->labelSecond->setEnabled(not_branch_enable);
+    ui->labSecond->setEnabled(not_branch_enable);
 
     ui->chkBoxRefund->setEnabled(not_branch_enable);
     ui->lineDescription->setEnabled(basic_enable);
@@ -399,7 +399,7 @@ void EditNodeOrder::on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1
 
     ui->chkBoxRefund->setChecked(false);
     ui->tableViewOrder->clearSelection();
-    ui->labelParty->setText(enable ? tr("Branch") : tr("Party"));
+    ui->labParty->setText(enable ? tr("Branch") : tr("Party"));
 }
 
 void EditNodeOrder::on_lineDescription_editingFinished()
