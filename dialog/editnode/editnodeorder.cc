@@ -7,21 +7,20 @@
 #include "ui_editnodeorder.h"
 
 EditNodeOrder::EditNodeOrder(
-    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit, QWidget* parent)
+    NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_tree, CSettings* settings, Section section, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeOrder)
     , node_shadow_ { node_shadow }
     , sql_ { sql }
-    , party_unit_ { party_unit }
-    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_model) }
-    , settings_ { settings }
-    , info_node_ { party_unit == kUnitCust ? kSales : kPurchase }
+    , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(stakeholder_tree) }
+    , info_node_ { section == Section::kSales ? kSales : kPurchase }
+    , party_unit_ { section == Section::kSales ? kUnitCust : kUnitVend }
     , node_id_ { *node_shadow->id }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    IniDialog();
+    IniDialog(settings);
     IniConnect();
 
     ui->tableViewOrder->setModel(order_table);
@@ -32,6 +31,7 @@ EditNodeOrder::EditNodeOrder(
     ui->comboParty->setFocus();
 
     IniUnit(*node_shadow->unit);
+    setWindowTitle(section == Section::kSales ? tr(kSALES) : tr(kPURCHASE));
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }
@@ -101,7 +101,7 @@ void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double 
 
 QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
 
-void EditNodeOrder::IniDialog()
+void EditNodeOrder::IniDialog(CSettings* settings)
 {
     combo_model_party_ = stakeholder_tree_->UnitModelPS(party_unit_);
     ui->comboParty->setModel(combo_model_party_);
@@ -122,11 +122,11 @@ void EditNodeOrder::IniDialog()
     ui->dSpinSecond->setRange(kDoubleMin, kDoubleMax);
     ui->dSpinFirst->setRange(kDoubleMin, kDoubleMax);
 
-    ui->dSpinDiscount->setDecimals(settings_.amount_decimal);
-    ui->dSpinAmount->setDecimals(settings_.amount_decimal);
-    ui->dSpinSettled->setDecimals(settings_.amount_decimal);
-    ui->dSpinSecond->setDecimals(settings_.common_decimal);
-    ui->dSpinFirst->setDecimals(settings_.common_decimal);
+    ui->dSpinDiscount->setDecimals(settings->amount_decimal);
+    ui->dSpinAmount->setDecimals(settings->amount_decimal);
+    ui->dSpinSettled->setDecimals(settings->amount_decimal);
+    ui->dSpinSecond->setDecimals(settings->common_decimal);
+    ui->dSpinFirst->setDecimals(settings->common_decimal);
 
     ui->comboParty->setFocus();
 }

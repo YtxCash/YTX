@@ -33,7 +33,7 @@ class EditNodeOrder final : public QDialog {
     Q_OBJECT
 
 public:
-    EditNodeOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings& settings, int party_unit,
+    EditNodeOrder(NodeShadow* node_shadow, Sqlite* sql, TableModel* order_table, TreeModel* stakeholder_model, CSettings* settings, Section section,
         QWidget* parent = nullptr);
     ~EditNodeOrder();
 
@@ -69,7 +69,7 @@ private slots:
     void on_chkBoxBranch_checkStateChanged(const Qt::CheckState& arg1);
 
 private:
-    void IniDialog();
+    void IniDialog(CSettings* settings);
     void IniConnect();
     void LockWidgets(bool finished, bool branch);
     void IniUnit(int unit);
@@ -80,14 +80,14 @@ private:
 
     NodeShadow* node_shadow_ {};
     Sqlite* sql_ {};
-    int party_unit_ {};
     TreeModelStakeholder* stakeholder_tree_ {};
-    CSettings& settings_;
 
     QStandardItemModel* combo_model_employee_ {};
     QStandardItemModel* combo_model_party_ {};
 
     const QString info_node_ {};
+    const int party_unit_ {};
+
     int node_id_ {};
 };
 

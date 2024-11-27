@@ -1799,26 +1799,11 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     if (!node_shadow->id)
         return;
 
-    EditNodeOrder* dialog {};
     auto section { data_->info.section };
     auto* sql { data_->sql };
 
     auto* table_model { new TableModelOrder(sql, node->rule, 0, data_->info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
-
-    switch (section) {
-    case Section::kSales:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, kUnitCust, this);
-        dialog->setWindowTitle(tr(kSALES));
-        break;
-    case Section::kPurchase:
-        dialog = new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), *settings_, kUnitVend, this);
-        dialog->setWindowTitle(tr(kPURCHASE));
-        break;
-    default:
-        ResourcePool<NodeShadow>::Instance().Recycle(node_shadow);
-        ResourcePool<Node>::Instance().Recycle(node);
-        return;
-    }
+    auto* dialog { new EditNodeOrder(node_shadow, sql, table_model, stakeholder_tree_->Model(), settings_, section, this) };
 
     dialog->setAttribute(Qt::WA_DeleteOnClose);
 
