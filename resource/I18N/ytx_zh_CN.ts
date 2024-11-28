@@ -3197,6 +3197,11 @@ It is external referenced.</source>
         <translation>无法变更 %1 单位，</translation>
     </message>
     <message>
+        <location line="+135"/>
+        <source>Cannot change %1 type,</source>
+        <translation type="unfinished">无法改变 %1 的类型，</translation>
+    </message>
+    <message>
         <source>Cannot change %1 branch,</source>
         <translation type="vanished">无法变更 %1 分支，</translation>
     </message>

@@ -275,6 +275,64 @@ void TreeModelStakeholder::ConstructTree()
     TreeModelUtils::LeafPathSpecificUnitS(leaf_path_, crange, cmodel_, vrange, vmodel_, erange, emodel_);
 }
 
+bool TreeModelStakeholder::UpdateTypeFPTS(Node* node, int value)
+{
+    if (node->type == value)
+        return false;
+
+    const int node_id { node->id };
+    QString message { tr("Cannot change %1 type,").arg(GetPath(node_id)) };
+
+    if (TreeModelUtils::HasChildrenFPTS(node, message))
+        return false;
+
+    if (TreeModelUtils::IsOpenedFPTS(table_hash_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsInternalReferencedFPTS(sql_, node_id, message))
+        return false;
+
+    if (TreeModelUtils::IsExternalReferencedPS(sql_, node_id, message))
+        return false;
+
+    QString path {};
+
+    switch (node->type) {
+    case kTypeBranch:
+        path = branch_path_.take(node_id);
+        break;
+    case kTypeLeaf:
+        path = leaf_path_.take(node_id);
+        break;
+    case kTypeSupport:
+        TreeModelUtils::RemoveItemFromModel(support_model_, node->id);
+        path = support_path_.take(node_id);
+        break;
+    default:
+        break;
+    }
+
+    node->type = value;
+    sql_->UpdateField(info_.node, value, kType, node_id);
+
+    switch (value) {
+    case kTypeBranch:
+        branch_path_.insert(node_id, path);
+        break;
+    case kTypeLeaf:
+        leaf_path_.insert(node_id, path);
+        break;
+    case kTypeSupport:
+        TreeModelUtils::AddItemToModel(support_model_, path, node_id);
+        support_path_.insert(node_id, path);
+        break;
+    default:
+        break;
+    }
+
+    return true;
+}
+
 void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
 {
     if (column <= -1 || column >= info_.tree_header.size())

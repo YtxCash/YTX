@@ -332,12 +332,12 @@ void TreeModelUtils::LeafPathSpecificUnitS(CStringHash& leaf, const QSet<int>& c
         QVector<std::pair<QString, int>> vitems;
         QVector<std::pair<QString, int>> eitems;
 
-        eitems.emplaceBack(QString(), 0);
-
         const auto total_size { static_cast<double>(leaf.size()) };
         citems.reserve(static_cast<qsizetype>(total_size * 0.6));
         vitems.reserve(static_cast<qsizetype>(total_size * 0.3));
         eitems.reserve(static_cast<qsizetype>(total_size * 0.1));
+
+        eitems.emplaceBack(QString(), 0);
 
         // Single traversal of leaf
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
@@ -460,6 +460,9 @@ void TreeModelUtils::AddItemToModel(QStandardItemModel* model, const QString& pa
 
 void TreeModelUtils::AddItemToModel(QStandardItemModel* model, QStandardItem* item, bool should_sort)
 {
+    if (!model || !item)
+        return;
+
     model->appendRow(item);
 
     if (should_sort)

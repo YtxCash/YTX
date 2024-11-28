@@ -50,6 +50,7 @@ public:
 
 protected:
     void ConstructTree() override;
+    bool UpdateTypeFPTS(Node* node, int value) override;
     bool UpdateUnit(Node* node, int value) override;
     bool UpdateName(Node* node, CString& value) override;
 

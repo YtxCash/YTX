@@ -164,8 +164,8 @@ public:
 
 protected:
     Node* GetNodeByIndex(const QModelIndex& index) const;
-    bool UpdateTypeFPTS(Node* node, int value);
 
+    virtual bool UpdateTypeFPTS(Node* node, int value);
     virtual bool UpdateName(Node* node, CString& value);
     virtual bool UpdateRuleFPTO(Node* node, bool value);
 
