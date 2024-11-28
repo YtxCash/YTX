@@ -410,7 +410,7 @@ void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, 
 
 void TreeModelUtils::SupportPathFPTS(CStringHash& support, QStandardItemModel* model, int specific_node, Filter filter)
 {
-    if (!model || support.isEmpty())
+    if (!model)
         return;
 
     auto future = QtConcurrent::run([&, specific_node, filter]() {
@@ -452,16 +452,11 @@ void TreeModelUtils::SupportPathFPTS(CStringHash& support, QStandardItemModel* m
 
 void TreeModelUtils::AddItemToModel(QStandardItemModel* model, const QString& path, int node_id, bool should_sort)
 {
+    if (!model)
+        return;
+
     auto* item { new QStandardItem(path) };
     item->setData(node_id, Qt::UserRole);
-
-    AddItemToModel(model, item, should_sort);
-}
-
-void TreeModelUtils::AddItemToModel(QStandardItemModel* model, QStandardItem* item, bool should_sort)
-{
-    if (!model || !item)
-        return;
 
     model->appendRow(item);
 
@@ -471,6 +466,9 @@ void TreeModelUtils::AddItemToModel(QStandardItemModel* model, QStandardItem* it
 
 void TreeModelUtils::RemoveItemFromModel(QStandardItemModel* model, int node_id)
 {
+    if (!model)
+        return;
+
     for (int row = 0; row != model->rowCount(); ++row) {
         QStandardItem* item { model->item(row) };
         if (item && item->data(Qt::UserRole).toInt() == node_id) {
@@ -478,18 +476,6 @@ void TreeModelUtils::RemoveItemFromModel(QStandardItemModel* model, int node_id)
             return;
         }
     }
-}
-
-QStandardItem* TreeModelUtils::TakeItemFromModel(QStandardItemModel* model, int node_id)
-{
-    for (int row = 0; row != model->rowCount(); ++row) {
-        QStandardItem* item { model->item(row) };
-        if (item && item->data(Qt::UserRole).toInt() == node_id) {
-            return model->takeItem(row);
-        }
-    }
-
-    return nullptr;
 }
 
 void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& support, QStandardItemModel* support_model, const Node* node)

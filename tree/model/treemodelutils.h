@@ -78,9 +78,7 @@ public:
     static void SupportPathFPTS(CStringHash& support, QStandardItemModel* model, int specific_node, Filter filter);
 
     static void AddItemToModel(QStandardItemModel* model, CString& path, int node_id, bool should_sort = true);
-    static void AddItemToModel(QStandardItemModel* model, QStandardItem* item, bool should_sort = true);
     static void RemoveItemFromModel(QStandardItemModel* model, int node_id);
-    static QStandardItem* TakeItemFromModel(QStandardItemModel* model, int node_id);
 
     static void UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_model, CStringHash& support, QStandardItemModel* support_model, const Node* node);
     static void UpdateUnitModel(CStringHash& leaf, QStandardItemModel* unit_model, const Node* node, int specific_unit, Filter filter);

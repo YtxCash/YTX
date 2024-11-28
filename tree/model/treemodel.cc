@@ -258,18 +258,17 @@ bool TreeModel::UpdateTypeFPTS(Node* node, int value)
         return false;
 
     QString path {};
-    QStandardItem* item {};
 
     switch (node->type) {
     case kTypeBranch:
         path = branch_path_.take(node_id);
         break;
     case kTypeLeaf:
-        item = TreeModelUtils::TakeItemFromModel(leaf_model_, node->id);
+        TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
         path = leaf_path_.take(node_id);
         break;
     case kTypeSupport:
-        item = TreeModelUtils::TakeItemFromModel(support_model_, node->id);
+        TreeModelUtils::RemoveItemFromModel(support_model_, node_id);
         path = support_path_.take(node_id);
         break;
     default:
@@ -284,11 +283,11 @@ bool TreeModel::UpdateTypeFPTS(Node* node, int value)
         branch_path_.insert(node_id, path);
         break;
     case kTypeLeaf:
-        TreeModelUtils::AddItemToModel(leaf_model_, item);
+        TreeModelUtils::AddItemToModel(leaf_model_, path, node_id);
         leaf_path_.insert(node_id, path);
         break;
     case kTypeSupport:
-        TreeModelUtils::AddItemToModel(support_model_, item);
+        TreeModelUtils::AddItemToModel(support_model_, path, node_id);
         support_path_.insert(node_id, path);
         break;
     default:
