@@ -56,6 +56,10 @@ private slots:
 
     void on_pBtnColor_clicked();
 
+    void on_chkBoxFinished_checkStateChanged(const Qt::CheckState& arg1);
+
+    void on_dateTime_editingFinished();
+
 private:
     void IniDialog(QStandardItemModel* unit_model, int amount_decimal, CString& display_format);
     void IniConnect();

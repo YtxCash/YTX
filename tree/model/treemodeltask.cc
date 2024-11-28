@@ -313,6 +313,7 @@ void TreeModelTask::UpdateNodeFPTS(const Node* tmp_node)
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->note, kNote, &Node::note);
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->color, kColor, &Node::color);
     TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->date_time, kDateTime, &Node::date_time);
+    TreeModelUtils::UpdateField(sql_, node, info_.node, tmp_node->finished, kFinished, &Node::finished);
 }
 
 bool TreeModelTask::RemoveNode(int row, const QModelIndex& parent)

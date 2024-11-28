@@ -40,7 +40,7 @@ void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, QStandardIte
 
     ui->deadline->setDateTime(QDateTime::currentDateTime());
     ui->deadline->setDisplayFormat(kDD);
-    ui->deadline->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
+    ui->deadline->setCalendarPopup(true);
 }
 
 void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::RNameEdited); }
@@ -52,7 +52,7 @@ void EditNodeStakeholder::Data(Node* node, bool type_enable, bool unit_enable)
     ui->comboUnit->setEnabled(unit_enable);
 
     ui->rBtnMonthly->setChecked(node->rule);
-    ui->rBtnCash->setChecked(!node->rule);
+    ui->rBtnImmediate->setChecked(!node->rule);
     ui->rBtnLeaf->setChecked(true);
 
     if (node->name.isEmpty()) {

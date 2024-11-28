@@ -37,6 +37,7 @@ void EditNodeTask::IniDialog(QStandardItemModel* unit_model, int amount_decimal,
     ui->dSpinBoxUnitCost->setRange(0.0, kDoubleMax);
     ui->dSpinBoxUnitCost->setDecimals(amount_decimal);
     ui->dateTime->setDisplayFormat(display_format);
+    ui->dateTime->setCalendarPopup(true);
 }
 
 void EditNodeTask::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeTask::RNameEdited); }
@@ -154,3 +155,7 @@ void EditNodeTask::on_pBtnColor_clicked()
         UpdateColor(selected_color);
     }
 }
+
+void EditNodeTask::on_chkBoxFinished_checkStateChanged(const Qt::CheckState& arg1) { node_->finished = arg1 == Qt::Checked; }
+
+void EditNodeTask::on_dateTime_editingFinished() { node_->date_time = ui->dateTime->dateTime().toString(kDateTimeFST); }

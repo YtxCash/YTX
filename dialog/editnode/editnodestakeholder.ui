@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>348</width>
+    <width>352</width>
     <height>607</height>
    </rect>
   </property>
@@ -469,15 +469,21 @@
       </property>
       <item row="0" column="1">
        <widget class="QRadioButton" name="rBtnMonthly">
+        <property name="toolTip">
+         <string>Monthly Settlement</string>
+        </property>
         <property name="text">
-         <string>Monthly</string>
+         <string>&amp;Monthly</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QRadioButton" name="rBtnCash">
+       <widget class="QRadioButton" name="rBtnImmediate">
+        <property name="toolTip">
+         <string>Immediate Settlement</string>
+        </property>
         <property name="text">
-         <string>Cash</string>
+         <string>&amp;Immediate</string>
         </property>
        </widget>
       </item>

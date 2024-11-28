@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>348</width>
+    <width>352</width>
     <height>606</height>
    </rect>
   </property>
@@ -40,6 +40,9 @@
       </property>
       <item>
        <widget class="QRadioButton" name="rBtnDICD">
+        <property name="toolTip">
+         <string>Debit Increase, Credit Decrease</string>
+        </property>
         <property name="text">
          <string>&amp;DICD</string>
         </property>
@@ -47,6 +50,9 @@
       </item>
       <item>
        <widget class="QRadioButton" name="rBtnDDCI">
+        <property name="toolTip">
+         <string>Debit Decrease, Credit Increase</string>
+        </property>
         <property name="text">
          <string>DDC&amp;I</string>
         </property>

@@ -1263,10 +1263,10 @@ void MainWindow::SetFinanceData()
     info.path = kFinancePath;
     info.transaction = kFinanceTransaction;
 
-    QStringList unit_list { "CNY", "HKD", "USD", "GBP", "JPY", "CAD", "AUD", "EUR" };
+    QStringList unit_list { tr("CNY"), tr("HKD"), tr("USD"), tr("GBP"), tr("JPY"), tr("CAD"), tr("AUD"), tr("EUR") };
     QStringList unit_symbol_list { "¥", "$", "$", "£", "¥", "$", "$", "€" };
     QStringList rule_list { "DICD", "DDCI" };
-    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
+    QStringList type_list { "L", "B", "S" };
 
     for (int i = 0; i != unit_list.size(); ++i) {
         info.unit_map.insert(i, unit_list.at(i));
@@ -1307,7 +1307,7 @@ void MainWindow::SetProductData()
     // POS: Position, PC: Piece, SF: SquareFeet
     QStringList unit_list { {}, tr("POS"), tr("BOX"), tr("PC"), tr("SET"), tr("SF") };
     QStringList rule_list { "DICD", "DDCI" };
-    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
+    QStringList type_list { "L", "B", "S" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1347,7 +1347,7 @@ void MainWindow::SetStakeholderData()
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
     // IM：Immediate, MS（Monthly Settlement）
     QStringList rule_list { "IM", "MS" };
-    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
+    QStringList type_list { "L", "B", "S" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1389,7 +1389,7 @@ void MainWindow::SetTaskData()
     // PROD: PRODUCT, STKH: STAKEHOLDER
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
     QStringList rule_list { "DICD", "DDCI" };
-    QStringList type_list { tr("Leaf"), tr("Branch"), tr("Support") };
+    QStringList type_list { "L", "B", "S" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1428,7 +1428,7 @@ void MainWindow::SetSalesData()
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
     // SO: SALES ORDER, RO: REFUND ORDER
     QStringList rule_list { "SO", "RO" };
-    QStringList type_list { tr("Leaf"), tr("Branch") };
+    QStringList type_list { "L", "B" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
@@ -1469,7 +1469,7 @@ void MainWindow::SetPurchaseData()
     QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
     // SO: SALES ORDER, RO: REFUND ORDER
     QStringList rule_list { "SO", "RO" };
-    QStringList type_list { tr("Leaf"), tr("Branch") };
+    QStringList type_list { "L", "B" };
 
     for (int i = 0; i != unit_list.size(); ++i)
         info.unit_map.insert(i, unit_list.at(i));
