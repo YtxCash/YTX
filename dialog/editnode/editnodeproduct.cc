@@ -1,5 +1,7 @@
 #include "editnodeproduct.h"
 
+#include <QColorDialog>
+
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "dialog/signalblocker.h"
@@ -77,6 +79,17 @@ void EditNodeProduct::Data(Node* node, bool type_enable, bool unit_enable)
     ui->rBtnBranch->setEnabled(type_enable);
     ui->rBtnLeaf->setEnabled(type_enable);
     ui->rBtnSupport->setEnabled(type_enable);
+    UpdateColor(QColor(node->color));
+}
+
+void EditNodeProduct::UpdateColor(QColor color)
+{
+    if (color.isValid())
+        ui->pBtnColor->setStyleSheet(QString(R"(
+        background-color: %1;
+        border-radius: 2px;
+        )")
+                .arg(node_->color));
 }
 
 void EditNodeProduct::RNameEdited(const QString& arg1)
@@ -129,4 +142,17 @@ void EditNodeProduct::on_rBtnSupport_toggled(bool checked)
 {
     if (checked)
         node_->type = kTypeSupport;
+}
+
+void EditNodeProduct::on_pBtnColor_clicked()
+{
+    QColor color(node_->color);
+    if (!color.isValid())
+        color = Qt::white;
+
+    QColor selected_color { QColorDialog::getColor(color, nullptr, tr("Choose Color"), QColorDialog::ShowAlphaChannel) };
+    if (selected_color.isValid()) {
+        node_->color = selected_color.name(QColor::HexRgb);
+        UpdateColor(selected_color);
+    }
 }

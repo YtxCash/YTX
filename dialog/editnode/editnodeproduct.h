@@ -55,10 +55,13 @@ private slots:
     void on_rBtnBranch_toggled(bool checked);
     void on_rBtnSupport_toggled(bool checked);
 
+    void on_pBtnColor_clicked();
+
 private:
     void IniDialog(QStandardItemModel* unit_model, int amount_decimal);
     void IniConnect();
     void Data(Node* node, bool type_enable, bool unit_enable);
+    void UpdateColor(QColor color);
 
 private:
     Ui::EditNodeProduct* ui;

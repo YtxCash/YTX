@@ -37,7 +37,7 @@
 QPushButton, QGroupBox, QComboBox,
 QPlainTextEdit, QLineEdit,
 QTreeView, QTableView, QListView,
-QHeaderView::section, QTabBar::tab,
+QHeaderView::section, QTabBar::tab, QWidget#widgetProperty,
 QToolBar, QToolTip {
     border: 1px solid #93A1A1;
 }
