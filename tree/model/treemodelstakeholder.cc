@@ -359,7 +359,7 @@ void TreeModelStakeholder::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
         case TreeEnumStakeholder::kEmployee:
             return (order == Qt::AscendingOrder) ? (lhs->employee < rhs->employee) : (lhs->employee > rhs->employee);
-        case TreeEnumStakeholder::kPaymentPeriod:
+        case TreeEnumStakeholder::kPaymentTerm:
             return (order == Qt::AscendingOrder) ? (lhs->first < rhs->first) : (lhs->first > rhs->first);
         case TreeEnumStakeholder::kTaxRate:
             return (order == Qt::AscendingOrder) ? (lhs->second < rhs->second) : (lhs->second > rhs->second);
@@ -455,7 +455,7 @@ QVariant TreeModelStakeholder::data(const QModelIndex& index, int role) const
         return node->date_time.isEmpty() || skip ? QVariant() : node->date_time;
     case TreeEnumStakeholder::kEmployee:
         return node->employee == 0 ? QVariant() : node->employee;
-    case TreeEnumStakeholder::kPaymentPeriod:
+    case TreeEnumStakeholder::kPaymentTerm:
         return node->first == 0 || skip ? QVariant() : node->first;
     case TreeEnumStakeholder::kTaxRate:
         return node->second == 0 ? QVariant() : node->second;
@@ -500,7 +500,7 @@ bool TreeModelStakeholder::setData(const QModelIndex& index, const QVariant& val
     case TreeEnumStakeholder::kEmployee:
         TreeModelUtils::UpdateField(sql_, node, info_.node, value.toInt(), kEmployee, &Node::employee);
         break;
-    case TreeEnumStakeholder::kPaymentPeriod:
+    case TreeEnumStakeholder::kPaymentTerm:
         TreeModelUtils::UpdateField(sql_, node, info_.node, value.toDouble(), kPaymentTerm, &Node::first);
         break;
     case TreeEnumStakeholder::kTaxRate:

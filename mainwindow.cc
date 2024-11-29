@@ -785,8 +785,8 @@ void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) cons
 
 void MainWindow::DelegateStakeholder(PQTreeView tree_view, CSettings& settings) const
 {
-    auto* payment_period { new Spin(0, kIntMax, tree_view) };
-    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentPeriod), payment_period);
+    auto* payment_term { new Spin(0, kIntMax, tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kPaymentTerm), payment_term);
 
     auto* tax_rate { new TaxRate(settings.amount_decimal, 0.0, kDoubleMax, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumStakeholder::kTaxRate), tax_rate);
