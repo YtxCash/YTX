@@ -252,9 +252,6 @@ void MainWindow::RInsertTriggered()
         InsertNode(static_cast<TreeWidget*>(widget));
     }
 
-    if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
-        return;
-
     if (MainWindowUtils::IsTableWidget(widget)) {
         assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
         AppendTrans(static_cast<TableWidget*>(widget));
@@ -1632,11 +1629,12 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
             return;
 
         target_index = model->index(new_row, std::to_underlying(TableEnum::kDateTime));
-    } else {
+    } else if (data_->info.section != Section::kSales && data_->info.section != Section::kPurchase)
         target_index = model->index(empty_row, std::to_underlying(TableEnum::kRhsNode));
-    }
 
-    table_widget->View()->setCurrentIndex(target_index);
+    if (target_index.isValid()) {
+        table_widget->View()->setCurrentIndex(target_index);
+    }
 }
 
 void MainWindow::RJumpTriggered()
