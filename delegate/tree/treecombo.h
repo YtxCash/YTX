@@ -27,7 +27,7 @@
 
 class TreeCombo final : public StyledItemDelegate {
 public:
-    TreeCombo(CStringMap& map, QStandardItemModel* model, bool skip_branch, QObject* parent);
+    TreeCombo(CStringMap& map, QStandardItemModel* model, QObject* parent);
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
@@ -40,7 +40,6 @@ private:
 
 private:
     CStringMap& map_;
-    bool skip_branch_ {};
     QStandardItemModel* model_ {};
 };
 

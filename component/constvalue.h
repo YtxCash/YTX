@@ -38,7 +38,6 @@ inline constexpr char kDateFormat[] = "date_format";
 inline constexpr char kDateTime[] = "date_time";
 inline constexpr char kDateTimeFST[] = "yyyy-MM-dd hh:mm";
 inline constexpr char kDateFST[] = "yyyy-MM-dd";
-inline constexpr char kDD[] = "dd";
 
 inline constexpr char kFullWidthPeriod[] = u8"。";
 inline constexpr char kHalfWidthPeriod[] = u8".";

@@ -106,7 +106,7 @@ QVariant TreeModelTask::data(const QModelIndex& index, int role) const
     case TreeEnumTask::kColor:
         return node->color;
     case TreeEnumTask::kDateTime:
-        return node->type == kTypeBranch ? QVariant() : node->date_time;
+        return node->date_time;
     case TreeEnumTask::kFinished:
         return node->finished ? node->finished : QVariant();
     case TreeEnumTask::kUnitCost:

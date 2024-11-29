@@ -35,5 +35,6 @@ using CVariant = const QVariant;
 using CStringList = const QStringList;
 
 inline const QString kEmptyString = {};
+inline const QString kDD = "dd";
 
 #endif // USING_H

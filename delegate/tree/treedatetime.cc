@@ -1,21 +1,16 @@
 #include "treedatetime.h"
 
 #include "component/constvalue.h"
-#include "component/enumclass.h"
 #include "widget/datetimeedit.h"
 
-TreeDateTime::TreeDateTime(const QString& date_format, bool skip_branch, QObject* parent)
+TreeDateTime::TreeDateTime(const QString& date_format, QObject* parent)
     : StyledItemDelegate { parent }
     , date_format_ { date_format }
-    , skip_branch_ { skip_branch }
 {
 }
 
-QWidget* TreeDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QWidget* TreeDateTime::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
 {
-    if (skip_branch_ && (index.siblingAtColumn(std::to_underlying(TreeEnum::kType)).data().toInt() == kTypeBranch))
-        return nullptr;
-
     auto* editor { new DateTimeEdit(parent) };
     editor->setDisplayFormat(date_format_);
 
