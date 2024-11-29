@@ -36,6 +36,7 @@ class MainWindowUtils {
 public:
     static bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
     static bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
+    static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
 
     static PTableModel GetTableModel(QWidget* widget)
     {

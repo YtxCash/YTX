@@ -53,7 +53,6 @@ QHeaderView::section:disabled {
 /*-------------------------------------border none-----------------------------------------------*/
 
 QPushButton#pBtnLink, QDialog#Preferences QGroupBox, QPushButton#pBtnColor,
-QTableView QComboBox, QTableView QLineEdit,
 QTreeView::item
 {
     border: none;
@@ -92,6 +91,11 @@ QPushButton#pBtnSaveOrder {
 
 QDialog QComboBox, QDialog QLineEdit, QSpinBox#spinAmountDecimal, QSpinBox#spinCommonDecimal {
     border: 1px solid #93A1A1;
+}
+
+QTableView QComboBox, QTableView QLineEdit
+{
+    border: none;
 }
 
 /*-------------------------------------hover color-----------------------------------------------*/

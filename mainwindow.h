@@ -46,6 +46,12 @@ struct Data {
 using PDialog = QPointer<QDialog>;
 using CData = const Data;
 
+template <typename T>
+concept TableWidgetLike = std::is_base_of_v<QWidget, T> && requires(T t) {
+    { t.Model() } -> std::convertible_to<QPointer<TableModel>>;
+    { t.View() } -> std::convertible_to<QPointer<QTableView>>;
+};
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -159,7 +165,7 @@ private:
     void InsertNodeFPTS(Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
     void InsertNodeOrder(Node* node, const QModelIndex& parent, int row); // Purchase Sales
 
-    void AppendTrans(TableWidget* table_widget);
+    template <TableWidgetLike T> void AppendTrans(T* widget);
 
     void EditNodeFPTS(const QModelIndex& index, int node_id); // Finance Product Stakeholder Task
     void SwitchTab(int node_id, int trans_id = 0) const;

@@ -12,6 +12,7 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     , node_shadow_ { params.node_shadow }
     , sql_ { params.sql }
     , stakeholder_tree_ { static_cast<TreeModelStakeholder*>(params.stakeholder_tree) }
+    , order_table_ { params.order_table }
     , info_node_ { params.section == Section::kSales ? kSales : kPurchase }
     , party_unit_ { params.section == Section::kSales ? kUnitCust : kUnitVend }
     , node_id_ { *params.node_shadow->id }
@@ -22,7 +23,7 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     IniDialog(params.settings);
     IniConnect();
 
-    ui->tableViewOrder->setModel(params.order_table);
+    ui->tableViewOrder->setModel(order_table_);
     ui->pBtnSaveOrder->setEnabled(false);
     ui->pBtnFinishOrder->setEnabled(false);
 
@@ -84,6 +85,8 @@ void EditNodeOrder::RUpdateData(int node_id, TreeEnumOrder column, const QVarian
     }
 }
 
+QPointer<TableModel> EditNodeOrder::Model() { return order_table_; }
+
 void EditNodeOrder::RUpdateLeafValueOne(int /*node_id*/, double diff) { ui->dSpinFirst->setValue(ui->dSpinFirst->value() + diff); }
 
 void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double second_diff, double amount_diff, double discount_diff, double settled_diff)
@@ -98,7 +101,7 @@ void EditNodeOrder::RUpdateLeafValue(int /*node_id*/, double first_diff, double 
     ui->dSpinSettled->setValue(ui->dSpinSettled->value() + (*node_shadow_->unit == kUnitIM ? settled_diff : 0.0));
 }
 
-QTableView* EditNodeOrder::View() { return ui->tableViewOrder; }
+QPointer<QTableView> EditNodeOrder::View() { return ui->tableViewOrder; }
 
 void EditNodeOrder::IniDialog(CSettings* settings)
 {

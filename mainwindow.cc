@@ -243,6 +243,12 @@ void MainWindow::dropEvent(QDropEvent* event) { ROpenFile(event->mimeData()->url
 
 void MainWindow::RInsertTriggered()
 {
+    auto* active_window { QApplication::activeWindow() };
+    if (active_window && MainWindowUtils::IsEditNodeOrder(active_window)) {
+        AppendTrans(static_cast<EditNodeOrder*>(active_window));
+        return;
+    }
+
     auto* widget { ui->tabWidget->currentWidget() };
     if (!widget)
         return;
@@ -1609,12 +1615,12 @@ void MainWindow::RAppendNodeTriggered()
     InsertNodeFunction(parent_index, parent_id, 0);
 }
 
-void MainWindow::AppendTrans(TableWidget* table_widget)
+template <TableWidgetLike T> void MainWindow::AppendTrans(T* widget)
 {
-    if (!table_widget)
+    if (!widget)
         return;
 
-    auto model { table_widget->Model() };
+    auto model { widget->Model() };
     if (!model || model->IsSupport())
         return;
 
@@ -1633,7 +1639,7 @@ void MainWindow::AppendTrans(TableWidget* table_widget)
         target_index = model->index(empty_row, std::to_underlying(TableEnum::kRhsNode));
 
     if (target_index.isValid()) {
-        table_widget->View()->setCurrentIndex(target_index);
+        widget->View()->setCurrentIndex(target_index);
     }
 }
 

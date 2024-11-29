@@ -49,7 +49,8 @@ public slots:
     void RUpdateData(int node_id, TreeEnumOrder column, const QVariant& value);
 
 public:
-    QTableView* View();
+    QPointer<TableModel> Model();
+    QPointer<QTableView> View();
 
 private slots:
     void on_comboParty_editTextChanged(const QString& arg1);
@@ -81,6 +82,7 @@ private:
     NodeShadow* node_shadow_ {};
     Sqlite* sql_ {};
     TreeModelStakeholder* stakeholder_tree_ {};
+    TableModel* order_table_ {};
 
     QStandardItemModel* combo_model_employee_ {};
     QStandardItemModel* combo_model_party_ {};
