@@ -6,6 +6,12 @@
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
 
+#ifdef Q_OS_WIN
+#include <QShortcut>
+
+#include "mainwindow.h"
+#endif
+
 EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditNodeOrder)
@@ -32,6 +38,18 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
 
     IniUnit(*params.node_shadow->unit);
     setWindowTitle(params.section == Section::kSales ? tr("Sales") : tr("Purchase"));
+
+#ifdef Q_OS_WIN
+    QShortcut* shortcut { new QShortcut(QKeySequence("Ctrl+N"), this) };
+    shortcut->setContext(Qt::WindowShortcut);
+
+    connect(shortcut, &QShortcut::activated, parent, [parent]() {
+        auto* main_window { qobject_cast<MainWindow*>(parent) };
+        if (main_window) {
+            main_window->RInsertTriggered();
+        }
+    });
+#endif
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }

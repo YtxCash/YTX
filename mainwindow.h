@@ -67,13 +67,13 @@ public:
 
 public slots:
     void ROpenFile(CString& file_path);
+    void RInsertTriggered();
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
 private slots:
-    void RInsertTriggered();
     void RRemoveTriggered();
     void RAppendNodeTriggered();
     void RJumpTriggered();

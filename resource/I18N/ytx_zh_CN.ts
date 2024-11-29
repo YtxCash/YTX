@@ -376,8 +376,8 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="-277"/>
-        <location filename="../../dialog/editnode/editnodeorder.cc" line="+30"/>
-        <location line="+375"/>
+        <location filename="../../dialog/editnode/editnodeorder.cc" line="+36"/>
+        <location line="+387"/>
         <source>Party</source>
         <translation>合作</translation>
     </message>
@@ -456,7 +456,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">yyyy-MM-dd</translation>
     </message>
     <message>
-        <location filename="../../dialog/editnode/editnodeorder.cc" line="-339"/>
+        <location filename="../../dialog/editnode/editnodeorder.cc" line="-351"/>
         <source>Sales</source>
         <translation>销售</translation>
     </message>
@@ -466,7 +466,7 @@ Rage, rage against the dying of the light.</source>
         <translation>采购</translation>
     </message>
     <message>
-        <location line="+371"/>
+        <location line="+383"/>
         <source>Branch</source>
         <translation>分支</translation>
     </message>
