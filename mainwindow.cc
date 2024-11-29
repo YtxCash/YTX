@@ -72,13 +72,13 @@
 #include "widget/treewidget/treewidgetorder.h"
 #include "widget/treewidget/treewidgetstakeholder.h"
 
-MainWindow::MainWindow(CString& dir_path, QWidget* parent)
+MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , dir_path_ { dir_path }
+    , config_dir_ { config_dir }
 {
     ResourceFile();
-    SharedInterface(dir_path);
+    SharedInterface(config_dir);
 
     ui->setupUi(this);
     SetTabWidget();
@@ -169,7 +169,7 @@ void MainWindow::ROpenFile(CString& file_path)
         const auto& complete_base_name { file_info.completeBaseName() };
 
         this->setWindowTitle(complete_base_name);
-        ExclusiveInterface(dir_path_, complete_base_name);
+        ExclusiveInterface(config_dir_, complete_base_name);
         LockFile(file_info.absolutePath(), complete_base_name);
 
         sql_ = MainwindowSqlite(start_);

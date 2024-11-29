@@ -62,7 +62,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(CString& dir_path, QWidget* parent = nullptr);
+    MainWindow(CString& config_dir, QWidget* parent = nullptr);
     ~MainWindow();
 
 public slots:
@@ -205,7 +205,7 @@ private:
     QTranslator base_translator_ {};
     QTranslator cash_translator_ {};
 
-    QString dir_path_ {};
+    QString config_dir_ {};
 
     QSettings* shared_interface_ {};
     QSettings* exclusive_interface_ {};
