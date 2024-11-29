@@ -324,9 +324,6 @@ void TreeModelUtils::LeafPathSpecificUnitP(CStringHash& leaf, const QSet<int>& r
 void TreeModelUtils::LeafPathSpecificUnitS(CStringHash& leaf, const QSet<int>& crange, QStandardItemModel* cmodel, const QSet<int>& vrange,
     QStandardItemModel* vmodel, const QSet<int>& erange, QStandardItemModel* emodel)
 {
-    if (leaf.isEmpty())
-        return;
-
     auto future = QtConcurrent::run([&leaf, crange, vrange, erange]() {
         QVector<std::pair<QString, int>> citems;
         QVector<std::pair<QString, int>> vitems;

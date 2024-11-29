@@ -2206,7 +2206,7 @@ void MainWindow::SharedInterface(CString& dir_path)
     LoadAndInstallTranslator(interface_.language);
 
 #ifdef Q_OS_WIN
-    QString theme { "file:///:/theme/theme/" + interface_.theme + " Win" + SFX_QSS };
+    QString theme { "file:///:/theme/theme/" + interface_.theme + " Win" + kSuffixQSS };
 #elif defined(Q_OS_MACOS)
     QString theme { "file:///:/theme/theme/" + interface_.theme + " Mac" + kSuffixQSS };
 #endif

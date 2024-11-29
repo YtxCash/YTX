@@ -48,10 +48,6 @@ protected:
         QSize sz { QComboBox::sizeHint() };
         int scrollbar_width { QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent) };
 
-#ifdef Q_OS_WIN
-        scrollbar_width *= 2;
-#endif
-
         sz.setWidth(sz.width() + scrollbar_width);
         return sz;
     }

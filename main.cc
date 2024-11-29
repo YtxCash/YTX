@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 // begin set ini file directory
 #ifdef Q_OS_WIN
     QApplication application(argc, argv);
-    QString dir_path { QDir::homePath() + "/AppData/Roaming/" + YTX };
+    QString dir_path { QDir::homePath() + "/AppData/Roaming/" + kYTX };
 #elif defined(Q_OS_MACOS)
     Application application(argc, argv);
     QString dir_path { QDir::homePath() + "/.config/" + kYTX };
