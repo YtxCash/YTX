@@ -19,7 +19,7 @@ EditNodeProduct::EditNodeProduct(CEditNodeParamsFPTS& params, int amount_decimal
 
     IniDialog(params.unit_model, amount_decimal);
     IniConnect();
-    Data(params.node, params.type_enable, params.unit_enable);
+    IniData(params.node, params.type_enable, params.unit_enable);
 }
 
 EditNodeProduct::~EditNodeProduct() { delete ui; }
@@ -42,7 +42,7 @@ void EditNodeProduct::IniDialog(QStandardItemModel* unit_model, int amount_decim
 
 void EditNodeProduct::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeProduct::RNameEdited); }
 
-void EditNodeProduct::Data(Node* node, bool type_enable, bool unit_enable)
+void EditNodeProduct::IniData(Node* node, bool type_enable, bool unit_enable)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);

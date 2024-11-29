@@ -60,7 +60,7 @@ private slots:
 private:
     void IniDialog(QStandardItemModel* unit_model, QStandardItemModel* employee_model, int common_decimal);
     void IniConnect();
-    void Data(Node* node, bool branch_enable, bool unit_enable);
+    void IniData(Node* node, bool branch_enable, bool unit_enable);
 
 private:
     Ui::EditNodeStakeholder* ui;

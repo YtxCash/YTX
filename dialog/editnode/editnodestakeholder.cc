@@ -17,7 +17,7 @@ EditNodeStakeholder::EditNodeStakeholder(CEditNodeParamsFPTS& params, QStandardI
 
     IniDialog(params.unit_model, employee_model, amount_decimal);
     IniConnect();
-    Data(params.node, params.type_enable, params.unit_enable);
+    IniData(params.node, params.type_enable, params.unit_enable);
 }
 
 EditNodeStakeholder::~EditNodeStakeholder() { delete ui; }
@@ -45,7 +45,7 @@ void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, QStandardIte
 
 void EditNodeStakeholder::IniConnect() { connect(ui->lineEditName, &QLineEdit::textEdited, this, &EditNodeStakeholder::RNameEdited); }
 
-void EditNodeStakeholder::Data(Node* node, bool type_enable, bool unit_enable)
+void EditNodeStakeholder::IniData(Node* node, bool type_enable, bool unit_enable)
 {
     int unit_index { ui->comboUnit->findData(node_->unit) };
     ui->comboUnit->setCurrentIndex(unit_index);

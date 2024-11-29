@@ -74,9 +74,9 @@ private:
     void ResizeLine(QLineEdit* line, CString& text);
     void DynamicLable(Section section);
 
-    void Data();
-    void DataCombo(QComboBox* combo, int value);
-    void DataCombo(QComboBox* combo, CString& string);
+    void IniData();
+    void IniDataCombo(QComboBox* combo, int value);
+    void IniDataCombo(QComboBox* combo, CString& string);
 
 private:
     Ui::Preferences* ui;

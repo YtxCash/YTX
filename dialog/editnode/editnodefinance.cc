@@ -16,7 +16,7 @@ EditNodeFinance::EditNodeFinance(CEditNodeParamsFPTS& params, QWidget* parent)
 
     IniDialog(params.unit_model);
     IniConnect();
-    Data(params.node, params.type_enable, params.unit_enable);
+    IniData(params.node, params.type_enable, params.unit_enable);
 }
 
 EditNodeFinance::~EditNodeFinance() { delete ui; }
@@ -34,7 +34,7 @@ void EditNodeFinance::IniDialog(QStandardItemModel* unit_model)
 
 void EditNodeFinance::IniConnect() { connect(ui->lineName, &QLineEdit::textEdited, this, &EditNodeFinance::RNameEdited); }
 
-void EditNodeFinance::Data(Node* node, bool type_enable, bool unit_enable)
+void EditNodeFinance::IniData(Node* node, bool type_enable, bool unit_enable)
 {
     int item_index { ui->comboUnit->findData(node->unit) };
     ui->comboUnit->setCurrentIndex(item_index);

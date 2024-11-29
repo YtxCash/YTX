@@ -60,7 +60,7 @@ private slots:
 private:
     void IniDialog(QStandardItemModel* unit_model, int amount_decimal);
     void IniConnect();
-    void Data(Node* node, bool type_enable, bool unit_enable);
+    void IniData(Node* node, bool type_enable, bool unit_enable);
     void UpdateColor(QColor color);
 
 private:

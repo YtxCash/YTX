@@ -45,18 +45,17 @@ private slots:
 
     void on_comboUnit_currentIndexChanged(int index);
 
-    void on_rBtnDDCI_toggled(bool checked);
-
     void on_plainNote_textChanged();
 
     void on_rBtnLeaf_toggled(bool checked);
     void on_rBtnBranch_toggled(bool checked);
     void on_rBtnSupport_toggled(bool checked);
+    void on_rBtnDDCI_toggled(bool checked);
 
 private:
     void IniDialog(QStandardItemModel* unit_model);
     void IniConnect();
-    void Data(Node* node, bool type_enable, bool unit_enable);
+    void IniData(Node* node, bool type_enable, bool unit_enable);
 
 private:
     Ui::EditNodeFinance* ui;

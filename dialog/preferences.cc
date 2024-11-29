@@ -28,7 +28,7 @@ Preferences::Preferences(CInfo& info, CTreeModel* model, Interface interface, Se
     IniConnect();
 
     // 使用QTimer延迟执行
-    QTimer::singleShot(100, this, [this, info]() { Data(); });
+    QTimer::singleShot(100, this, [this, info]() { IniData(); });
     DynamicLable(info.section);
 }
 
@@ -63,36 +63,36 @@ void Preferences::IniConnect()
     connect(ui->pBtnOk, &QPushButton::clicked, this, &Preferences::on_pBtnApply_clicked);
 }
 
-void Preferences::Data()
+void Preferences::IniData()
 {
-    DataCombo(ui->comboTheme, interface_.theme);
-    DataCombo(ui->comboLanguage, interface_.language);
-    DataCombo(ui->comboSeparator, interface_.separator);
-    DataCombo(ui->comboDateTime, interface_.date_format);
+    IniDataCombo(ui->comboTheme, interface_.theme);
+    IniDataCombo(ui->comboLanguage, interface_.language);
+    IniDataCombo(ui->comboSeparator, interface_.separator);
+    IniDataCombo(ui->comboDateTime, interface_.date_format);
 
-    DataCombo(ui->comboDefaultUnit, settings_.default_unit);
+    IniDataCombo(ui->comboDefaultUnit, settings_.default_unit);
     ui->pBtnDocumentDir->setText(settings_.document_dir);
     ui->spinAmountDecimal->setValue(settings_.amount_decimal);
     ui->spinCommonDecimal->setValue(settings_.common_decimal);
 
     ui->lineStatic->setText(settings_.static_label);
-    DataCombo(ui->comboStatic, settings_.static_node);
+    IniDataCombo(ui->comboStatic, settings_.static_node);
     ui->lineDynamic->setText(settings_.dynamic_label);
-    DataCombo(ui->comboDynamicLhs, settings_.dynamic_node_lhs);
-    DataCombo(ui->comboOperation, settings_.operation);
-    DataCombo(ui->comboDynamicRhs, settings_.dynamic_node_rhs);
+    IniDataCombo(ui->comboDynamicLhs, settings_.dynamic_node_lhs);
+    IniDataCombo(ui->comboOperation, settings_.operation);
+    IniDataCombo(ui->comboDynamicRhs, settings_.dynamic_node_rhs);
 
     ResizeLine(ui->lineStatic, settings_.static_label);
     ResizeLine(ui->lineDynamic, settings_.dynamic_label);
 }
 
-void Preferences::DataCombo(QComboBox* combo, int value)
+void Preferences::IniDataCombo(QComboBox* combo, int value)
 {
     int item_index { combo->findData(value) };
     combo->setCurrentIndex(item_index);
 }
 
-void Preferences::DataCombo(QComboBox* combo, CString& string)
+void Preferences::IniDataCombo(QComboBox* combo, CString& string)
 {
     int item_index { combo->findText(string) };
     combo->setCurrentIndex(item_index);
