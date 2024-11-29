@@ -1235,6 +1235,7 @@ void MainWindow::SetConnect() const
     connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::RRemoveTriggered);
     connect(ui->actionAppendNode, &QAction::triggered, this, &MainWindow::RAppendNodeTriggered);
     connect(ui->actionJump, &QAction::triggered, this, &MainWindow::RJumpTriggered);
+    connect(ui->actionJumpSupport, &QAction::triggered, this, &MainWindow::RJumpSupportTriggered);
     connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::RSearchTriggered);
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::RPreferencesTriggered);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::RAboutTriggered);
@@ -1645,6 +1646,9 @@ template <TableWidgetLike T> void MainWindow::AppendTrans(T* widget)
 
 void MainWindow::RJumpTriggered()
 {
+    if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
+        return;
+
     auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
         return;
@@ -1667,6 +1671,45 @@ void MainWindow::RJumpTriggered()
 
     const int trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
     SwitchTab(rhs_node_id, trans_id);
+}
+
+void MainWindow::RJumpSupportTriggered()
+{
+    if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
+        return;
+
+    auto* current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
+        return;
+
+    auto view { MainWindowUtils::GetQTableView(current_widget) };
+    if (!MainWindowUtils::HasSelection(view))
+        return;
+
+    auto index { view->currentIndex() };
+    if (!index.isValid())
+        return;
+
+    auto model { MainWindowUtils::GetTableModel(current_widget) };
+    if (!model)
+        return;
+
+    const int row { index.row() };
+    const int id { model->IsSupport() ? index.sibling(row, std::to_underlying(TableEnumSupport::kRhsNode)).data().toInt()
+                                      : index.sibling(row, std::to_underlying(TableEnum::kSupportID)).data().toInt() };
+
+    if (id == 0)
+        return;
+
+    if (!table_hash_->contains(id)) {
+        if (model->IsSupport())
+            CreateTableFPTS(tree_widget_->Model(), table_hash_, data_, settings_, id);
+        else
+            CreateTableSupport(tree_widget_->Model(), table_hash_, data_, settings_, id);
+    }
+
+    const int trans_id { index.sibling(row, std::to_underlying(TableEnum::kID)).data().toInt() };
+    SwitchTab(id, trans_id);
 }
 
 void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
