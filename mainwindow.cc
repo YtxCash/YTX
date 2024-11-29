@@ -1235,7 +1235,7 @@ void MainWindow::SetConnect() const
     connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::RRemoveTriggered);
     connect(ui->actionAppendNode, &QAction::triggered, this, &MainWindow::RAppendNodeTriggered);
     connect(ui->actionJump, &QAction::triggered, this, &MainWindow::RJumpTriggered);
-    connect(ui->actionJumpSupport, &QAction::triggered, this, &MainWindow::RJumpSupportTriggered);
+    connect(ui->actionSupportJump, &QAction::triggered, this, &MainWindow::RSupportJumpTriggered);
     connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::RSearchTriggered);
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::RPreferencesTriggered);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::RAboutTriggered);
@@ -1563,6 +1563,7 @@ void MainWindow::SetAction() const
     ui->actionAbout->setIcon(QIcon(":/solarized_dark/solarized_dark/about.png"));
     ui->actionAppendNode->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
     ui->actionJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
+    ui->actionSupportJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
     ui->actionPreferences->setIcon(QIcon(":/solarized_dark/solarized_dark/settings.png"));
     ui->actionSearch->setIcon(QIcon(":/solarized_dark/solarized_dark/search.png"));
     ui->actionNew->setIcon(QIcon(":/solarized_dark/solarized_dark/new.png"));
@@ -1673,7 +1674,7 @@ void MainWindow::RJumpTriggered()
     SwitchTab(rhs_node_id, trans_id);
 }
 
-void MainWindow::RJumpSupportTriggered()
+void MainWindow::RSupportJumpTriggered()
 {
     if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
         return;

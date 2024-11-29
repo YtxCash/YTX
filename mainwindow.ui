@@ -204,7 +204,7 @@
     <addaction name="separator"/>
     <addaction name="actionJump"/>
     <addaction name="actionSearch"/>
-    <addaction name="actionJumpSupport"/>
+    <addaction name="actionSupportJump"/>
     <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
@@ -377,12 +377,12 @@
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
-  <action name="actionJumpSupport">
+  <action name="actionSupportJump">
    <property name="text">
-    <string>JumpSupport</string>
+    <string>SupportJump</string>
    </property>
    <property name="toolTip">
-    <string>JumpSupport</string>
+    <string>SupportJump</string>
    </property>
    <property name="shortcut">
     <string>Alt+J</string>

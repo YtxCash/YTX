@@ -77,7 +77,7 @@ private slots:
     void RRemoveTriggered();
     void RAppendNodeTriggered();
     void RJumpTriggered();
-    void RJumpSupportTriggered();
+    void RSupportJumpTriggered();
     void RAboutTriggered();
     void RPreferencesTriggered();
     void RSearchTriggered();
