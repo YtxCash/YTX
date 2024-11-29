@@ -76,14 +76,14 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 
     // Centralize config directory creation
-    const QString dir_path { QDir::homePath() + "/AppData/Roaming/" + kYTX };
+    const QString config_dir { QDir::homePath() + "/AppData/Local/" + kYTX };
 
-    if (file_path.isEmpty() || !file_path.endsWith(".ytx", Qt::CaseInsensitive)) {
-        qCritical() << "Invalid file path: must be non-empty and end with '.ytx'";
+    if (!QDir(config_dir).exists() && !QDir::home().mkpath(config_dir)) {
+        qCritical() << "Failed to create config directory:" << config_dir;
         return EXIT_FAILURE;
     }
 
-    MainWindow mainwindow(dir_path);
+    MainWindow mainwindow(config_dir);
 
     // Simplified file handling and locking
     if (argc >= 2) {
