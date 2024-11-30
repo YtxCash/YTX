@@ -138,14 +138,12 @@ MainWindow::~MainWindow()
     }
 
     if (sales_tree_) {
-        // SaveTab(sales_table_hash_, sales_data_.info.node, VIEW);
         MainWindowUtils::SaveState(sales_tree_->View()->header(), exclusive_interface_, sales_data_.info.node, kHeaderState);
 
         sales_dialog_list_.clear();
     }
 
     if (purchase_tree_) {
-        // SaveTab(purchase_table_hash_, purchase_data_.info.node, VIEW);
         MainWindowUtils::SaveState(purchase_tree_->View()->header(), exclusive_interface_, purchase_data_.info.node, kHeaderState);
 
         purchase_dialog_list_.clear();
@@ -232,7 +230,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasUrls()) {
         auto suffix { QFileInfo(event->mimeData()->urls().at(0).fileName()).suffix().toLower() };
-        if (suffix == kYTX)
+        if (suffix == ytx)
             return event->acceptProposedAction();
     }
 
@@ -2020,8 +2018,8 @@ void MainWindow::UpdateInterface(CInterface& interface)
     auto new_language { interface.language };
     if (interface_.language != new_language) {
         if (new_language == kEnUS) {
-            qApp->removeTranslator(&cash_translator_);
-            qApp->removeTranslator(&base_translator_);
+            qApp->removeTranslator(&ytx_translator_);
+            qApp->removeTranslator(&qt_translator_);
         } else
             LoadAndInstallTranslator(new_language);
 
@@ -2160,13 +2158,13 @@ void MainWindow::UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool br
 
 void MainWindow::LoadAndInstallTranslator(CString& language)
 {
-    QString cash_language { QString(":/I18N/I18N/") + kYTX + "_" + language + kSuffixQM };
-    if (cash_translator_.load(cash_language))
-        qApp->installTranslator(&cash_translator_);
+    const QString ytx_language { QString(":/I18N/I18N/") + ytx + "_" + language + kSuffixQM };
+    if (ytx_translator_.load(ytx_language))
+        qApp->installTranslator(&ytx_translator_);
 
-    QString base_language { ":/I18N/I18N/qtbase_" + language + kSuffixQM };
-    if (base_translator_.load(base_language))
-        qApp->installTranslator(&base_translator_);
+    const QString qt_language { ":/I18N/I18N/qt_" + language + kSuffixQM };
+    if (qt_translator_.load(qt_language))
+        qApp->installTranslator(&qt_translator_);
 }
 
 void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
@@ -2179,7 +2177,7 @@ void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
 
 void MainWindow::SharedInterface(CString& dir_path)
 {
-    static QSettings shared_interface(dir_path + kSlash + kYTX + kSuffixINI, QSettings::IniFormat);
+    static QSettings shared_interface(dir_path + kSlash + ytx + kSuffixINI, QSettings::IniFormat);
     shared_interface_ = &shared_interface;
 
     QString language_code {};

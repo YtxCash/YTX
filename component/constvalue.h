@@ -115,7 +115,8 @@ inline constexpr char kQSQLITE[] = "QSQLITE";
 inline constexpr char kRecentFile[] = "recent/file";
 inline constexpr char kSemicolon[] = ";";
 inline constexpr char kStartSection[] = "start/section";
-inline constexpr char kYTX[] = "ytx";
+inline constexpr char ytx[] = "ytx";
+inline constexpr char YTX[] = "YTX";
 
 // Constants for sections
 inline constexpr char kFinance[] = "finance";

@@ -202,8 +202,8 @@ private:
     QStringList recent_list_ {};
     Section start_ {};
 
-    QTranslator base_translator_ {};
-    QTranslator cash_translator_ {};
+    QTranslator qt_translator_ {};
+    QTranslator ytx_translator_ {};
 
     QString config_dir_ {};
 

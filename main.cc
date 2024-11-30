@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 
     // Centralize config directory creation
-    const QString config_dir { QDir::homePath() + "/.config/" + kYTX };
+    const QString config_dir { QDir::homePath() + "/.config/" + YTX };
 
     if (!QDir(config_dir).exists() && !QDir::home().mkpath(config_dir)) {
         qCritical() << "Failed to create config directory:" << config_dir;
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 
     // Centralize config directory creation
-    const QString config_dir { QDir::homePath() + "/AppData/Local/" + kYTX };
+    const QString config_dir { QDir::homePath() + "/AppData/Local/" + YTX };
 
     if (!QDir(config_dir).exists() && !QDir::home().mkpath(config_dir)) {
         qCritical() << "Failed to create config directory:" << config_dir;
