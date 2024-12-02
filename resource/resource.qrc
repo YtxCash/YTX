@@ -1,20 +1,15 @@
 <RCC>
     <qresource prefix="/theme">
-        <file>theme/Solarized Dark.pdf</file>
         <file>theme/Solarized Dark Mac.qss</file>
         <file>theme/Solarized Dark Win.qss</file>
     </qresource>
     <qresource prefix="/I18N">
-        <file>I18N/qtbase_zh_CN.qm</file>
         <file>I18N/ytx_zh_CN.qm</file>
-        <file>I18N/ytx_zh_CN.ts</file>
+        <file>I18N/qt_zh_CN.qm</file>
     </qresource>
     <qresource prefix="/logo">
         <file>logo/logo.icns</file>
-        <file>logo/logo.png</file>
         <file>logo/logo.ico</file>
-        <file>logo/logo_2048.png</file>
-        <file>logo/logo_4096.png</file>
     </qresource>
     <qresource prefix="/solarized_dark">
         <file>solarized_dark/about.png</file>
