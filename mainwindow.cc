@@ -2240,7 +2240,7 @@ void MainWindow::ResourceFile() const
     path += "/resource.brc";
 
 #if 0
-    QString command { "E:/Qt/6.8.0/llvm-mingw_64/bin/rcc.exe" };
+    QString command { "E:/Qt/6.8.1/llvm-mingw_64/bin/rcc.exe" };
     QStringList arguments {};
     arguments << "-binary"
               << "E:/Code/YTX/resource/resource.qrc"
@@ -2257,7 +2257,7 @@ void MainWindow::ResourceFile() const
     path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
 
 #if 0
-    QString command { QDir::homePath() + "/Qt6.8/6.8.0/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
+    QString command { QDir::homePath() + "/Qt6.8/6.8.1/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
         + path };
 
     QProcess process {};
