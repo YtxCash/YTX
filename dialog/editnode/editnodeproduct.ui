@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>352</width>
-    <height>606</height>
+    <width>350</width>
+    <height>650</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
@@ -44,7 +44,7 @@
          <string>Debit Increase, Credit Decrease</string>
         </property>
         <property name="text">
-         <string>&amp;DICD</string>
+         <string notr="true">&amp;DICD</string>
         </property>
        </widget>
       </item>
@@ -54,7 +54,7 @@
          <string>Debit Decrease, Credit Increase</string>
         </property>
         <property name="text">
-         <string>DDC&amp;I</string>
+         <string notr="true">DDC&amp;I</string>
         </property>
        </widget>
       </item>
@@ -169,22 +169,31 @@
       </property>
       <item row="0" column="0">
        <widget class="QRadioButton" name="rBtnLeaf">
-        <property name="text">
+        <property name="toolTip">
          <string>Leaf</string>
+        </property>
+        <property name="text">
+         <string notr="true">&amp;L</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
        <widget class="QRadioButton" name="rBtnBranch">
-        <property name="text">
+        <property name="toolTip">
          <string>Branch</string>
+        </property>
+        <property name="text">
+         <string notr="true">&amp;B</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
        <widget class="QRadioButton" name="rBtnSupport">
-        <property name="text">
+        <property name="toolTip">
          <string>Support</string>
+        </property>
+        <property name="text">
+         <string notr="true">&amp;S</string>
         </property>
        </widget>
       </item>

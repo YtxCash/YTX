@@ -1346,7 +1346,7 @@ void MainWindow::SetStakeholderData()
     // EMP: EMPLOYEE, CUST: CUSTOMER, VEND: VENDOR, PROD: PRODUCT
     QStringList unit_list { tr("CUST"), tr("EMP"), tr("VEND"), tr("PROD") };
     // IM：Immediate, MS（Monthly Settlement）
-    QStringList rule_list { "IM", "MS" };
+    QStringList rule_list { "IS", "MS" };
     QStringList type_list { "L", "B", "S" };
 
     for (int i = 0; i != unit_list.size(); ++i)
@@ -1425,7 +1425,7 @@ void MainWindow::SetSalesData()
     info.transaction = kSalesTransaction;
 
     // IM: IMMEDIATE, MS: MONTHLY SETTLEMENT, PEND: PENDING
-    QStringList unit_list { tr("IM"), tr("MS"), tr("PEND") };
+    QStringList unit_list { tr("IS"), tr("MS"), tr("PEND") };
     // SO: SALES ORDER, RO: REFUND ORDER
     QStringList rule_list { "SO", "RO" };
     QStringList type_list { "L", "B" };

@@ -28,7 +28,7 @@ void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, QStandardIte
     ui->lineEditName->setValidator(&LineEdit::kInputValidator);
 
     this->setWindowTitle(parent_path_ + node_->name);
-    this->setFixedSize(350, 600);
+    this->setFixedSize(350, 650);
 
     ui->comboUnit->setModel(unit_model);
     ui->comboEmployee->setModel(employee_model);

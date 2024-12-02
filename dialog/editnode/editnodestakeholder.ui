@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>352</width>
-    <height>607</height>
+    <width>350</width>
+    <height>650</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
@@ -324,22 +324,31 @@
       </property>
       <item row="0" column="1">
        <widget class="QRadioButton" name="rBtnBranch">
-        <property name="text">
+        <property name="toolTip">
          <string>Branch</string>
+        </property>
+        <property name="text">
+         <string notr="true">&amp;B</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
        <widget class="QRadioButton" name="rBtnSupport">
-        <property name="text">
+        <property name="toolTip">
          <string>Support</string>
+        </property>
+        <property name="text">
+         <string notr="true">&amp;S</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
        <widget class="QRadioButton" name="rBtnLeaf">
-        <property name="text">
+        <property name="toolTip">
          <string>Leaf</string>
+        </property>
+        <property name="text">
+         <string notr="true">&amp;L</string>
         </property>
        </widget>
       </item>
@@ -473,7 +482,7 @@
          <string>Monthly Settlement</string>
         </property>
         <property name="text">
-         <string>&amp;Monthly</string>
+         <string notr="true">&amp;MS</string>
         </property>
        </widget>
       </item>
@@ -483,7 +492,7 @@
          <string>Immediate Settlement</string>
         </property>
         <property name="text">
-         <string>&amp;Immediate</string>
+         <string notr="true">&amp;IS</string>
         </property>
        </widget>
       </item>
