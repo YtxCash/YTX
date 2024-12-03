@@ -94,6 +94,7 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     MainWindowUtils::RestoreGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
 
     Recent();
+    EnableAction(false);
 
 #ifdef Q_OS_WIN
     ui->actionRemove->setShortcut(Qt::Key_Delete);
@@ -227,6 +228,7 @@ bool MainWindow::OpenFile(CString& file_path)
         UpdateRecent();
     }
 
+    EnableAction(true);
     return true;
 }
 
@@ -1038,6 +1040,22 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
             }
         }
     }
+}
+
+void MainWindow::EnableAction(bool enable)
+{
+    ui->actionAppendNode->setEnabled(enable);
+    ui->actionCheckAll->setEnabled(enable);
+    ui->actionCheckNone->setEnabled(enable);
+    ui->actionCheckReverse->setEnabled(enable);
+    ui->actionDocument->setEnabled(enable);
+    ui->actionEdit->setEnabled(enable);
+    ui->actionInsert->setEnabled(enable);
+    ui->actionJump->setEnabled(enable);
+    ui->actionPreferences->setEnabled(enable);
+    ui->actionSearch->setEnabled(enable);
+    ui->actionSupportJump->setEnabled(enable);
+    ui->actionRemove->setEnabled(enable);
 }
 
 QStandardItemModel* MainWindow::CreateModelFromList(QStringList& list, QObject* parent)
@@ -2283,11 +2301,6 @@ void MainWindow::ResourceFile() const
 
 void MainWindow::RSearchTriggered()
 {
-    if (!SqlConnection::Instance().IsInitialized()) {
-        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
-        return;
-    }
-
     auto* dialog { new Search(tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), settings_, data_->sql, data_->info, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
@@ -2346,11 +2359,6 @@ void MainWindow::RUpdateParty(int node_id, int party_id)
 
 void MainWindow::RPreferencesTriggered()
 {
-    if (!SqlConnection::Instance().IsInitialized()) {
-        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
-        return;
-    }
-
     auto model { tree_widget_->Model() };
 
     auto* preference { new Preferences(data_->info, model, interface_, *settings_, this) };

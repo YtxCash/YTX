@@ -194,6 +194,7 @@ private:
 
     void SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const;
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
+    void EnableAction(bool enable);
 
     QStandardItemModel* CreateModelFromList(QStringList& list, QObject* parent = nullptr);
 
