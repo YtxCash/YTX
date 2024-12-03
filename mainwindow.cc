@@ -53,6 +53,7 @@
 #include "dialog/search.h"
 #include "global/resourcepool.h"
 #include "global/signalstation.h"
+#include "global/sqlconnection.h"
 #include "mainwindowutils.h"
 #include "table/model/sortfilterproxymodel.h"
 #include "table/model/tablemodelfinance.h"
@@ -156,7 +157,7 @@ bool MainWindow::OpenFile(CString& file_path)
     if (file_path.isEmpty())
         return false;
 
-    if (!file_path_.isEmpty()) {
+    if (SqlConnection::Instance().IsInitialized()) {
         QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
         return true;
     }
@@ -165,14 +166,14 @@ bool MainWindow::OpenFile(CString& file_path)
     if (!LockFile(file_info))
         return false;
 
-    file_path_ = file_path;
+    SqlConnection::Instance().SetDatabaseName(file_path);
 
     const auto& complete_base_name { file_info.completeBaseName() };
 
     this->setWindowTitle(complete_base_name);
     ExclusiveInterface(config_dir_, complete_base_name);
 
-    sql_ = MainwindowSqlite(file_path);
+    sql_ = MainwindowSqlite(start_);
     SetFinanceData();
     SetTaskData();
     SetProductData();
@@ -1295,7 +1296,7 @@ void MainWindow::SetFinanceData()
 
     sql_.QuerySettings(finance_settings_, section);
 
-    sql = new SqliteFinance(info, file_path_, this);
+    sql = new SqliteFinance(info, this);
 
     auto* model { new TreeModelFinance(sql, info, finance_settings_.default_unit, finance_table_hash_, interface_.separator, this) };
     finance_tree_ = new TreeWidgetFPT(model, info, finance_settings_, this);
@@ -1334,7 +1335,7 @@ void MainWindow::SetProductData()
 
     sql_.QuerySettings(product_settings_, section);
 
-    sql = new SqliteProduct(info, file_path_, this);
+    sql = new SqliteProduct(info, this);
 
     auto* model { new TreeModelProduct(sql, info, product_settings_.default_unit, product_table_hash_, interface_.separator, this) };
     product_tree_ = new TreeWidgetFPT(model, info, product_settings_, this);
@@ -1374,7 +1375,7 @@ void MainWindow::SetStakeholderData()
 
     sql_.QuerySettings(stakeholder_settings_, section);
 
-    sql = new SqliteStakeholder(info, file_path_, this);
+    sql = new SqliteStakeholder(info, this);
 
     auto* model { new TreeModelStakeholder(sql, info, stakeholder_settings_.default_unit, stakeholder_table_hash_, interface_.separator, this) };
     stakeholder_tree_ = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
@@ -1416,7 +1417,7 @@ void MainWindow::SetTaskData()
 
     sql_.QuerySettings(task_settings_, section);
 
-    sql = new SqliteTask(info, file_path_, this);
+    sql = new SqliteTask(info, this);
 
     auto* model { new TreeModelTask(sql, info, task_settings_.default_unit, task_table_hash_, interface_.separator, this) };
     task_tree_ = new TreeWidgetFPT(model, info, task_settings_, this);
@@ -1455,7 +1456,7 @@ void MainWindow::SetSalesData()
 
     sql_.QuerySettings(sales_settings_, section);
 
-    sql = new SqliteOrder(info, file_path_, this);
+    sql = new SqliteOrder(info, this);
 
     auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this) };
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
@@ -1496,7 +1497,7 @@ void MainWindow::SetPurchaseData()
 
     sql_.QuerySettings(purchase_settings_, section);
 
-    sql = new SqliteOrder(info, file_path_, this);
+    sql = new SqliteOrder(info, this);
 
     auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this) };
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
@@ -2282,8 +2283,10 @@ void MainWindow::ResourceFile() const
 
 void MainWindow::RSearchTriggered()
 {
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     auto* dialog { new Search(tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), settings_, data_->sql, data_->info, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
@@ -2343,8 +2346,10 @@ void MainWindow::RUpdateParty(int node_id, int party_id)
 
 void MainWindow::RPreferencesTriggered()
 {
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     auto model { tree_widget_->Model() };
 
@@ -2455,8 +2460,10 @@ void MainWindow::on_rBtnFinance_toggled(bool checked)
 
     start_ = Section::kFinance;
 
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
     MainWindowUtils::SwitchDialog(dialog_hash_, false);
@@ -2479,8 +2486,10 @@ void MainWindow::on_rBtnSales_toggled(bool checked)
 
     start_ = Section::kSales;
 
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
     MainWindowUtils::SwitchDialog(dialog_hash_, false);
@@ -2503,8 +2512,10 @@ void MainWindow::on_rBtnTask_toggled(bool checked)
 
     start_ = Section::kTask;
 
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
     MainWindowUtils::SwitchDialog(dialog_hash_, false);
@@ -2527,8 +2538,10 @@ void MainWindow::on_rBtnStakeholder_toggled(bool checked)
 
     start_ = Section::kStakeholder;
 
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
     MainWindowUtils::SwitchDialog(dialog_hash_, false);
@@ -2551,8 +2564,10 @@ void MainWindow::on_rBtnProduct_toggled(bool checked)
 
     start_ = Section::kProduct;
 
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
     MainWindowUtils::SwitchDialog(dialog_hash_, false);
@@ -2575,8 +2590,10 @@ void MainWindow::on_rBtnPurchase_toggled(bool checked)
 
     start_ = Section::kPurchase;
 
-    if (file_path_.isEmpty())
+    if (!SqlConnection::Instance().IsInitialized()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
+    }
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
     MainWindowUtils::SwitchDialog(dialog_hash_, false);

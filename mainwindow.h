@@ -208,7 +208,6 @@ private:
     QTranslator ytx_translator_ {};
 
     QString config_dir_ {};
-    QString file_path_ {};
 
     QSettings* shared_interface_ {};
     QSettings* exclusive_interface_ {};

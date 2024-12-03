@@ -90,7 +90,7 @@ public:
 
     static void UpdateBranchUnitF(const Node* root, Node* node);
     static void UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff);
-    static void ShowTemporaryTooltipFPTS(CString& message, int duration);
+    static void ShowTemporaryTooltip(CString& message, int duration);
 
     static bool IsInternalReferencedFPTS(Sqlite* sql, int node_id, CString& message);
     static bool IsSupportReferencedFPTS(Sqlite* sql, int node_id, CString& message);
