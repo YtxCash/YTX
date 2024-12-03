@@ -30,9 +30,8 @@ class SqlConnection {
 public:
     static SqlConnection& Instance();
     bool SetDatabaseName(const QString& file_path);
-    QString DatabaseName() const;
-    bool DatabaseEnable() const;
     QSqlDatabase* Allocate(Section section);
+    bool IsInitialized() { return is_initialized_; }
 
 private:
     SqlConnection() = default;
@@ -43,12 +42,14 @@ private:
     SqlConnection(SqlConnection&&) = delete;
     SqlConnection& operator=(SqlConnection&&) = delete;
 
+    void LogError(const QString& message) const;
+    QSqlDatabase OpenDatabase(const QString& file_path, Section section);
+
 private:
     QMutex mutex_;
     QHash<Section, QSqlDatabase> hash_;
-
     QString file_path_ {};
-    bool database_enable_ { false };
+    bool is_initialized_ { false };
 };
 
 #endif // SQLCONNECTION_H
