@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 
     // Centralize config directory creation
-    const QString config_dir { QDir::homePath() + "/.config/" + YTX };
+    const QString config_dir { QDir::home().filePath(".config/YTX") };
 
     if (!QDir(config_dir).exists() && !QDir::home().mkpath(config_dir)) {
         qCritical() << "Failed to create config directory:" << config_dir;
@@ -46,13 +46,14 @@ int main(int argc, char* argv[])
     if (application.arguments().size() >= 2) {
         const QString file_path { application.arguments().at(1) };
 
-        if (file_path.isEmpty() || !file_path.endsWith(".ytx", Qt::CaseInsensitive)) {
-            qCritical() << "Invalid file path: must be non-empty and end with '.ytx'";
+        const QFileInfo file_info(file_path);
+        if (!file_info.exists() || file_info.suffix().toLower() != "ytx") {
+            qCritical() << "Invalid file path: must be an existing .ytx file";
             return EXIT_FAILURE;
         }
 
-        QFileInfo file_info(file_path);
-        const QString lock_file_path { file_info.absolutePath() + kSlash + file_info.completeBaseName() + kSuffixLOCK };
+        const QFileInfo file_info(file_path);
+        const QString lock_file_path { file_info.dir().filePath(file_info.completeBaseName() + kSuffixLOCK) };
 
         static QLockFile lock_file { lock_file_path };
         if (!lock_file.tryLock(100)) {
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 
     // Centralize config directory creation
-    const QString config_dir { QDir::homePath() + "/AppData/Local/" + YTX };
+    const QString config_dir { QDir::home().filePath("/AppData/Local/YTX") };
 
     if (!QDir(config_dir).exists() && !QDir::home().mkpath(config_dir)) {
         qCritical() << "Failed to create config directory:" << config_dir;
@@ -89,13 +90,14 @@ int main(int argc, char* argv[])
     if (argc >= 2) {
         const QString file_path { QString::fromLocal8Bit(argv[1]) };
 
-        if (file_path.isEmpty() || !file_path.endsWith(".ytx", Qt::CaseInsensitive)) {
-            qCritical() << "Invalid file path: must be non-empty and end with '.ytx'";
+        const QFileInfo file_info(file_path);
+        if (!file_info.exists() || file_info.suffix().toLower() != "ytx") {
+            qCritical() << "Invalid file path: must be an existing .ytx file";
             return EXIT_FAILURE;
         }
 
-        QFileInfo file_info(file_path);
-        auto lock_file_path { file_info.absolutePath() + kSlash + file_info.completeBaseName() + kSuffixLOCK };
+        const QFileInfo file_info(file_path);
+        const QString lock_file_path { file_info.dir().filePath(file_info.completeBaseName() + kSuffixLOCK) };
 
         static QLockFile lock_file { lock_file_path };
         if (!lock_file.tryLock(100)) {
