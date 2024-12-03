@@ -21,6 +21,7 @@
 #define MAINWINDOW_H
 
 #include <QDialog>
+#include <QFileInfo>
 #include <QMainWindow>
 #include <QPointer>
 #include <QSettings>
@@ -65,8 +66,9 @@ public:
     MainWindow(CString& config_dir, QWidget* parent = nullptr);
     ~MainWindow();
 
+    bool OpenFile(CString& file_path);
+
 public slots:
-    void ROpenFile(CString& file_path);
     void RInsertTriggered();
 
 protected:
@@ -170,7 +172,6 @@ private:
 
     void EditNodeFPTS(const QModelIndex& index, int node_id); // Finance Product Stakeholder Task
     void SwitchTab(int node_id, int trans_id = 0) const;
-    bool LockFile(CString& absolute_path, CString& complete_base_name) const;
 
     void RemoveTrans(TableWidget* table_widget);
     void RemoveNode(TreeWidget* tree_widget);
@@ -189,6 +190,7 @@ private:
     void ExclusiveInterface(CString& dir_path, CString& base_name);
     void ResourceFile() const;
     void Recent();
+    bool LockFile(const QFileInfo file_info) const;
 
     void SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const;
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
@@ -206,6 +208,7 @@ private:
     QTranslator ytx_translator_ {};
 
     QString config_dir_ {};
+    QString file_path_ {};
 
     QSettings* shared_interface_ {};
     QSettings* exclusive_interface_ {};

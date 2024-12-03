@@ -53,7 +53,6 @@
 #include "dialog/search.h"
 #include "global/resourcepool.h"
 #include "global/signalstation.h"
-#include "global/sqlconnection.h"
 #include "mainwindowutils.h"
 #include "table/model/sortfilterproxymodel.h"
 #include "table/model/tablemodelfinance.h"
@@ -152,78 +151,82 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::ROpenFile(CString& file_path)
+bool MainWindow::OpenFile(CString& file_path)
 {
-    if (file_path.isEmpty() || file_path == SqlConnection::Instance().DatabaseName())
-        return;
+    if (file_path.isEmpty())
+        return false;
 
-    if (SqlConnection::Instance().DatabaseEnable()) {
-        QProcess::startDetached(qApp->applicationFilePath(), QStringList() << file_path);
-        return;
+    if (!file_path_.isEmpty()) {
+        QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
+        return true;
     }
 
-    if (SqlConnection::Instance().SetDatabaseName(file_path)) {
-        QFileInfo file_info(file_path);
-        const auto& complete_base_name { file_info.completeBaseName() };
+    const QFileInfo file_info(file_path);
+    if (!LockFile(file_info))
+        return false;
 
-        this->setWindowTitle(complete_base_name);
-        ExclusiveInterface(config_dir_, complete_base_name);
-        LockFile(file_info.absolutePath(), complete_base_name);
+    file_path_ = file_path;
 
-        sql_ = MainwindowSqlite(start_);
-        SetFinanceData();
-        SetTaskData();
-        SetProductData();
-        SetStakeholderData();
-        SetSalesData();
-        SetPurchaseData();
+    const auto& complete_base_name { file_info.completeBaseName() };
 
-        CreateSection(finance_tree_, finance_table_hash_, finance_data_, finance_settings_, tr("Finance"));
-        CreateSection(stakeholder_tree_, stakeholder_table_hash_, stakeholder_data_, stakeholder_settings_, tr("Stakeholder"));
-        CreateSection(product_tree_, product_table_hash_, product_data_, product_settings_, tr("Product"));
-        CreateSection(task_tree_, task_table_hash_, task_data_, task_settings_, tr("Task"));
-        CreateSection(sales_tree_, sales_table_hash_, sales_data_, sales_settings_, tr("Sales"));
-        CreateSection(purchase_tree_, purchase_table_hash_, purchase_data_, purchase_settings_, tr("Purchase"));
+    this->setWindowTitle(complete_base_name);
+    ExclusiveInterface(config_dir_, complete_base_name);
 
-        switch (start_) {
-        case Section::kFinance:
-            on_rBtnFinance_toggled(true);
-            break;
-        case Section::kStakeholder:
-            on_rBtnStakeholder_toggled(true);
-            break;
-        case Section::kProduct:
-            on_rBtnProduct_toggled(true);
-            break;
-        case Section::kTask:
-            on_rBtnTask_toggled(true);
-            break;
-        case Section::kSales:
-            on_rBtnSales_toggled(true);
-            break;
-        case Section::kPurchase:
-            on_rBtnPurchase_toggled(true);
-            break;
-        default:
-            break;
-        }
+    sql_ = MainwindowSqlite(file_path);
+    SetFinanceData();
+    SetTaskData();
+    SetProductData();
+    SetStakeholderData();
+    SetSalesData();
+    SetPurchaseData();
 
-        QString path { QDir::toNativeSeparators(file_path) };
+    CreateSection(finance_tree_, finance_table_hash_, finance_data_, finance_settings_, tr("Finance"));
+    CreateSection(stakeholder_tree_, stakeholder_table_hash_, stakeholder_data_, stakeholder_settings_, tr("Stakeholder"));
+    CreateSection(product_tree_, product_table_hash_, product_data_, product_settings_, tr("Product"));
+    CreateSection(task_tree_, task_table_hash_, task_data_, task_settings_, tr("Task"));
+    CreateSection(sales_tree_, sales_table_hash_, sales_data_, sales_settings_, tr("Sales"));
+    CreateSection(purchase_tree_, purchase_table_hash_, purchase_data_, purchase_settings_, tr("Purchase"));
 
-        if (!recent_list_.contains(path)) {
-            auto* menu { ui->menuRecent };
-            auto* action { new QAction(path, menu) };
-
-            if (menu->isEmpty()) {
-                menu->addAction(action);
-                SetClearMenuAction();
-            } else
-                ui->menuRecent->insertAction(ui->actionSeparator, action);
-
-            recent_list_.emplaceBack(path);
-            UpdateRecent();
-        }
+    switch (start_) {
+    case Section::kFinance:
+        on_rBtnFinance_toggled(true);
+        break;
+    case Section::kStakeholder:
+        on_rBtnStakeholder_toggled(true);
+        break;
+    case Section::kProduct:
+        on_rBtnProduct_toggled(true);
+        break;
+    case Section::kTask:
+        on_rBtnTask_toggled(true);
+        break;
+    case Section::kSales:
+        on_rBtnSales_toggled(true);
+        break;
+    case Section::kPurchase:
+        on_rBtnPurchase_toggled(true);
+        break;
+    default:
+        break;
     }
+
+    QString path { QDir::toNativeSeparators(file_path) };
+
+    if (!recent_list_.contains(path)) {
+        auto* menu { ui->menuRecent };
+        auto* action { new QAction(path, menu) };
+
+        if (menu->isEmpty()) {
+            menu->addAction(action);
+            SetClearMenuAction();
+        } else
+            ui->menuRecent->insertAction(ui->actionSeparator, action);
+
+        recent_list_.emplaceBack(path);
+        UpdateRecent();
+    }
+
+    return true;
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
@@ -237,7 +240,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
     event->ignore();
 }
 
-void MainWindow::dropEvent(QDropEvent* event) { ROpenFile(event->mimeData()->urls().at(0).toLocalFile()); }
+void MainWindow::dropEvent(QDropEvent* event) { OpenFile(event->mimeData()->urls().at(0).toLocalFile()); }
 
 void MainWindow::RInsertTriggered()
 {
@@ -321,17 +324,6 @@ void MainWindow::SwitchTab(int node_id, int trans_id) const
     auto index { MainWindowUtils::GetTableModel(widget)->GetIndex(trans_id) };
     view->setCurrentIndex(index);
     view->scrollTo(index.siblingAtColumn(std::to_underlying(TableEnum::kDateTime)), QAbstractItemView::PositionAtCenter);
-}
-
-bool MainWindow::LockFile(CString& absolute_path, CString& complete_base_name) const
-{
-    auto lock_file_path { absolute_path + kSlash + complete_base_name + kSuffixLOCK };
-
-    static QLockFile lock_file { lock_file_path };
-    if (!lock_file.tryLock(100))
-        return false;
-
-    return true;
 }
 
 void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
@@ -1068,11 +1060,11 @@ void MainWindow::Recent()
     auto* recent_menu { ui->menuRecent };
     QStringList valid_list {};
 
-    for (CString& file : recent_list_) {
-        if (QFile::exists(file)) {
-            auto* action { recent_menu->addAction(file) };
-            connect(action, &QAction::triggered, this, [file, this]() { ROpenFile(file); });
-            valid_list.emplaceBack(file);
+    for (CString& file_path : recent_list_) {
+        if (QFile::exists(file_path)) {
+            auto* action { recent_menu->addAction(file_path) };
+            connect(action, &QAction::triggered, this, [file_path, this]() { OpenFile(file_path); });
+            valid_list.emplaceBack(file_path);
         }
     }
 
@@ -1082,6 +1074,24 @@ void MainWindow::Recent()
     }
 
     SetClearMenuAction();
+}
+
+bool MainWindow::LockFile(const QFileInfo file_info) const
+{
+    if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != "ytx") {
+        qCritical() << "Invalid file path: must be an existing .ytx file";
+        return false;
+    }
+
+    const QString lock_file_path = file_info.dir().filePath(file_info.completeBaseName() + ".lock");
+
+    static QLockFile lock_file(lock_file_path);
+    if (!lock_file.tryLock(100)) {
+        qCritical() << "Unable to lock database file. Ensure no other instance of the application is using the file:" << lock_file_path;
+        return false;
+    }
+
+    return true;
 }
 
 void MainWindow::RemoveBranch(PTreeModel tree_model, const QModelIndex& index, int node_id)
@@ -1285,7 +1295,7 @@ void MainWindow::SetFinanceData()
 
     sql_.QuerySettings(finance_settings_, section);
 
-    sql = new SqliteFinance(info, this);
+    sql = new SqliteFinance(info, file_path_, this);
 
     auto* model { new TreeModelFinance(sql, info, finance_settings_.default_unit, finance_table_hash_, interface_.separator, this) };
     finance_tree_ = new TreeWidgetFPT(model, info, finance_settings_, this);
@@ -1324,7 +1334,7 @@ void MainWindow::SetProductData()
 
     sql_.QuerySettings(product_settings_, section);
 
-    sql = new SqliteProduct(info, this);
+    sql = new SqliteProduct(info, file_path_, this);
 
     auto* model { new TreeModelProduct(sql, info, product_settings_.default_unit, product_table_hash_, interface_.separator, this) };
     product_tree_ = new TreeWidgetFPT(model, info, product_settings_, this);
@@ -1364,7 +1374,7 @@ void MainWindow::SetStakeholderData()
 
     sql_.QuerySettings(stakeholder_settings_, section);
 
-    sql = new SqliteStakeholder(info, this);
+    sql = new SqliteStakeholder(info, file_path_, this);
 
     auto* model { new TreeModelStakeholder(sql, info, stakeholder_settings_.default_unit, stakeholder_table_hash_, interface_.separator, this) };
     stakeholder_tree_ = new TreeWidgetStakeholder(model, info, stakeholder_settings_, this);
@@ -1406,7 +1416,7 @@ void MainWindow::SetTaskData()
 
     sql_.QuerySettings(task_settings_, section);
 
-    sql = new SqliteTask(info, this);
+    sql = new SqliteTask(info, file_path_, this);
 
     auto* model { new TreeModelTask(sql, info, task_settings_.default_unit, task_table_hash_, interface_.separator, this) };
     task_tree_ = new TreeWidgetFPT(model, info, task_settings_, this);
@@ -1445,7 +1455,7 @@ void MainWindow::SetSalesData()
 
     sql_.QuerySettings(sales_settings_, section);
 
-    sql = new SqliteOrder(info, this);
+    sql = new SqliteOrder(info, file_path_, this);
 
     auto* model { new TreeModelOrder(sql, info, sales_settings_.default_unit, sales_table_hash_, interface_.separator, this) };
     sales_tree_ = new TreeWidgetOrder(model, info, sales_settings_, this);
@@ -1486,7 +1496,7 @@ void MainWindow::SetPurchaseData()
 
     sql_.QuerySettings(purchase_settings_, section);
 
-    sql = new SqliteOrder(info, this);
+    sql = new SqliteOrder(info, file_path_, this);
 
     auto* model { new TreeModelOrder(sql, info, purchase_settings_.default_unit, purchase_table_hash_, interface_.separator, this) };
     purchase_tree_ = new TreeWidgetOrder(model, info, purchase_settings_, this);
@@ -2272,7 +2282,7 @@ void MainWindow::ResourceFile() const
 
 void MainWindow::RSearchTriggered()
 {
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     auto* dialog { new Search(tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), settings_, data_->sql, data_->info, this) };
@@ -2333,7 +2343,7 @@ void MainWindow::RUpdateParty(int node_id, int party_id)
 
 void MainWindow::RPreferencesTriggered()
 {
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     auto model { tree_widget_->Model() };
@@ -2368,7 +2378,7 @@ void MainWindow::RNewTriggered()
         file_path += kSuffixYTX;
 
     sql_.NewFile(file_path);
-    ROpenFile(file_path);
+    OpenFile(file_path);
 }
 
 void MainWindow::ROpenTriggered()
@@ -2376,7 +2386,7 @@ void MainWindow::ROpenTriggered()
     QString filter("*.ytx");
     auto file_path { QFileDialog::getOpenFileName(this, tr("Open"), QDir::homePath(), filter, nullptr) };
 
-    ROpenFile(file_path);
+    OpenFile(file_path);
 }
 
 void MainWindow::SetClearMenuAction()
@@ -2445,7 +2455,7 @@ void MainWindow::on_rBtnFinance_toggled(bool checked)
 
     start_ = Section::kFinance;
 
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
@@ -2469,7 +2479,7 @@ void MainWindow::on_rBtnSales_toggled(bool checked)
 
     start_ = Section::kSales;
 
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
@@ -2493,7 +2503,7 @@ void MainWindow::on_rBtnTask_toggled(bool checked)
 
     start_ = Section::kTask;
 
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
@@ -2517,7 +2527,7 @@ void MainWindow::on_rBtnStakeholder_toggled(bool checked)
 
     start_ = Section::kStakeholder;
 
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
@@ -2541,7 +2551,7 @@ void MainWindow::on_rBtnProduct_toggled(bool checked)
 
     start_ = Section::kProduct;
 
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);
@@ -2565,7 +2575,7 @@ void MainWindow::on_rBtnPurchase_toggled(bool checked)
 
     start_ = Section::kPurchase;
 
-    if (!SqlConnection::Instance().DatabaseEnable())
+    if (file_path_.isEmpty())
         return;
 
     MainWindowUtils::SwitchDialog(dialog_list_, false);

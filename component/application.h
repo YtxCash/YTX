@@ -26,16 +26,14 @@
 class Application : public QApplication {
     Q_OBJECT
 
-signals:
-    // Signal emitted when a file is opened
-    void SOpenFile(const QString& file_path);
-
 public:
     // Constructor for the custom application class
     Application(int& argc, char** argv)
         : QApplication(argc, argv)
     {
     }
+
+    QString FilePath() { return file_path_; }
 
 protected:
     // Override event handler to handle file open events
@@ -44,13 +42,16 @@ protected:
         if (event->type() == QEvent::FileOpen) {
             // Cast the event to QFileOpenEvent
             auto open_event { static_cast<QFileOpenEvent*>(event) };
-            // Emit the signal with the file path from the event
-            emit SOpenFile(open_event->file());
+            // Ini file path from the event
+            file_path_ = open_event->file();
         }
 
         // Pass the event to the base class event handler
         return QApplication::event(event);
     }
+
+private:
+    QString file_path_ {};
 };
 
 #endif // APPLICATION_H
