@@ -68,16 +68,14 @@ public:
 
     bool OpenFile(CString& file_path);
 
-public slots:
-    void RInsertTriggered();
-
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
 private slots:
+    void RInsertTriggered();
     void RRemoveTriggered();
-    void RAppendNodeTriggered();
+    void RAppendTriggered();
     void RJumpTriggered();
     void RSupportJumpTriggered();
     void RAboutTriggered();
@@ -114,6 +112,8 @@ private slots:
     void on_rBtnStakeholder_toggled(bool checked);
     void on_rBtnProduct_toggled(bool checked);
     void on_rBtnPurchase_toggled(bool checked);
+
+    void on_tabWidget_currentChanged(int index);
 
 private:
     void SetHeader();

@@ -195,10 +195,9 @@
      <string>Edit</string>
     </property>
     <addaction name="actionInsert"/>
-    <addaction name="actionAppendNode"/>
     <addaction name="separator"/>
+    <addaction name="actionAppend"/>
     <addaction name="actionEdit"/>
-    <addaction name="actionDocument"/>
     <addaction name="separator"/>
     <addaction name="actionRemove"/>
     <addaction name="separator"/>
@@ -222,7 +221,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionInsert"/>
-   <addaction name="actionAppendNode"/>
+   <addaction name="separator"/>
+   <addaction name="actionAppend"/>
+   <addaction name="actionEdit"/>
    <addaction name="separator"/>
    <addaction name="actionRemove"/>
    <addaction name="separator"/>
@@ -247,9 +248,12 @@
     <string>Remove</string>
    </property>
   </action>
-  <action name="actionAppendNode">
+  <action name="actionAppend">
    <property name="text">
-    <string>AppendNode</string>
+    <string>Append</string>
+   </property>
+   <property name="toolTip">
+    <string>Append</string>
    </property>
    <property name="shortcut">
     <string>Alt+P</string>
@@ -358,20 +362,6 @@
   <action name="actionCheckReverse">
    <property name="text">
     <string>CheckReverse</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::MenuRole::NoRole</enum>
-   </property>
-  </action>
-  <action name="actionDocument">
-   <property name="text">
-    <string>Document</string>
-   </property>
-   <property name="toolTip">
-    <string>Edit Document</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+D</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

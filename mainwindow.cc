@@ -229,6 +229,7 @@ bool MainWindow::OpenFile(CString& file_path)
     }
 
     EnableAction(true);
+    on_tabWidget_currentChanged(0);
     return true;
 }
 
@@ -1044,11 +1045,10 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
 
 void MainWindow::EnableAction(bool enable)
 {
-    ui->actionAppendNode->setEnabled(enable);
+    ui->actionAppend->setEnabled(enable);
     ui->actionCheckAll->setEnabled(enable);
     ui->actionCheckNone->setEnabled(enable);
     ui->actionCheckReverse->setEnabled(enable);
-    ui->actionDocument->setEnabled(enable);
     ui->actionEdit->setEnabled(enable);
     ui->actionInsert->setEnabled(enable);
     ui->actionJump->setEnabled(enable);
@@ -1260,7 +1260,7 @@ void MainWindow::SetConnect() const
 {
     connect(ui->actionInsert, &QAction::triggered, this, &MainWindow::RInsertTriggered);
     connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::RRemoveTriggered);
-    connect(ui->actionAppendNode, &QAction::triggered, this, &MainWindow::RAppendNodeTriggered);
+    connect(ui->actionAppend, &QAction::triggered, this, &MainWindow::RAppendTriggered);
     connect(ui->actionJump, &QAction::triggered, this, &MainWindow::RJumpTriggered);
     connect(ui->actionSupportJump, &QAction::triggered, this, &MainWindow::RSupportJumpTriggered);
     connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::RSearchTriggered);
@@ -1270,7 +1270,6 @@ void MainWindow::SetConnect() const
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::ROpenTriggered);
     connect(ui->actionClearMenu, &QAction::triggered, this, &MainWindow::RClearMenuTriggered);
 
-    connect(ui->actionDocument, &QAction::triggered, this, &MainWindow::REditDocument);
     connect(ui->actionEdit, &QAction::triggered, this, &MainWindow::REditNode);
 
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::RTabCloseRequested);
@@ -1585,10 +1584,9 @@ void MainWindow::SetAction() const
 {
     ui->actionInsert->setIcon(QIcon(":/solarized_dark/solarized_dark/insert.png"));
     ui->actionEdit->setIcon(QIcon(":/solarized_dark/solarized_dark/edit.png"));
-    ui->actionDocument->setIcon(QIcon(":/solarized_dark/solarized_dark/edit2.png"));
     ui->actionRemove->setIcon(QIcon(":/solarized_dark/solarized_dark/remove2.png"));
     ui->actionAbout->setIcon(QIcon(":/solarized_dark/solarized_dark/about.png"));
-    ui->actionAppendNode->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
+    ui->actionAppend->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
     ui->actionJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
     ui->actionSupportJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
     ui->actionPreferences->setIcon(QIcon(":/solarized_dark/solarized_dark/settings.png"));
@@ -1622,7 +1620,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
     header->setDefaultAlignment(Qt::AlignCenter);
 }
 
-void MainWindow::RAppendNodeTriggered()
+void MainWindow::RAppendTriggered()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !MainWindowUtils::IsTreeWidget(current_widget))
@@ -1747,7 +1745,7 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
     auto* menu = new QMenu(this);
     menu->addAction(ui->actionInsert);
     menu->addAction(ui->actionEdit);
-    menu->addAction(ui->actionAppendNode);
+    menu->addAction(ui->actionAppend);
     menu->addAction(ui->actionRemove);
 
     menu->exec(QCursor::pos());
@@ -2615,4 +2613,20 @@ void MainWindow::on_rBtnPurchase_toggled(bool checked)
     data_ = &purchase_data_;
 
     SwitchSection(data_->tab);
+}
+
+void MainWindow::on_tabWidget_currentChanged(int /*index*/)
+{
+    auto* widget { ui->tabWidget->currentWidget() };
+    if (!widget)
+        return;
+
+    bool is_tree { MainWindowUtils::IsTreeWidget(widget) };
+    ui->actionAppend->setEnabled(is_tree);
+    ui->actionCheckAll->setEnabled(!is_tree);
+    ui->actionCheckNone->setEnabled(!is_tree);
+    ui->actionCheckReverse->setEnabled(!is_tree);
+    ui->actionEdit->setEnabled(is_tree);
+    ui->actionJump->setEnabled(!is_tree);
+    ui->actionSupportJump->setEnabled(!is_tree);
 }
