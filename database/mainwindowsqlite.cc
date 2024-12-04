@@ -232,6 +232,7 @@ QString MainwindowSqlite::NodeTask()
         finished         BOOLEAN    DEFAULT 0,
         date_time        TEXT,
         color            TEXT,
+        document         TEXT,
         unit_cost        NUMERIC,
         quantity         NUMERIC,
         amount           NUMERIC,

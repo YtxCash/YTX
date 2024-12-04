@@ -537,7 +537,7 @@ void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, 
 
     auto* document { new TableDbClick(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
 
     auto* amount { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDebit), amount);
@@ -566,7 +566,7 @@ void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSe
 
     auto* document { new TableDbClick(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
 
     auto* quantity { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDebit), quantity);
@@ -598,7 +598,7 @@ void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, 
 
     auto* document { new TableDbClick(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
 
     auto* quantity { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDebit), quantity);
@@ -629,7 +629,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
 
     auto* document { new TableDbClick(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
 
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
@@ -762,6 +762,10 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
 
     auto* finished { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kFinished), finished);
+
+    auto* document { new TableDbClick(tree_view) };
+    tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kDocument), document);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditNodeDocument);
 }
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
@@ -1238,7 +1242,7 @@ void MainWindow::DelegateSupport(PQTableView table_view, PTreeModel tree_model, 
 
     auto* document { new TableDbClick(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditDocument);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditNodeDocument);
 
     auto* value { new DoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsDebit), value);
@@ -1540,7 +1544,7 @@ void MainWindow::SetHeader()
     stakeholder_data_.info.support_header = finance_data_.info.support_header;
 
     task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("DateTime"),
-        tr("Finished"), tr("Color"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
+        tr("Color"), tr("Document"), tr("Finished"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
     task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportID"), tr("D"), tr("S"),
         tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
     task_data_.info.search_trans_header = product_data_.info.search_trans_header;
@@ -1914,7 +1918,7 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     dialog->show();
 }
 
-void MainWindow::REditDocument()
+void MainWindow::REditTransDocument()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
@@ -1924,19 +1928,44 @@ void MainWindow::REditDocument()
     if (!MainWindowUtils::HasSelection(view))
         return;
 
-    auto trans_index { view->currentIndex() };
-    if (!trans_index.isValid())
+    auto index { view->currentIndex() };
+    if (!index.isValid())
         return;
 
     auto document_dir { settings_->document_dir };
     auto model { MainWindowUtils::GetTableModel(current_widget) };
-    auto* document_pointer { model->GetDocumentPointer(trans_index) };
-    const int trans_id { trans_index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
+    auto* document_pointer { model->GetDocumentPointer(index) };
+    const int trans_id { index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
     auto* dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
 
     if (dialog->exec() == QDialog::Accepted)
         data_->sql->UpdateField(data_->info.transaction, document_pointer->join(kSemicolon), kDocument, trans_id);
+}
+
+void MainWindow::REditNodeDocument()
+{
+    auto* current_widget { ui->tabWidget->currentWidget() };
+    if (!current_widget || !MainWindowUtils::IsTreeWidget(current_widget))
+        return;
+
+    auto view { tree_widget_->View() };
+    if (!MainWindowUtils::HasSelection(view))
+        return;
+
+    auto index { view->currentIndex() };
+    if (!index.isValid())
+        return;
+
+    auto document_dir { settings_->document_dir };
+    auto model { tree_widget_->Model() };
+    auto* document_pointer { model->GetDocumentPointer(index) };
+    const int id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
+
+    auto* dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
+
+    if (dialog->exec() == QDialog::Accepted)
+        data_->sql->UpdateField(data_->info.node, document_pointer->join(kSemicolon), kDocument, id);
 }
 
 void MainWindow::RUpdateName(int node_id, CString& name, bool branch)

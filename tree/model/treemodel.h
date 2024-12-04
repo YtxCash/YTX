@@ -122,6 +122,7 @@ public:
     int Unit(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::unit); }
     QString Name(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::name); }
     bool Rule(int node_id) const { return TreeModelUtils::GetValue(node_hash_, node_id, &Node::rule); }
+    QStringList* GetDocumentPointer(const QModelIndex& index) const;
 
     bool ChildrenEmpty(int node_id) const;
     bool Contains(int node_id) const { return node_hash_.contains(node_id); }

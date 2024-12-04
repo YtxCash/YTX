@@ -113,6 +113,8 @@ QVariant TreeModelTask::data(const QModelIndex& index, int role) const
         return node->first == 0 ? QVariant() : node->first;
     case TreeEnumTask::kQuantity:
         return node->initial_total == 0 ? QVariant() : node->initial_total;
+    case TreeEnumTask::kDocument:
+        return node->document.isEmpty() ? QVariant() : node->document.size();
     case TreeEnumTask::kAmount:
         return node->final_total;
     default:
@@ -238,6 +240,7 @@ Qt::ItemFlags TreeModelTask::flags(const QModelIndex& index) const
     case TreeEnumTask::kFinished:
     case TreeEnumTask::kColor:
     case TreeEnumTask::kUnitCost:
+    case TreeEnumTask::kDocument:
         flags &= ~Qt::ItemIsEditable;
         break;
     default:

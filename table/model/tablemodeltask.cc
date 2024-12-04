@@ -39,7 +39,7 @@ QVariant TableModelTask::data(const QModelIndex& index, int role) const
     case TableEnumTask::kState:
         return *trans_shadow->state ? *trans_shadow->state : QVariant();
     case TableEnumTask::kDocument:
-        return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
+        return trans_shadow->document->isEmpty() ? QVariant() : trans_shadow->document->size();
     case TableEnumTask::kDebit:
         return *trans_shadow->lhs_debit == 0 ? QVariant() : *trans_shadow->lhs_debit;
     case TableEnumTask::kCredit:

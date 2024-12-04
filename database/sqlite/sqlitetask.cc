@@ -12,7 +12,7 @@ SqliteTask::SqliteTask(CInfo& info, QObject* parent)
 QString SqliteTask::QSReadNode() const
 {
     return QStringLiteral(R"(
-    SELECT name, id, code, description, note, rule, type, unit, color, date_time, finished, unit_cost, quantity, amount
+    SELECT name, id, code, description, note, rule, type, unit, color, document, date_time, finished, unit_cost, quantity, amount
     FROM task
     WHERE removed = 0
     )");
@@ -21,8 +21,8 @@ QString SqliteTask::QSReadNode() const
 QString SqliteTask::QSWriteNode() const
 {
     return QStringLiteral(R"(
-    INSERT INTO task (name, code, description, note, rule, type, unit, color, date_time, finished, unit_cost)
-    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :color, :date_time, :finished, :unit_cost)
+    INSERT INTO task (name, code, description, note, rule, type, unit, color, document, date_time, finished, unit_cost)
+    VALUES (:name, :code, :description, :note, :rule, :type, :unit, :color, :document, :date_time, :finished, :unit_cost)
     )");
 }
 
@@ -253,6 +253,7 @@ void SqliteTask::WriteNodeBind(Node* node, QSqlQuery& query) const
     query.bindValue(":date_time", node->date_time);
     query.bindValue(":unit_cost", node->first);
     query.bindValue(":finished", node->finished);
+    query.bindValue(":document", node->document.join(kSemicolon));
 }
 
 void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query) const
@@ -271,6 +272,7 @@ void SqliteTask::ReadNodeQuery(Node* node, const QSqlQuery& query) const
     node->first = query.value("unit_cost").toDouble();
     node->date_time = query.value("date_time").toString();
     node->finished = query.value("finished").toBool();
+    node->document = query.value("document").toString().split(kSemicolon, Qt::SkipEmptyParts);
 }
 
 QString SqliteTask::QSUpdateNodeValueFPTO() const

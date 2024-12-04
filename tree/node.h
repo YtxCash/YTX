@@ -48,6 +48,7 @@ struct Node {
     QString note {};
     QString date_time {};
     QString color {};
+    QStringList document {};
     bool rule { false };
     int type {};
     int unit {};
@@ -77,6 +78,7 @@ inline Node::Node(const Node& other)
     , note(other.note)
     , date_time(other.date_time)
     , color(other.color)
+    , document(other.document)
     , rule(other.rule)
     , type(other.type)
     , unit(other.unit)
@@ -107,6 +109,7 @@ inline Node& Node::operator=(const Node& other)
     first = other.first;
     second = other.second;
     color = other.color;
+    document = other.document;
     discount = other.discount;
     finished = other.finished;
     date_time = other.date_time;
@@ -123,9 +126,10 @@ inline bool Node::operator==(const Node& other) const noexcept
     auto AlmostEqual = [](double a, double b, double tolerance = TOLERANCE) noexcept { return std::abs(a - b) < tolerance; };
 
     // Compare non-floating-point data members
-    bool basic_fields_equal = std::tie(name, id, code, party, employee, finished, date_time, color, description, note, rule, type, unit, parent, children)
-        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.finished, other.date_time, other.color, other.description, other.note,
-            other.rule, other.type, other.unit, other.parent, other.children);
+    bool basic_fields_equal
+        = std::tie(name, id, code, party, employee, finished, date_time, color, document, description, note, rule, type, unit, parent, children)
+        == std::tie(other.name, other.id, other.code, other.party, other.employee, other.finished, other.date_time, other.color, other.document,
+            other.description, other.note, other.rule, other.type, other.unit, other.parent, other.children);
 
     // Compare floating-point data members, considering tolerance
     bool floating_fields_equal = AlmostEqual(first, other.first) && AlmostEqual(second, other.second) && AlmostEqual(discount, other.discount)
@@ -149,6 +153,7 @@ inline void Node::Reset()
     description.clear();
     note.clear();
     color.clear();
+    document.clear();
     rule = false;
     type = 0;
     unit = 0;
@@ -178,6 +183,7 @@ struct NodeShadow {
 
     QString* date_time {};
     QString* color {};
+    QStringList* document {};
     int* employee {};
     int* party {};
 
@@ -203,6 +209,7 @@ inline void NodeShadow::Reset()
 
     date_time = nullptr;
     color = nullptr;
+    document = nullptr;
     employee = nullptr;
     party = nullptr;
 
@@ -229,6 +236,7 @@ inline void NodeShadow::Set(Node* node)
 
         date_time = &node->date_time;
         color = &node->color;
+        document = &node->document;
         employee = &node->employee;
         party = &node->party;
 

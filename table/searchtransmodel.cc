@@ -77,7 +77,7 @@ QVariant SearchTransModel::data(const QModelIndex& index, int role) const
     case TableEnumSearch::kState:
         return trans->state ? trans->state : QVariant();
     case TableEnumSearch::kDocument:
-        return trans->document.isEmpty() ? QVariant() : QString::number(trans->document.size());
+        return trans->document.isEmpty() ? QVariant() : trans->document.size();
     default:
         return QVariant();
     }

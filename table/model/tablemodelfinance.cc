@@ -36,7 +36,7 @@ QVariant TableModelFinance::data(const QModelIndex& index, int role) const
     case TableEnumFinance::kState:
         return *trans_shadow->state ? *trans_shadow->state : QVariant();
     case TableEnumFinance::kDocument:
-        return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
+        return trans_shadow->document->isEmpty() ? QVariant() : trans_shadow->document->size();
     case TableEnumFinance::kDebit:
         return *trans_shadow->lhs_debit == 0 ? QVariant() : *trans_shadow->lhs_debit;
     case TableEnumFinance::kCredit:

@@ -115,7 +115,7 @@ QVariant TableModelSupport::data(const QModelIndex& index, int role) const
     case TableEnumSupport::kState:
         return *trans_shadow->state ? *trans_shadow->state : QVariant();
     case TableEnumSupport::kDocument:
-        return trans_shadow->document->isEmpty() ? QVariant() : QString::number(trans_shadow->document->size());
+        return trans_shadow->document->isEmpty() ? QVariant() : trans_shadow->document->size();
     default:
         return QVariant();
     }
