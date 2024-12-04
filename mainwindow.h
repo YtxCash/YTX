@@ -68,12 +68,14 @@ public:
 
     bool OpenFile(CString& file_path);
 
+public slots:
+    void on_actionInsert_triggered();
+
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
 private slots:
-    void on_actionInsert_triggered();
     void on_actionRemove_triggered();
     void on_actionAppend_triggered();
     void on_actionEdit_triggered();

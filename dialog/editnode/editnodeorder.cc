@@ -46,7 +46,7 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     connect(shortcut, &QShortcut::activated, parent, [parent]() {
         auto* main_window { qobject_cast<MainWindow*>(parent) };
         if (main_window) {
-            main_window->RInsertTriggered();
+            main_window->on_actionInsert_triggered();
         }
     });
 #endif
