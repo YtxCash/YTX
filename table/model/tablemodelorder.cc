@@ -112,8 +112,6 @@ QVariant TableModelOrder::data(const QModelIndex& index, int role) const
         return *trans_shadow->description;
     case TableEnumOrder::kColor:
         return *trans_shadow->rhs_node == 0 ? QVariant() : product_tree_->Color(*trans_shadow->rhs_node);
-    case TableEnumOrder::kLhsNode:
-        return *trans_shadow->lhs_node;
     case TableEnumOrder::kFirst:
         return *trans_shadow->lhs_debit == 0 ? QVariant() : *trans_shadow->lhs_debit;
     case TableEnumOrder::kAmount:
