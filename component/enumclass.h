@@ -147,6 +147,7 @@ enum class TreeEnumSearch {
     kEmployee,
     kDateTime,
     kColor,
+    kDocument,
     kFirst,
     kSecond,
     kDiscount,

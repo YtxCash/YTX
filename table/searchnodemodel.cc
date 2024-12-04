@@ -72,6 +72,8 @@ QVariant SearchNodeModel::data(const QModelIndex& index, int role) const
         return node->date_time;
     case TreeEnumSearch::kColor:
         return node->color;
+    case TreeEnumSearch::kDocument:
+        return node->document.isEmpty() ? QVariant() : node->document.size();
     case TreeEnumSearch::kFirst:
         return node->first == 0 ? QVariant() : node->first;
     case TreeEnumSearch::kSecond:
@@ -128,6 +130,8 @@ void SearchNodeModel::sort(int column, Qt::SortOrder order)
             return (order == Qt::AscendingOrder) ? (lhs->date_time < rhs->date_time) : (lhs->date_time > rhs->date_time);
         case TreeEnumSearch::kColor:
             return (order == Qt::AscendingOrder) ? (lhs->color < rhs->color) : (lhs->color > rhs->color);
+        case TreeEnumSearch::kDocument:
+            return (order == Qt::AscendingOrder) ? (lhs->document.size() < rhs->document.size()) : (lhs->document.size() > rhs->document.size());
         case TreeEnumSearch::kFirst:
             return (order == Qt::AscendingOrder) ? (lhs->first < rhs->first) : (lhs->first > rhs->first);
         case TreeEnumSearch::kSecond:
