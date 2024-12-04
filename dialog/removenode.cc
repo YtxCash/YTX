@@ -19,14 +19,13 @@ RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int node
     SignalBlocker blocker(this);
 
     IniData(section, exteral_reference, node_type);
-    IniConnect();
 }
 
 RemoveNode::~RemoveNode() { delete ui; }
 
 void RemoveNode::DisableRemove() { }
 
-void RemoveNode::RCustomAccept()
+void RemoveNode::on_pBtnOk_clicked()
 {
     QMessageBox msg(this);
     msg.setIcon(QMessageBox::Question);
@@ -93,11 +92,4 @@ void RemoveNode::IniData(Section section, bool exteral_reference, int node_type)
     }
 
     ui->comboBox->setModel(combo_model_);
-}
-
-void RemoveNode::IniConnect()
-{
-    connect(ui->pBtnOk, &QPushButton::clicked, this, &RemoveNode::RCustomAccept);
-    connect(ui->pBtnCancel, &QPushButton::clicked, this, &QDialog::reject);
-    connect(ui->rBtnReplaceRecords, &QRadioButton::toggled, ui->comboBox, &QComboBox::setEnabled);
 }

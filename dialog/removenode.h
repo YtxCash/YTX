@@ -41,16 +41,15 @@ signals:
     void SReplaceNode(int old_node_id, int new_node_id, int node_type);
 
 private slots:
-    void RCustomAccept();
+    void on_pBtnOk_clicked();
 
 private:
-    Ui::RemoveNode* ui;
     void IniData(Section section, bool exteral_reference, int node_type);
-    void IniConnect();
-
     void DisableRemove();
 
 private:
+    Ui::RemoveNode* ui;
+
     int node_id_ {};
     int unit_ {};
     int node_type_ {};

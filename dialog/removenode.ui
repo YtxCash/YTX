@@ -122,5 +122,38 @@
   <tabstop>pBtnCancel</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pBtnCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>RemoveNode</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>599</x>
+     <y>363</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>530</x>
+     <y>350</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rBtnReplaceRecords</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>comboBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>57</x>
+     <y>100</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>119</x>
+     <y>96</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

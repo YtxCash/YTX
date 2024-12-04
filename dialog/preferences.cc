@@ -57,11 +57,7 @@ void Preferences::IniDialog(QStandardItemModel* unit_model)
 
 void Preferences::IniCombo(QComboBox* combo, CStringList& list) { combo->addItems(list); }
 
-void Preferences::IniConnect()
-{
-    connect(ui->listWidget, &QListWidget::currentRowChanged, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
-    connect(ui->pBtnOk, &QPushButton::clicked, this, &Preferences::on_pBtnApply_clicked);
-}
+void Preferences::IniConnect() { connect(ui->pBtnOk, &QPushButton::clicked, this, &Preferences::on_pBtnApply_clicked); }
 
 void Preferences::IniData()
 {

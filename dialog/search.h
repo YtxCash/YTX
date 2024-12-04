@@ -39,8 +39,8 @@ public:
     ~Search();
 
 signals:
-    void STreeLocation(int node_id);
-    void STableLocation(int trans_id, int lhs_node_id, int rhs_node_id);
+    void SNodeLocation(int node_id);
+    void STransLocation(int trans_id, int lhs_node_id, int rhs_node_id);
 
 public slots:
     void RSearch();

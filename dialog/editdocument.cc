@@ -19,7 +19,6 @@ EditDocument::EditDocument(Section section, QStringList* document, CString& docu
     SignalBlocker blocker(this);
 
     CreateList(document_);
-    IniConnect();
 }
 
 EditDocument::~EditDocument()
@@ -53,7 +52,7 @@ void EditDocument::on_pBtnRemove_clicked()
     list_model_->removeRow(index.row(), QModelIndex());
 }
 
-void EditDocument::RCustomAccept() { *document_ = list_model_->stringList(); }
+void EditDocument::on_pBtnOk_clicked() { *document_ = list_model_->stringList(); }
 
 void EditDocument::on_listView_doubleClicked(const QModelIndex& index)
 {
@@ -77,5 +76,3 @@ void EditDocument::CreateList(QStringList* document)
     list_model_->setStringList(*document);
     ui->listView->setModel(list_model_);
 }
-
-void EditDocument::IniConnect() { connect(ui->pBtnOk, &QPushButton::clicked, this, &EditDocument::RCustomAccept); }

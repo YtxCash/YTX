@@ -40,12 +40,11 @@ public:
 private slots:
     void on_pBtnAdd_clicked();
     void on_pBtnRemove_clicked();
-    void RCustomAccept();
+    void on_pBtnOk_clicked();
     void on_listView_doubleClicked(const QModelIndex& index);
 
 private:
     void CreateList(QStringList* document);
-    void IniConnect();
 
 private:
     Ui::EditDocument* ui;

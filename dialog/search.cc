@@ -49,13 +49,12 @@ void Search::IniDialog()
 {
     ui->rBtnNode->setChecked(true);
     ui->stackedWidget->setCurrentIndex(0);
-    ui->pBtnCancel->setAutoDefault(false);
+    ui->pBtnClose->setAutoDefault(false);
     this->setWindowTitle(tr("Search"));
 }
 
 void Search::IniConnect()
 {
-    connect(ui->pBtnCancel, &QPushButton::clicked, this, &Search::close);
     connect(ui->lineEdit, &QLineEdit::returnPressed, this, &Search::RSearch);
     connect(ui->searchViewNode, &QTableView::doubleClicked, this, &Search::RDoubleClicked);
     connect(ui->searchViewTrans, &QTableView::doubleClicked, this, &Search::RDoubleClicked);
@@ -269,7 +268,7 @@ void Search::RDoubleClicked(const QModelIndex& index)
 {
     if (ui->rBtnNode->isChecked()) {
         int node_id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
-        emit STreeLocation(node_id);
+        emit SNodeLocation(node_id);
     }
 
     if (ui->rBtnTrans->isChecked()) {
@@ -280,12 +279,12 @@ void Search::RDoubleClicked(const QModelIndex& index)
 
         switch (info_.section) {
         case Section::kStakeholder:
-            emit STableLocation(trans_id, node_id, 0);
+            emit STransLocation(trans_id, node_id, 0);
             break;
         case Section::kFinance:
         case Section::kProduct:
         case Section::kTask:
-            emit STableLocation(trans_id, lhs_node_id, rhs_node_id);
+            emit STransLocation(trans_id, lhs_node_id, rhs_node_id);
             break;
         default:
             break;

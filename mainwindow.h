@@ -73,38 +73,21 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 private slots:
-    void RInsertTriggered();
-    void RRemoveTriggered();
-    void RAppendTriggered();
-    void RJumpTriggered();
-    void RSupportJumpTriggered();
-    void RAboutTriggered();
-    void RPreferencesTriggered();
-    void RSearchTriggered();
-    void RClearMenuTriggered();
-    void RNewTriggered();
-    void ROpenTriggered();
-
-    void RTreeLocation(int node_id);
-    void RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id);
-
-    void REditNode();
-    void REditDocument();
-
-    void RUpdateSettings(CSettings& settings, CInterface& interface);
-
-    void RUpdateParty(int node_id, int party_id);
-    void RUpdateName(int node_id, CString& name, bool branch);
-
-    void RTabCloseRequested(int index);
-    void RFreeView(int node_id);
-
-    void RTreeViewCustomContextMenuRequested(const QPoint& pos);
-
-    void RTabBarDoubleClicked(int index);
-    void RTreeViewDoubleClicked(const QModelIndex& index);
-
-    void RUpdateState();
+    void on_actionInsert_triggered();
+    void on_actionRemove_triggered();
+    void on_actionAppend_triggered();
+    void on_actionEdit_triggered();
+    void on_actionJump_triggered();
+    void on_actionSupportJump_triggered();
+    void on_actionAbout_triggered();
+    void on_actionPreferences_triggered();
+    void on_actionSearch_triggered();
+    void on_actionClearMenu_triggered();
+    void on_actionNew_triggered();
+    void on_actionOpen_triggered();
+    void on_tabWidget_currentChanged(int index);
+    void on_tabWidget_tabBarDoubleClicked(int index);
+    void on_tabWidget_tabCloseRequested(int index);
 
     void on_rBtnFinance_toggled(bool checked);
     void on_rBtnSales_toggled(bool checked);
@@ -113,7 +96,19 @@ private slots:
     void on_rBtnProduct_toggled(bool checked);
     void on_rBtnPurchase_toggled(bool checked);
 
-    void on_tabWidget_currentChanged(int index);
+    void RNodeLocation(int node_id);
+    void RTransLocation(int trans_id, int lhs_node_id, int rhs_node_id);
+
+    void RUpdateSettings(CSettings& settings, CInterface& interface);
+    void RUpdateParty(int node_id, int party_id);
+    void RUpdateName(int node_id, CString& name, bool branch);
+    void RUpdateState();
+
+    void RFreeView(int node_id);
+    void REditDocument();
+
+    void RTreeViewCustomContextMenuRequested(const QPoint& pos);
+    void RTreeViewDoubleClicked(const QModelIndex& index);
 
 private:
     void SetHeader();

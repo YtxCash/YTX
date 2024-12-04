@@ -246,7 +246,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 
 void MainWindow::dropEvent(QDropEvent* event) { OpenFile(event->mimeData()->urls().at(0).toLocalFile()); }
 
-void MainWindow::RInsertTriggered()
+void MainWindow::on_actionInsert_triggered()
 {
     auto* active_window { QApplication::activeWindow() };
     if (active_window && MainWindowUtils::IsEditNodeOrder(active_window)) {
@@ -878,7 +878,7 @@ void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, in
         InsertNodeFPTS(node, parent, parent_id, row);
 }
 
-void MainWindow::RRemoveTriggered()
+void MainWindow::on_actionRemove_triggered()
 {
     auto* widget { ui->tabWidget->currentWidget() };
     if (!widget)
@@ -1125,7 +1125,7 @@ void MainWindow::RemoveBranch(PTreeModel tree_model, const QModelIndex& index, i
         tree_model->RemoveNode(index.row(), index.parent());
 }
 
-void MainWindow::RTabCloseRequested(int index)
+void MainWindow::on_tabWidget_tabCloseRequested(int index)
 {
     if (index == 0)
         return;
@@ -1258,23 +1258,6 @@ void MainWindow::DelegateSupport(PQTableView table_view, PTreeModel tree_model, 
 
 void MainWindow::SetConnect() const
 {
-    connect(ui->actionInsert, &QAction::triggered, this, &MainWindow::RInsertTriggered);
-    connect(ui->actionRemove, &QAction::triggered, this, &MainWindow::RRemoveTriggered);
-    connect(ui->actionAppend, &QAction::triggered, this, &MainWindow::RAppendTriggered);
-    connect(ui->actionJump, &QAction::triggered, this, &MainWindow::RJumpTriggered);
-    connect(ui->actionSupportJump, &QAction::triggered, this, &MainWindow::RSupportJumpTriggered);
-    connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::RSearchTriggered);
-    connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::RPreferencesTriggered);
-    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::RAboutTriggered);
-    connect(ui->actionNew, &QAction::triggered, this, &MainWindow::RNewTriggered);
-    connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::ROpenTriggered);
-    connect(ui->actionClearMenu, &QAction::triggered, this, &MainWindow::RClearMenuTriggered);
-
-    connect(ui->actionEdit, &QAction::triggered, this, &MainWindow::REditNode);
-
-    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::RTabCloseRequested);
-    connect(ui->tabWidget, &QTabWidget::tabBarDoubleClicked, this, &MainWindow::RTabBarDoubleClicked);
-
     connect(ui->actionCheckAll, &QAction::triggered, this, &MainWindow::RUpdateState);
     connect(ui->actionCheckNone, &QAction::triggered, this, &MainWindow::RUpdateState);
     connect(ui->actionCheckReverse, &QAction::triggered, this, &MainWindow::RUpdateState);
@@ -1620,7 +1603,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
     header->setDefaultAlignment(Qt::AlignCenter);
 }
 
-void MainWindow::RAppendTriggered()
+void MainWindow::on_actionAppend_triggered()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !MainWindowUtils::IsTreeWidget(current_widget))
@@ -1670,7 +1653,7 @@ template <TableWidgetLike T> void MainWindow::AppendTrans(T* widget)
     }
 }
 
-void MainWindow::RJumpTriggered()
+void MainWindow::on_actionJump_triggered()
 {
     if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
         return;
@@ -1699,7 +1682,7 @@ void MainWindow::RJumpTriggered()
     SwitchTab(rhs_node_id, trans_id);
 }
 
-void MainWindow::RSupportJumpTriggered()
+void MainWindow::on_actionSupportJump_triggered()
 {
     if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
         return;
@@ -1751,7 +1734,7 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
     menu->exec(QCursor::pos());
 }
 
-void MainWindow::REditNode()
+void MainWindow::on_actionEdit_triggered()
 {
     auto section { data_->info.section };
     if (section == Section::kSales || section == Section::kPurchase)
@@ -2297,13 +2280,13 @@ void MainWindow::ResourceFile() const
     QResource::registerResource(path);
 }
 
-void MainWindow::RSearchTriggered()
+void MainWindow::on_actionSearch_triggered()
 {
     auto* dialog { new Search(tree_widget_->Model(), stakeholder_tree_->Model(), product_tree_->Model(), settings_, data_->sql, data_->info, this) };
     dialog->setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
-    connect(dialog, &Search::STreeLocation, this, &MainWindow::RTreeLocation);
-    connect(dialog, &Search::STableLocation, this, &MainWindow::RTableLocation);
+    connect(dialog, &Search::SNodeLocation, this, &MainWindow::RNodeLocation);
+    connect(dialog, &Search::STransLocation, this, &MainWindow::RTransLocation);
     connect(tree_widget_->Model(), &TreeModel::SSearch, dialog, &Search::RSearch);
     connect(dialog, &QDialog::rejected, this, [=, this]() { dialog_list_->removeOne(dialog); });
 
@@ -2311,7 +2294,7 @@ void MainWindow::RSearchTriggered()
     dialog->show();
 }
 
-void MainWindow::RTreeLocation(int node_id)
+void MainWindow::RNodeLocation(int node_id)
 {
     auto* widget { tree_widget_ };
     ui->tabWidget->setCurrentWidget(widget);
@@ -2322,7 +2305,7 @@ void MainWindow::RTreeLocation(int node_id)
     widget->View()->setCurrentIndex(index);
 }
 
-void MainWindow::RTableLocation(int trans_id, int lhs_node_id, int rhs_node_id)
+void MainWindow::RTransLocation(int trans_id, int lhs_node_id, int rhs_node_id)
 {
     int id { lhs_node_id };
 
@@ -2355,7 +2338,7 @@ void MainWindow::RUpdateParty(int node_id, int party_id)
     }
 }
 
-void MainWindow::RPreferencesTriggered()
+void MainWindow::on_actionPreferences_triggered()
 {
     auto model { tree_widget_->Model() };
 
@@ -2364,7 +2347,7 @@ void MainWindow::RPreferencesTriggered()
     preference->exec();
 }
 
-void MainWindow::RAboutTriggered()
+void MainWindow::on_actionAbout_triggered()
 {
     static About* dialog = nullptr;
 
@@ -2378,7 +2361,7 @@ void MainWindow::RAboutTriggered()
     dialog->activateWindow();
 }
 
-void MainWindow::RNewTriggered()
+void MainWindow::on_actionNew_triggered()
 {
     QString filter("*.ytx");
     auto file_path { QFileDialog::getSaveFileName(this, tr("New"), QDir::homePath(), filter, nullptr) };
@@ -2392,7 +2375,7 @@ void MainWindow::RNewTriggered()
     OpenFile(file_path);
 }
 
-void MainWindow::ROpenTriggered()
+void MainWindow::on_actionOpen_triggered()
 {
     QString filter("*.ytx");
     auto file_path { QFileDialog::getOpenFileName(this, tr("Open"), QDir::homePath(), filter, nullptr) };
@@ -2413,14 +2396,14 @@ void MainWindow::SetClearMenuAction()
     }
 }
 
-void MainWindow::RClearMenuTriggered()
+void MainWindow::on_actionClearMenu_triggered()
 {
     ui->menuRecent->clear();
     recent_list_.clear();
     UpdateRecent();
 }
 
-void MainWindow::RTabBarDoubleClicked(int index) { RTreeLocation(ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id); }
+void MainWindow::on_tabWidget_tabBarDoubleClicked(int index) { RNodeLocation(ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id); }
 
 void MainWindow::RUpdateState()
 {
