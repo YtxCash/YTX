@@ -34,9 +34,8 @@ inline constexpr bool kRuleIM = 0;
 inline constexpr bool kRuleMS = 1;
 
 // Constants for datetime
-inline constexpr char kDateFormat[] = "date_format";
 inline constexpr char kDateTime[] = "date_time";
-inline constexpr char kDateTimeFST[] = "yyyy-MM-dd hh:mm";
+inline constexpr char kDateTimeFST[] = "yyyy-MM-dd HH:mm";
 inline constexpr char kDateFST[] = "yyyy-MM-dd";
 
 inline constexpr char kFullWidthPeriod[] = u8"。";

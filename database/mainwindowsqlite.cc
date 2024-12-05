@@ -17,7 +17,7 @@ void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
     query.setForwardOnly(true);
 
     auto part = R"(
-    SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, default_unit, document_dir, amount_decimal, common_decimal
+    SELECT static_label, static_node, dynamic_label, dynamic_node_lhs, operation, dynamic_node_rhs, default_unit, document_dir, date_format, amount_decimal, common_decimal
     FROM settings
     WHERE id = :section
 )";
@@ -38,6 +38,7 @@ void MainwindowSqlite::QuerySettings(Settings& settings, Section section)
         settings.dynamic_node_rhs = query.value("dynamic_node_rhs").toInt();
         settings.default_unit = query.value("default_unit").toInt();
         settings.document_dir = query.value("document_dir").toString();
+        settings.date_format = query.value("date_format").toString();
         settings.amount_decimal = query.value("amount_decimal").toInt();
         settings.common_decimal = query.value("common_decimal").toInt();
     }
@@ -49,7 +50,7 @@ void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
     UPDATE settings SET
         static_label = :static_label, static_node = :static_node, dynamic_label = :dynamic_label, dynamic_node_lhs = :dynamic_node_lhs,
         operation = :operation, dynamic_node_rhs = :dynamic_node_rhs, default_unit = :default_unit, document_dir = :document_dir,
-        amount_decimal = :amount_decimal, common_decimal = :common_decimal
+        date_format = :date_format, amount_decimal = :amount_decimal, common_decimal = :common_decimal
     WHERE id = :section
 )";
 
@@ -65,6 +66,7 @@ void MainwindowSqlite::UpdateSettings(CSettings& settings, Section section)
     query.bindValue(":dynamic_node_rhs", settings.dynamic_node_rhs);
     query.bindValue(":default_unit", settings.default_unit);
     query.bindValue(":document_dir", settings.document_dir);
+    query.bindValue(":date_format", settings.date_format);
     query.bindValue(":amount_decimal", settings.amount_decimal);
     query.bindValue(":common_decimal", settings.common_decimal);
 
@@ -116,6 +118,7 @@ void MainwindowSqlite::NewFile(CString& file_path)
         dynamic_node_rhs    INTEGER,
         default_unit        INTEGER,
         document_dir        TEXT,
+        date_format         TEXT       DEFAULT 'yyyy-MM-dd HH:mm',
         amount_decimal      INTEGER    DEFAULT 2,
         common_decimal      INTEGER    DEFAULT 2
     );

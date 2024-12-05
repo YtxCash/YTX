@@ -62,7 +62,7 @@ private slots:
 
     void on_comboTheme_currentIndexChanged(int index);
     void on_comboLanguage_currentIndexChanged(int index);
-    void on_comboDateTime_currentIndexChanged(int index);
+    void on_comboDateFormat_currentIndexChanged(int index);
     void on_comboSeparator_currentIndexChanged(int index);
 
 private:

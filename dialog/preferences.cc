@@ -41,7 +41,7 @@ void Preferences::IniDialog(QStandardItemModel* unit_model)
     ui->pBtnOk->setDefault(true);
     this->setWindowTitle(tr("Preferences"));
 
-    IniCombo(ui->comboDateTime, date_format_list_);
+    IniCombo(ui->comboDateFormat, date_format_list_);
     IniCombo(ui->comboLanguage, language_list_);
     IniCombo(ui->comboSeparator, separator_list_);
     IniCombo(ui->comboTheme, theme_list_);
@@ -64,8 +64,8 @@ void Preferences::IniData()
     IniDataCombo(ui->comboTheme, interface_.theme);
     IniDataCombo(ui->comboLanguage, interface_.language);
     IniDataCombo(ui->comboSeparator, interface_.separator);
-    IniDataCombo(ui->comboDateTime, interface_.date_format);
 
+    IniDataCombo(ui->comboDateFormat, settings_.date_format);
     IniDataCombo(ui->comboDefaultUnit, settings_.default_unit);
     ui->pBtnDocumentDir->setText(settings_.document_dir);
     ui->spinAmountDecimal->setValue(settings_.amount_decimal);
@@ -212,10 +212,10 @@ void Preferences::on_comboLanguage_currentIndexChanged(int index)
     interface_.language = ui->comboLanguage->currentText();
 }
 
-void Preferences::on_comboDateTime_currentIndexChanged(int index)
+void Preferences::on_comboDateFormat_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    interface_.date_format = ui->comboDateTime->currentText();
+    settings_.date_format = ui->comboDateFormat->currentText();
 }
 
 void Preferences::on_comboSeparator_currentIndexChanged(int index)

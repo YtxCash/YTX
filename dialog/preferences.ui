@@ -52,7 +52,7 @@
    <item row="0" column="2">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QGridLayout" name="gridLayout">
@@ -78,7 +78,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Date Time</string>
+          <string>Date Format</string>
          </property>
         </widget>
        </item>
@@ -107,7 +107,7 @@
         </widget>
        </item>
        <item row="2" column="1" rowspan="2">
-        <widget class="ComboBox" name="comboDateTime"/>
+        <widget class="ComboBox" name="comboDateFormat"/>
        </item>
        <item row="0" column="2" colspan="2">
         <spacer name="horizontalSpacer_2">

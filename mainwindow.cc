@@ -373,7 +373,7 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
     case Section::kProduct:
     case Section::kTask:
         TableConnectFPT(view, model, tree_model, data);
-        DelegateFPTS(view);
+        DelegateFPTS(view, settings);
         break;
     case Section::kStakeholder:
         TableConnectStakeholder(view, model, tree_model, data);
@@ -514,9 +514,9 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
     connect(table_model, &TableModel::SAppendSupportTrans, &SignalStation::Instance(), &SignalStation::RAppendSupportTrans);
 }
 
-void MainWindow::DelegateFPTS(PQTableView table_view) const
+void MainWindow::DelegateFPTS(PQTableView table_view, CSettings* settings) const
 {
-    auto* date_time { new TableDateTime(interface_.date_format, table_view) };
+    auto* date_time { new TableDateTime(settings->date_format, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
 
     auto* line { new Line(table_view) };
@@ -620,7 +620,7 @@ void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_mod
     auto* unit_price { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
 
-    auto* date_time { new TableDateTime(interface_.date_format, table_view) };
+    auto* date_time { new TableDateTime(settings_->date_format, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
 
     auto* line { new Line(table_view) };
@@ -757,7 +757,7 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
     auto* color { new Color(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kColor), color);
 
-    auto* date_time { new TreeDateTime(interface_.date_format, tree_view) };
+    auto* date_time { new TreeDateTime(settings.date_format, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kDateTime), date_time);
 
     auto* finished { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
@@ -823,7 +823,7 @@ void MainWindow::DelegateOrder(PQTreeView tree_view, CInfo& info, CSettings& set
     auto* name { new OrderNameR(stakeholder_tree_model, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kName), name);
 
-    auto* date_time { new TreeDateTime(interface_.date_format, tree_view) };
+    auto* date_time { new TreeDateTime(settings.date_format, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumOrder::kDateTime), date_time);
 
     auto* finished { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
@@ -1234,7 +1234,7 @@ void MainWindow::DelegateSupport(PQTableView table_view, PTreeModel tree_model, 
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kCode), line);
 
-    auto* date_time { new TableDateTime(interface_.date_format, table_view) };
+    auto* date_time { new TableDateTime(settings->date_format, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDateTime), date_time);
 
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
@@ -1791,7 +1791,7 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
         dialog = new EditNodeFinance(std::move(params), this);
         break;
     case Section::kTask:
-        dialog = new EditNodeTask(std::move(params), settings_->amount_decimal, interface_.date_format, this);
+        dialog = new EditNodeTask(std::move(params), settings_->amount_decimal, settings_->date_format, this);
         break;
     case Section::kStakeholder:
         params.unit_enable = is_not_referenced && model->ChildrenEmpty(node_id);
@@ -1831,7 +1831,7 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
         break;
     case Section::kTask:
         node->date_time = QDateTime::currentDateTime().toString(kDateTimeFST);
-        dialog = new EditNodeTask(std::move(params), settings_->amount_decimal, interface_.date_format, this);
+        dialog = new EditNodeTask(std::move(params), settings_->amount_decimal, settings_->date_format, this);
         break;
     case Section::kStakeholder:
         node->unit = settings_->default_unit;
@@ -2016,13 +2016,13 @@ void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
     bool resize_column { false };
 
     if (interface_ != interface) {
-        resize_column |= interface_.date_format != interface.date_format;
         UpdateInterface(interface);
     }
 
     if (*settings_ != settings) {
         bool update_default_unit { settings_->default_unit != settings.default_unit };
-        resize_column |= settings_->amount_decimal != settings.amount_decimal || settings_->common_decimal != settings.common_decimal;
+        resize_column |= settings_->amount_decimal != settings.amount_decimal || settings_->common_decimal != settings.common_decimal
+            || settings_->date_format != settings.date_format;
 
         *settings_ = settings;
 
@@ -2088,7 +2088,6 @@ void MainWindow::UpdateInterface(CInterface& interface)
     shared_interface_->beginGroup(kInterface);
     shared_interface_->setValue(kLanguage, interface.language);
     shared_interface_->setValue(kSeparator, interface.separator);
-    shared_interface_->setValue(kDateFormat, interface.date_format);
     shared_interface_->endGroup();
 }
 
@@ -2236,7 +2235,6 @@ void MainWindow::SharedInterface(CString& dir_path)
     shared_interface.beginGroup(kInterface);
     interface_.language = shared_interface.value(kLanguage, language_code).toString();
     interface_.theme = shared_interface.value(kTheme, kSolarizedDark).toString();
-    interface_.date_format = shared_interface.value(kDateFormat, kDateTimeFST).toString();
     interface_.separator = shared_interface.value(kSeparator, kDash).toString();
     shared_interface.endGroup();
 
