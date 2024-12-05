@@ -104,10 +104,6 @@ QRadioButton:hover, QCheckBox:hover, QPushButton:hover, QTabBar::tab:hover {
     color: #2BB3EB;
 }
 
-QTreeView::item:hover, QListView::item:hover {
-    background-color: transparent;
-}
-
 /*--------------------------------------spacing-------------------------------------------------*/
 
 QCheckBox, QRadioButton {
@@ -121,7 +117,7 @@ QToolBar, QMenuBar {
 /*--------------------------------------height-------------------------------------------------*/
 
 QTreeView::item {
-    height: 18px;
+    height: 22px;
 }
 
 /*--------------------------------------min-width-------------------------------------------------*/
