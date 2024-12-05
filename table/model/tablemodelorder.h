@@ -77,7 +77,7 @@ private:
     bool UpdateDiscountPrice(TransShadow* trans_shadow, double value);
     bool UpdateSecond(TransShadow* trans_shadow, double value);
 
-    void SearchPrice(TransShadow* trans_shadow, int product_id, bool is_inside) const;
+    void CrossSearch(TransShadow* trans_shadow, int product_id, bool is_inside) const;
 
 private:
     const TreeModelProduct* product_tree_ {};

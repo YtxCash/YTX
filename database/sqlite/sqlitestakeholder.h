@@ -37,7 +37,7 @@ public slots:
     void RRemoveNode(int node_id, int node_type) override;
 
 public:
-    bool SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const;
+    bool CrossSearch(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const;
     bool UpdatePrice(int party_id, int inside_product_id, CString& date_time, double value);
     bool ReadTrans(int node_id);
 

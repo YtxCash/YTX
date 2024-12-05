@@ -75,7 +75,7 @@ void SqliteStakeholder::RRemoveNode(int node_id, int node_type)
         ResourcePool<Trans>::Instance().Recycle(trans_hash_.take(trans_id));
 }
 
-bool SqliteStakeholder::SearchPrice(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const
+bool SqliteStakeholder::CrossSearch(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const
 {
     for (const auto* trans : trans_hash_) {
         if (is_inside && trans->lhs_node == party_id && trans->rhs_node == product_id) {

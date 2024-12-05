@@ -174,7 +174,7 @@ bool TableModelOrder::setData(const QModelIndex& index, const QVariant& value, i
         dis_changed = UpdateDiscountPrice(trans_shadow, value.toDouble());
         break;
     case TableEnumOrder::kOutsideProduct:
-        UpdateOutsideProduct(trans_shadow, value.toInt());
+        ins_changed = UpdateOutsideProduct(trans_shadow, value.toInt());
         break;
     default:
         return false;
@@ -311,7 +311,7 @@ bool TableModelOrder::UpdateInsideProduct(TransShadow* trans_shadow, int value)
 
     *trans_shadow->rhs_node = value;
 
-    SearchPrice(trans_shadow, value, true);
+    CrossSearch(trans_shadow, value, true);
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kUnitPrice));
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kOutsideProduct));
 
@@ -323,14 +323,20 @@ bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
     if (*trans_shadow->support_id == value)
         return false;
 
+    int old_rhs_node { *trans_shadow->rhs_node };
+
     *trans_shadow->support_id = value;
+    CrossSearch(trans_shadow, value, false);
 
-    SearchPrice(trans_shadow, value, false);
+    if (old_rhs_node) {
+        sql_->UpdateField(info_.transaction, value, kOutsideProduct, *trans_shadow->id);
+    }
 
-    sql_->UpdateField(info_.transaction, value, kOutsideProduct, *trans_shadow->id);
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kUnitPrice));
     emit SResizeColumnToContents(std::to_underlying(TableEnumOrder::kInsideProduct));
-    return true;
+
+    bool ins_changed { *trans_shadow->rhs_node != old_rhs_node };
+    return ins_changed;
 }
 
 bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
@@ -399,12 +405,12 @@ bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
     return true;
 }
 
-void TableModelOrder::SearchPrice(TransShadow* trans_shadow, int product_id, bool is_inside) const
+void TableModelOrder::CrossSearch(TransShadow* trans_shadow, int product_id, bool is_inside) const
 {
     if (!trans_shadow || !sqlite_stakeholder_ || product_id <= 0)
         return;
 
-    if (sqlite_stakeholder_->SearchPrice(trans_shadow, *node_shadow_->party, product_id, is_inside))
+    if (sqlite_stakeholder_->CrossSearch(trans_shadow, *node_shadow_->party, product_id, is_inside))
         return;
 
     *trans_shadow->unit_price = is_inside ? product_tree_->First(product_id) : 0.0;
