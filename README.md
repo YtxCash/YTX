@@ -1,8 +1,5 @@
 # YTX
 
-- [Developer](#developer)
-- [UserGuide](#userguide)
-
 ## Developer
 
 ### Relationship Between Node, Sql Node Table And Enum
@@ -75,7 +72,7 @@ This is a pure Qt project. Only a compatible version of Qt and a compiler are re
 
 ## UserGuide
 
-Welcome! Let me introduce you to YTX, a stand-alone software designed to make life simpler. Inspired by [GnuCash](https://gnucash.org), functioning like a lightweight ERP, though not yet perfect.
+Welcome! Today, I’d like to introduce you to YTX, a stand-alone software designed to simplify your work. Inspired by [GnuCash](https://gnucash.org), functioning like a lightweight ERP, though it’s not yet perfect.
 
 ### Introduction
 
@@ -95,7 +92,7 @@ Welcome! Let me introduce you to YTX, a stand-alone software designed to make li
 ### Actions
 
 1. Preferences
-    - Base Unit: Set the base unit.
+    - Default Unit: Set the default unit.
 2. Node
     - Insert: **`Ctrl + N`**, Append **`Alt + P`**
     - Rules(**R**)

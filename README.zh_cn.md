@@ -1,11 +1,8 @@
 # YTX
 
-- [Developer](#developer)
-- [UserGuide](#userguide)
+## 开发者
 
-## Developer
-
-### Relationship Between Node, Sql Node Table And Enum
+### 节点、数据库和枚举
 
 | Node            |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |  party  | employee  | date_time |  color  |  document   |    first     |   second    | discount  | finished  | initial_total | final_total |
 | --------------- | :-----: | :-----: | :-----: | :----------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-------: | :-------: | :-----: | :---------: | :----------: | :---------: | :-------: | :-------: | :-----------: | :---------: |
@@ -32,7 +29,7 @@
 | sales           |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |  party  | employee  | date_time |    X    |      X      |    first     |   second    | discount  | finished  |    amount     |   settled   |
 | EnumOrder       |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  | kParty  | kEmployee | kDateTime |    X    |      X      |    kFirst    |   kSecond   | kDiscount | kFinished |    kAmount    |  kSettled   |
 
-### Relationship Between Trans, Sql Transaction Table And Enum
+### 交易、数据库和枚举
 
 | Trans           |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  | unit_price |   support_id    | discount_price | settled  |  document   |  state  | rhs_credit | rhs_debit | rhs_ratio |    rhs_node    |
 | --------------- | :-----: | :-------: | :-----: | :------: | :-------: | :-------: | :--------: | :----------: | :--------: | :-------------: | :------------: | :------: | :---------: | :-----: | :--------: | :-------: | :-------: | :------------: |
@@ -59,9 +56,9 @@
 | sales           |   id    |     X     |  code   | lhs_node |     X     |   first   |   second   | description  | unit_price | outside_product | discount_price | settled  |      X      |    X    |   amount   | discount  |     X     | inside_product |
 | EnumOrder       |   kID   |     X     |  kCode  |    X     |     X     |  kFirst   |  kSecond   | kDescription | kUnitPrice | kOutsideProduct | kDiscountPrice | kSettled |      X      |    X    |  kAmount   | kDiscount |     X     | kInsideProduct |
 
-### Build Requirements
+### 构建
 
-This is a pure Qt project. Only a compatible version of Qt and a compiler are required.
+这是一个纯 Qt 项目，只需要安装 Qt（部分组件）、CMake、和一个适应的 C++ 编译器就好。
 
 - Qt: 6.5+
     1. Desktop
@@ -73,67 +70,67 @@ This is a pure Qt project. Only a compatible version of Qt and a compiler are re
 - CMake: 3.19+
 - Compiler: GCC 12+ or LLVM/Clang 14+
 
-## UserGuide
+## 用户引导
 
-Welcome! Let me introduce you to YTX, a stand-alone software designed to make life simpler. Inspired by [GnuCash](https://gnucash.org), functioning like a lightweight ERP, though not yet perfect.
+欢迎！今天向您介绍 YTX，一款旨在简化工作的单机软件；它的灵感来自 [GnuCash](https://gnucash.org)，类似于一个轻量级的ERP，虽然还不是很完美。
 
-### Introduction
+### 介绍
 
-1. Most features are unavailable until the database is opened.
-2. Files
-    - New: **`Ctrl + Alt+ N`**
-    - Open
-        1. Drag and drop
-        2. Double-click
-        3. Open from recent files
-        4. Shortcut: **`Ctrl + O`**
-3. File Lock: A lock file with a .lock extension is created alongside your database file to prevent it from being opened by multiple instances simultaneously, ensuring data integrity.
-4. Configuration Directory
-    - Mac: `/home/.config/YTX/` (Show hidden folders: **`cmd + shift + .`**)
+1. 在打开数据库之前，大多数功能无法使用；因为有一些配置是放在数据库里的。
+2. 文件
+    - 新建: **`Ctrl + Alt+ N`**
+    - 打开
+        1. 拖动
+        2. 双击
+        3. 最近记录
+        4. 快捷键: **`Ctrl + O`**
+3. 文件锁: 为了确保数据完整性，会在您的数据库文件旁创建一个带有 .lock 扩展名的锁文件，以防止数据库被多个实例同时打开。
+4. 配置目录
+    - Mac: `/home/.config/YTX/` (显示隐藏文件夹: **`cmd + shift + .`**)
     - Win: `\usr\AppData\Local\YTX`
 
-### Actions
+### 操作
 
-1. Preferences
-    - Base Unit: Set the base unit.
-2. Node
-    - Insert: **`Ctrl + N`**, Append **`Alt + P`**
-    - Rules(**R**)
-        1. Define how balances are calculated in the transaction table. New nodes inherit rules from their parent nodes by default.
-        2. When properly configured, the total of all nodes is typically positive.
-        3. Two common rules:
-            - **DICD**: _Debit Increase, Credit Decrease_. Used for assets and expenses, calculated as "left side minus right side".
-            - **DDCI**: _Debit Decrease, Credit Increase_. Used for liabilities, income, and owner’s equity, calculated as "right side minus left side".
-    - Type
-        1. **B**: Branch nodes (grouping nodes; cannot record transactions).
-        2. **L**: Leaf nodes (used to record transactions).
-        3. **S**: Support nodes (easy viewing; no transactions; supports specific actions).
-    - Unit(**U**)
-        - A node inherits its parent node’s unit by default.
-3. Transaction
-    - Reference date and related node.
-    - Date
-        1. By default, the time is displayed and stored in the database with second-level precision.
-        2. Shortcut keys (for English input method):
-            - T: Now
-            - J: Yesterday
-            - K: Tomorrow
-            - H: End of last month
-            - L: First of next month
-            - W: Last week
-            - B: Next week
-            - E: Last year
-            - N: next year
-    - Ratio: Represents the conversion rate between the node’s unit and the base unit (e.g., 1 USD = 7.2 RMB).
-    - Document(**D**)
-        1. No restrictions on type and quantity.
-        2. Local only, but files can be backed up via cloud services like Dropbox or Google Drive.
-    - Status(**S**)
-        1. Used for reconciliation (sort by date, then reconcile).
-    - Related Node
-        1. If no related node is specified, the row will not be saved when the table is closed.
-    - Debit, Credit, Balance
-        1. Display values in the node’s current unit, where the base unit value = ratio × node value.
-4. Status bar
-    - The middle section shows the node’s total value in the current unit.
-    - The right section shows the result of operations between two nodes.
+1. 首先项
+    - 默认单位: 设置新建节点时的默认单位。
+2. 节点
+    - 插入: **`Ctrl + N`**, 追加 **`Alt + P`**
+    - 规则(**R**)
+        1. 定义如何在交易表中计算余额；新节点默认继承其父节点的规则。
+        2. 在正确配置的情况下，所有节点的总和趋向于正数。
+        3. 二种规则
+            - **DICD**: 借方增加，贷方减少；用于资产和费用，计算方式为“左侧减右侧”。
+            - **DDCI**: 借方减少，贷方增加；用于负债、收入和所有者权益，计算方式为“右侧减左侧”。
+    - 类型
+        1. **B**: 枝节点（分组节点；无法记录交易）。
+        2. **L**: 叶节点（用于记录交易）。
+        3. **S**: 辅助节点（便于查看；无法记录交易；支持简单的几个操作）
+    - 单位(**U**)
+        - 节点默认继承其父节点的单位。
+3. 交易
+    - 可以引用日期和关联节点。
+    - 日期
+        1. 默认情况下，时间以秒级精度显示并在数据库中存储
+        2. 快捷键 (英文输入法):
+            - T: 现在
+            - J: 昨天
+            - K: 明天
+            - H: 上月底
+            - L: 下月初
+            - W: 上周
+            - B: 下周
+            - E: 去年
+            - N: 明年
+    - 比率: 表示节点单位与基准单位之间的换算率（例如，1 USD = 7.2 RMB）
+    - 文档(**D**)
+        1. 不限制类型和数量。
+        2. 仅限本地，但文档可以通过 Dropbox 或 Google Drive 等云服务备份。
+    - 状态(**S**)
+        1. 用于对账（比如按日期排序后对账）。
+    - 关联节点
+        1. 如果未指定关联节点，则在关闭页面时该行将不会被保存。
+    - 借方、贷方、余额
+        1. 以节点当前单位显示值，其中基准单位值 = 比率 × 节点值。
+4. 状态栏
+    - 中间部分显示节点在当前单位下的总值。
+    - 右侧部分显示两个节点之间操作的结果。
