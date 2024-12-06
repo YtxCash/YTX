@@ -149,7 +149,7 @@ private:
     void UpdateLastTab() const;
 
     void SetDelegate(PQTreeView tree_view, CInfo& info, CSettings& settings) const;
-    void DelegateCommon(PQTreeView tree_view, CInfo& info) const;
+    void DelegateFPTSO(PQTreeView tree_view, CInfo& info) const;
     void DelegateFinance(PQTreeView tree_view, CInfo& info, CSettings& settings) const;
     void DelegateTask(PQTreeView tree_view, CSettings& settings) const;
     void DelegateProduct(PQTreeView tree_view, CSettings& settings) const;

@@ -605,12 +605,11 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
     RestoreTab(model, table_hash, data, settings, kView);
 
     SetView(view);
-    // view->setColumnHidden(1, true);
 }
 
 void MainWindow::SetDelegate(PQTreeView tree_view, CInfo& info, CSettings& settings) const
 {
-    DelegateCommon(tree_view, info);
+    DelegateFPTSO(tree_view, info);
 
     switch (info.section) {
     case Section::kFinance:
@@ -634,7 +633,7 @@ void MainWindow::SetDelegate(PQTreeView tree_view, CInfo& info, CSettings& setti
     }
 }
 
-void MainWindow::DelegateCommon(PQTreeView tree_view, CInfo& info) const
+void MainWindow::DelegateFPTSO(PQTreeView tree_view, CInfo& info) const
 {
     auto* line { new Line(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnum::kCode), line);
