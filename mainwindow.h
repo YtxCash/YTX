@@ -131,11 +131,9 @@ private:
     void CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id);
     void CreateTableSupport(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id);
     void CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id);
-    void DelegateFPTS(PQTableView table_view, CSettings* settings) const;
-    void DelegateFinance(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
-    void DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
-    void DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
-    void DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const;
+    void DelegateFPTS(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const;
+    void DelegateFPT(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const;
+    void DelegateStakeholder(PQTableView table_view) const;
     void DelegateOrder(PQTableView table_view, CSettings* settings) const;
     void SetView(PQTableView table_view) const;
 

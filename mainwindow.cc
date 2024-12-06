@@ -373,7 +373,6 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
     case Section::kProduct:
     case Section::kTask:
         TableConnectFPT(view, model, tree_model, data);
-        DelegateFPTS(view, settings);
         break;
     case Section::kStakeholder:
         TableConnectStakeholder(view, model, tree_model, data);
@@ -382,18 +381,16 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
         break;
     }
 
+    DelegateFPTS(view, tree_model, settings);
+
     switch (section) {
     case Section::kFinance:
-        DelegateFinance(view, tree_model, settings, node_id);
-        break;
     case Section::kProduct:
-        DelegateProduct(view, tree_model, settings, node_id);
-        break;
     case Section::kTask:
-        DelegateTask(view, tree_model, settings, node_id);
+        DelegateFPT(view, tree_model, settings, node_id);
         break;
     case Section::kStakeholder:
-        DelegateStakeholder(view, tree_model, settings);
+        DelegateStakeholder(view);
         break;
     default:
         break;
@@ -514,7 +511,7 @@ void MainWindow::TableConnectStakeholder(PQTableView table_view, PTableModel tab
     connect(table_model, &TableModel::SAppendSupportTrans, &SignalStation::Instance(), &SignalStation::RAppendSupportTrans);
 }
 
-void MainWindow::DelegateFPTS(PQTableView table_view, CSettings* settings) const
+void MainWindow::DelegateFPTS(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
 {
     auto* date_time { new TableDateTime(settings->date_format, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDateTime), date_time);
@@ -522,120 +519,42 @@ void MainWindow::DelegateFPTS(PQTableView table_view, CSettings* settings) const
     auto* line { new Line(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDescription), line);
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kCode), line);
+
+    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
+
+    auto* document { new TableDbClick(table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
+    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
+
+    auto* lhs_ratio { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), lhs_ratio);
+
+    auto* support_node { new SupportID(tree_model, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kSupportID), support_node);
 }
 
-void MainWindow::DelegateFinance(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
+void MainWindow::DelegateFPT(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
 {
+    auto* value { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDebit), value);
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kCredit), value);
+
+    auto* subtotal { new DoubleSpinR(settings->common_decimal, false, table_view) };
+    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSubtotal), subtotal);
+
     auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
     filter_model->setSourceModel(tree_model->LeafModel());
 
     auto* node { new TableCombo(tree_model, filter_model, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kRhsNode), node);
-
-    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kState), state);
-
-    auto* document { new TableDbClick(table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
-
-    auto* amount { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kDebit), amount);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kCredit), amount);
-
-    auto* fx_rate { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kLhsRatio), fx_rate);
-
-    auto* subtotal { new DoubleSpinR(settings->amount_decimal, false, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSubtotal), subtotal);
-
-    auto* support_node { new SupportID(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumFinance::kSupportID), support_node);
 }
 
-void MainWindow::DelegateTask(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
-{
-    auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
-    filter_model->setSourceModel(tree_model->LeafModel());
-
-    auto* node { new TableCombo(tree_model, filter_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kRhsNode), node);
-
-    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kState), state);
-
-    auto* document { new TableDbClick(table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
-
-    auto* quantity { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kDebit), quantity);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kCredit), quantity);
-
-    auto* unit_cost { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kUnitCost), unit_cost);
-
-    auto* subtotal { new DoubleSpinR(settings->common_decimal, false, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSubtotal), subtotal);
-
-    auto* support_node { new SupportID(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumTask::kSupportID), support_node);
-}
-
-void MainWindow::DelegateProduct(PQTableView table_view, PTreeModel tree_model, CSettings* settings, int node_id) const
-{
-    auto* support_node { new SupportID(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kSupportID), support_node);
-
-    auto* filter_model { new SortFilterProxyModel(node_id, table_view) };
-    filter_model->setSourceModel(tree_model->LeafModel());
-
-    auto* node { new TableCombo(tree_model, filter_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kRhsNode), node);
-
-    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kState), state);
-
-    auto* document { new TableDbClick(table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
-
-    auto* quantity { new DoubleSpin(settings->common_decimal, kDoubleMin, kDoubleMax, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kDebit), quantity);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kCredit), quantity);
-
-    auto* unit_cost { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kUnitCost), unit_cost);
-
-    auto* subtotal { new DoubleSpinR(settings->common_decimal, false, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumProduct::kSubtotal), subtotal);
-}
-
-void MainWindow::DelegateStakeholder(PQTableView table_view, PTreeModel tree_model, CSettings* settings) const
+void MainWindow::DelegateStakeholder(PQTableView table_view) const
 {
     auto* product_tree_model { product_tree_->Model().data() };
     auto* inside_product { new SpecificUnit(product_tree_model, product_tree_model->UnitModelPS(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kInsideProduct), inside_product);
-
-    auto* unit_price { new DoubleSpin(settings->amount_decimal, kDoubleMin, kDoubleMax, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kUnitPrice), unit_price);
-
-    auto* date_time { new TableDateTime(settings_->date_format, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDateTime), date_time);
-
-    auto* line { new Line(table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDescription), line);
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kCode), line);
-
-    auto* document { new TableDbClick(table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
-
-    auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kState), state);
-
-    auto* support_node { new SupportID(tree_model, table_view) };
-    table_view->setItemDelegateForColumn(std::to_underlying(TableEnumStakeholder::kOutsideProduct), support_node);
 }
 
 void MainWindow::DelegateOrder(PQTableView table_view, CSettings* settings) const
