@@ -77,18 +77,31 @@ void SqliteStakeholder::RRemoveNode(int node_id, int node_type)
 
 bool SqliteStakeholder::CrossSearch(TransShadow* order_trans_shadow, int party_id, int product_id, bool is_inside) const
 {
+    const Trans* latest_trans { nullptr };
+
     for (const auto* trans : trans_hash_) {
         if (is_inside && trans->lhs_node == party_id && trans->rhs_node == product_id) {
-            *order_trans_shadow->unit_price = trans->unit_price;
-            *order_trans_shadow->support_id = trans->support_id;
-            return true;
+            if (!latest_trans || trans->date_time > latest_trans->date_time) {
+                latest_trans = trans;
+            }
         }
 
         if (!is_inside && trans->lhs_node == party_id && trans->support_id == product_id) {
-            *order_trans_shadow->unit_price = trans->unit_price;
-            *order_trans_shadow->rhs_node = trans->rhs_node;
-            return true;
+            if (!latest_trans || trans->date_time > latest_trans->date_time) {
+                latest_trans = trans;
+            }
         }
+    }
+
+    if (latest_trans) {
+        *order_trans_shadow->unit_price = latest_trans->unit_price;
+
+        if (is_inside) {
+            *order_trans_shadow->support_id = latest_trans->support_id;
+        } else {
+            *order_trans_shadow->rhs_node = latest_trans->rhs_node;
+        }
+        return true;
     }
 
     return false;
@@ -98,14 +111,22 @@ bool SqliteStakeholder::UpdatePrice(int party_id, int inside_product_id, CString
 {
     // update unit_price
     const auto& const_trans_hash { std::as_const(trans_hash_) };
+    Trans* latest_trans { nullptr };
 
-    for (auto* trans : const_trans_hash)
+    for (auto* trans : const_trans_hash) {
         if (trans->lhs_node == party_id && trans->rhs_node == inside_product_id) {
-            trans->unit_price = value;
-            trans->date_time = date_time;
-            UpdateDateTimePrice(date_time, value, trans->id);
-            return true;
+            if (!latest_trans || trans->date_time > latest_trans->date_time) {
+                latest_trans = trans;
+            }
         }
+    }
+
+    if (latest_trans) {
+        latest_trans->unit_price = value;
+        latest_trans->date_time = date_time;
+        UpdateDateTimePrice(date_time, value, latest_trans->id);
+        return true;
+    }
 
     // append unit_price in TableModelStakeholder
     auto* trans { ResourcePool<Trans>::Instance().Allocate() };
