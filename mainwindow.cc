@@ -1475,8 +1475,8 @@ void MainWindow::SetHeader()
 
     sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Party"),
         tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled"), {} };
-    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("OutsideProduct"), tr("Code"), tr("Description"), tr("Color"), tr("UnitPrice"),
-        tr("First"), tr("Second"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled") };
+    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("OutsideProduct"), tr("Code"), tr("Description"), tr("Color"), tr("First"),
+        tr("Second"), tr("UnitPrice"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled") };
     sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
         tr("LhsNode"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };
     sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Party"),
