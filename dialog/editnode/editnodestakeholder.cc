@@ -2,7 +2,7 @@
 
 #include "component/constvalue.h"
 #include "component/enumclass.h"
-#include "dialog/signalblocker.h"
+#include "component/signalblocker.h"
 #include "ui_editnodestakeholder.h"
 
 EditNodeStakeholder::EditNodeStakeholder(CEditNodeParamsFPTS& params, QStandardItemModel* employee_model, int amount_decimal, QWidget* parent)

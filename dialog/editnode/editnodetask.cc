@@ -4,7 +4,7 @@
 
 #include "component/constvalue.h"
 #include "component/enumclass.h"
-#include "dialog/signalblocker.h"
+#include "component/signalblocker.h"
 #include "ui_editnodetask.h"
 
 EditNodeTask::EditNodeTask(CEditNodeParamsFPTS& params, int amount_decimal, CString& display_format, QWidget* parent)

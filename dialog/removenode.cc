@@ -3,7 +3,7 @@
 #include <QCompleter>
 #include <QMessageBox>
 
-#include "dialog/signalblocker.h"
+#include "component/signalblocker.h"
 #include "ui_removenode.h"
 
 RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int node_type, int unit, bool exteral_reference, QWidget* parent)

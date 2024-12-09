@@ -2,7 +2,7 @@
 
 ## Developer
 
-### Relationship Between Node, Sql Node Table And Enum
+### Relationship Between Node, Sqlite3 And Enum
 
 | Node            |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |  party  | employee  | date_time |  color  |  document   |    first     |   second    | discount  | finished  | initial_total | final_total |
 | --------------- | :-----: | :-----: | :-----: | :----------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-------: | :-------: | :-----: | :---------: | :----------: | :---------: | :-------: | :-------: | :-----------: | :---------: |
@@ -29,7 +29,7 @@
 | sales           |  name   |   id    |  code   | description  |  note   |  rule   |  type   |  unit   |  party  | employee  | date_time |    X    |      X      |    first     |   second    | discount  | finished  |    amount     |   settled   |
 | EnumOrder       |  kName  |   kID   |  kCode  | kDescription |  kNote  |  kRule  |  kType  |  kUnit  | kParty  | kEmployee | kDateTime |    X    |      X      |    kFirst    |   kSecond   | kDiscount | kFinished |    kAmount    |  kSettled   |
 
-### Relationship Between Trans, Sql Transaction Table And Enum
+### Relationship Between Trans, Sqlite3 And Enum
 
 | Trans           |   id    | date_time |  code   | lhs_node | lhs_ratio | lhs_debit | lhs_credit | description  | unit_price |   support_id    | discount_price | settled  |  document   |  state  | rhs_credit | rhs_debit | rhs_ratio |    rhs_node    |
 | --------------- | :-----: | :-------: | :-----: | :------: | :-------: | :-------: | :--------: | :----------: | :--------: | :-------------: | :------------: | :------: | :---------: | :-----: | :--------: | :-------: | :-------: | :------------: |

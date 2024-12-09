@@ -3,13 +3,13 @@
 #include <QHeaderView>
 
 #include "component/enumclass.h"
+#include "component/signalblocker.h"
 #include "delegate/readonly/checkboxr.h"
 #include "delegate/readonly/colorr.h"
 #include "delegate/readonly/doublespinr.h"
 #include "delegate/readonly/stringmapr.h"
 #include "delegate/search/searchpathtabler.h"
 #include "delegate/search/searchpathtreer.h"
-#include "dialog/signalblocker.h"
 #include "ui_search.h"
 
 Search::Search(CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* product_tree, CSettings* settings, Sqlite* sql, CInfo& info, QWidget* parent)

@@ -4,7 +4,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-#include "dialog/signalblocker.h"
+#include "component/signalblocker.h"
 #include "ui_editdocument.h"
 
 EditDocument::EditDocument(Section section, QStringList* document, CString& document_dir, QWidget* parent)

@@ -16,6 +16,7 @@
 #include "component/classparams.h"
 #include "component/constvalue.h"
 #include "component/enumclass.h"
+#include "component/signalblocker.h"
 #include "database/sqlite/sqlitefinance.h"
 #include "database/sqlite/sqliteorder.h"
 #include "database/sqlite/sqliteproduct.h"
@@ -81,6 +82,8 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     SharedInterface(config_dir);
 
     ui->setupUi(this);
+    SignalBlocker blocker(this);
+
     SetTabWidget();
     SetConnect();
     SetHeader();

@@ -2,7 +2,7 @@
 
 #include <QTimer>
 
-#include "dialog/signalblocker.h"
+#include "component/signalblocker.h"
 #include "global/resourcepool.h"
 #include "ui_editnodeorder.h"
 

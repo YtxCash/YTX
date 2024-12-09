@@ -6,7 +6,7 @@
 #include <QTimer>
 
 #include "component/constvalue.h"
-#include "dialog/signalblocker.h"
+#include "component/signalblocker.h"
 #include "ui_preferences.h"
 
 Preferences::Preferences(CInfo& info, CTreeModel* model, Interface interface, Settings settings, QWidget* parent)
