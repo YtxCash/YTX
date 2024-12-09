@@ -40,13 +40,23 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     setWindowTitle(params.section == Section::kSales ? tr("Sales") : tr("Purchase"));
 
 #ifdef Q_OS_WIN
-    QShortcut* shortcut { new QShortcut(QKeySequence("Ctrl+N"), this) };
-    shortcut->setContext(Qt::WindowShortcut);
+    QShortcut* trans_shortcut { new QShortcut(QKeySequence("Ctrl+N"), this) };
+    trans_shortcut->setContext(Qt::WindowShortcut);
 
-    connect(shortcut, &QShortcut::activated, parent, [parent]() {
+    connect(trans_shortcut, &QShortcut::activated, parent, [parent]() {
         auto* main_window { qobject_cast<MainWindow*>(parent) };
         if (main_window) {
-            main_window->on_actionInsert_triggered();
+            main_window->on_actionAppendTrans_triggered();
+        }
+    });
+
+    QShortcut* node_shortcut { new QShortcut(QKeySequence("Alt+N"), this) };
+    node_shortcut->setContext(Qt::WindowShortcut);
+
+    connect(node_shortcut, &QShortcut::activated, parent, [parent]() {
+        auto* main_window { qobject_cast<MainWindow*>(parent) };
+        if (main_window) {
+            main_window->on_actionInsertNode_triggered();
         }
     });
 #endif

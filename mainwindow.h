@@ -69,7 +69,8 @@ public:
     bool OpenFile(CString& file_path);
 
 public slots:
-    void on_actionInsert_triggered();
+    void on_actionInsertNode_triggered();
+    void on_actionAppendTrans_triggered();
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
@@ -77,8 +78,8 @@ protected:
 
 private slots:
     void on_actionRemove_triggered();
-    void on_actionAppend_triggered();
-    void on_actionEdit_triggered();
+    void on_actionAppendNode_triggered();
+    void on_actionEditNode_triggered();
     void on_actionJump_triggered();
     void on_actionSupportJump_triggered();
     void on_actionAbout_triggered();
@@ -159,7 +160,6 @@ private:
     void SetView(PQTreeView tree_view) const;
     void TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const;
 
-    void InsertNode(TreeWidget* tree_widget);
     void InsertNodeFunction(const QModelIndex& parent, int parent_id, int row);
     void InsertNodeFPTS(Node* node, const QModelIndex& parent, int parent_id, int row); // Finance Product Stakeholder Task
     void InsertNodeOrder(Node* node, const QModelIndex& parent, int row); // Purchase Sales

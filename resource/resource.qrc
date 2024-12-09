@@ -50,5 +50,6 @@
         <file>solarized_dark/locate.png</file>
         <file>solarized_dark/edit2.png</file>
         <file>solarized_dark/remove2.png</file>
+        <file>solarized_dark/append_trans.png</file>
     </qresource>
 </RCC>

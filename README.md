@@ -94,7 +94,7 @@ Welcome! Today, I’d like to introduce you to YTX, a stand-alone software desig
 1. Preferences
     - Default Unit: Set the default unit.
 2. Node
-    - Insert: **`Ctrl + N`**, Append **`Alt + P`**
+    - Insert: **`Alt + N`**, Append: **`Alt + P`**
     - Rules(**R**)
         1. Define how balances are calculated in the transaction table. New nodes inherit rules from their parent nodes by default.
         2. When properly configured, the total of all nodes is typically positive.
@@ -106,8 +106,10 @@ Welcome! Today, I’d like to introduce you to YTX, a stand-alone software desig
         2. **L**: Leaf nodes (used to record transactions).
         3. **S**: Support nodes (easy viewing; no transactions; supports specific actions).
     - Unit(**U**)
-        - A node inherits its parent node’s unit by default.
+        - Finance/Product/Task/Order node inherits its parent node’s unit by default.
+        - Stakeholder node inherits default unit.
 3. Transaction
+    - Append: **`Ctrl + N`**
     - Reference date and related node.
     - Date
         1. By default, the time is displayed and stored in the database with second-level precision.

@@ -170,7 +170,7 @@
      <x>0</x>
      <y>0</y>
      <width>1246</width>
-     <height>17</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -194,10 +194,11 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionInsert"/>
+    <addaction name="actionInsertNode"/>
+    <addaction name="actionAppendNode"/>
+    <addaction name="actionEditNode"/>
     <addaction name="separator"/>
-    <addaction name="actionAppend"/>
-    <addaction name="actionEdit"/>
+    <addaction name="actionAppendTrans"/>
     <addaction name="separator"/>
     <addaction name="actionRemove"/>
     <addaction name="separator"/>
@@ -220,10 +221,11 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionInsert"/>
+   <addaction name="actionInsertNode"/>
+   <addaction name="actionAppendNode"/>
+   <addaction name="actionEditNode"/>
    <addaction name="separator"/>
-   <addaction name="actionAppend"/>
-   <addaction name="actionEdit"/>
+   <addaction name="actionAppendTrans"/>
    <addaction name="separator"/>
    <addaction name="actionRemove"/>
    <addaction name="separator"/>
@@ -232,15 +234,15 @@
    <addaction name="actionCheckNone"/>
    <addaction name="separator"/>
   </widget>
-  <action name="actionInsert">
+  <action name="actionInsertNode">
    <property name="text">
     <string>Insert</string>
    </property>
    <property name="toolTip">
-    <string>Insert</string>
+    <string>Insert Node</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+N</string>
+    <string>Alt+N</string>
    </property>
   </action>
   <action name="actionRemove">
@@ -248,7 +250,7 @@
     <string>Remove</string>
    </property>
   </action>
-  <action name="actionAppend">
+  <action name="actionAppendNode">
    <property name="text">
     <string>Append</string>
    </property>
@@ -270,7 +272,7 @@
     <string>Ctrl+J</string>
    </property>
   </action>
-  <action name="actionEdit">
+  <action name="actionEditNode">
    <property name="text">
     <string>Edit</string>
    </property>
@@ -278,7 +280,7 @@
     <string>Edit Node</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+E</string>
+    <string>Alt+E</string>
    </property>
   </action>
   <action name="actionSearch">
@@ -376,6 +378,17 @@
    </property>
    <property name="shortcut">
     <string>Alt+J</string>
+   </property>
+  </action>
+  <action name="actionAppendTrans">
+   <property name="text">
+    <string>Append</string>
+   </property>
+   <property name="toolTip">
+    <string>Append Trans</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

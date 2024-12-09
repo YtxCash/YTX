@@ -249,27 +249,19 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 
 void MainWindow::dropEvent(QDropEvent* event) { OpenFile(event->mimeData()->urls().at(0).toLocalFile()); }
 
-void MainWindow::on_actionInsert_triggered()
+void MainWindow::on_actionInsertNode_triggered()
 {
-    auto* active_window { QApplication::activeWindow() };
-    if (active_window && MainWindowUtils::IsEditNodeOrder(active_window)) {
-        AppendTrans(static_cast<EditNodeOrder*>(active_window));
-        return;
-    }
-
-    auto* widget { ui->tabWidget->currentWidget() };
-    if (!widget)
+    if (!tree_widget_)
         return;
 
-    if (MainWindowUtils::IsTreeWidget(widget)) {
-        assert(dynamic_cast<TreeWidget*>(widget) && "Widget is not TreeWidget");
-        InsertNode(static_cast<TreeWidget*>(widget));
-    }
+    auto current_index { tree_widget_->View()->currentIndex() };
+    current_index = current_index.isValid() ? current_index : QModelIndex();
 
-    if (MainWindowUtils::IsTableWidget(widget)) {
-        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-        AppendTrans(static_cast<TableWidget*>(widget));
-    }
+    auto parent_index { current_index.parent() };
+    parent_index = parent_index.isValid() ? parent_index : QModelIndex();
+
+    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
+    InsertNodeFunction(parent_index, parent_id, current_index.row() + 1);
 }
 
 void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
@@ -773,18 +765,6 @@ void MainWindow::TreeConnect(TreeWidget* tree_widget, const Sqlite* sql) const
     connect(sql, &Sqlite::SFreeView, this, &MainWindow::RFreeView);
 }
 
-void MainWindow::InsertNode(TreeWidget* tree_widget)
-{
-    auto current_index { tree_widget->View()->currentIndex() };
-    current_index = current_index.isValid() ? current_index : QModelIndex();
-
-    auto parent_index { current_index.parent() };
-    parent_index = parent_index.isValid() ? parent_index : QModelIndex();
-
-    const int parent_id { parent_index.isValid() ? parent_index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() : -1 };
-    InsertNodeFunction(parent_index, parent_id, current_index.row() + 1);
-}
-
 void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, int row)
 {
     auto model { tree_widget_->Model() };
@@ -970,17 +950,18 @@ void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData&
 
 void MainWindow::EnableAction(bool enable)
 {
-    ui->actionAppend->setEnabled(enable);
+    ui->actionAppendNode->setEnabled(enable);
     ui->actionCheckAll->setEnabled(enable);
     ui->actionCheckNone->setEnabled(enable);
     ui->actionCheckReverse->setEnabled(enable);
-    ui->actionEdit->setEnabled(enable);
-    ui->actionInsert->setEnabled(enable);
+    ui->actionEditNode->setEnabled(enable);
+    ui->actionInsertNode->setEnabled(enable);
     ui->actionJump->setEnabled(enable);
     ui->actionPreferences->setEnabled(enable);
     ui->actionSearch->setEnabled(enable);
     ui->actionSupportJump->setEnabled(enable);
     ui->actionRemove->setEnabled(enable);
+    ui->actionAppendTrans->setEnabled(enable);
 }
 
 QStandardItemModel* MainWindow::CreateModelFromList(QStringList& list, QObject* parent)
@@ -1490,11 +1471,11 @@ void MainWindow::SetHeader()
 
 void MainWindow::SetAction() const
 {
-    ui->actionInsert->setIcon(QIcon(":/solarized_dark/solarized_dark/insert.png"));
-    ui->actionEdit->setIcon(QIcon(":/solarized_dark/solarized_dark/edit.png"));
+    ui->actionInsertNode->setIcon(QIcon(":/solarized_dark/solarized_dark/insert.png"));
+    ui->actionEditNode->setIcon(QIcon(":/solarized_dark/solarized_dark/edit.png"));
     ui->actionRemove->setIcon(QIcon(":/solarized_dark/solarized_dark/remove2.png"));
     ui->actionAbout->setIcon(QIcon(":/solarized_dark/solarized_dark/about.png"));
-    ui->actionAppend->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
+    ui->actionAppendNode->setIcon(QIcon(":/solarized_dark/solarized_dark/append.png"));
     ui->actionJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
     ui->actionSupportJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
     ui->actionPreferences->setIcon(QIcon(":/solarized_dark/solarized_dark/settings.png"));
@@ -1504,6 +1485,7 @@ void MainWindow::SetAction() const
     ui->actionCheckAll->setIcon(QIcon(":/solarized_dark/solarized_dark/check-all.png"));
     ui->actionCheckNone->setIcon(QIcon(":/solarized_dark/solarized_dark/check-none.png"));
     ui->actionCheckReverse->setIcon(QIcon(":/solarized_dark/solarized_dark/check-reverse.png"));
+    ui->actionAppendTrans->setIcon(QIcon(":/solarized_dark/solarized_dark/append_trans.png"));
 
     ui->actionCheckAll->setProperty(kCheck, std::to_underlying(Check::kAll));
     ui->actionCheckNone->setProperty(kCheck, std::to_underlying(Check::kNone));
@@ -1528,7 +1510,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
     header->setDefaultAlignment(Qt::AlignCenter);
 }
 
-void MainWindow::on_actionAppend_triggered()
+void MainWindow::on_actionAppendNode_triggered()
 {
     auto* current_widget { ui->tabWidget->currentWidget() };
     if (!current_widget || !MainWindowUtils::IsTreeWidget(current_widget))
@@ -1651,15 +1633,15 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
     Q_UNUSED(pos);
 
     auto* menu = new QMenu(this);
-    menu->addAction(ui->actionInsert);
-    menu->addAction(ui->actionEdit);
-    menu->addAction(ui->actionAppend);
+    menu->addAction(ui->actionInsertNode);
+    menu->addAction(ui->actionEditNode);
+    menu->addAction(ui->actionAppendNode);
     menu->addAction(ui->actionRemove);
 
     menu->exec(QCursor::pos());
 }
 
-void MainWindow::on_actionEdit_triggered()
+void MainWindow::on_actionEditNode_triggered()
 {
     auto section { data_->info.section };
     if (section == Section::kSales || section == Section::kPurchase)
@@ -1797,6 +1779,7 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
     auto* dialog { new EditNodeOrder(std::move(params), this) };
 
     dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setWindowFlags(Qt::Window);
 
     connect(dialog, &QDialog::accepted, this, [=, this]() {
         if (tree_model->InsertNode(row, parent, node)) {
@@ -2553,11 +2536,33 @@ void MainWindow::on_tabWidget_currentChanged(int /*index*/)
         return;
 
     bool is_tree { MainWindowUtils::IsTreeWidget(widget) };
-    ui->actionAppend->setEnabled(is_tree);
-    ui->actionCheckAll->setEnabled(!is_tree);
-    ui->actionCheckNone->setEnabled(!is_tree);
-    ui->actionCheckReverse->setEnabled(!is_tree);
-    ui->actionEdit->setEnabled(is_tree);
+    bool is_order { start_ == Section::kSales || start_ == Section::kPurchase };
+
+    if (data_)
+        is_order = data_->info.section == Section::kSales || data_->info.section == Section::kPurchase;
+
+    ui->actionAppendNode->setEnabled(is_tree);
+    ui->actionCheckAll->setEnabled(!is_tree && !is_order);
+    ui->actionCheckNone->setEnabled(!is_tree && !is_order);
+    ui->actionCheckReverse->setEnabled(!is_tree && !is_order);
+    ui->actionEditNode->setEnabled(is_tree);
     ui->actionJump->setEnabled(!is_tree);
     ui->actionSupportJump->setEnabled(!is_tree);
+    ui->actionAppendTrans->setEnabled(!is_tree);
+}
+
+void MainWindow::on_actionAppendTrans_triggered()
+{
+    auto* active_window { QApplication::activeWindow() };
+    if (active_window && MainWindowUtils::IsEditNodeOrder(active_window)) {
+        AppendTrans(static_cast<EditNodeOrder*>(active_window));
+        return;
+    }
+
+    auto* widget { ui->tabWidget->currentWidget() };
+    if (!widget || !MainWindowUtils::IsTableWidget(widget))
+        return;
+
+    assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
+    AppendTrans(static_cast<TableWidget*>(widget));
 }
