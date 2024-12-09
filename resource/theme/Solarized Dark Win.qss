@@ -120,6 +120,12 @@ QTreeView::item {
     height: 22px;
 }
 
+/*--------------------------------------font size-------------------------------------------------*/
+
+DoubleSpinBox#dSpinAmount {
+    font-size: 24pt;
+}
+
 /*--------------------------------------min-width-------------------------------------------------*/
 
 QTabBar::tab, QHeaderView::section:horizontal {
