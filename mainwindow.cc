@@ -112,45 +112,20 @@ MainWindow::~MainWindow()
     MainWindowUtils::SaveGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
     shared_interface_->setValue(kStartSection, std::to_underlying(start_));
 
-    if (finance_tree_) {
-        SaveTab(finance_table_hash_, finance_data_.info.node, kView);
-        MainWindowUtils::SaveState(finance_tree_->View()->header(), exclusive_interface_, finance_data_.info.node, kHeaderState);
+    SaveTab(finance_table_hash_, kFinance, kView);
+    MainWindowUtils::SaveState(finance_tree_->View()->header(), exclusive_interface_, kFinance, kHeaderState);
 
-        finance_dialog_list_.clear();
-    }
+    SaveTab(product_table_hash_, kProduct, kView);
+    MainWindowUtils::SaveState(product_tree_->View()->header(), exclusive_interface_, kProduct, kHeaderState);
 
-    if (product_tree_) {
-        SaveTab(product_table_hash_, product_data_.info.node, kView);
-        MainWindowUtils::SaveState(product_tree_->View()->header(), exclusive_interface_, product_data_.info.node, kHeaderState);
+    SaveTab(stakeholder_table_hash_, kStakeholder, kView);
+    MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, kStakeholder, kHeaderState);
 
-        product_dialog_list_.clear();
-    }
+    SaveTab(task_table_hash_, kTask, kView);
+    MainWindowUtils::SaveState(task_tree_->View()->header(), exclusive_interface_, kTask, kHeaderState);
 
-    if (stakeholder_tree_) {
-        SaveTab(stakeholder_table_hash_, stakeholder_data_.info.node, kView);
-        MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, stakeholder_data_.info.node, kHeaderState);
-
-        stakeholder_dialog_list_.clear();
-    }
-
-    if (task_tree_) {
-        SaveTab(task_table_hash_, task_data_.info.node, kView);
-        MainWindowUtils::SaveState(task_tree_->View()->header(), exclusive_interface_, task_data_.info.node, kHeaderState);
-
-        task_dialog_list_.clear();
-    }
-
-    if (sales_tree_) {
-        MainWindowUtils::SaveState(sales_tree_->View()->header(), exclusive_interface_, sales_data_.info.node, kHeaderState);
-
-        sales_dialog_list_.clear();
-    }
-
-    if (purchase_tree_) {
-        MainWindowUtils::SaveState(purchase_tree_->View()->header(), exclusive_interface_, purchase_data_.info.node, kHeaderState);
-
-        purchase_dialog_list_.clear();
-    }
+    MainWindowUtils::SaveState(sales_tree_->View()->header(), exclusive_interface_, kSales, kHeaderState);
+    MainWindowUtils::SaveState(purchase_tree_->View()->header(), exclusive_interface_, kPurchase, kHeaderState);
 
     delete ui;
 }

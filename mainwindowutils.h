@@ -85,12 +85,22 @@ public:
 
     template <InheritQWidget T> static void SaveState(T* widget, QSettings* interface, CString& section_name, CString& property)
     {
+        if (!widget || !interface) {
+            qWarning() << "SaveState: Invalid parameters (widget or interface is null)";
+            return;
+        }
+
         auto state { widget->saveState() };
         interface->setValue(QString("%1/%2").arg(section_name, property), state);
     }
 
     template <InheritQWidget T> static void RestoreState(T* widget, QSettings* interface, CString& section_name, CString& property)
     {
+        if (!widget || !interface) {
+            qWarning() << "RestoreState: Invalid parameters (widget or interface is null)";
+            return;
+        }
+
         auto state { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
 
         if (!state.isEmpty())
@@ -99,12 +109,22 @@ public:
 
     template <InheritQWidget T> static void SaveGeometry(T* widget, QSettings* interface, CString& section_name, CString& property)
     {
+        if (!widget || !interface) {
+            qWarning() << "SaveGeometry: Invalid parameters (widget or interface is null)";
+            return;
+        }
+
         auto geometry { widget->saveGeometry() };
         interface->setValue(QString("%1/%2").arg(section_name, property), geometry);
     }
 
     template <InheritQWidget T> static void RestoreGeometry(T* widget, QSettings* interface, CString& section_name, CString& property)
     {
+        if (!widget || !interface) {
+            qWarning() << "RestoreGeometry: Invalid parameters (widget or interface is null)";
+            return;
+        }
+
         auto geometry { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
         if (!geometry.isEmpty())
             widget->restoreGeometry(geometry);
