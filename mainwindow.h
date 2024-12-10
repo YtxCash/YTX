@@ -193,6 +193,7 @@ private:
 
     void SaveRecentFile() const;
     void RestoreRecentFile();
+    void AddRecentFile(CString& file_path);
 
     QStandardItemModel* CreateModelFromList(QStringList& list, QObject* parent = nullptr);
 

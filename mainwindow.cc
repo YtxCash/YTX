@@ -203,22 +203,7 @@ bool MainWindow::OpenFile(CString& file_path)
         break;
     }
 
-    QString path { QDir::toNativeSeparators(file_path) };
-
-    if (!recent_file_.contains(path)) {
-        auto* menu { ui->menuRecent };
-        auto* action { new QAction(path, menu) };
-
-        if (menu->isEmpty()) {
-            menu->addAction(action);
-            SetClearMenuAction();
-        } else
-            ui->menuRecent->insertAction(ui->actionSeparator, action);
-
-        recent_file_.emplaceBack(path);
-        SaveRecentFile();
-    }
-
+    AddRecentFile(file_path);
     EnableAction(true);
     on_tabWidget_currentChanged(0);
     return true;
@@ -992,6 +977,25 @@ void MainWindow::RestoreRecentFile()
     }
 
     SetClearMenuAction();
+}
+
+void MainWindow::AddRecentFile(CString& file_path)
+{
+    QString path { QDir::toNativeSeparators(file_path) };
+
+    if (!recent_file_.contains(path)) {
+        auto* menu { ui->menuRecent };
+        auto* action { new QAction(path, menu) };
+
+        if (menu->isEmpty()) {
+            menu->addAction(action);
+            SetClearMenuAction();
+        } else
+            ui->menuRecent->insertAction(ui->actionSeparator, action);
+
+        recent_file_.emplaceBack(path);
+        SaveRecentFile();
+    }
 }
 
 bool MainWindow::LockFile(const QFileInfo& file_info)
