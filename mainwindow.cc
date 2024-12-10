@@ -4,7 +4,6 @@
 #include <QFileDialog>
 #include <QFutureWatcher>
 #include <QHeaderView>
-#include <QLockFile>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProcess>
@@ -158,14 +157,22 @@ MainWindow::~MainWindow()
 
 bool MainWindow::OpenFile(CString& file_path)
 {
-    if (file_path.isEmpty())
-        return false;
-
-    if (SqlConnection::Instance().IsInitialized()) {
-        // This function always causes errors, disabling it first
-        // QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
+    if (file_path.isEmpty()) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Invalid file path: %1").arg(file_path), kThreeThousand);
         return false;
     }
+
+    if (lock_file_) {
+        TreeModelUtils::ShowTemporaryTooltip(
+            tr("This instance has already opened the file. Please launch another instance to open: %1").arg(file_path), kThreeThousand);
+        return false;
+    }
+
+    // This function always causes errors, disabling it first
+    // if (SqlConnection::Instance().IsInitialized()) {
+    //     QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
+    //     return false;
+    // }
 
     const QFileInfo file_info(file_path);
     if (!LockFile(file_info))
@@ -1002,7 +1009,7 @@ void MainWindow::Recent()
     SetClearMenuAction();
 }
 
-bool MainWindow::LockFile(const QFileInfo file_info) const
+bool MainWindow::LockFile(const QFileInfo file_info)
 {
     if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != "ytx") {
         qCritical() << "Invalid file path: must be an existing .ytx file";
@@ -1011,9 +1018,14 @@ bool MainWindow::LockFile(const QFileInfo file_info) const
 
     const QString lock_file_path = file_info.dir().filePath(file_info.completeBaseName() + ".lock");
 
-    static QLockFile lock_file(lock_file_path);
-    if (!lock_file.tryLock(100)) {
+    lock_file_ = std::make_unique<QLockFile>(lock_file_path);
+
+    if (!lock_file_->tryLock(100)) {
+        TreeModelUtils::ShowTemporaryTooltip(
+            tr("Unable to open database file. Ensure no other instance of the application is using the file: %1").arg(file_info.absoluteFilePath()),
+            kThreeThousand);
         qCritical() << "Unable to lock database file. Ensure no other instance of the application is using the file:" << lock_file_path;
+        lock_file_.reset();
         return false;
     }
 
@@ -2381,7 +2393,7 @@ void MainWindow::on_rBtnFinance_toggled(bool checked)
 
     start_ = Section::kFinance;
 
-    if (!SqlConnection::Instance().IsInitialized()) {
+    if (!lock_file_) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
     }
@@ -2407,7 +2419,7 @@ void MainWindow::on_rBtnSales_toggled(bool checked)
 
     start_ = Section::kSales;
 
-    if (!SqlConnection::Instance().IsInitialized()) {
+    if (!lock_file_) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
     }
@@ -2433,7 +2445,7 @@ void MainWindow::on_rBtnTask_toggled(bool checked)
 
     start_ = Section::kTask;
 
-    if (!SqlConnection::Instance().IsInitialized()) {
+    if (!lock_file_) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
     }
@@ -2459,7 +2471,7 @@ void MainWindow::on_rBtnStakeholder_toggled(bool checked)
 
     start_ = Section::kStakeholder;
 
-    if (!SqlConnection::Instance().IsInitialized()) {
+    if (!lock_file_) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
     }
@@ -2485,7 +2497,7 @@ void MainWindow::on_rBtnProduct_toggled(bool checked)
 
     start_ = Section::kProduct;
 
-    if (!SqlConnection::Instance().IsInitialized()) {
+    if (!lock_file_) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
     }
@@ -2511,7 +2523,7 @@ void MainWindow::on_rBtnPurchase_toggled(bool checked)
 
     start_ = Section::kPurchase;
 
-    if (!SqlConnection::Instance().IsInitialized()) {
+    if (!lock_file_) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Please open the file first."), kThreeThousand);
         return;
     }

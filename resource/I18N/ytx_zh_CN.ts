@@ -1255,8 +1255,8 @@ Rage, rage against the dying of the light.</source>
     <name>MainWindow</name>
     <message>
         <location filename="../../mainwindow.ui" line="+85"/>
-        <location filename="../../mainwindow.cc" line="+188"/>
-        <location line="+1825"/>
+        <location filename="../../mainwindow.cc" line="+196"/>
+        <location line="+1831"/>
         <source>Finance</source>
         <translation>财务</translation>
     </message>
@@ -1266,15 +1266,15 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="+58"/>
-        <location filename="../../mainwindow.cc" line="-1821"/>
-        <location line="+1833"/>
+        <location filename="../../mainwindow.cc" line="-1827"/>
+        <location line="+1839"/>
         <source>Sales</source>
         <translation>销售</translation>
     </message>
     <message>
         <location line="-26"/>
-        <location filename="../../mainwindow.cc" line="-1834"/>
-        <location line="+1831"/>
+        <location filename="../../mainwindow.cc" line="-1840"/>
+        <location line="+1837"/>
         <source>Task</source>
         <translation>任务</translation>
     </message>
@@ -1288,8 +1288,8 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="+39"/>
-        <location filename="../../mainwindow.cc" line="-1829"/>
-        <location line="+1835"/>
+        <location filename="../../mainwindow.cc" line="-1835"/>
+        <location line="+1841"/>
         <source>Purchase</source>
         <translation>采购</translation>
     </message>
@@ -1315,8 +1315,8 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location line="-147"/>
-        <location filename="../../mainwindow.cc" line="-1839"/>
-        <location line="+1827"/>
+        <location filename="../../mainwindow.cc" line="-1845"/>
+        <location line="+1833"/>
         <source>Stakeholder</source>
         <translation>人脉</translation>
     </message>
@@ -1547,7 +1547,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">科目</translation>
     </message>
     <message>
-        <location filename="../../mainwindow.cc" line="-598"/>
+        <location filename="../../mainwindow.cc" line="-599"/>
         <location line="+1"/>
         <location line="+2"/>
         <location line="+2"/>
@@ -1634,8 +1634,8 @@ Rage, rage against the dying of the light.</source>
     </message>
     <message>
         <location filename="../../mainwindow.ui" line="-262"/>
-        <location filename="../../mainwindow.cc" line="-1273"/>
-        <location line="+1829"/>
+        <location filename="../../mainwindow.cc" line="-1278"/>
+        <location line="+1835"/>
         <source>Product</source>
         <translation>产品</translation>
     </message>
@@ -1644,7 +1644,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">进度</translation>
     </message>
     <message>
-        <location filename="../../mainwindow.cc" line="-601"/>
+        <location filename="../../mainwindow.cc" line="-602"/>
         <location line="+5"/>
         <location line="+5"/>
         <location line="+6"/>
@@ -1849,7 +1849,22 @@ Rage, rage against the dying of the light.</source>
         <translation>删除 %1</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-878"/>
+        <source>Invalid file path: %1</source>
+        <translation>无效的路径: %1</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>This instance has already opened the file. Please launch another instance to open: %1</source>
+        <translation>当前实例已经打开文件了，请另启动一个实例以打开：%1</translation>
+    </message>
+    <message>
+        <location line="+858"/>
+        <source>Unable to open database file. Ensure no other instance of the application is using the file: %1</source>
+        <translation>无法打开数据库文件，请确保没有其他实例正在使用该文件 %1</translation>
+    </message>
+    <message>
+        <location line="+15"/>
         <source>The branch will be removed, and its direct children will be promoted to the same level.</source>
         <translation>将删除此分支，且所有直系子节点提升至同级。</translation>
     </message>
@@ -1992,7 +2007,7 @@ Rage, rage against the dying of the light.</source>
         <translation>现结</translation>
     </message>
     <message>
-        <location line="+997"/>
+        <location line="+998"/>
         <location line="+26"/>
         <location line="+26"/>
         <location line="+26"/>
@@ -2002,7 +2017,7 @@ Rage, rage against the dying of the light.</source>
         <translation>请先打开文件。</translation>
     </message>
     <message>
-        <location line="-1168"/>
+        <location line="-1169"/>
         <location line="+41"/>
         <source>MS</source>
         <translation>月结</translation>
@@ -2418,7 +2433,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">帐期</translation>
     </message>
     <message>
-        <location line="+833"/>
+        <location line="+834"/>
         <source>New</source>
         <translation>新建</translation>
     </message>
@@ -2432,7 +2447,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">位置</translation>
     </message>
     <message>
-        <location line="-893"/>
+        <location line="-894"/>
         <location line="+5"/>
         <location line="+5"/>
         <location line="+6"/>

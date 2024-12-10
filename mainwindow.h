@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include <QFileInfo>
+#include <QLockFile>
 #include <QMainWindow>
 #include <QPointer>
 #include <QSettings>
@@ -186,7 +187,7 @@ private:
     void ExclusiveInterface(CString& dir_path, CString& base_name);
     void ResourceFile() const;
     void Recent();
-    bool LockFile(const QFileInfo file_info) const;
+    bool LockFile(const QFileInfo file_info);
 
     void SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const;
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
@@ -205,6 +206,7 @@ private:
     QTranslator ytx_translator_ {};
 
     QString config_dir_ {};
+    std::unique_ptr<QLockFile> lock_file_;
 
     QSettings* shared_interface_ {};
     QSettings* exclusive_interface_ {};

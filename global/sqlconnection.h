@@ -31,7 +31,7 @@ public:
     static SqlConnection& Instance();
     bool SetDatabaseName(const QString& file_path);
     QSqlDatabase* Allocate(Section section);
-    bool IsInitialized() { return is_initialized_; }
+    // bool IsInitialized() { return is_initialized_; }
 
 private:
     SqlConnection() = default;
