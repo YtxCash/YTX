@@ -335,29 +335,17 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
 
     auto view { widget->View() };
     SetView(view);
-
-    switch (section) {
-    case Section::kFinance:
-    case Section::kProduct:
-    case Section::kTask:
-        TableConnectFPT(view, model, tree_model, data);
-        break;
-    case Section::kStakeholder:
-        TableConnectStakeholder(view, model, tree_model, data);
-        break;
-    default:
-        break;
-    }
-
     DelegateFPTS(view, tree_model, settings);
 
     switch (section) {
     case Section::kFinance:
     case Section::kProduct:
     case Section::kTask:
+        TableConnectFPT(view, model, tree_model, data);
         DelegateFPT(view, tree_model, settings, node_id);
         break;
     case Section::kStakeholder:
+        TableConnectStakeholder(view, model, tree_model, data);
         DelegateStakeholder(view);
         break;
     default:
@@ -819,7 +807,6 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
 
 void MainWindow::RemoveTrans(TableWidget* table_widget)
 {
-    // 1. 获取视图和检查选择
     auto view { table_widget->View() };
     if (!view || !MainWindowUtils::HasSelection(view)) {
         return;
@@ -830,36 +817,29 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
         return;
     }
 
-    // 2. 获取模型和当前索引
     auto model { table_widget->Model() };
     if (!model || model->IsSupport()) {
         return;
     }
 
-    // 3. 删除行
     const int current_row { current_index.row() };
     if (!model->removeRows(current_row, 1)) {
         qDebug() << "Failed to remove row:" << current_row;
         return;
     }
 
-    // 4. 更新选择
     const int new_row_count { model->rowCount() };
     if (new_row_count == 0) {
         return;
     }
 
-    // 5. 计算新的选择位置
-    QModelIndex new_index;
+    QModelIndex new_index {};
     if (current_row <= new_row_count - 1) {
-        // 如果删除的不是最后一行，选择同一位置的下一条记录
         new_index = model->index(current_row, 0);
     } else {
-        // 如果删除的是最后一行，选择上一条记录
         new_index = model->index(new_row_count - 1, 0);
     }
 
-    // 6. 更新视图的当前索引
     if (new_index.isValid())
         view->setCurrentIndex(new_index);
 }
@@ -890,7 +870,6 @@ void MainWindow::SaveTab(CTableHash& table_hash, CString& section_name, CString&
 
 void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property)
 {
-    // order不恢复
     Section section { data.info.section };
     if (section == Section::kSales || section == Section::kPurchase)
         return;
