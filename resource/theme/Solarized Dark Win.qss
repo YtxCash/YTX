@@ -104,6 +104,10 @@ QRadioButton:hover, QCheckBox:hover, QPushButton:hover, QTabBar::tab:hover {
     color: #2BB3EB;
 }
 
+QTreeView::item:hover {
+    background-color: #002B36;
+}
+
 /*--------------------------------------spacing-------------------------------------------------*/
 
 QCheckBox, QRadioButton {
