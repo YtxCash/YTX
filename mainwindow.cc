@@ -993,11 +993,16 @@ void MainWindow::Recent()
     auto* recent_menu { ui->menuRecent };
     QStringList valid_list {};
 
-    for (CString& file_path : recent_list_) {
+    const long long count { std::min(kMaxRecentFiles, recent_list_.size()) };
+    const auto recent_files { recent_list_.mid(recent_list_.size() - count, count) };
+
+    for (auto it = recent_files.rbegin(); it != recent_files.rend(); ++it) {
+        CString& file_path { *it };
+
         if (QFile::exists(file_path)) {
             auto* action { recent_menu->addAction(file_path) };
             connect(action, &QAction::triggered, this, [file_path, this]() { OpenFile(file_path); });
-            valid_list.emplaceBack(file_path);
+            valid_list.prepend(file_path);
         }
     }
 
