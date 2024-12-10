@@ -150,6 +150,11 @@ bool MainWindow::OpenFile(CString& file_path)
     // }
 
     const QFileInfo file_info(file_path);
+    if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != "ytx") {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Invalid file path: %1, must be an existing .ytx file").arg(file_path), kThreeThousand);
+        return false;
+    }
+
     if (!LockFile(file_info))
         return false;
 
@@ -969,9 +974,9 @@ void MainWindow::RestoreRecentFile()
     QStringList valid_recent_file {};
 
     const long long count { std::min(kMaxRecentFile, recent_file_.size()) };
-    const auto recent_files { recent_file_.mid(recent_file_.size() - count, count) };
+    const auto mid_file { recent_file_.mid(recent_file_.size() - count, count) };
 
-    for (auto it = recent_files.rbegin(); it != recent_files.rend(); ++it) {
+    for (auto it = mid_file.rbegin(); it != mid_file.rend(); ++it) {
         CString& file_path { *it };
 
         if (QFile::exists(file_path)) {
@@ -989,14 +994,9 @@ void MainWindow::RestoreRecentFile()
     SetClearMenuAction();
 }
 
-bool MainWindow::LockFile(const QFileInfo file_info)
+bool MainWindow::LockFile(const QFileInfo& file_info)
 {
-    if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != "ytx") {
-        qCritical() << "Invalid file path: must be an existing .ytx file";
-        return false;
-    }
-
-    const QString lock_file_path = file_info.dir().filePath(file_info.completeBaseName() + ".lock");
+    const QString lock_file_path { file_info.dir().filePath(file_info.completeBaseName() + ".lock") };
 
     lock_file_ = std::make_unique<QLockFile>(lock_file_path);
 

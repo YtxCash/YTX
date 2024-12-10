@@ -185,7 +185,7 @@ private:
     void SharedInterface(CString& dir_path);
     void ExclusiveInterface(CString& dir_path, CString& base_name);
     void ResourceFile() const;
-    bool LockFile(const QFileInfo file_info);
+    bool LockFile(const QFileInfo& file_info);
 
     void SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const;
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
