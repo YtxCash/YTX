@@ -28,7 +28,7 @@ inline constexpr int kHundred = 100;
 inline constexpr int kIntMax = 1'000'000'000;
 inline constexpr int kRowHeight = 24;
 inline constexpr int kThreeThousand = 3000;
-inline constexpr long long kMaxRecentFiles = 10;
+inline constexpr long long kMaxRecentFile = 10;
 
 // Constants for rule
 inline constexpr bool kRuleIM = 0;

@@ -177,7 +177,6 @@ private:
 
     void UpdateInterface(CInterface& interface);
     void UpdateTranslate() const;
-    void UpdateRecent() const;
     void UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool branch) const;
 
     void LoadAndInstallTranslator(CString& language);
@@ -186,12 +185,14 @@ private:
     void SharedInterface(CString& dir_path);
     void ExclusiveInterface(CString& dir_path, CString& base_name);
     void ResourceFile() const;
-    void Recent();
     bool LockFile(const QFileInfo file_info);
 
     void SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const;
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property);
     void EnableAction(bool enable);
+
+    void SaveRecentFile() const;
+    void RestoreRecentFile();
 
     QStandardItemModel* CreateModelFromList(QStringList& list, QObject* parent = nullptr);
 
@@ -199,7 +200,7 @@ private:
     Ui::MainWindow* ui {};
     MainwindowSqlite sql_ {};
 
-    QStringList recent_list_ {};
+    QStringList recent_file_ {};
     Section start_ {};
 
     QTranslator qt_translator_ {};

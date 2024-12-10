@@ -95,7 +95,7 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     MainWindowUtils::RestoreState(this, shared_interface_, kWindow, kMainwindowState);
     MainWindowUtils::RestoreGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
 
-    Recent();
+    RestoreRecentFile();
     EnableAction(false);
 
 #ifdef Q_OS_WIN
@@ -200,7 +200,7 @@ bool MainWindow::OpenFile(CString& file_path)
 
     QString path { QDir::toNativeSeparators(file_path) };
 
-    if (!recent_list_.contains(path)) {
+    if (!recent_file_.contains(path)) {
         auto* menu { ui->menuRecent };
         auto* action { new QAction(path, menu) };
 
@@ -210,8 +210,8 @@ bool MainWindow::OpenFile(CString& file_path)
         } else
             ui->menuRecent->insertAction(ui->actionSeparator, action);
 
-        recent_list_.emplaceBack(path);
-        UpdateRecent();
+        recent_file_.emplaceBack(path);
+        SaveRecentFile();
     }
 
     EnableAction(true);
@@ -961,15 +961,15 @@ QStandardItemModel* MainWindow::CreateModelFromList(QStringList& list, QObject* 
     return model;
 }
 
-void MainWindow::Recent()
+void MainWindow::RestoreRecentFile()
 {
-    recent_list_ = shared_interface_->value(kRecentFile).toStringList();
+    recent_file_ = shared_interface_->value(kRecentFile).toStringList();
 
     auto* recent_menu { ui->menuRecent };
-    QStringList valid_list {};
+    QStringList valid_recent_file {};
 
-    const long long count { std::min(kMaxRecentFiles, recent_list_.size()) };
-    const auto recent_files { recent_list_.mid(recent_list_.size() - count, count) };
+    const long long count { std::min(kMaxRecentFile, recent_file_.size()) };
+    const auto recent_files { recent_file_.mid(recent_file_.size() - count, count) };
 
     for (auto it = recent_files.rbegin(); it != recent_files.rend(); ++it) {
         CString& file_path { *it };
@@ -977,13 +977,13 @@ void MainWindow::Recent()
         if (QFile::exists(file_path)) {
             auto* action { recent_menu->addAction(file_path) };
             connect(action, &QAction::triggered, this, [file_path, this]() { OpenFile(file_path); });
-            valid_list.prepend(file_path);
+            valid_recent_file.prepend(file_path);
         }
     }
 
-    if (recent_list_ != valid_list) {
-        recent_list_ = valid_list;
-        UpdateRecent();
+    if (recent_file_ != valid_recent_file) {
+        recent_file_ = valid_recent_file;
+        SaveRecentFile();
     }
 
     SetClearMenuAction();
@@ -2028,7 +2028,7 @@ void MainWindow::UpdateTranslate() const
     }
 }
 
-void MainWindow::UpdateRecent() const { shared_interface_->setValue(kRecentFile, recent_list_); }
+void MainWindow::SaveRecentFile() const { shared_interface_->setValue(kRecentFile, recent_file_); }
 
 void MainWindow::UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool branch) const
 {
@@ -2323,8 +2323,8 @@ void MainWindow::SetClearMenuAction()
 void MainWindow::on_actionClearMenu_triggered()
 {
     ui->menuRecent->clear();
-    recent_list_.clear();
-    UpdateRecent();
+    recent_file_.clear();
+    SaveRecentFile();
 }
 
 void MainWindow::on_tabWidget_tabBarDoubleClicked(int index) { RNodeLocation(ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id); }
