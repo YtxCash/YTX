@@ -162,8 +162,9 @@ bool MainWindow::OpenFile(CString& file_path)
         return false;
 
     if (SqlConnection::Instance().IsInitialized()) {
-        QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
-        return true;
+        // This function always causes errors, disabling it first
+        // QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
+        return false;
     }
 
     const QFileInfo file_info(file_path);
