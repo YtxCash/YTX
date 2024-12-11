@@ -296,6 +296,10 @@ void MainWindow::SwitchTab(int node_id, int trans_id) const
 
     auto view { widget->View() };
     auto index { MainWindowUtils::GetTableModel(widget)->GetIndex(trans_id) };
+
+    if (!index.isValid())
+        return;
+
     view->setCurrentIndex(index);
     view->scrollTo(index.siblingAtColumn(std::to_underlying(TableEnum::kDateTime)), QAbstractItemView::PositionAtCenter);
 }
@@ -877,18 +881,19 @@ void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int
 
 void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, const QSet<int>& set, CData& data, CSettings& settings)
 {
+    if (!tree_model || set.isEmpty())
+        return;
+
     for (int node_id : set) {
-        if (tree_model->Contains(node_id) && node_id >= 1) {
-            switch (tree_model->TypeFPTS(node_id)) {
-            case kTypeSupport:
-                CreateTableSupport(tree_model, &table_hash, &data, &settings, node_id);
-                break;
-            case kTypeLeaf:
-                CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
-                break;
-            default:
-                break;
-            }
+        switch (tree_model->TypeFPTS(node_id)) {
+        case kTypeSupport:
+            CreateTableSupport(tree_model, &table_hash, &data, &settings, node_id);
+            break;
+        case kTypeLeaf:
+            CreateTableFPTS(tree_model, &table_hash, &data, &settings, node_id);
+            break;
+        default:
+            break;
         }
     }
 }
