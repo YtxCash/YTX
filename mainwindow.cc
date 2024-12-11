@@ -140,21 +140,9 @@ bool MainWindow::ROpenFile(CString& file_path)
     }
 
     if (lock_file_) {
-#ifdef Q_OS_MAC
-        TreeModelUtils::ShowTemporaryTooltip(
-            tr("On macOS, only single-instance applications are supported. Cannot open again: %1").arg(file_path), kThreeThousand);
-#elif defined(Q_OS_WIN)
-        TreeModelUtils::ShowTemporaryTooltip(
-            tr("This instance has already opened the file. Please launch another instance to open: %1").arg(file_path), kThreeThousand);
-#endif
+        QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
         return false;
     }
-
-    // This function always causes errors, disabling it first
-    // if (lock_file_) {
-    //     QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
-    //     return false;
-    // }
 
     const QFileInfo file_info(file_path);
     if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != "ytx") {

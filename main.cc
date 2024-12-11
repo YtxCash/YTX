@@ -38,6 +38,16 @@ int main(int argc, char* argv[])
     }
 
     MainWindow mainwindow(config_dir);
+
+    QString file_path {};
+    if (application.arguments().size() >= 2) {
+        file_path = application.arguments().at(1);
+    }
+
+    if (!file_path.isEmpty() && !mainwindow.ROpenFile(file_path)) {
+        return EXIT_FAILURE;
+    }
+
     QObject::connect(&application, &Application::SOpenFile, &mainwindow, &MainWindow::ROpenFile);
 
     mainwindow.show();
