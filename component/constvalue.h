@@ -107,7 +107,7 @@ inline constexpr char kMainwindowState[] = "mainwindow_state";
 inline constexpr char kSolarizedDark[] = "Solarized Dark";
 inline constexpr char kSplitterState[] = "splitter_state";
 inline constexpr char kTheme[] = "theme";
-inline constexpr char kView[] = "view";
+inline constexpr char kTabID[] = "tab_id";
 inline constexpr char kWindow[] = "window";
 
 // Constants for others

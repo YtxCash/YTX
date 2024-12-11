@@ -112,20 +112,22 @@ MainWindow::~MainWindow()
     MainWindowUtils::SaveGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
     shared_interface_->setValue(kStartSection, std::to_underlying(start_));
 
-    SaveTab(finance_table_hash_, kFinance, kView);
-    MainWindowUtils::SaveState(finance_tree_->View()->header(), exclusive_interface_, kFinance, kHeaderState);
+    if (lock_file_) {
+        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(finance_table_hash_), kFinance, kTabID);
+        MainWindowUtils::SaveState(finance_tree_->View()->header(), exclusive_interface_, kFinance, kHeaderState);
 
-    SaveTab(product_table_hash_, kProduct, kView);
-    MainWindowUtils::SaveState(product_tree_->View()->header(), exclusive_interface_, kProduct, kHeaderState);
+        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(product_table_hash_), kProduct, kTabID);
+        MainWindowUtils::SaveState(product_tree_->View()->header(), exclusive_interface_, kProduct, kHeaderState);
 
-    SaveTab(stakeholder_table_hash_, kStakeholder, kView);
-    MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, kStakeholder, kHeaderState);
+        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(stakeholder_table_hash_), kStakeholder, kTabID);
+        MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, kStakeholder, kHeaderState);
 
-    SaveTab(task_table_hash_, kTask, kView);
-    MainWindowUtils::SaveState(task_tree_->View()->header(), exclusive_interface_, kTask, kHeaderState);
+        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(task_table_hash_), kTask, kTabID);
+        MainWindowUtils::SaveState(task_tree_->View()->header(), exclusive_interface_, kTask, kHeaderState);
 
-    MainWindowUtils::SaveState(sales_tree_->View()->header(), exclusive_interface_, kSales, kHeaderState);
-    MainWindowUtils::SaveState(purchase_tree_->View()->header(), exclusive_interface_, kPurchase, kHeaderState);
+        MainWindowUtils::SaveState(sales_tree_->View()->header(), exclusive_interface_, kSales, kHeaderState);
+        MainWindowUtils::SaveState(purchase_tree_->View()->header(), exclusive_interface_, kPurchase, kHeaderState);
+    }
 
     delete ui;
 }
@@ -558,7 +560,17 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info.section, 0 }));
 
     MainWindowUtils::RestoreState(view->header(), exclusive_interface_, info.node, kHeaderState);
-    RestoreTab(model, table_hash, data, settings, kView);
+
+    switch (info.section) {
+    case Section::kFinance:
+    case Section::kTask:
+    case Section::kProduct:
+    case Section::kStakeholder:
+        RestoreTab(model, table_hash, MainWindowUtils::ReadTabID(exclusive_interface_, info.node, kTabID), data, settings);
+        break;
+    default:
+        break;
+    }
 
     SetView(view);
 }
@@ -857,34 +869,9 @@ void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int
     }
 }
 
-void MainWindow::SaveTab(CTableHash& table_hash, CString& section_name, CString& property) const
+void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, const QSet<int>& set, CData& data, CSettings& settings)
 {
-    auto keys { table_hash.keys() };
-    QStringList list {};
-
-    for (int node_id : keys)
-        list.emplaceBack(QString::number(node_id));
-
-    exclusive_interface_->setValue(QString("%1/%2").arg(section_name, property), list);
-}
-
-void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CData& data, CSettings& settings, CString& property)
-{
-    Section section { data.info.section };
-    if (section == Section::kSales || section == Section::kPurchase)
-        return;
-
-    auto variant { exclusive_interface_->value(QString("%1/%2").arg(data.info.node, property)) };
-
-    QSet<int> list {};
-
-    if (variant.isValid() && variant.canConvert<QStringList>()) {
-        auto variant_list { variant.value<QStringList>() };
-        for (CString& node_id : variant_list)
-            list.insert(node_id.toInt());
-    }
-
-    for (int node_id : list) {
+    for (int node_id : set) {
         if (tree_model->Contains(node_id) && node_id >= 1) {
             switch (tree_model->TypeFPTS(node_id)) {
             case kTypeSupport:

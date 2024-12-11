@@ -38,6 +38,10 @@ public:
     static bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
     static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
 
+    static QVariantList SaveTab(CTableHash& table_hash);
+    static void WriteTabID(QSettings* interface, const QVariantList& list, CString& section_name, CString& property);
+    static QSet<int> ReadTabID(QSettings* interface, CString& section_name, CString& property);
+
     static PTableModel GetTableModel(QWidget* widget)
     {
         if (!widget)
