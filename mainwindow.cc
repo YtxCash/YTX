@@ -132,7 +132,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-bool MainWindow::OpenFile(CString& file_path)
+bool MainWindow::ROpenFile(CString& file_path)
 {
     if (file_path.isEmpty()) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Invalid file path: %1").arg(file_path), kThreeThousand);
@@ -140,13 +140,18 @@ bool MainWindow::OpenFile(CString& file_path)
     }
 
     if (lock_file_) {
+#ifdef Q_OS_MAC
+        TreeModelUtils::ShowTemporaryTooltip(
+            tr("On macOS, only single-instance applications are supported. Cannot open again: %1").arg(file_path), kThreeThousand);
+#elif defined(Q_OS_WIN)
         TreeModelUtils::ShowTemporaryTooltip(
             tr("This instance has already opened the file. Please launch another instance to open: %1").arg(file_path), kThreeThousand);
+#endif
         return false;
     }
 
     // This function always causes errors, disabling it first
-    // if (SqlConnection::Instance().IsInitialized()) {
+    // if (lock_file_) {
     //     QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
     //     return false;
     // }
@@ -222,7 +227,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
     event->ignore();
 }
 
-void MainWindow::dropEvent(QDropEvent* event) { OpenFile(event->mimeData()->urls().at(0).toLocalFile()); }
+void MainWindow::dropEvent(QDropEvent* event) { ROpenFile(event->mimeData()->urls().at(0).toLocalFile()); }
 
 void MainWindow::on_actionInsertNode_triggered()
 {
@@ -943,7 +948,7 @@ void MainWindow::RestoreRecentFile()
 
         if (QFile::exists(file_path)) {
             auto* action { recent_menu->addAction(file_path) };
-            connect(action, &QAction::triggered, this, [file_path, this]() { OpenFile(file_path); });
+            connect(action, &QAction::triggered, this, [file_path, this]() { ROpenFile(file_path); });
             valid_recent_file.prepend(file_path);
         }
     }
@@ -2169,7 +2174,7 @@ void MainWindow::ResourceFile() const
 #elif defined(Q_OS_MACOS)
     path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
 
-#if 0
+#if 1
     QString command { QDir::homePath() + "/Qt6.8/6.8.1/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
         + path };
 
@@ -2275,7 +2280,7 @@ void MainWindow::on_actionNew_triggered()
         file_path += kSuffixYTX;
 
     sql_.NewFile(file_path);
-    OpenFile(file_path);
+    ROpenFile(file_path);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -2283,7 +2288,7 @@ void MainWindow::on_actionOpen_triggered()
     QString filter("*.ytx");
     auto file_path { QFileDialog::getOpenFileName(this, tr("Open"), QDir::homePath(), filter, nullptr) };
 
-    OpenFile(file_path);
+    ROpenFile(file_path);
 }
 
 void MainWindow::SetClearMenuAction()

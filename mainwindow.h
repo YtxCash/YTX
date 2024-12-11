@@ -67,7 +67,7 @@ public:
     MainWindow(CString& config_dir, QWidget* parent = nullptr);
     ~MainWindow();
 
-    bool OpenFile(CString& file_path);
+    bool ROpenFile(CString& file_path);
 
 public slots:
     void on_actionInsertNode_triggered();

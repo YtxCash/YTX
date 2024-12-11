@@ -38,15 +38,7 @@ int main(int argc, char* argv[])
     }
 
     MainWindow mainwindow(config_dir);
-
-    QString file_path { application.FilePath() };
-    if (application.arguments().size() >= 2) {
-        file_path = application.arguments().at(1);
-    }
-
-    if (!file_path.isEmpty() && !mainwindow.OpenFile(file_path)) {
-        return EXIT_FAILURE;
-    }
+    QObject::connect(&application, &Application::SOpenFile, &mainwindow, &MainWindow::ROpenFile);
 
     mainwindow.show();
     return application.exec();
@@ -75,7 +67,7 @@ int main(int argc, char* argv[])
     if (argc >= 2) {
         const QString file_path { QString::fromLocal8Bit(argv[1]) };
 
-        if (!file_path.isEmpty() && !mainwindow.OpenFile(file_path)) {
+        if (!file_path.isEmpty() && !mainwindow.ROpenFile(file_path)) {
             return EXIT_FAILURE;
         }
     }
