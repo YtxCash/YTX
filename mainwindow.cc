@@ -302,6 +302,9 @@ void MainWindow::SwitchTab(int node_id, int trans_id) const
 
 void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
 {
+    if (!tree_model || !table_hash || !data || !settings || !tree_model->Contains(node_id))
+        return;
+
     CString name { tree_model->Name(node_id) };
     auto* sql { data->sql };
     const auto& info { data->info };
@@ -360,6 +363,9 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
 
 void MainWindow::CreateTableSupport(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id)
 {
+    if (!tree_model || !table_hash || !data || !settings || !tree_model->Contains(node_id))
+        return;
+
     CString name { tree_model->Name(node_id) };
     auto* sql { data->sql };
     const auto& info { data->info };
