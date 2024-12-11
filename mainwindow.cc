@@ -2129,11 +2129,6 @@ void MainWindow::AppSettings(CString& dir_path)
 #endif
 
     qApp->setStyleSheet(theme);
-
-    QTimer::singleShot(0, this, []() {
-        StyledItemDelegate::SetTextMargin();
-        StyledItemDelegate::SetFontMetrics();
-    });
 }
 
 void MainWindow::FileSettings(CString& dir_path, CString& base_name)
@@ -2174,7 +2169,7 @@ void MainWindow::ResourceFile() const
 #elif defined(Q_OS_MACOS)
     path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
 
-#if 1
+#if 0
     QString command { QDir::homePath() + "/Qt6.8/6.8.1/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
         + path };
 

@@ -30,18 +30,14 @@ public:
     explicit StyledItemDelegate(QObject* parent = nullptr);
     void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-    static void SetFontMetrics();
-    static void SetTextMargin();
-    static QSize CalculateTextSize(CString& text);
-
 protected:
+    static QSize CalculateTextSize(CString& text, const QStyleOptionViewItem& option);
+
     void PaintText(CString& text, QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, Qt::Alignment alignment) const;
     void PaintCheckBox(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
 protected:
     static const QLocale locale_;
-    static std::optional<QFontMetrics> fm_;
-    static std::optional<int> text_margin_;
 
 private:
     static constexpr int coefficient_ =

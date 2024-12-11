@@ -17,8 +17,8 @@ void OrderNameR::paint(QPainter* painter, const QStyleOptionViewItem& option, co
     PaintText(text, painter, option, index, Qt::AlignLeft | Qt::AlignVCenter);
 }
 
-QSize OrderNameR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize OrderNameR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString& text = index.data().toString() + tree_model_->GetPath(index.siblingAtColumn(std::to_underlying(TreeEnumOrder::kParty)).data().toInt());
-    return CalculateTextSize(text);
+    return CalculateTextSize(text, option);
 }

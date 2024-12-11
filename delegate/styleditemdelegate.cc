@@ -4,8 +4,6 @@
 #include <QFontMetrics>
 
 const QLocale StyledItemDelegate::locale_ { QLocale::English, QLocale::UnitedStates };
-std::optional<QFontMetrics> StyledItemDelegate::fm_ = std::nullopt;
-std::optional<int> StyledItemDelegate::text_margin_ = std::nullopt;
 
 StyledItemDelegate::StyledItemDelegate(QObject* parent)
     : QStyledItemDelegate { parent }
@@ -14,19 +12,15 @@ StyledItemDelegate::StyledItemDelegate(QObject* parent)
 
 void StyledItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
 {
-    editor->setFixedHeight(option.rect.height());
-    editor->setFixedWidth(option.rect.width());
     editor->setGeometry(option.rect);
 }
 
-void StyledItemDelegate::SetFontMetrics() { fm_ = QFontMetrics(QApplication::font()); }
-
-void StyledItemDelegate::SetTextMargin() { text_margin_ = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + coefficient_; }
-
-QSize StyledItemDelegate::CalculateTextSize(CString& text)
+QSize StyledItemDelegate::CalculateTextSize(CString& text, const QStyleOptionViewItem& option)
 {
-    const int width { fm_->horizontalAdvance(text) + coefficient_ * text_margin_.value() };
-    const int height { fm_->height() };
+    const int text_margin { QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, option.widget) };
+    const QFontMetrics fm(option.font);
+    const int width { std::max(fm.horizontalAdvance(text) + coefficient_ * text_margin, option.rect.width()) };
+    const int height { std::max(fm.height(), option.rect.height()) };
 
     return QSize(width, height);
 }

@@ -41,8 +41,8 @@ void Spin::paint(QPainter* painter, const QStyleOptionViewItem& option, const QM
     PaintText(locale_.toString(value), painter, option, index, Qt::AlignCenter);
 }
 
-QSize Spin::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize Spin::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const int value { index.data().toInt() };
-    return CalculateTextSize(locale_.toString(value));
+    return CalculateTextSize(locale_.toString(value), option);
 }

@@ -16,8 +16,8 @@ void DoubleSpinR::paint(QPainter* painter, const QStyleOptionViewItem& option, c
     PaintText(locale_.toString(value, 'f', decimal_), painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize DoubleSpinR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize DoubleSpinR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() };
-    return CalculateTextSize(locale_.toString(value, 'f', decimal_));
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_), option);
 }

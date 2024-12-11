@@ -45,15 +45,15 @@ void SpecificUnit::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     PaintText(text, painter, option, index, Qt::AlignLeft | Qt::AlignVCenter);
 }
 
-QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize SpecificUnit::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString& text = tree_model_->GetPath(index.data().toInt());
-    return CalculateTextSize(text);
+    return CalculateTextSize(text, option);
 }
 
 void SpecificUnit::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const QSize text_size { CalculateTextSize(tree_model_->GetPath(index.data().toInt())) };
+    const QSize text_size { CalculateTextSize(tree_model_->GetPath(index.data().toInt()), option) };
     const int width { std::max(option.rect.width(), text_size.width()) };
     const int height { std::max(option.rect.height(), text_size.height()) };
 

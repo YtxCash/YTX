@@ -47,8 +47,8 @@ void TaxRate::paint(QPainter* painter, const QStyleOptionViewItem& option, const
     PaintText(locale_.toString(value, 'f', decimal_) + kSuffixPERCENT, painter, option, index, Qt::AlignRight | Qt::AlignVCenter);
 }
 
-QSize TaxRate::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize TaxRate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const double value { index.data().toDouble() * kHundred };
-    return CalculateTextSize(locale_.toString(value, 'f', decimal_) + kSuffixPERCENT);
+    return CalculateTextSize(locale_.toString(value, 'f', decimal_) + kSuffixPERCENT, option);
 }

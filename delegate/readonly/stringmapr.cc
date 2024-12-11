@@ -13,10 +13,10 @@ void StringMapR::paint(QPainter* painter, const QStyleOptionViewItem& option, co
     PaintText(MapValue(index.data().toInt()), painter, option, index, Qt::AlignCenter);
 }
 
-QSize StringMapR::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize StringMapR::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const QString text = MapValue(index.data().toInt());
-    return CalculateTextSize(text);
+    return CalculateTextSize(text, option);
 }
 
 QString StringMapR::MapValue(int key) const

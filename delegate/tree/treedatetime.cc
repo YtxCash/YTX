@@ -44,8 +44,8 @@ void TreeDateTime::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     PaintText(date_time.toString(date_format_), painter, option, index, Qt::AlignCenter);
 }
 
-QSize TreeDateTime::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& index) const
+QSize TreeDateTime::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     auto text { index.data().toDateTime().toString(date_format_) };
-    return CalculateTextSize(text);
+    return CalculateTextSize(text, option);
 }
