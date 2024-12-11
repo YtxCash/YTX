@@ -78,7 +78,7 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     , config_dir_ { config_dir }
 {
     ResourceFile();
-    SharedInterface(config_dir);
+    AppSettings(config_dir);
 
     ui->setupUi(this);
     SignalBlocker blocker(this);
@@ -91,9 +91,9 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     qApp->setWindowIcon(QIcon(":/logo/logo/logo.png"));
     this->setAcceptDrops(true);
 
-    MainWindowUtils::RestoreState(ui->splitter, shared_interface_, kWindow, kSplitterState);
-    MainWindowUtils::RestoreState(this, shared_interface_, kWindow, kMainwindowState);
-    MainWindowUtils::RestoreGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
+    MainWindowUtils::RestoreState(ui->splitter, app_settings_, kWindow, kSplitterState);
+    MainWindowUtils::RestoreState(this, app_settings_, kWindow, kMainwindowState);
+    MainWindowUtils::RestoreGeometry(this, app_settings_, kWindow, kMainwindowGeometry);
 
     RestoreRecentFile();
     EnableAction(false);
@@ -107,26 +107,26 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    MainWindowUtils::SaveState(ui->splitter, shared_interface_, kWindow, kSplitterState);
-    MainWindowUtils::SaveState(this, shared_interface_, kWindow, kMainwindowState);
-    MainWindowUtils::SaveGeometry(this, shared_interface_, kWindow, kMainwindowGeometry);
-    shared_interface_->setValue(kStartSection, std::to_underlying(start_));
+    MainWindowUtils::SaveState(ui->splitter, app_settings_, kWindow, kSplitterState);
+    MainWindowUtils::SaveState(this, app_settings_, kWindow, kMainwindowState);
+    MainWindowUtils::SaveGeometry(this, app_settings_, kWindow, kMainwindowGeometry);
+    app_settings_->setValue(kStartSection, std::to_underlying(start_));
 
     if (lock_file_) {
-        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(finance_table_hash_), kFinance, kTabID);
-        MainWindowUtils::SaveState(finance_tree_->View()->header(), exclusive_interface_, kFinance, kHeaderState);
+        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(finance_table_hash_), kFinance, kTabID);
+        MainWindowUtils::SaveState(finance_tree_->View()->header(), file_settings_, kFinance, kHeaderState);
 
-        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(product_table_hash_), kProduct, kTabID);
-        MainWindowUtils::SaveState(product_tree_->View()->header(), exclusive_interface_, kProduct, kHeaderState);
+        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(product_table_hash_), kProduct, kTabID);
+        MainWindowUtils::SaveState(product_tree_->View()->header(), file_settings_, kProduct, kHeaderState);
 
-        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(stakeholder_table_hash_), kStakeholder, kTabID);
-        MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), exclusive_interface_, kStakeholder, kHeaderState);
+        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(stakeholder_table_hash_), kStakeholder, kTabID);
+        MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), file_settings_, kStakeholder, kHeaderState);
 
-        MainWindowUtils::WriteTabID(exclusive_interface_, MainWindowUtils::SaveTab(task_table_hash_), kTask, kTabID);
-        MainWindowUtils::SaveState(task_tree_->View()->header(), exclusive_interface_, kTask, kHeaderState);
+        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(task_table_hash_), kTask, kTabID);
+        MainWindowUtils::SaveState(task_tree_->View()->header(), file_settings_, kTask, kHeaderState);
 
-        MainWindowUtils::SaveState(sales_tree_->View()->header(), exclusive_interface_, kSales, kHeaderState);
-        MainWindowUtils::SaveState(purchase_tree_->View()->header(), exclusive_interface_, kPurchase, kHeaderState);
+        MainWindowUtils::SaveState(sales_tree_->View()->header(), file_settings_, kSales, kHeaderState);
+        MainWindowUtils::SaveState(purchase_tree_->View()->header(), file_settings_, kPurchase, kHeaderState);
     }
 
     delete ui;
@@ -165,7 +165,7 @@ bool MainWindow::OpenFile(CString& file_path)
     const auto& complete_base_name { file_info.completeBaseName() };
 
     this->setWindowTitle(complete_base_name);
-    ExclusiveInterface(config_dir_, complete_base_name);
+    FileSettings(config_dir_, complete_base_name);
 
     sql_ = MainwindowSqlite(start_);
     SetFinanceData();
@@ -569,14 +569,14 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info.section, 0 }));
 
-    MainWindowUtils::RestoreState(view->header(), exclusive_interface_, info.node, kHeaderState);
+    MainWindowUtils::RestoreState(view->header(), file_settings_, info.node, kHeaderState);
 
     switch (info.section) {
     case Section::kFinance:
     case Section::kTask:
     case Section::kProduct:
     case Section::kStakeholder:
-        RestoreTab(model, table_hash, MainWindowUtils::ReadTabID(exclusive_interface_, info.node, kTabID), data, settings);
+        RestoreTab(model, table_hash, MainWindowUtils::ReadTabID(file_settings_, info.node, kTabID), data, settings);
         break;
     default:
         break;
@@ -930,7 +930,7 @@ QStandardItemModel* MainWindow::CreateModelFromList(QStringList& list, QObject* 
 
 void MainWindow::RestoreRecentFile()
 {
-    recent_file_ = shared_interface_->value(kRecentFile).toStringList();
+    recent_file_ = app_settings_->value(kRecentFile).toStringList();
 
     auto* recent_menu { ui->menuRecent };
     QStringList valid_recent_file {};
@@ -1032,7 +1032,7 @@ void MainWindow::SetTabWidget()
     tab_widget->setTabsClosable(true);
     tab_widget->setElideMode(Qt::ElideNone);
 
-    start_ = Section(shared_interface_->value(kStartSection, 0).toInt());
+    start_ = Section(app_settings_->value(kStartSection, 0).toInt());
 
     switch (start_) {
     case Section::kFinance:
@@ -1963,10 +1963,10 @@ void MainWindow::UpdateInterface(CInterface& interface)
 
     interface_ = interface;
 
-    shared_interface_->beginGroup(kInterface);
-    shared_interface_->setValue(kLanguage, interface.language);
-    shared_interface_->setValue(kSeparator, interface.separator);
-    shared_interface_->endGroup();
+    app_settings_->beginGroup(kInterface);
+    app_settings_->setValue(kLanguage, interface.language);
+    app_settings_->setValue(kSeparator, interface.separator);
+    app_settings_->endGroup();
 }
 
 void MainWindow::UpdateTranslate() const
@@ -2009,7 +2009,7 @@ void MainWindow::UpdateTranslate() const
     }
 }
 
-void MainWindow::SaveRecentFile() const { shared_interface_->setValue(kRecentFile, recent_file_); }
+void MainWindow::SaveRecentFile() const { app_settings_->setValue(kRecentFile, recent_file_); }
 
 void MainWindow::UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool branch) const
 {
@@ -2091,10 +2091,9 @@ void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
     ;
 }
 
-void MainWindow::SharedInterface(CString& dir_path)
+void MainWindow::AppSettings(CString& dir_path)
 {
-    static QSettings shared_interface(dir_path + kSlash + ytx + kSuffixINI, QSettings::IniFormat);
-    shared_interface_ = &shared_interface;
+    app_settings_ = std::make_unique<QSettings>(dir_path + kSlash + ytx + kSuffixINI, QSettings::IniFormat);
 
     QString language_code {};
 
@@ -2110,11 +2109,11 @@ void MainWindow::SharedInterface(CString& dir_path)
         break;
     }
 
-    shared_interface.beginGroup(kInterface);
-    interface_.language = shared_interface.value(kLanguage, language_code).toString();
-    interface_.theme = shared_interface.value(kTheme, kSolarizedDark).toString();
-    interface_.separator = shared_interface.value(kSeparator, kDash).toString();
-    shared_interface.endGroup();
+    app_settings_->beginGroup(kInterface);
+    interface_.language = app_settings_->value(kLanguage, language_code).toString();
+    interface_.theme = app_settings_->value(kTheme, kSolarizedDark).toString();
+    interface_.separator = app_settings_->value(kSeparator, kDash).toString();
+    app_settings_->endGroup();
 
     LoadAndInstallTranslator(interface_.language);
 
@@ -2132,10 +2131,9 @@ void MainWindow::SharedInterface(CString& dir_path)
     });
 }
 
-void MainWindow::ExclusiveInterface(CString& dir_path, CString& base_name)
+void MainWindow::FileSettings(CString& dir_path, CString& base_name)
 {
-    static QSettings exclusive_interface(dir_path + kSlash + base_name + kSuffixINI, QSettings::IniFormat);
-    exclusive_interface_ = &exclusive_interface;
+    file_settings_ = std::make_unique<QSettings>(dir_path + kSlash + base_name + kSuffixINI, QSettings::IniFormat);
 }
 
 void MainWindow::ResourceFile() const

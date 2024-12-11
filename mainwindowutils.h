@@ -39,8 +39,8 @@ public:
     static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
 
     static QVariantList SaveTab(CTableHash& table_hash);
-    static void WriteTabID(QSettings* interface, const QVariantList& list, CString& section_name, CString& property);
-    static QSet<int> ReadTabID(QSettings* interface, CString& section_name, CString& property);
+    static void WriteTabID(std::shared_ptr<QSettings> settings, const QVariantList& list, CString& section_name, CString& property);
+    static QSet<int> ReadTabID(std::shared_ptr<QSettings> settings, CString& section_name, CString& property);
 
     static PTableModel GetTableModel(QWidget* widget)
     {
@@ -87,49 +87,49 @@ public:
         }
     }
 
-    template <InheritQWidget T> static void SaveState(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> static void SaveState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
     {
-        if (!widget || !interface) {
-            qWarning() << "SaveState: Invalid parameters (widget or interface is null)";
+        if (!widget || !settings) {
+            qWarning() << "SaveState: Invalid parameters (widget or settings is null)";
             return;
         }
 
         auto state { widget->saveState() };
-        interface->setValue(QString("%1/%2").arg(section_name, property), state);
+        settings->setValue(QString("%1/%2").arg(section_name, property), state);
     }
 
-    template <InheritQWidget T> static void RestoreState(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> static void RestoreState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
     {
-        if (!widget || !interface) {
-            qWarning() << "RestoreState: Invalid parameters (widget or interface is null)";
+        if (!widget || !settings) {
+            qWarning() << "RestoreState: Invalid parameters (widget or settings is null)";
             return;
         }
 
-        auto state { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
+        auto state { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
 
         if (!state.isEmpty())
             widget->restoreState(state);
     }
 
-    template <InheritQWidget T> static void SaveGeometry(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> static void SaveGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
     {
-        if (!widget || !interface) {
-            qWarning() << "SaveGeometry: Invalid parameters (widget or interface is null)";
+        if (!widget || !settings) {
+            qWarning() << "SaveGeometry: Invalid parameters (widget or settings is null)";
             return;
         }
 
         auto geometry { widget->saveGeometry() };
-        interface->setValue(QString("%1/%2").arg(section_name, property), geometry);
+        settings->setValue(QString("%1/%2").arg(section_name, property), geometry);
     }
 
-    template <InheritQWidget T> static void RestoreGeometry(T* widget, QSettings* interface, CString& section_name, CString& property)
+    template <InheritQWidget T> static void RestoreGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
     {
-        if (!widget || !interface) {
-            qWarning() << "RestoreGeometry: Invalid parameters (widget or interface is null)";
+        if (!widget || !settings) {
+            qWarning() << "RestoreGeometry: Invalid parameters (widget or settings is null)";
             return;
         }
 
-        auto geometry { interface->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
+        auto geometry { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
         if (!geometry.isEmpty())
             widget->restoreGeometry(geometry);
     }

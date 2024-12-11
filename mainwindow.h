@@ -182,8 +182,8 @@ private:
     void LoadAndInstallTranslator(CString& language);
     void ResizeColumn(QHeaderView* header, bool table_view = true) const;
 
-    void SharedInterface(CString& dir_path);
-    void ExclusiveInterface(CString& dir_path, CString& base_name);
+    void AppSettings(CString& dir_path);
+    void FileSettings(CString& dir_path, CString& base_name);
     void ResourceFile() const;
     bool LockFile(const QFileInfo& file_info);
 
@@ -205,14 +205,12 @@ private:
 
     QTranslator qt_translator_ {};
     QTranslator ytx_translator_ {};
-
-    QString config_dir_ {};
-    std::unique_ptr<QLockFile> lock_file_;
-
-    QSettings* shared_interface_ {};
-    QSettings* exclusive_interface_ {};
-
     Interface interface_ {};
+    QString config_dir_ {};
+
+    std::unique_ptr<QLockFile> lock_file_;
+    std::shared_ptr<QSettings> app_settings_ {};
+    std::shared_ptr<QSettings> file_settings_ {};
 
     TreeWidget* tree_widget_ {};
     TableHash* table_hash_ {};
