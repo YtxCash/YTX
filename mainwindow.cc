@@ -110,19 +110,19 @@ MainWindow::~MainWindow()
     MainWindowUtils::SaveSettings(ui->splitter, &QSplitter::saveState, app_settings_, kWindow, kSplitterState);
     MainWindowUtils::SaveSettings(this, &QMainWindow::saveState, app_settings_, kWindow, kMainwindowState, 0);
     MainWindowUtils::SaveSettings(this, &QMainWindow::saveGeometry, app_settings_, kWindow, kMainwindowGeometry);
-    app_settings_->setValue(kStartSection, std::to_underlying(start_));
+    MainWindowUtils::WriteSettings(app_settings_, std::to_underlying(start_), kStart, kSection);
 
     if (lock_file_) {
-        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(finance_table_hash_), kFinance, kTabID);
+        MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(finance_table_hash_), kFinance, kTabID);
         MainWindowUtils::SaveSettings(finance_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kFinance, kHeaderState);
 
-        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(product_table_hash_), kProduct, kTabID);
+        MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(product_table_hash_), kProduct, kTabID);
         MainWindowUtils::SaveSettings(product_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kProduct, kHeaderState);
 
-        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(stakeholder_table_hash_), kStakeholder, kTabID);
+        MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(stakeholder_table_hash_), kStakeholder, kTabID);
         MainWindowUtils::SaveSettings(stakeholder_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kStakeholder, kHeaderState);
 
-        MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(task_table_hash_), kTask, kTabID);
+        MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(task_table_hash_), kTask, kTabID);
         MainWindowUtils::SaveSettings(task_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kTask, kHeaderState);
 
         MainWindowUtils::SaveSettings(sales_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kSales, kHeaderState);
@@ -943,7 +943,7 @@ void MainWindow::RestoreRecentFile()
 
     if (recent_file_ != valid_recent_file) {
         recent_file_ = valid_recent_file;
-        SaveRecentFile();
+        MainWindowUtils::WriteSettings(app_settings_, recent_file_, kRecent, kFile);
     }
 
     SetClearMenuAction();
@@ -964,7 +964,7 @@ void MainWindow::AddRecentFile(CString& file_path)
             ui->menuRecent->insertAction(ui->actionSeparator, action);
 
         recent_file_.emplaceBack(path);
-        SaveRecentFile();
+        MainWindowUtils::WriteSettings(app_settings_, recent_file_, kRecent, kFile);
     }
 }
 
@@ -2002,8 +2002,6 @@ void MainWindow::UpdateTranslate() const
     }
 }
 
-void MainWindow::SaveRecentFile() const { app_settings_->setValue(kRecentFile, recent_file_); }
-
 void MainWindow::UpdateStakeholderReference(QSet<int> stakeholder_nodes, bool branch) const
 {
     auto* widget { ui->tabWidget };
@@ -2291,7 +2289,7 @@ void MainWindow::on_actionClearMenu_triggered()
 {
     ui->menuRecent->clear();
     recent_file_.clear();
-    SaveRecentFile();
+    MainWindowUtils::WriteSettings(app_settings_, recent_file_, kRecent, kFile);
 }
 
 void MainWindow::on_tabWidget_tabBarDoubleClicked(int index) { RNodeLocation(ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id); }

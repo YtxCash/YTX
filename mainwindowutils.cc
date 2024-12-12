@@ -14,16 +14,6 @@ QVariantList MainWindowUtils::SaveTab(CTableHash& table_hash)
     return list;
 }
 
-void MainWindowUtils::WriteTabID(std::shared_ptr<QSettings> settings, const QVariantList& list, CString& section_name, CString& property)
-{
-    if (!settings) {
-        qWarning() << "SaveTab: Invalid parameters (settings is null)";
-        return;
-    }
-
-    settings->setValue(QString("%1/%2").arg(section_name, property), list);
-}
-
 QSet<int> MainWindowUtils::ReadTabID(std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
 {
     if (!settings)

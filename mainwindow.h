@@ -190,7 +190,6 @@ private:
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, const QSet<int>& set, CData& data, CSettings& settings);
 
     void EnableAction(bool enable);
-    void SaveRecentFile() const;
     void RestoreRecentFile();
     void AddRecentFile(CString& file_path);
 
