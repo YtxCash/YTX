@@ -300,9 +300,9 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
 
     CString name { tree_model->Name(node_id) };
     auto* sql { data->sql };
-    const auto& info { data->info };
-    auto section { info.section };
-    auto rule { tree_model->Rule(node_id) };
+    const Info& info { data->info };
+    const Section section { info.section };
+    const bool rule { tree_model->Rule(node_id) };
 
     TableModel* model {};
 
@@ -325,7 +325,7 @@ void MainWindow::CreateTableFPTS(PTreeModel tree_model, TableHash* table_hash, C
 
     TableWidgetFPTS* widget { new TableWidgetFPTS(model, this) };
 
-    int tab_index { ui->tabWidget->addTab(widget, name) };
+    const int tab_index { ui->tabWidget->addTab(widget, name) };
     auto* tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
@@ -361,14 +361,14 @@ void MainWindow::CreateTableSupport(PTreeModel tree_model, TableHash* table_hash
 
     CString name { tree_model->Name(node_id) };
     auto* sql { data->sql };
-    const auto& info { data->info };
-    auto section { info.section };
-    auto rule { tree_model->Rule(node_id) };
+    const Info& info { data->info };
+    const Section section { info.section };
+    const bool rule { tree_model->Rule(node_id) };
 
     auto* model { new TableModelSupport(sql, rule, node_id, info, this) };
     TableWidgetFPTS* widget { new TableWidgetFPTS(model, this) };
 
-    int tab_index { ui->tabWidget->addTab(widget, name) };
+    const int tab_index { ui->tabWidget->addTab(widget, name) };
     auto* tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
@@ -387,7 +387,7 @@ void MainWindow::CreateTableSupport(PTreeModel tree_model, TableHash* table_hash
 void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, CData* data, CSettings* settings, int node_id, int party_id)
 {
     const auto& info { data->info };
-    auto section { info.section };
+    const Section section { info.section };
 
     if (section != Section::kSales && section != Section::kPurchase)
         return;
@@ -402,7 +402,7 @@ void MainWindow::CreateTableOrder(PTreeModel tree_model, TableHash* table_hash, 
 
     TableWidgetOrder* widget { new TableWidgetOrder(std::move(params), this) };
 
-    int tab_index { ui->tabWidget->addTab(widget, stakeholder_tree_->Model()->Name(party_id)) };
+    const int tab_index { ui->tabWidget->addTab(widget, stakeholder_tree_->Model()->Name(party_id)) };
     auto* tab_bar { ui->tabWidget->tabBar() };
 
     tab_bar->setTabData(tab_index, QVariant::fromValue(Tab { section, node_id }));
@@ -776,7 +776,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     if (!view || !MainWindowUtils::HasSelection(view))
         return;
 
-    auto index { view->currentIndex() };
+    const auto index { view->currentIndex() };
     if (!index.isValid())
         return;
 
@@ -821,7 +821,7 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
         return;
     }
 
-    QModelIndex current_index { view->currentIndex() };
+    const QModelIndex current_index { view->currentIndex() };
     if (!current_index.isValid()) {
         return;
     }
@@ -945,7 +945,7 @@ void MainWindow::RestoreRecentFile()
 
 void MainWindow::AddRecentFile(CString& file_path)
 {
-    QString path { QDir::toNativeSeparators(file_path) };
+    CString path { QDir::toNativeSeparators(file_path) };
 
     if (!recent_file_.contains(path)) {
         auto* menu { ui->menuRecent };
@@ -964,7 +964,7 @@ void MainWindow::AddRecentFile(CString& file_path)
 
 bool MainWindow::LockFile(const QFileInfo& file_info)
 {
-    const QString lock_file_path { file_info.dir().filePath(file_info.completeBaseName() + kSuffixLOCK) };
+    CString lock_file_path { file_info.dir().filePath(file_info.completeBaseName() + kSuffixLOCK) };
 
     lock_file_ = std::make_unique<QLockFile>(lock_file_path);
 
@@ -997,7 +997,7 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index)
     if (index == 0)
         return;
 
-    int node_id { ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id };
+    const int node_id { ui->tabWidget->tabBar()->tabData(index).value<Tab>().node_id };
     auto* widget { table_hash_->value(node_id) };
 
     MainWindowUtils::FreeWidget(widget);
@@ -1132,7 +1132,7 @@ void MainWindow::SetConnect() const
 
 void MainWindow::SetFinanceData()
 {
-    auto section { Section::kFinance };
+    const auto section { Section::kFinance };
     auto& info { finance_data_.info };
     auto& sql { finance_data_.sql };
 
@@ -1173,7 +1173,7 @@ void MainWindow::SetFinanceData()
 
 void MainWindow::SetProductData()
 {
-    auto section { Section::kProduct };
+    const auto section { Section::kProduct };
     auto& info { product_data_.info };
     auto& sql { product_data_.sql };
 
@@ -1212,7 +1212,7 @@ void MainWindow::SetProductData()
 
 void MainWindow::SetStakeholderData()
 {
-    auto section { Section::kStakeholder };
+    const auto section { Section::kStakeholder };
     auto& info { stakeholder_data_.info };
     auto& sql { stakeholder_data_.sql };
 
@@ -1255,7 +1255,7 @@ void MainWindow::SetStakeholderData()
 
 void MainWindow::SetTaskData()
 {
-    auto section { Section::kTask };
+    const auto section { Section::kTask };
     auto& info { task_data_.info };
     auto& sql { task_data_.sql };
 
@@ -1293,7 +1293,7 @@ void MainWindow::SetTaskData()
 
 void MainWindow::SetSalesData()
 {
-    auto section { Section::kSales };
+    const auto section { Section::kSales };
     auto& info { sales_data_.info };
     auto& sql { sales_data_.sql };
 
@@ -1334,7 +1334,7 @@ void MainWindow::SetSalesData()
 
 void MainWindow::SetPurchaseData()
 {
-    auto section { Section::kPurchase };
+    const auto section { Section::kPurchase };
     auto& info { purchase_data_.info };
     auto& sql { purchase_data_.sql };
 
@@ -1481,7 +1481,7 @@ void MainWindow::on_actionAppendNode_triggered()
     if (!MainWindowUtils::HasSelection(view))
         return;
 
-    auto parent_index { view->currentIndex() };
+    const auto parent_index { view->currentIndex() };
     if (!parent_index.isValid())
         return;
 
@@ -1534,7 +1534,7 @@ void MainWindow::on_actionJump_triggered()
     if (!MainWindowUtils::HasSelection(view))
         return;
 
-    auto index { view->currentIndex() };
+    const auto index { view->currentIndex() };
     if (!index.isValid())
         return;
 
@@ -1563,7 +1563,7 @@ void MainWindow::on_actionSupportJump_triggered()
     if (!MainWindowUtils::HasSelection(view))
         return;
 
-    auto index { view->currentIndex() };
+    const auto index { view->currentIndex() };
     if (!index.isValid())
         return;
 
@@ -1789,7 +1789,7 @@ void MainWindow::REditTransDocument()
     if (!MainWindowUtils::HasSelection(view))
         return;
 
-    auto index { view->currentIndex() };
+    const auto index { view->currentIndex() };
     if (!index.isValid())
         return;
 
@@ -1814,7 +1814,7 @@ void MainWindow::REditNodeDocument()
     if (!MainWindowUtils::HasSelection(view))
         return;
 
-    auto index { view->currentIndex() };
+    const auto index { view->currentIndex() };
     if (!index.isValid())
         return;
 
