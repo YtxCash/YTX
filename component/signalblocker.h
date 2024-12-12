@@ -35,13 +35,13 @@ public:
         for (auto* widget : list)
             if (widget && !widget->signalsBlocked()) {
                 widget->blockSignals(true);
-                list_.emplace_back(widget);
+                blocked_list_.emplace_back(widget);
             }
     }
 
     ~SignalBlocker()
     {
-        for (auto* widget : list_)
+        for (auto* widget : blocked_list_)
             widget->blockSignals(false);
     }
 
@@ -51,7 +51,7 @@ public:
     SignalBlocker& operator=(SignalBlocker&&) = delete;
 
 private:
-    std::vector<QWidget*> list_ {};
+    std::vector<QWidget*> blocked_list_ {};
 };
 
 #endif // SIGNALBLOCKER_H
