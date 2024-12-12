@@ -569,7 +569,7 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
     case Section::kTask:
     case Section::kProduct:
     case Section::kStakeholder:
-        RestoreTab(model, table_hash, MainWindowUtils::ReadTabID(file_settings_, info.node, kTabID), data, settings);
+        RestoreTab(model, table_hash, MainWindowUtils::ReadSettings(file_settings_, info.node, kTabID), data, settings);
         break;
     default:
         break;

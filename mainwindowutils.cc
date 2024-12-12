@@ -14,12 +14,12 @@ QVariantList MainWindowUtils::SaveTab(CTableHash& table_hash)
     return list;
 }
 
-QSet<int> MainWindowUtils::ReadTabID(std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+QSet<int> MainWindowUtils::ReadSettings(std::shared_ptr<QSettings> settings, CString& section, CString& property)
 {
     if (!settings)
         return {};
 
-    auto variant { settings->value(QString("%1/%2").arg(section_name, property)) };
+    auto variant { settings->value(QString("%1/%2").arg(section, property)) };
 
     if (!variant.isValid() || !variant.canConvert<QVariantList>())
         return {};
@@ -31,4 +31,14 @@ QSet<int> MainWindowUtils::ReadTabID(std::shared_ptr<QSettings> settings, CStrin
         set.insert(node_id.toInt());
 
     return set;
+}
+
+void MainWindowUtils::WriteSettings(std::shared_ptr<QSettings> settings, const QVariant& value, CString& section, CString& property)
+{
+    if (!settings) {
+        qWarning() << "WriteTabID: Invalid parameters (settings is null)";
+        return;
+    }
+
+    settings->setValue(QString("%1/%2").arg(section, property), value);
 }

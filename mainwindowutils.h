@@ -35,9 +35,6 @@ concept InheritQWidget = std::is_base_of_v<QWidget, T>;
 template <typename T>
 concept MemberFunction = std::is_member_function_pointer_v<T>;
 
-template <typename T>
-concept VariantValue = requires(T t) { QVariant::fromValue(t); };
-
 class MainWindowUtils {
 public:
     static bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
@@ -45,7 +42,9 @@ public:
     static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
 
     static QVariantList SaveTab(CTableHash& table_hash);
-    static QSet<int> ReadTabID(std::shared_ptr<QSettings> settings, CString& section_name, CString& property);
+    static QSet<int> ReadSettings(std::shared_ptr<QSettings> settings, CString& section, CString& property);
+    static void WriteSettings(std::shared_ptr<QSettings> settings, const QVariant& value, CString& section, CString& property);
+
     static PTableModel GetTableModel(QWidget* widget)
     {
         if (!widget)
@@ -62,16 +61,6 @@ public:
 
         assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
         return static_cast<TableWidget*>(widget)->View();
-    }
-
-    template <VariantValue Value> static void WriteSettings(std::shared_ptr<QSettings> settings, const Value& value, CString& section, CString& property)
-    {
-        if (!settings) {
-            qWarning() << "WriteTabID: Invalid parameters (settings is null)";
-            return;
-        }
-
-        settings->setValue(QString("%1/%2").arg(section, property), value);
     }
 
     template <InheritQAbstractItemView T> static bool HasSelection(QPointer<T> view)
