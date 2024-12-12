@@ -64,14 +64,14 @@ public:
         return static_cast<TableWidget*>(widget)->View();
     }
 
-    template <VariantValue Value> static void WriteSettings(std::shared_ptr<QSettings> settings, const Value& value, CString& section_name, CString& property)
+    template <VariantValue Value> static void WriteSettings(std::shared_ptr<QSettings> settings, const Value& value, CString& section, CString& property)
     {
         if (!settings) {
             qWarning() << "WriteTabID: Invalid parameters (settings is null)";
             return;
         }
 
-        settings->setValue(QString("%1/%2").arg(section_name, property), value);
+        settings->setValue(QString("%1/%2").arg(section, property), value);
     }
 
     template <InheritQAbstractItemView T> static bool HasSelection(QPointer<T> view)
@@ -125,7 +125,7 @@ public:
     //         widget->restoreState(state);
     // }
 
-    // template <InheritQWidget T> static void SaveGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+    // template <InheritQWidget T> static void SaveGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section, CString& property)
     // {
     //     if (!widget || !settings) {
     //         qWarning() << "SaveGeometry: Invalid parameters (widget or settings is null)";
@@ -133,11 +133,11 @@ public:
     //     }
 
     //     auto geometry { widget->saveGeometry() };
-    //     settings->setValue(QString("%1/%2").arg(section_name, property), geometry);
+    //     settings->setValue(QString("%1/%2").arg(section, property), geometry);
     // }
 
     template <InheritQWidget Widget, MemberFunction Function, typename... Args>
-    static void SaveSettings(Widget* widget, Function function, std::shared_ptr<QSettings> settings, CString& section_name, CString& property, Args&&... args)
+    static void WriteSettings(Widget* widget, Function function, std::shared_ptr<QSettings> settings, CString& section, CString& property, Args&&... args)
     {
         static_assert(std::is_same_v<decltype((std::declval<Widget>().*function)(std::forward<Args>(args)...)), QByteArray>, "Function must return QByteArray");
 
@@ -147,12 +147,11 @@ public:
         }
 
         auto value { std::invoke(function, widget, std::forward<Args>(args)...) };
-        settings->setValue(QString("%1/%2").arg(section_name, property), value);
+        settings->setValue(QString("%1/%2").arg(section, property), value);
     }
 
     template <InheritQWidget Widget, MemberFunction Function, typename... Args>
-    static void RestoreSettings(
-        Widget* widget, Function function, std::shared_ptr<QSettings> settings, CString& section_name, CString& property, Args&&... args)
+    static void ReadSettings(Widget* widget, Function function, std::shared_ptr<QSettings> settings, CString& section, CString& property, Args&&... args)
     {
         static_assert(std::is_same_v<decltype((std::declval<Widget>().*function)(std::declval<QByteArray>(), std::declval<Args>()...)), bool>,
             "Function must accept QByteArray and additional arguments, and return bool");
@@ -162,7 +161,7 @@ public:
             return;
         }
 
-        auto value { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
+        auto value { settings->value(QString("%1/%2").arg(section, property)).toByteArray() };
         if (!value.isEmpty()) {
             std::invoke(function, widget, value, std::forward<Args>(args)...);
         }

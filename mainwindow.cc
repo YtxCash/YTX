@@ -91,9 +91,9 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     qApp->setWindowIcon(QIcon(":/logo/logo/logo.png"));
     this->setAcceptDrops(true);
 
-    MainWindowUtils::RestoreSettings(ui->splitter, &QSplitter::restoreState, app_settings_, kWindow, kSplitterState);
-    MainWindowUtils::RestoreSettings(this, &QMainWindow::restoreState, app_settings_, kWindow, kMainwindowState, 0);
-    MainWindowUtils::RestoreSettings(this, &QMainWindow::restoreGeometry, app_settings_, kWindow, kMainwindowGeometry);
+    MainWindowUtils::ReadSettings(ui->splitter, &QSplitter::restoreState, app_settings_, kWindow, kSplitterState);
+    MainWindowUtils::ReadSettings(this, &QMainWindow::restoreState, app_settings_, kWindow, kMainwindowState, 0);
+    MainWindowUtils::ReadSettings(this, &QMainWindow::restoreGeometry, app_settings_, kWindow, kMainwindowGeometry);
 
     RestoreRecentFile();
     EnableAction(false);
@@ -107,26 +107,26 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    MainWindowUtils::SaveSettings(ui->splitter, &QSplitter::saveState, app_settings_, kWindow, kSplitterState);
-    MainWindowUtils::SaveSettings(this, &QMainWindow::saveState, app_settings_, kWindow, kMainwindowState, 0);
-    MainWindowUtils::SaveSettings(this, &QMainWindow::saveGeometry, app_settings_, kWindow, kMainwindowGeometry);
+    MainWindowUtils::WriteSettings(ui->splitter, &QSplitter::saveState, app_settings_, kWindow, kSplitterState);
+    MainWindowUtils::WriteSettings(this, &QMainWindow::saveState, app_settings_, kWindow, kMainwindowState, 0);
+    MainWindowUtils::WriteSettings(this, &QMainWindow::saveGeometry, app_settings_, kWindow, kMainwindowGeometry);
     MainWindowUtils::WriteSettings(app_settings_, std::to_underlying(start_), kStart, kSection);
 
     if (lock_file_) {
         MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(finance_table_hash_), kFinance, kTabID);
-        MainWindowUtils::SaveSettings(finance_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kFinance, kHeaderState);
+        MainWindowUtils::WriteSettings(finance_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kFinance, kHeaderState);
 
         MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(product_table_hash_), kProduct, kTabID);
-        MainWindowUtils::SaveSettings(product_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kProduct, kHeaderState);
+        MainWindowUtils::WriteSettings(product_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kProduct, kHeaderState);
 
         MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(stakeholder_table_hash_), kStakeholder, kTabID);
-        MainWindowUtils::SaveSettings(stakeholder_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kStakeholder, kHeaderState);
+        MainWindowUtils::WriteSettings(stakeholder_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kStakeholder, kHeaderState);
 
         MainWindowUtils::WriteSettings(file_settings_, MainWindowUtils::SaveTab(task_table_hash_), kTask, kTabID);
-        MainWindowUtils::SaveSettings(task_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kTask, kHeaderState);
+        MainWindowUtils::WriteSettings(task_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kTask, kHeaderState);
 
-        MainWindowUtils::SaveSettings(sales_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kSales, kHeaderState);
-        MainWindowUtils::SaveSettings(purchase_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kPurchase, kHeaderState);
+        MainWindowUtils::WriteSettings(sales_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kSales, kHeaderState);
+        MainWindowUtils::WriteSettings(purchase_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kPurchase, kHeaderState);
     }
 
     delete ui;
@@ -562,7 +562,7 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info.section, 0 }));
 
-    MainWindowUtils::RestoreSettings(view->header(), &QHeaderView::restoreState, file_settings_, info.node, kHeaderState);
+    MainWindowUtils::ReadSettings(view->header(), &QHeaderView::restoreState, file_settings_, info.node, kHeaderState);
 
     switch (info.section) {
     case Section::kFinance:
