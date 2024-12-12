@@ -134,10 +134,8 @@ MainWindow::~MainWindow()
 
 bool MainWindow::ROpenFile(CString& file_path)
 {
-    if (file_path.isEmpty()) {
-        TreeModelUtils::ShowTemporaryTooltip(tr("Invalid file path: %1").arg(file_path), kThreeThousand);
+    if (file_path.isEmpty())
         return false;
-    }
 
     if (lock_file_) {
         QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
@@ -158,7 +156,7 @@ bool MainWindow::ROpenFile(CString& file_path)
     const auto& complete_base_name { file_info.completeBaseName() };
 
     this->setWindowTitle(complete_base_name);
-    FileSettings(config_dir_, complete_base_name);
+    file_settings_ = std::make_unique<QSettings>(config_dir_ + kSlash + complete_base_name + kSuffixINI, QSettings::IniFormat);
 
     sql_ = MainwindowSqlite(start_);
     SetFinanceData();
@@ -246,9 +244,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
         return;
 
     if (!table_hash_->contains(node_id)) {
-        auto section { data_->info.section };
-
-        if (section == Section::kSales || section == Section::kPurchase) {
+        if (start_ == Section::kSales || start_ == Section::kPurchase) {
             if (auto it { dialog_hash_->constFind(node_id) }; it != dialog_hash_->constEnd()) {
                 auto dialog { *it };
                 dialog->show();
@@ -264,7 +260,7 @@ void MainWindow::RTreeViewDoubleClicked(const QModelIndex& index)
             CreateTableOrder(tree_widget_->Model(), table_hash_, data_, settings_, node_id, party_id);
         }
 
-        if (section != Section::kSales && section != Section::kPurchase) {
+        if (start_ != Section::kSales && start_ != Section::kPurchase) {
             if (type == kTypeSupport)
                 CreateTableSupport(tree_widget_->Model(), table_hash_, data_, settings_, node_id);
             else
@@ -750,12 +746,10 @@ void MainWindow::InsertNodeFunction(const QModelIndex& parent, int parent_id, in
     node->unit = model->Unit(parent_id);
     model->SetParent(node, parent_id);
 
-    auto section { data_->info.section };
-
-    if (section == Section::kSales || section == Section::kPurchase)
+    if (start_ == Section::kSales || start_ == Section::kPurchase)
         InsertNodeOrder(node, parent, row);
 
-    if (section != Section::kSales && section != Section::kPurchase)
+    if (start_ != Section::kSales && start_ != Section::kPurchase)
         InsertNodeFPTS(node, parent, parent_id, row);
 }
 
@@ -814,7 +808,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
 
     const int unit { index.siblingAtColumn(std::to_underlying(TreeEnum::kUnit)).data().toInt() };
 
-    auto* dialog { new class RemoveNode(model, data_->info.section, node_id, node_type, unit, exteral_reference, this) };
+    auto* dialog { new class RemoveNode(model, start_, node_id, node_type, unit, exteral_reference, this) };
     connect(dialog, &RemoveNode::SRemoveNode, sql, &Sqlite::RRemoveNode);
     connect(dialog, &RemoveNode::SReplaceNode, sql, &Sqlite::RReplaceNode);
     dialog->exec();
@@ -868,7 +862,7 @@ void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int
     if (widget) {
         MainWindowUtils::FreeWidget(widget);
         table_hash_->remove(node_id);
-        SignalStation::Instance().DeregisterModel(data_->info.section, node_id);
+        SignalStation::Instance().DeregisterModel(start_, node_id);
     }
 }
 
@@ -1009,7 +1003,7 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index)
     MainWindowUtils::FreeWidget(widget);
     table_hash_->remove(node_id);
 
-    SignalStation::Instance().DeregisterModel(data_->info.section, node_id);
+    SignalStation::Instance().DeregisterModel(start_, node_id);
 }
 
 void MainWindow::SetTabWidget()
@@ -1447,8 +1441,8 @@ void MainWindow::SetAction() const
     ui->actionSupportJump->setIcon(QIcon(":/solarized_dark/solarized_dark/jump.png"));
     ui->actionPreferences->setIcon(QIcon(":/solarized_dark/solarized_dark/settings.png"));
     ui->actionSearch->setIcon(QIcon(":/solarized_dark/solarized_dark/search.png"));
-    ui->actionNew->setIcon(QIcon(":/solarized_dark/solarized_dark/new.png"));
-    ui->actionOpen->setIcon(QIcon(":/solarized_dark/solarized_dark/open.png"));
+    ui->actionNewFile->setIcon(QIcon(":/solarized_dark/solarized_dark/new.png"));
+    ui->actionOpenFile->setIcon(QIcon(":/solarized_dark/solarized_dark/open.png"));
     ui->actionCheckAll->setIcon(QIcon(":/solarized_dark/solarized_dark/check-all.png"));
     ui->actionCheckNone->setIcon(QIcon(":/solarized_dark/solarized_dark/check-none.png"));
     ui->actionCheckReverse->setIcon(QIcon(":/solarized_dark/solarized_dark/check-reverse.png"));
@@ -1519,7 +1513,7 @@ template <TableWidgetLike T> void MainWindow::AppendTrans(T* widget)
             return;
 
         target_index = model->index(new_row, std::to_underlying(TableEnum::kDateTime));
-    } else if (data_->info.section != Section::kSales && data_->info.section != Section::kPurchase)
+    } else if (start_ != Section::kSales && start_ != Section::kPurchase)
         target_index = model->index(empty_row, std::to_underlying(TableEnum::kRhsNode));
 
     if (target_index.isValid()) {
@@ -1529,7 +1523,7 @@ template <TableWidgetLike T> void MainWindow::AppendTrans(T* widget)
 
 void MainWindow::on_actionJump_triggered()
 {
-    if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
+    if (start_ == Section::kSales || start_ == Section::kPurchase)
         return;
 
     auto* current_widget { ui->tabWidget->currentWidget() };
@@ -1558,7 +1552,7 @@ void MainWindow::on_actionJump_triggered()
 
 void MainWindow::on_actionSupportJump_triggered()
 {
-    if (data_->info.section == Section::kSales || data_->info.section == Section::kPurchase)
+    if (start_ == Section::kSales || start_ == Section::kPurchase)
         return;
 
     auto* current_widget { ui->tabWidget->currentWidget() };
@@ -1610,8 +1604,7 @@ void MainWindow::RTreeViewCustomContextMenuRequested(const QPoint& pos)
 
 void MainWindow::on_actionEditNode_triggered()
 {
-    auto section { data_->info.section };
-    if (section == Section::kSales || section == Section::kPurchase)
+    if (start_ == Section::kSales || start_ == Section::kPurchase)
         return;
 
     const auto* widget { ui->tabWidget->currentWidget() };
@@ -1632,7 +1625,6 @@ void MainWindow::on_actionEditNode_triggered()
 
 void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 {
-    auto section { data_->info.section };
     auto* unit_model { data_->info.unit_model };
 
     QDialog* dialog {};
@@ -1656,7 +1648,7 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 
     auto params { EditNodeParamsFPTS { tmp_node, unit_model, parent_path, name_list, branch_enable, unit_enable } };
 
-    switch (section) {
+    switch (start_) {
     case Section::kFinance:
         dialog = new EditNodeFinance(std::move(params), this);
         break;
@@ -1683,7 +1675,6 @@ void MainWindow::EditNodeFPTS(const QModelIndex& index, int node_id)
 void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int parent_id, int row)
 {
     auto tree_model { tree_widget_->Model() };
-    auto section { data_->info.section };
     auto* unit_model { data_->info.unit_model };
 
     auto parent_path { tree_model->GetPath(parent_id) };
@@ -1695,7 +1686,7 @@ void MainWindow::InsertNodeFPTS(Node* node, const QModelIndex& parent, int paren
     QDialog* dialog {};
     const auto params { EditNodeParamsFPTS { node, unit_model, parent_path, name_list, true, true } };
 
-    switch (section) {
+    switch (start_) {
     case Section::kFinance:
         dialog = new EditNodeFinance(std::move(params), this);
         break;
@@ -1737,12 +1728,11 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
         return;
     }
 
-    auto section { data_->info.section };
     auto* sql { data_->sql };
 
     auto* table_model { new TableModelOrder(sql, node->rule, 0, data_->info, node_shadow, product_tree_->Model(), stakeholder_data_.sql, this) };
 
-    auto params { EditNodeParamsOrder { node_shadow, sql, table_model, stakeholder_tree_->Model(), settings_, section } };
+    auto params { EditNodeParamsOrder { node_shadow, sql, table_model, stakeholder_tree_->Model(), settings_, start_ } };
     auto* dialog { new EditNodeOrder(std::move(params), this) };
 
     dialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -1808,7 +1798,7 @@ void MainWindow::REditTransDocument()
     auto* document_pointer { model->GetDocumentPointer(index) };
     const int trans_id { index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
-    auto* dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
+    auto* dialog { new EditDocument(start_, document_pointer, document_dir, this) };
 
     if (dialog->exec() == QDialog::Accepted)
         data_->sql->UpdateField(data_->info.transaction, document_pointer->join(kSemicolon), kDocument, trans_id);
@@ -1833,7 +1823,7 @@ void MainWindow::REditNodeDocument()
     auto* document_pointer { model->GetDocumentPointer(index) };
     const int id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
 
-    auto* dialog { new EditDocument(data_->info.section, document_pointer, document_dir, this) };
+    auto* dialog { new EditDocument(start_, document_pointer, document_dir, this) };
 
     if (dialog->exec() == QDialog::Accepted)
         data_->sql->UpdateField(data_->info.node, document_pointer->join(kSemicolon), kDocument, id);
@@ -1851,7 +1841,7 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
 
     if (!branch) {
         nodes.insert(node_id);
-        if (data_->info.section == Section::kStakeholder)
+        if (start_ == Section::kStakeholder)
             UpdateStakeholderReference(nodes, branch);
 
         if (!table_hash_->contains(node_id))
@@ -1878,7 +1868,7 @@ void MainWindow::RUpdateName(int node_id, CString& name, bool branch)
         }
     }
 
-    if (data_->info.section == Section::kStakeholder)
+    if (start_ == Section::kStakeholder)
         UpdateStakeholderReference(nodes, branch);
 }
 
@@ -1901,7 +1891,7 @@ void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
             tree_widget_->Model()->UpdateDefaultUnit(settings.default_unit);
 
         tree_widget_->SetStatus();
-        sql_.UpdateSettings(settings, data_->info.section);
+        sql_.UpdateSettings(settings, start_);
     }
 
     if (resize_column) {
@@ -1919,7 +1909,7 @@ void MainWindow::RFreeView(int node_id)
     if (view) {
         MainWindowUtils::FreeWidget(view);
         table_hash_->remove(node_id);
-        SignalStation::Instance().DeregisterModel(data_->info.section, node_id);
+        SignalStation::Instance().DeregisterModel(start_, node_id);
     }
 }
 
@@ -2117,11 +2107,6 @@ void MainWindow::AppSettings(CString& dir_path)
     qApp->setStyleSheet(theme);
 }
 
-void MainWindow::FileSettings(CString& dir_path, CString& base_name)
-{
-    file_settings_ = std::make_unique<QSettings>(dir_path + kSlash + base_name + kSuffixINI, QSettings::IniFormat);
-}
-
 void MainWindow::ResourceFile() const
 {
     QString path {};
@@ -2188,7 +2173,9 @@ void MainWindow::RNodeLocation(int node_id)
     auto* widget { tree_widget_ };
     ui->tabWidget->setCurrentWidget(widget);
 
-    tree_widget_->Model()->RetriveNodeOrder(node_id);
+    if (start_ == Section::kSales || start_ == Section::kPurchase)
+        tree_widget_->Model()->RetriveNodeOrder(node_id);
+
     auto index { tree_widget_->Model()->GetIndex(node_id) };
     widget->activateWindow();
     widget->View()->setCurrentIndex(index);
@@ -2250,10 +2237,9 @@ void MainWindow::on_actionAbout_triggered()
     dialog->activateWindow();
 }
 
-void MainWindow::on_actionNew_triggered()
+void MainWindow::on_actionNewFile_triggered()
 {
-    QString filter("*.ytx");
-    auto file_path { QFileDialog::getSaveFileName(this, tr("New"), QDir::homePath(), filter, nullptr) };
+    auto file_path { QFileDialog::getSaveFileName(this, tr("New File"), QDir::homePath(), "*.ytx", nullptr) };
     if (file_path.isEmpty())
         return;
 
@@ -2264,11 +2250,9 @@ void MainWindow::on_actionNew_triggered()
     ROpenFile(file_path);
 }
 
-void MainWindow::on_actionOpen_triggered()
+void MainWindow::on_actionOpenFile_triggered()
 {
-    QString filter("*.ytx");
-    auto file_path { QFileDialog::getOpenFileName(this, tr("Open"), QDir::homePath(), filter, nullptr) };
-
+    const auto file_path { QFileDialog::getOpenFileName(this, tr("Open File"), QDir::homePath(), "*.ytx", nullptr) };
     ROpenFile(file_path);
 }
 
@@ -2308,12 +2292,12 @@ void MainWindow::SwitchSection(CTab& last_tab) const
 {
     auto* tab_widget { ui->tabWidget };
     auto* tab_bar { tab_widget->tabBar() };
-    int count { tab_widget->count() };
+    const int count { tab_widget->count() };
     Tab tab {};
 
     for (int index = 0; index != count; ++index) {
         tab = tab_bar->tabData(index).value<Tab>();
-        tab.section == start_ ? tab_widget->setTabVisible(index, true) : tab_widget->setTabVisible(index, false);
+        tab_widget->setTabVisible(index, tab.section == start_);
 
         if (tab == last_tab)
             tab_widget->setCurrentIndex(index);
@@ -2495,17 +2479,17 @@ void MainWindow::on_tabWidget_currentChanged(int /*index*/)
 
     bool is_tree { MainWindowUtils::IsTreeWidget(widget) };
     bool is_order { start_ == Section::kSales || start_ == Section::kPurchase };
-
-    if (data_)
-        is_order = data_->info.section == Section::kSales || data_->info.section == Section::kPurchase;
+    bool is_not_order_table { !is_tree && !is_order };
 
     ui->actionAppendNode->setEnabled(is_tree);
-    ui->actionCheckAll->setEnabled(!is_tree && !is_order);
-    ui->actionCheckNone->setEnabled(!is_tree && !is_order);
-    ui->actionCheckReverse->setEnabled(!is_tree && !is_order);
     ui->actionEditNode->setEnabled(is_tree);
-    ui->actionJump->setEnabled(!is_tree);
-    ui->actionSupportJump->setEnabled(!is_tree);
+
+    ui->actionCheckAll->setEnabled(is_not_order_table);
+    ui->actionCheckNone->setEnabled(is_not_order_table);
+    ui->actionCheckReverse->setEnabled(is_not_order_table);
+    ui->actionJump->setEnabled(is_not_order_table);
+    ui->actionSupportJump->setEnabled(is_not_order_table);
+
     ui->actionAppendTrans->setEnabled(!is_tree);
 }
 

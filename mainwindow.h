@@ -87,8 +87,8 @@ private slots:
     void on_actionPreferences_triggered();
     void on_actionSearch_triggered();
     void on_actionClearMenu_triggered();
-    void on_actionNew_triggered();
-    void on_actionOpen_triggered();
+    void on_actionNewFile_triggered();
+    void on_actionOpenFile_triggered();
     void on_tabWidget_currentChanged(int index);
     void on_tabWidget_tabBarDoubleClicked(int index);
     void on_tabWidget_tabCloseRequested(int index);
@@ -183,7 +183,6 @@ private:
     void ResizeColumn(QHeaderView* header, bool table_view = true) const;
 
     void AppSettings(CString& dir_path);
-    void FileSettings(CString& dir_path, CString& base_name);
     void ResourceFile() const;
     bool LockFile(const QFileInfo& file_info);
 

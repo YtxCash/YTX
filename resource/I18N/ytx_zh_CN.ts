@@ -1255,7 +1255,7 @@ Rage, rage against the dying of the light.</source>
     <name>MainWindow</name>
     <message>
         <location filename="../../mainwindow.ui" line="+85"/>
-        <location filename="../../mainwindow.cc" line="+183"/>
+        <location filename="../../mainwindow.cc" line="+169"/>
         <location line="+1810"/>
         <source>Finance</source>
         <translation>财务</translation>
@@ -1346,7 +1346,7 @@ Rage, rage against the dying of the light.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+111"/>
         <source>Append Trans</source>
         <translation>追加交易</translation>
     </message>
@@ -1356,18 +1356,18 @@ Rage, rage against the dying of the light.</source>
         <translation></translation>
     </message>
     <message>
-        <location line="-141"/>
+        <location line="-147"/>
         <source>Remove</source>
         <translation>删除</translation>
     </message>
     <message>
         <location line="+5"/>
-        <location line="+130"/>
+        <location line="+136"/>
         <source>Append</source>
         <translation>追加</translation>
     </message>
     <message>
-        <location line="-127"/>
+        <location line="-133"/>
         <source>Append Node</source>
         <translation>追加节点</translation>
     </message>
@@ -1427,7 +1427,23 @@ Rage, rage against the dying of the light.</source>
         <translation>关于 YTX</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+8"/>
+        <source>New File...</source>
+        <translation>新建文件...</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Open File...</source>
+        <translation>打开文件...</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../../mainwindow.cc" line="+279"/>
+        <source>Open File</source>
+        <translation>打开文件</translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <location line="+3"/>
         <source>SupportJump</source>
         <translation>辅助跳转</translation>
@@ -1486,22 +1502,20 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">关于 YtxCash</translation>
     </message>
     <message>
-        <location line="-62"/>
         <source>New...</source>
-        <translation>新建...</translation>
+        <translation type="vanished">新建...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-62"/>
         <source>Ctrl+Alt+N</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Open...</source>
-        <translation>打开...</translation>
+        <translation type="vanished">打开...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+14"/>
         <source>Ctrl+O</source>
         <translation></translation>
     </message>
@@ -1547,7 +1561,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">科目</translation>
     </message>
     <message>
-        <location filename="../../mainwindow.cc" line="-599"/>
+        <location filename="../../mainwindow.cc" line="-878"/>
         <location line="+1"/>
         <location line="+2"/>
         <location line="+2"/>
@@ -1633,7 +1647,7 @@ Rage, rage against the dying of the light.</source>
         <translation>备注</translation>
     </message>
     <message>
-        <location filename="../../mainwindow.ui" line="-262"/>
+        <location filename="../../mainwindow.ui" line="-268"/>
         <location filename="../../mainwindow.cc" line="-1257"/>
         <location line="+1814"/>
         <source>Product</source>
@@ -1727,8 +1741,10 @@ Rage, rage against the dying of the light.</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../../mainwindow.ui" line="+217"/>
+        <location filename="../../mainwindow.cc" line="+833"/>
         <source>New File</source>
-        <translation type="vanished">新建</translation>
+        <translation>新建文件</translation>
     </message>
     <message>
         <source>Select File</source>
@@ -1739,7 +1755,7 @@ Rage, rage against the dying of the light.</source>
         <translation type="obsolete">选择原始凭证</translation>
     </message>
     <message>
-        <location line="-1"/>
+        <location filename="../../mainwindow.cc" line="-834"/>
         <location line="+5"/>
         <source>Document</source>
         <translation>文件</translation>
@@ -1849,22 +1865,19 @@ Rage, rage against the dying of the light.</source>
         <translation>删除 %1</translation>
     </message>
     <message>
-        <location line="-867"/>
         <source>Invalid file path: %1</source>
-        <translation>无效的路径: %1</translation>
+        <translation type="vanished">无效的路径: %1</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>On macOS, only single-instance applications are supported. Cannot open again: %1</source>
-        <translation>macOS 上，只支持单实例应用，无法再打开 %1</translation>
+        <translation type="vanished">macOS 上，只支持单实例应用，无法再打开 %1</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>This instance has already opened the file. Please launch another instance to open: %1</source>
-        <translation>当前实例已经打开文件了，请另启动一个实例以打开：%1</translation>
+        <translation type="vanished">当前实例已经打开文件了，请另启动一个实例以打开：%1</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="-844"/>
         <source>Invalid file path: %1, must be an existing .ytx file</source>
         <translation>%1 无效，必须是一个存在的 .ytx 文件</translation>
     </message>
@@ -2017,7 +2030,7 @@ Rage, rage against the dying of the light.</source>
         <translation>现结</translation>
     </message>
     <message>
-        <location line="+996"/>
+        <location line="+981"/>
         <location line="+26"/>
         <location line="+26"/>
         <location line="+26"/>
@@ -2027,7 +2040,7 @@ Rage, rage against the dying of the light.</source>
         <translation>请先打开文件。</translation>
     </message>
     <message>
-        <location line="-1167"/>
+        <location line="-1152"/>
         <location line="+41"/>
         <source>MS</source>
         <translation>月结</translation>
@@ -2443,21 +2456,19 @@ Rage, rage against the dying of the light.</source>
         <translation type="vanished">帐期</translation>
     </message>
     <message>
-        <location line="+832"/>
         <source>New</source>
-        <translation>新建</translation>
+        <translation type="vanished">新建</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Open</source>
-        <translation>打开</translation>
+        <translation type="vanished">打开</translation>
     </message>
     <message>
         <source>Position</source>
         <translation type="vanished">位置</translation>
     </message>
     <message>
-        <location line="-892"/>
+        <location line="-46"/>
         <location line="+5"/>
         <location line="+5"/>
         <location line="+6"/>
