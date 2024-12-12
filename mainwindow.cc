@@ -91,9 +91,9 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     qApp->setWindowIcon(QIcon(":/logo/logo/logo.png"));
     this->setAcceptDrops(true);
 
-    MainWindowUtils::RestoreState(ui->splitter, app_settings_, kWindow, kSplitterState);
-    MainWindowUtils::RestoreState(this, app_settings_, kWindow, kMainwindowState);
-    MainWindowUtils::RestoreGeometry(this, app_settings_, kWindow, kMainwindowGeometry);
+    MainWindowUtils::RestoreSettings(ui->splitter, &QSplitter::restoreState, app_settings_, kWindow, kSplitterState);
+    MainWindowUtils::RestoreSettings(this, &QMainWindow::restoreState, app_settings_, kWindow, kMainwindowState, 0);
+    MainWindowUtils::RestoreSettings(this, &QMainWindow::restoreGeometry, app_settings_, kWindow, kMainwindowGeometry);
 
     RestoreRecentFile();
     EnableAction(false);
@@ -107,26 +107,26 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    MainWindowUtils::SaveState(ui->splitter, app_settings_, kWindow, kSplitterState);
-    MainWindowUtils::SaveState(this, app_settings_, kWindow, kMainwindowState);
-    MainWindowUtils::SaveGeometry(this, app_settings_, kWindow, kMainwindowGeometry);
+    MainWindowUtils::SaveSettings(ui->splitter, &QSplitter::saveState, app_settings_, kWindow, kSplitterState);
+    MainWindowUtils::SaveSettings(this, &QMainWindow::saveState, app_settings_, kWindow, kMainwindowState, 0);
+    MainWindowUtils::SaveSettings(this, &QMainWindow::saveGeometry, app_settings_, kWindow, kMainwindowGeometry);
     app_settings_->setValue(kStartSection, std::to_underlying(start_));
 
     if (lock_file_) {
         MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(finance_table_hash_), kFinance, kTabID);
-        MainWindowUtils::SaveState(finance_tree_->View()->header(), file_settings_, kFinance, kHeaderState);
+        MainWindowUtils::SaveSettings(finance_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kFinance, kHeaderState);
 
         MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(product_table_hash_), kProduct, kTabID);
-        MainWindowUtils::SaveState(product_tree_->View()->header(), file_settings_, kProduct, kHeaderState);
+        MainWindowUtils::SaveSettings(product_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kProduct, kHeaderState);
 
         MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(stakeholder_table_hash_), kStakeholder, kTabID);
-        MainWindowUtils::SaveState(stakeholder_tree_->View()->header(), file_settings_, kStakeholder, kHeaderState);
+        MainWindowUtils::SaveSettings(stakeholder_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kStakeholder, kHeaderState);
 
         MainWindowUtils::WriteTabID(file_settings_, MainWindowUtils::SaveTab(task_table_hash_), kTask, kTabID);
-        MainWindowUtils::SaveState(task_tree_->View()->header(), file_settings_, kTask, kHeaderState);
+        MainWindowUtils::SaveSettings(task_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kTask, kHeaderState);
 
-        MainWindowUtils::SaveState(sales_tree_->View()->header(), file_settings_, kSales, kHeaderState);
-        MainWindowUtils::SaveState(purchase_tree_->View()->header(), file_settings_, kPurchase, kHeaderState);
+        MainWindowUtils::SaveSettings(sales_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kSales, kHeaderState);
+        MainWindowUtils::SaveSettings(purchase_tree_->View()->header(), &QHeaderView::saveState, file_settings_, kPurchase, kHeaderState);
     }
 
     delete ui;
@@ -562,7 +562,7 @@ void MainWindow::CreateSection(TreeWidget* tree_widget, TableHash& table_hash, C
 
     tab_widget->tabBar()->setTabData(tab_widget->addTab(tree_widget, name), QVariant::fromValue(Tab { info.section, 0 }));
 
-    MainWindowUtils::RestoreState(view->header(), file_settings_, info.node, kHeaderState);
+    MainWindowUtils::RestoreSettings(view->header(), &QHeaderView::restoreState, file_settings_, info.node, kHeaderState);
 
     switch (info.section) {
     case Section::kFinance:

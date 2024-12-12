@@ -32,6 +32,9 @@ concept InheritQAbstractItemView = std::is_base_of_v<QAbstractItemView, T>;
 template <typename T>
 concept InheritQWidget = std::is_base_of_v<QWidget, T>;
 
+template <typename T>
+concept MemberFunction = std::is_member_function_pointer_v<T>;
+
 class MainWindowUtils {
 public:
     static bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
@@ -87,52 +90,84 @@ public:
         }
     }
 
-    template <InheritQWidget T> static void SaveState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+    // template <InheritQWidget T> static void SaveState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+    // {
+    //     if (!widget || !settings) {
+    //         qWarning() << "SaveState: Invalid parameters (widget or settings is null)";
+    //         return;
+    //     }
+
+    //     auto state { widget->saveState() };
+    //     settings->setValue(QString("%1/%2").arg(section_name, property), state);
+    // }
+
+    // template <InheritQWidget T> static void RestoreState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+    // {
+    //     if (!widget || !settings) {
+    //         qWarning() << "RestoreState: Invalid parameters (widget or settings is null)";
+    //         return;
+    //     }
+
+    //     auto state { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
+
+    //     if (!state.isEmpty())
+    //         widget->restoreState(state);
+    // }
+
+    // template <InheritQWidget T> static void SaveGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+    // {
+    //     if (!widget || !settings) {
+    //         qWarning() << "SaveGeometry: Invalid parameters (widget or settings is null)";
+    //         return;
+    //     }
+
+    //     auto geometry { widget->saveGeometry() };
+    //     settings->setValue(QString("%1/%2").arg(section_name, property), geometry);
+    // }
+
+    template <InheritQWidget Widget, MemberFunction Function, typename... Args>
+    static void SaveSettings(Widget* widget, Function function, std::shared_ptr<QSettings> settings, CString& section_name, CString& property, Args&&... args)
     {
+        static_assert(std::is_same_v<decltype((std::declval<Widget>().*function)(std::forward<Args>(args)...)), QByteArray>, "Function must return QByteArray");
+
         if (!widget || !settings) {
-            qWarning() << "SaveState: Invalid parameters (widget or settings is null)";
+            qWarning() << "SaveSettings: Invalid parameters (widget or settings is null)";
             return;
         }
 
-        auto state { widget->saveState() };
-        settings->setValue(QString("%1/%2").arg(section_name, property), state);
+        auto value { std::invoke(function, widget, std::forward<Args>(args)...) };
+        settings->setValue(QString("%1/%2").arg(section_name, property), value);
     }
 
-    template <InheritQWidget T> static void RestoreState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+    template <InheritQWidget Widget, MemberFunction Function, typename... Args>
+    static void RestoreSettings(
+        Widget* widget, Function function, std::shared_ptr<QSettings> settings, CString& section_name, CString& property, Args&&... args)
     {
+        static_assert(std::is_same_v<decltype((std::declval<Widget>().*function)(std::declval<QByteArray>(), std::declval<Args>()...)), bool>,
+            "Function must accept QByteArray and additional arguments, and return bool");
+
         if (!widget || !settings) {
-            qWarning() << "RestoreState: Invalid parameters (widget or settings is null)";
+            qWarning() << "RestoreSettings: Invalid parameters (widget or settings is null)";
             return;
         }
 
-        auto state { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
-
-        if (!state.isEmpty())
-            widget->restoreState(state);
-    }
-
-    template <InheritQWidget T> static void SaveGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
-    {
-        if (!widget || !settings) {
-            qWarning() << "SaveGeometry: Invalid parameters (widget or settings is null)";
-            return;
+        auto value { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
+        if (!value.isEmpty()) {
+            std::invoke(function, widget, value, std::forward<Args>(args)...);
         }
-
-        auto geometry { widget->saveGeometry() };
-        settings->setValue(QString("%1/%2").arg(section_name, property), geometry);
     }
 
-    template <InheritQWidget T> static void RestoreGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
-    {
-        if (!widget || !settings) {
-            qWarning() << "RestoreGeometry: Invalid parameters (widget or settings is null)";
-            return;
-        }
+    // template <InheritQWidget T> static void RestoreGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
+    // {
+    //     if (!widget || !settings) {
+    //         qWarning() << "RestoreGeometry: Invalid parameters (widget or settings is null)";
+    //         return;
+    //     }
 
-        auto geometry { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
-        if (!geometry.isEmpty())
-            widget->restoreGeometry(geometry);
-    }
+    //     auto geometry { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
+    //     if (!geometry.isEmpty())
+    //         widget->restoreGeometry(geometry);
+    // }
 };
 
 #endif // MAINWINDOWUTILS_H
