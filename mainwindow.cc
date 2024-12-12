@@ -145,7 +145,7 @@ bool MainWindow::ROpenFile(CString& file_path)
     }
 
     const QFileInfo file_info(file_path);
-    if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != "ytx") {
+    if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != ytx) {
         TreeModelUtils::ShowTemporaryTooltip(tr("Invalid file path: %1, must be an existing .ytx file").arg(file_path), kThreeThousand);
         return false;
     }
@@ -970,7 +970,7 @@ void MainWindow::AddRecentFile(CString& file_path)
 
 bool MainWindow::LockFile(const QFileInfo& file_info)
 {
-    const QString lock_file_path { file_info.dir().filePath(file_info.completeBaseName() + ".lock") };
+    const QString lock_file_path { file_info.dir().filePath(file_info.completeBaseName() + kSuffixLOCK) };
 
     lock_file_ = std::make_unique<QLockFile>(lock_file_path);
 
@@ -2086,7 +2086,7 @@ void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
 
 void MainWindow::AppSettings(CString& dir_path)
 {
-    app_settings_ = std::make_unique<QSettings>(dir_path + kSlash + ytx + kSuffixINI, QSettings::IniFormat);
+    app_settings_ = std::make_unique<QSettings>(dir_path + "/ytx.ini", QSettings::IniFormat);
 
     QString language_code {};
 
@@ -2111,9 +2111,9 @@ void MainWindow::AppSettings(CString& dir_path)
     LoadAndInstallTranslator(interface_.language);
 
 #ifdef Q_OS_WIN
-    QString theme { "file:///:/theme/theme/" + interface_.theme + " Win" + kSuffixQSS };
+    QString theme { "file:///:/theme/theme/" + interface_.theme + " Win.qss" };
 #elif defined(Q_OS_MACOS)
-    QString theme { "file:///:/theme/theme/" + interface_.theme + " Mac" + kSuffixQSS };
+    QString theme { "file:///:/theme/theme/" + interface_.theme + " Mac.qss" };
 #endif
 
     qApp->setStyleSheet(theme);

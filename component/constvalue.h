@@ -59,13 +59,12 @@ inline constexpr char kCheck[] = "check";
 inline constexpr char kSuffixINI[] = ".ini";
 inline constexpr char kSuffixLOCK[] = ".lock";
 inline constexpr char kSuffixQM[] = ".qm";
-inline constexpr char kSuffixQSS[] = ".qss";
 inline constexpr char kSuffixYTX[] = ".ytx";
 inline constexpr char kSuffixPERCENT[] = "%";
 
 // Constants for app's language
-inline constexpr char kEnUS[] = "en_US";
 inline constexpr char kLanguage[] = "language";
+inline constexpr char kEnUS[] = "en_US";
 inline constexpr char kZhCN[] = "zh_CN";
 
 // Constants for tree and table's column
@@ -116,7 +115,6 @@ inline constexpr char kRecentFile[] = "recent/file";
 inline constexpr char kSemicolon[] = ";";
 inline constexpr char kStartSection[] = "start/section";
 inline constexpr char ytx[] = "ytx";
-inline constexpr char YTX[] = "YTX";
 
 // Constants for sections
 inline constexpr char kFinance[] = "finance";
