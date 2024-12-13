@@ -63,10 +63,10 @@ void TreeModelUtils::UpdatePathFPTS(StringHash& leaf, StringHash& branch, String
             branch.insert(current->id, path);
             break;
         case kTypeLeaf:
-            support.insert(current->id, path);
+            leaf.insert(current->id, path);
             break;
         case kTypeSupport:
-            leaf.insert(current->id, path);
+            support.insert(current->id, path);
             break;
         default:
             break;
@@ -508,7 +508,6 @@ void TreeModelUtils::UpdateModel(CStringHash& leaf, QStandardItemModel* leaf_mod
         }
     }
 
-    // 分别更新 support_model 和 leaf_model
     UpdateModelFunction(support_model, support_range, support);
     UpdateModelFunction(leaf_model, leaf_range, leaf);
 }
@@ -608,12 +607,9 @@ void TreeModelUtils::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Nod
     const int unit = node->unit;
     const bool rule = node->rule;
 
-    // 确保所有数据都是通过值传递，避免悬空指针
     auto future = QtConcurrent::run([=, &mutex]() {
-        // 使用 RAII 方式加锁
         QMutexLocker locker(&mutex);
 
-        // 遍历并更新祖先节点
         for (Node* current = node->parent; current && current != root; current = current->parent) {
             bool equal = current->rule == rule;
             current->final_total += (equal ? 1 : -1) * final_diff;

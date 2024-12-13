@@ -1,16 +1,12 @@
 #include "editnodeorder.h"
 
+#include <QShortcut>
 #include <QTimer>
 
 #include "component/signalblocker.h"
 #include "global/resourcepool.h"
-#include "ui_editnodeorder.h"
-
-#ifdef Q_OS_WIN
-#include <QShortcut>
-
 #include "mainwindow.h"
-#endif
+#include "ui_editnodeorder.h"
 
 EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     : QDialog(parent)
@@ -39,7 +35,6 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
     IniUnit(*params.node_shadow->unit);
     setWindowTitle(params.section == Section::kSales ? tr("Sales") : tr("Purchase"));
 
-#ifdef Q_OS_WIN
     QShortcut* trans_shortcut { new QShortcut(QKeySequence("Ctrl+N"), this) };
     trans_shortcut->setContext(Qt::WindowShortcut);
 
@@ -59,7 +54,6 @@ EditNodeOrder::EditNodeOrder(CEditNodeParamsOrder& params, QWidget* parent)
             main_window->on_actionInsertNode_triggered();
         }
     });
-#endif
 }
 
 EditNodeOrder::~EditNodeOrder() { delete ui; }
