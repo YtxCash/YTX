@@ -10,14 +10,7 @@ add_definitions(-DQT_DISABLE_DEPRECATED_UP_TO=0x060500)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(APPLE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wno-shorten-64-to-32 -fsanitize=address,undefined -fsanitize-recover=all")
-elseif(WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wno-shorten-64-to-32")
-elseif(LINUX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wno-shorten-64-to-32 -fsanitize=address,undefined,thread,memory -fsanitize-recover=all")
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wno-shorten-64-to-32")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
