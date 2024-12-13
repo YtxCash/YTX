@@ -2485,7 +2485,7 @@ void MainWindow::on_tabWidget_currentChanged(int /*index*/)
     bool is_not_order_table { !is_tree && !is_order };
 
     ui->actionAppendNode->setEnabled(is_tree);
-    ui->actionEditNode->setEnabled(is_tree);
+    ui->actionEditNode->setEnabled(is_tree && !is_order);
 
     ui->actionCheckAll->setEnabled(is_not_order_table);
     ui->actionCheckNone->setEnabled(is_not_order_table);
