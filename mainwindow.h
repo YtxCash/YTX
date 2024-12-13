@@ -186,7 +186,7 @@ private:
     void ResourceFile() const;
     bool LockFile(const QFileInfo& file_info);
 
-    void RestoreTab(PTreeModel tree_model, TableHash& table_hash, const QSet<int>& set, CData& data, CSettings& settings);
+    void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CIntSet& set, CData& data, CSettings& settings);
 
     void EnableAction(bool enable);
     void RestoreRecentFile();

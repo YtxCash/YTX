@@ -865,7 +865,7 @@ void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int
     }
 }
 
-void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, const QSet<int>& set, CData& data, CSettings& settings)
+void MainWindow::RestoreTab(PTreeModel tree_model, TableHash& table_hash, CIntSet& set, CData& data, CSettings& settings)
 {
     if (!tree_model || set.isEmpty())
         return;

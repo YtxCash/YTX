@@ -87,7 +87,7 @@ private:
     QStringList operation_list_ {};
     QStringList date_format_list_ {};
 
-    QStandardItemModel* leaf_branch_model_ {};
+    QStandardItemModel* leaf_path_branch_path_model_ {};
 
     Interface interface_ {};
     Settings settings_ {};

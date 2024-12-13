@@ -238,7 +238,7 @@ void TreeModelUtils::UpdateComboModel(QStandardItemModel* model, const QVector<s
     model->sort(0);
 }
 
-void TreeModelUtils::PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model)
+void TreeModelUtils::LeafPathBranchPathModelFPT(CStringHash& leaf, CStringHash& branch, QStandardItemModel* model)
 {
     if (!model || (leaf.isEmpty() && branch.isEmpty()))
         return;
@@ -269,7 +269,7 @@ void TreeModelUtils::PathPreferencesFPT(CStringHash& leaf, CStringHash& branch, 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* model)
+void TreeModelUtils::LeafPathModelFPT(CStringHash& leaf, QStandardItemModel* model)
 {
     if (!model || leaf.isEmpty())
         return;
@@ -294,7 +294,7 @@ void TreeModelUtils::LeafPathRhsNodeFPT(CStringHash& leaf, QStandardItemModel* m
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathSpecificUnitP(CStringHash& leaf, const QSet<int>& range, QStandardItemModel* model)
+void TreeModelUtils::LeafPathRangeModelP(CStringHash& leaf, CIntSet& range, QStandardItemModel* model)
 {
     if (!model || leaf.isEmpty() || range.isEmpty())
         return;
@@ -321,8 +321,8 @@ void TreeModelUtils::LeafPathSpecificUnitP(CStringHash& leaf, const QSet<int>& r
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathSpecificUnitS(CStringHash& leaf, const QSet<int>& crange, QStandardItemModel* cmodel, const QSet<int>& vrange,
-    QStandardItemModel* vmodel, const QSet<int>& erange, QStandardItemModel* emodel)
+void TreeModelUtils::LeafPathRangeModelS(
+    CStringHash& leaf, CIntSet& crange, QStandardItemModel* cmodel, CIntSet& vrange, QStandardItemModel* vmodel, CIntSet& erange, QStandardItemModel* emodel)
 {
     auto future = QtConcurrent::run([&leaf, crange, vrange, erange]() {
         QVector<std::pair<QString, int>> citems;
@@ -375,7 +375,7 @@ void TreeModelUtils::LeafPathSpecificUnitS(CStringHash& leaf, const QSet<int>& c
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node)
+void TreeModelUtils::LeafPathFilterModelFPTS(CNodeHash& hash, CStringHash& leaf, QStandardItemModel* model, int specific_unit, int exclude_node)
 {
     if (!model || leaf.isEmpty())
         return;
@@ -405,7 +405,7 @@ void TreeModelUtils::LeafPathRemoveNodeFPTS(CNodeHash& hash, CStringHash& leaf, 
     watcher->setFuture(future);
 }
 
-void TreeModelUtils::SupportPathFPTS(CStringHash& support, QStandardItemModel* model, int specific_node, Filter filter)
+void TreeModelUtils::SupportPathFilterModelFPTS(CStringHash& support, QStandardItemModel* model, int specific_node, Filter filter)
 {
     if (!model)
         return;
@@ -579,7 +579,7 @@ void TreeModelUtils::UpdateModelSeparatorFPTS(QStandardItemModel* model, CString
     }
 }
 
-void TreeModelUtils::UpdateModelFunction(QStandardItemModel* model, const QSet<int>& update_range, CStringHash& source_path)
+void TreeModelUtils::UpdateModelFunction(QStandardItemModel* model, CIntSet& update_range, CStringHash& source_path)
 {
     if (!model || update_range.isEmpty() || source_path.isEmpty())
         return;

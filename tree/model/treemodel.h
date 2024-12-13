@@ -133,9 +133,9 @@ public:
     QStringList ChildrenNameFPTS(int node_id, int exclude_child) const;
     QSet<int> ChildrenIDFPTS(int node_id) const;
 
-    void PathPreferencesFPT(QStandardItemModel* model) const;
-    void LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const;
-    void SupportPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const;
+    void LeafPathBranchPathModelFPT(QStandardItemModel* model) const;
+    void LeafPathFilterModelFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const;
+    void SupportPathFilterModelFPTS(QStandardItemModel* model, int specific_node, Filter filter) const;
 
     void SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const;
     void SetNodeShadowOrder(NodeShadow* node_shadow, Node* node) const;

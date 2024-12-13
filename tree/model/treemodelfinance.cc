@@ -400,8 +400,8 @@ void TreeModelFinance::ConstructTree()
         }
     }
 
-    TreeModelUtils::SupportPathFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
-    TreeModelUtils::LeafPathRhsNodeFPT(leaf_path_, leaf_model_);
+    TreeModelUtils::SupportPathFilterModelFPTS(support_path_, support_model_, 0, Filter::kIncludeAllWithNone);
+    TreeModelUtils::LeafPathModelFPT(leaf_path_, leaf_model_);
 }
 
 bool TreeModelFinance::UpdateUnit(Node* node, int value)

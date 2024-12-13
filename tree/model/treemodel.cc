@@ -99,16 +99,16 @@ void TreeModel::CopyNodeFPTS(Node* tmp_node, int node_id) const
     *tmp_node = *(it.value());
 }
 
-void TreeModel::PathPreferencesFPT(QStandardItemModel* model) const { TreeModelUtils::PathPreferencesFPT(leaf_path_, branch_path_, model); }
+void TreeModel::LeafPathBranchPathModelFPT(QStandardItemModel* model) const { TreeModelUtils::LeafPathBranchPathModelFPT(leaf_path_, branch_path_, model); }
 
-void TreeModel::LeafPathRemoveNodeFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
+void TreeModel::LeafPathFilterModelFPTS(QStandardItemModel* model, int specific_unit, int exclude_node) const
 {
-    TreeModelUtils::LeafPathRemoveNodeFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
+    TreeModelUtils::LeafPathFilterModelFPTS(node_hash_, leaf_path_, model, specific_unit, exclude_node);
 }
 
-void TreeModel::SupportPathFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
+void TreeModel::SupportPathFilterModelFPTS(QStandardItemModel* model, int specific_node, Filter filter) const
 {
-    TreeModelUtils::SupportPathFPTS(support_path_, model, specific_node, filter);
+    TreeModelUtils::SupportPathFilterModelFPTS(support_path_, model, specific_node, filter);
 }
 
 void TreeModel::SetNodeShadowOrder(NodeShadow* node_shadow, int node_id) const

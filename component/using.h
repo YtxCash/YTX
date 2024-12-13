@@ -34,6 +34,8 @@ using CString = const QString;
 using CVariant = const QVariant;
 using CStringList = const QStringList;
 
+using CIntSet = const QSet<int>;
+
 inline const QString kEmptyString = {};
 inline const QString kDD = "dd";
 

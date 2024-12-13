@@ -20,8 +20,8 @@ Preferences::Preferences(CInfo& info, CTreeModel* model, Interface interface, Se
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    leaf_branch_model_ = new QStandardItemModel(this);
-    model_->PathPreferencesFPT(leaf_branch_model_);
+    leaf_path_branch_path_model_ = new QStandardItemModel(this);
+    model_->LeafPathBranchPathModelFPT(leaf_path_branch_path_model_);
 
     IniStringList();
     IniDialog(info.unit_model);
@@ -48,9 +48,9 @@ void Preferences::IniDialog(QStandardItemModel* unit_model)
 
     ui->comboDefaultUnit->setModel(unit_model);
 
-    ui->comboStatic->setModel(leaf_branch_model_);
-    ui->comboDynamicLhs->setModel(leaf_branch_model_);
-    ui->comboDynamicRhs->setModel(leaf_branch_model_);
+    ui->comboStatic->setModel(leaf_path_branch_path_model_);
+    ui->comboDynamicLhs->setModel(leaf_path_branch_path_model_);
+    ui->comboDynamicRhs->setModel(leaf_path_branch_path_model_);
 
     IniCombo(ui->comboOperation, operation_list_);
 }
