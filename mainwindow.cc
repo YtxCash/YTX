@@ -284,7 +284,7 @@ void MainWindow::SwitchTab(int node_id, int trans_id) const
         return;
 
     auto view { widget->View() };
-    auto index { MainWindowUtils::GetTableModel(widget)->GetIndex(trans_id) };
+    auto index { widget->Model()->GetIndex(trans_id) };
 
     if (!index.isValid())
         return;
@@ -759,14 +759,13 @@ void MainWindow::on_actionRemove_triggered()
     if (!widget)
         return;
 
-    if (MainWindowUtils::IsTreeWidget(widget)) {
-        assert(dynamic_cast<TreeWidget*>(widget) && "Widget is not TreeWidget");
-        RemoveNode(static_cast<TreeWidget*>(widget));
+    if (auto* tree_widget = dynamic_cast<TreeWidget*>(widget)) {
+        RemoveNode(tree_widget);
+        return;
     }
 
-    if (MainWindowUtils::IsTableWidget(widget)) {
-        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-        RemoveTrans(static_cast<TableWidget*>(widget));
+    if (auto* table_widget = dynamic_cast<TableWidget*>(widget)) {
+        RemoveTrans(table_widget);
     }
 }
 
@@ -1473,8 +1472,7 @@ void MainWindow::SetView(PQTreeView tree_view) const
 
 void MainWindow::on_actionAppendNode_triggered()
 {
-    auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !MainWindowUtils::IsTreeWidget(current_widget))
+    if (!tree_widget_)
         return;
 
     auto view { tree_widget_->View() };
@@ -1526,11 +1524,11 @@ void MainWindow::on_actionJump_triggered()
     if (start_ == Section::kSales || start_ == Section::kPurchase)
         return;
 
-    auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
+    auto* table_widget { dynamic_cast<TableWidget*>(ui->tabWidget->currentWidget()) };
+    if (!table_widget)
         return;
 
-    auto view { MainWindowUtils::GetQTableView(current_widget) };
+    auto view { table_widget->View() };
     if (!MainWindowUtils::HasSelection(view))
         return;
 
@@ -1555,11 +1553,11 @@ void MainWindow::on_actionSupportJump_triggered()
     if (start_ == Section::kSales || start_ == Section::kPurchase)
         return;
 
-    auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
+    auto* table_widget { dynamic_cast<TableWidget*>(ui->tabWidget->currentWidget()) };
+    if (!table_widget)
         return;
 
-    auto view { MainWindowUtils::GetQTableView(current_widget) };
+    auto view { table_widget->View() };
     if (!MainWindowUtils::HasSelection(view))
         return;
 
@@ -1567,7 +1565,7 @@ void MainWindow::on_actionSupportJump_triggered()
     if (!index.isValid())
         return;
 
-    auto model { MainWindowUtils::GetTableModel(current_widget) };
+    auto model { table_widget->Model() };
     if (!model)
         return;
 
@@ -1607,8 +1605,7 @@ void MainWindow::on_actionEditNode_triggered()
     if (start_ == Section::kSales || start_ == Section::kPurchase)
         return;
 
-    const auto* widget { ui->tabWidget->currentWidget() };
-    if (!widget || !MainWindowUtils::IsTreeWidget(widget))
+    if (!tree_widget_)
         return;
 
     const auto view { tree_widget_->View() };
@@ -1781,11 +1778,11 @@ void MainWindow::InsertNodeOrder(Node* node, const QModelIndex& parent, int row)
 
 void MainWindow::REditTransDocument()
 {
-    auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
+    auto* table_widget { dynamic_cast<TableWidget*>(ui->tabWidget->currentWidget()) };
+    if (!table_widget)
         return;
 
-    auto view { MainWindowUtils::GetQTableView(current_widget) };
+    auto view { table_widget->View() };
     if (!MainWindowUtils::HasSelection(view))
         return;
 
@@ -1794,7 +1791,7 @@ void MainWindow::REditTransDocument()
         return;
 
     auto document_dir { settings_->document_dir };
-    auto model { MainWindowUtils::GetTableModel(current_widget) };
+    auto model { table_widget->Model() };
     auto* document_pointer { model->GetDocumentPointer(index) };
     const int trans_id { index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
@@ -1806,8 +1803,7 @@ void MainWindow::REditTransDocument()
 
 void MainWindow::REditNodeDocument()
 {
-    auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !MainWindowUtils::IsTreeWidget(current_widget))
+    if (!tree_widget_)
         return;
 
     auto view { tree_widget_->View() };
@@ -1896,10 +1892,17 @@ void MainWindow::RUpdateSettings(CSettings& settings, CInterface& interface)
 
     if (resize_column) {
         auto* current_widget { ui->tabWidget->currentWidget() };
-        if (MainWindowUtils::IsTableWidget(current_widget))
-            ResizeColumn(MainWindowUtils::GetQTableView(current_widget)->horizontalHeader(), true);
-        if (MainWindowUtils::IsTreeWidget(current_widget))
-            ResizeColumn(tree_widget_->View()->header(), false);
+
+        if (auto* table_widget = dynamic_cast<TableWidget*>(current_widget)) {
+            auto* header { table_widget->View()->horizontalHeader() };
+            ResizeColumn(header, true);
+            return;
+        }
+
+        if (auto* tree_widget = dynamic_cast<TreeWidget*>(current_widget)) {
+            auto* header { tree_widget->View()->header() };
+            ResizeColumn(header, false);
+        }
     }
 }
 void MainWindow::RFreeView(int node_id)
@@ -2280,11 +2283,11 @@ void MainWindow::on_tabWidget_tabBarDoubleClicked(int index) { RNodeLocation(ui-
 
 void MainWindow::RUpdateState()
 {
-    auto* current_widget { ui->tabWidget->currentWidget() };
-    if (!current_widget || !MainWindowUtils::IsTableWidget(current_widget))
+    auto* table_widget { dynamic_cast<TableWidget*>(ui->tabWidget->currentWidget()) };
+    if (!table_widget)
         return;
 
-    auto table_model { MainWindowUtils::GetTableModel(current_widget) };
+    auto table_model { table_widget->Model() };
     table_model->UpdateAllState(Check { QObject::sender()->property(kCheck).toInt() });
 }
 
@@ -2496,15 +2499,16 @@ void MainWindow::on_tabWidget_currentChanged(int /*index*/)
 void MainWindow::on_actionAppendTrans_triggered()
 {
     auto* active_window { QApplication::activeWindow() };
-    if (active_window && MainWindowUtils::IsEditNodeOrder(active_window)) {
-        AppendTrans(static_cast<EditNodeOrder*>(active_window));
+    if (auto* edit_node_order = dynamic_cast<EditNodeOrder*>(active_window)) {
+        AppendTrans(edit_node_order);
         return;
     }
 
     auto* widget { ui->tabWidget->currentWidget() };
-    if (!widget || !MainWindowUtils::IsTableWidget(widget))
+    if (!widget)
         return;
 
-    assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-    AppendTrans(static_cast<TableWidget*>(widget));
+    if (auto* table_widget = dynamic_cast<TableWidget*>(widget)) {
+        AppendTrans(table_widget);
+    }
 }

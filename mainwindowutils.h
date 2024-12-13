@@ -23,7 +23,6 @@
 #include <QSettings>
 #include <QWidget>
 
-#include "table/model/tablemodel.h"
 #include "widget/tablewidget/tablewidget.h"
 
 template <typename T>
@@ -38,30 +37,12 @@ concept MemberFunction = std::is_member_function_pointer_v<T>;
 class MainWindowUtils {
 public:
     static bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
-    static bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
-    static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
+    // static bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
+    // static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
 
     static QVariantList SaveTab(CTableHash& table_hash);
     static QSet<int> ReadSettings(std::shared_ptr<QSettings> settings, CString& section, CString& property);
     static void WriteSettings(std::shared_ptr<QSettings> settings, const QVariant& value, CString& section, CString& property);
-
-    static PTableModel GetTableModel(QWidget* widget)
-    {
-        if (!widget)
-            return nullptr;
-
-        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-        return static_cast<TableWidget*>(widget)->Model();
-    }
-
-    static PQTableView GetQTableView(QWidget* widget)
-    {
-        if (!widget)
-            return nullptr;
-
-        assert(dynamic_cast<TableWidget*>(widget) && "Widget is not TableWidget");
-        return static_cast<TableWidget*>(widget)->View();
-    }
 
     template <InheritQAbstractItemView T> static bool HasSelection(QPointer<T> view)
     {
