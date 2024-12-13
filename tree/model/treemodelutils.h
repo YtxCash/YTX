@@ -30,23 +30,29 @@ class TreeModelUtils {
 public:
     template <typename T> static bool UpdateField(Sqlite* sql, Node* node, CString& table, const T& value, CString& field, T Node::* member)
     {
+        assert(sql && "Sqlite pointer is null");
+        assert(node && "Node pointer is null");
+
+        T& current_value { std::invoke(member, node) };
+
         if constexpr (std::is_floating_point_v<T>) {
-            if (std::abs(node->*member - value) < TOLERANCE)
+            if (std::abs(current_value - value) < TOLERANCE)
                 return false;
         } else {
-            if (node->*member == value)
+            if (current_value == value)
                 return false;
         }
 
-        node->*member = value;
+        current_value = value;
         sql->UpdateField(table, value, field, node->id);
+
         return true;
     }
 
     template <typename T> static const T& GetValue(CNodeHash& hash, int node_id, T Node::* member)
     {
         if (auto it = hash.constFind(node_id); it != hash.constEnd())
-            return it.value()->*member;
+            return std::invoke(member, *(it.value()));
 
         // If the node_id does not exist, return a static empty object to ensure a safe default value
         // Examples:

@@ -32,10 +32,19 @@ public:
     static bool UpdateField(Sqlite* sql, TransShadow* trans_shadow, CString& table, const T& value, CString& field, T* TransShadow::* member,
         const std::function<void()>& action = {})
     {
-        if (trans_shadow == nullptr || trans_shadow->*member == nullptr || *(trans_shadow->*member) == value)
+        assert(sql && "Sqlite pointer is null");
+        assert(trans_shadow && "TransShadow pointer is null");
+        assert(member && "Member pointer is null");
+
+        T*& member_ptr { std::invoke(member, trans_shadow) };
+
+        assert(member_ptr && "Member pointer must not be null");
+
+        if (*member_ptr == value)
             return false;
 
-        *(trans_shadow->*member) = value;
+        *member_ptr = value;
+        assert(trans_shadow->rhs_node && "Rhs_node pointer is null");
 
         if (*trans_shadow->rhs_node == 0)
             return false;
