@@ -48,8 +48,8 @@ void EditNodeTask::IniData(Node* node, bool type_enable, bool unit_enable)
     ui->comboUnit->setCurrentIndex(item_index);
     ui->comboUnit->setEnabled(unit_enable);
 
-    ui->rBtnDDCI->setChecked(node->rule);
-    ui->rBtnDICD->setChecked(!node->rule);
+    ui->rBtnDDCI->setChecked(node->rule == kRuleDDCI);
+    ui->rBtnDICD->setChecked(node->rule == kRuleDICD);
     ui->rBtnLeaf->setChecked(true);
 
     if (node->name.isEmpty())

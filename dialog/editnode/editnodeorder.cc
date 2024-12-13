@@ -287,7 +287,7 @@ void EditNodeOrder::on_comboParty_currentIndexChanged(int /*index*/)
     int employee_index { ui->comboEmployee->findData(stakeholder_tree_->Employee(party_id)) };
     ui->comboEmployee->setCurrentIndex(employee_index);
 
-    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == kRuleIM);
+    ui->rBtnCash->setChecked(stakeholder_tree_->Rule(party_id) == kRuleIS);
     ui->rBtnMonthly->setChecked(stakeholder_tree_->Rule(party_id) == kRuleMS);
 }
 

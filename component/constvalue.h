@@ -31,8 +31,10 @@ inline constexpr int kThreeThousand = 3000;
 inline constexpr long long kMaxRecentFile = 10;
 
 // Constants for rule
-inline constexpr bool kRuleIM = 0;
+inline constexpr bool kRuleIS = 0;
 inline constexpr bool kRuleMS = 1;
+inline constexpr bool kRuleDICD = 0;
+inline constexpr bool kRuleDDCI = 1;
 
 // Constants for datetime
 inline constexpr char kDateTime[] = "date_time";

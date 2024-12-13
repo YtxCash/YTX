@@ -51,8 +51,8 @@ void EditNodeStakeholder::IniData(Node* node, bool type_enable, bool unit_enable
     ui->comboUnit->setCurrentIndex(unit_index);
     ui->comboUnit->setEnabled(unit_enable);
 
-    ui->rBtnMonthly->setChecked(node->rule);
-    ui->rBtnImmediate->setChecked(!node->rule);
+    ui->rBtnMonthly->setChecked(node->rule == kRuleMS);
+    ui->rBtnImmediate->setChecked(node->rule == kRuleIS);
     ui->rBtnLeaf->setChecked(true);
 
     if (node->name.isEmpty()) {
