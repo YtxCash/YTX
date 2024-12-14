@@ -205,7 +205,7 @@ bool MainWindow::ROpenFile(CString& file_path)
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasUrls()) {
-        auto suffix { QFileInfo(event->mimeData()->urls().at(0).fileName()).suffix().toLower() };
+        const auto suffix { QFileInfo(event->mimeData()->urls().at(0).fileName()).suffix().toLower() };
         if (suffix == ytx)
             return event->acceptProposedAction();
     }

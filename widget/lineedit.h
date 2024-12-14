@@ -20,7 +20,7 @@
 #ifndef LINEEDIT_H
 #define LINEEDIT_H
 
-#include <QDate>
+#include <QDateTime>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QRegularExpressionValidator>
@@ -43,9 +43,12 @@ protected:
     void keyPressEvent(QKeyEvent* event) override
     {
         if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Semicolon) {
-            insert(QDate::currentDate().toString(kDateFST));
-            return;
+            return insert(QDate::currentDate().toString(kDateFST));
         }
+
+        if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier) && event->key() == Qt::Key_Semicolon)
+            return insert(QDateTime::currentDateTime().toString(kDateTimeFST));
+
         QLineEdit::keyPressEvent(event);
     }
 };

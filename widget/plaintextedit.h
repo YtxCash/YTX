@@ -20,7 +20,7 @@
 #ifndef PLAINTEXTEDIT_H
 #define PLAINTEXTEDIT_H
 
-#include <QDate>
+#include <QDateTime>
 #include <QKeyEvent>
 #include <QPlainTextEdit>
 
@@ -42,6 +42,9 @@ protected:
     {
         if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Semicolon)
             return insertPlainText(QDate::currentDate().toString(kDateFST));
+
+        if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier) && event->key() == Qt::Key_Semicolon)
+            return insertPlainText(QDateTime::currentDateTime().toString(kDateTimeFST));
 
         QPlainTextEdit::keyPressEvent(event);
     }

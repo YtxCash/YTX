@@ -32,13 +32,7 @@ public:
     }
 
 protected:
-    void mousePressEvent(QMouseEvent* event) override
-    {
-        if (event->button() == Qt::LeftButton) {
-            this->close();
-        }
-        QLabel::mousePressEvent(event);
-    }
+    void mousePressEvent(QMouseEvent* /*event*/) override { this->close(); }
 };
 
 #endif // TEMPORARYLABEL_H
