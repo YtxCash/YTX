@@ -177,8 +177,6 @@ protected:
     Node* root_ {};
     Sqlite* sql_ {};
 
-    QMutex mutex_ {};
-
     NodeHash node_hash_ {};
     StringHash leaf_path_ {};
     StringHash branch_path_ {};

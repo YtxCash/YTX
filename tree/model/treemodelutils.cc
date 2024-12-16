@@ -596,7 +596,7 @@ void TreeModelUtils::UpdateModelFunction(QStandardItemModel* model, CIntSet& upd
     }
 }
 
-void TreeModelUtils::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Node* node, double initial_diff, double final_diff)
+void TreeModelUtils::UpdateAncestorValueFPT(const Node* root, Node* node, double initial_diff, double final_diff)
 {
     if (!node || node == root || node->parent == root || !node->parent)
         return;
@@ -607,15 +607,11 @@ void TreeModelUtils::UpdateAncestorValueFPT(QMutex& mutex, const Node* root, Nod
     const int unit = node->unit;
     const bool rule = node->rule;
 
-    auto future = QtConcurrent::run([=, &mutex]() {
-        QMutexLocker locker(&mutex);
-
-        for (Node* current = node->parent; current && current != root; current = current->parent) {
-            bool equal = current->rule == rule;
-            current->final_total += (equal ? 1 : -1) * final_diff;
-            if (current->unit == unit) {
-                current->initial_total += (equal ? 1 : -1) * initial_diff;
-            }
+    for (Node* current = node->parent; current && current != root; current = current->parent) {
+        bool equal = current->rule == rule;
+        current->final_total += (equal ? 1 : -1) * final_diff;
+        if (current->unit == unit) {
+            current->initial_total += (equal ? 1 : -1) * initial_diff;
         }
-    });
+    }
 }

@@ -32,7 +32,7 @@ void TreeModelProduct::RUpdateLeafValue(
     node->final_total += final_diff;
 
     sql_->UpdateNodeValue(node);
-    TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
+    TreeModelUtils::UpdateAncestorValueFPT(root_, node, initial_diff, final_diff);
     emit SUpdateDSpinBox();
 }
 
@@ -59,7 +59,7 @@ void TreeModelProduct::RUpdateMultiLeafTotal(const QList<int>& node_list)
         final_diff = node->final_total - old_final_total;
         initial_diff = node->initial_total - old_initial_total;
 
-        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, initial_diff, final_diff);
+        TreeModelUtils::UpdateAncestorValueFPT(root_, node, initial_diff, final_diff);
     }
 
     emit SUpdateDSpinBox();
@@ -120,7 +120,7 @@ bool TreeModelProduct::RemoveNode(int row, const QModelIndex& parent)
 
     } break;
     case kTypeLeaf: {
-        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
+        TreeModelUtils::UpdateAncestorValueFPT(root_, node, -node->initial_total, -node->final_total);
         TreeModelUtils::RemoveItemFromModel(leaf_model_, node_id);
         leaf_path_.remove(node_id);
 
@@ -258,7 +258,7 @@ void TreeModelProduct::ConstructTree()
             branch_path_.insert(node->id, path);
             break;
         case kTypeLeaf:
-            TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
+            TreeModelUtils::UpdateAncestorValueFPT(root_, node, node->initial_total, node->final_total);
             leaf_path_.insert(node->id, path);
             break;
         case kTypeSupport:
@@ -470,11 +470,11 @@ bool TreeModelProduct::dropMimeData(const QMimeData* data, Qt::DropAction action
 
     if (beginMoveRows(source_index.parent(), source_row, source_row, parent, begin_row)) {
         node->parent->children.removeAt(source_row);
-        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, -node->initial_total, -node->final_total);
+        TreeModelUtils::UpdateAncestorValueFPT(root_, node, -node->initial_total, -node->final_total);
 
         destination_parent->children.insert(begin_row, node);
         node->parent = destination_parent;
-        TreeModelUtils::UpdateAncestorValueFPT(mutex_, root_, node, node->initial_total, node->final_total);
+        TreeModelUtils::UpdateAncestorValueFPT(root_, node, node->initial_total, node->final_total);
 
         endMoveRows();
     }
