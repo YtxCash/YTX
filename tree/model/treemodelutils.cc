@@ -301,7 +301,7 @@ void TreeModelUtils::LeafPathRangeModelP(CStringHash& leaf, CIntSet& range, QSta
 
     auto future = QtConcurrent::run([range, &leaf]() {
         QVector<std::pair<QString, int>> items;
-        items.reserve(leaf.size());
+        items.reserve(range.size());
 
         for (const auto& [id, path] : leaf.asKeyValueRange()) {
             if (range.contains(id)) {
@@ -329,10 +329,9 @@ void TreeModelUtils::LeafPathRangeModelS(
         QVector<std::pair<QString, int>> vitems;
         QVector<std::pair<QString, int>> eitems;
 
-        const auto total_size { static_cast<double>(leaf.size()) };
-        citems.reserve(static_cast<qsizetype>(total_size * 0.6));
-        vitems.reserve(static_cast<qsizetype>(total_size * 0.3));
-        eitems.reserve(static_cast<qsizetype>(total_size * 0.1));
+        citems.reserve(crange.size());
+        vitems.reserve(vrange.size());
+        eitems.reserve(erange.size());
 
         eitems.emplaceBack(QString(), 0);
 
