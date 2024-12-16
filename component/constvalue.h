@@ -22,10 +22,7 @@
 
 // Constants for values
 inline constexpr long long kBatchSize = 50;
-inline constexpr double kDoubleMax = 1'000'000'000.00;
-inline constexpr double kDoubleMin = -1'000'000'000.00;
 inline constexpr int kHundred = 100;
-inline constexpr int kIntMax = 1'000'000'000;
 inline constexpr int kRowHeight = 24;
 inline constexpr int kThreeThousand = 3000;
 inline constexpr long long kMaxRecentFile = 10;

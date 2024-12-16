@@ -34,8 +34,8 @@ void EditNodeStakeholder::IniDialog(QStandardItemModel* unit_model, QStandardIte
     ui->comboEmployee->setModel(employee_model);
     ui->comboEmployee->setCurrentIndex(0);
 
-    ui->dSpinPaymentPeriod->setRange(0, kIntMax);
-    ui->dSpinTaxRate->setRange(0.0, kDoubleMax);
+    ui->dSpinPaymentPeriod->setRange(0, std::numeric_limits<int>::max());
+    ui->dSpinTaxRate->setRange(0.0, std::numeric_limits<double>::max());
     ui->dSpinTaxRate->setDecimals(amount_decimal);
 
     ui->deadline->setDateTime(QDateTime::currentDateTime());

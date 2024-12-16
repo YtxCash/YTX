@@ -34,7 +34,7 @@ void EditNodeTask::IniDialog(QStandardItemModel* unit_model, int amount_decimal,
 
     ui->comboUnit->setModel(unit_model);
 
-    ui->dSpinBoxUnitCost->setRange(0.0, kDoubleMax);
+    ui->dSpinBoxUnitCost->setRange(0.0, std::numeric_limits<double>::max());
     ui->dSpinBoxUnitCost->setDecimals(amount_decimal);
     ui->dateTime->setDisplayFormat(display_format);
     ui->dateTime->setCalendarPopup(true);

@@ -140,11 +140,11 @@ void EditNodeOrder::IniDialog(CSettings* settings)
     *node_shadow_->date_time = ui->dateTimeEdit->dateTime().toString(kDateTimeFST);
     ui->comboParty->lineEdit()->setValidator(&LineEdit::kInputValidator);
 
-    ui->dSpinDiscount->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinAmount->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinSettled->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinSecond->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinFirst->setRange(kDoubleMin, kDoubleMax);
+    ui->dSpinDiscount->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinAmount->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinSettled->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinSecond->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinFirst->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
 
     ui->dSpinDiscount->setDecimals(settings->amount_decimal);
     ui->dSpinAmount->setDecimals(settings->amount_decimal);

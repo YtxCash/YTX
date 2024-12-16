@@ -120,11 +120,11 @@ void TableWidgetOrder::IniDialog()
 
     ui->dateTimeEdit->setDisplayFormat(kDateTimeFST);
 
-    ui->dSpinDiscount->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinAmount->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinSettled->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinSecond->setRange(kDoubleMin, kDoubleMax);
-    ui->dSpinFirst->setRange(kDoubleMin, kDoubleMax);
+    ui->dSpinDiscount->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinAmount->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinSettled->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinSecond->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+    ui->dSpinFirst->setRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
 
     ui->dSpinDiscount->setDecimals(settings_->amount_decimal);
     ui->dSpinAmount->setDecimals(settings_->amount_decimal);
