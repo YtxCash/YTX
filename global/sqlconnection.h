@@ -30,6 +30,7 @@ class SqlConnection {
 public:
     static SqlConnection& Instance();
     bool SetDatabaseName(const QString& file_path);
+    QString DatabaseName() { return file_path_; }
     QSqlDatabase* Allocate(Section section);
     // bool IsInitialized() { return is_initialized_; }
 

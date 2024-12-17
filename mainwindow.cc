@@ -88,7 +88,6 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     SetHeader();
     SetAction();
 
-    qApp->setWindowIcon(QIcon(":/logo/logo/logo.png"));
     this->setAcceptDrops(true);
 
     MainWindowUtils::ReadSettings(ui->splitter, &QSplitter::restoreState, app_settings_, kWindow, kSplitterState);
@@ -100,8 +99,10 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
 
 #ifdef Q_OS_WIN
     ui->actionRemove->setShortcut(Qt::Key_Delete);
+    qApp->setWindowIcon(QIcon(":/logo/logo/logo.ico"));
 #elif defined(Q_OS_MACOS)
     ui->actionRemove->setShortcut(Qt::Key_Backspace);
+    qApp->setWindowIcon(QIcon(":/logo/logo/logo.icns"));
 #endif
 }
 
@@ -137,14 +138,15 @@ bool MainWindow::ROpenFile(CString& file_path)
     if (file_path.isEmpty())
         return false;
 
-    if (lock_file_) {
-        QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
+    const QFileInfo file_info(file_path);
+
+    if (!MainWindowUtils::IsValidFile(file_info)) {
+        TreeModelUtils::ShowTemporaryTooltip(tr("Invalid file: %1").arg(file_path), kThreeThousand);
         return false;
     }
 
-    const QFileInfo file_info(file_path);
-    if (!file_info.exists() || !file_info.isFile() || file_info.suffix().toLower() != ytx) {
-        TreeModelUtils::ShowTemporaryTooltip(tr("Invalid file path: %1, must be an existing .ytx file").arg(file_path), kThreeThousand);
+    if (lock_file_) {
+        QProcess::startDetached(qApp->applicationFilePath(), QStringList { file_path });
         return false;
     }
 
@@ -2243,14 +2245,8 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_actionNewFile_triggered()
 {
     auto file_path { QFileDialog::getSaveFileName(this, tr("New File"), QDir::homePath(), "*.ytx", nullptr) };
-    if (file_path.isEmpty())
-        return;
-
-    if (!file_path.endsWith(kSuffixYTX, Qt::CaseInsensitive))
-        file_path += kSuffixYTX;
-
-    sql_.NewFile(file_path);
-    ROpenFile(file_path);
+    if (MainWindowUtils::NewFile(sql_, file_path))
+        ROpenFile(file_path);
 }
 
 void MainWindow::on_actionOpenFile_triggered()
@@ -2511,4 +2507,21 @@ void MainWindow::on_actionAppendTrans_triggered()
     if (auto* table_widget = dynamic_cast<TableWidget*>(widget)) {
         AppendTrans(table_widget);
     }
+}
+
+void MainWindow::on_actionExport_Node_triggered()
+{
+    QString destination { QFileDialog::getSaveFileName(this, tr("Export Node"), QDir::homePath(), tr("*.ytx")) };
+    if (!MainWindowUtils::NewFile(sql_, destination))
+        return;
+
+    CString& source { SqlConnection::Instance().DatabaseName() };
+
+    QStringList tables { kFinance, kStakeholder, kTask, kProduct };
+    QStringList columns { kName, kRule, kType, kUnit, "removed" };
+    MainWindowUtils::ExportColumns(source, destination, tables, columns);
+
+    tables = { kFinancePath, kStakeholderPath, kTaskPath, kProductPath };
+    columns = { "ancestor", "descendant", "distance" };
+    MainWindowUtils::ExportColumns(source, destination, tables, columns);
 }

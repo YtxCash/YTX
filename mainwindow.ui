@@ -182,11 +182,22 @@
       <string>Recent Files</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuExport">
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <addaction name="actionExport_Node_To_CSV"/>
+     <addaction name="actionExport_Trans_To_CSV"/>
+     <addaction name="separator"/>
+     <addaction name="actionExport_Node"/>
+    </widget>
     <addaction name="actionAbout"/>
     <addaction name="separator"/>
     <addaction name="actionNewFile"/>
     <addaction name="actionOpenFile"/>
     <addaction name="menuRecent"/>
+    <addaction name="separator"/>
+    <addaction name="menuExport"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
@@ -395,6 +406,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionExport_Node_To_CSV">
+   <property name="text">
+    <string>Export Node To CSV...</string>
+   </property>
+  </action>
+  <action name="actionExport_Trans_To_CSV">
+   <property name="text">
+    <string>Export Trans To CSV...</string>
+   </property>
+  </action>
+  <action name="actionExport_Node">
+   <property name="text">
+    <string>Export Node</string>
    </property>
   </action>
  </widget>

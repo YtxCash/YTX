@@ -20,9 +20,12 @@
 #ifndef MAINWINDOWUTILS_H
 #define MAINWINDOWUTILS_H
 
+#include <QFileInfo>
 #include <QSettings>
 #include <QWidget>
 
+#include "component/constvalue.h"
+#include "database/mainwindowsqlite.h"
 #include "widget/tablewidget/tablewidget.h"
 
 template <typename T>
@@ -43,6 +46,11 @@ public:
     static QVariantList SaveTab(CTableHash& table_hash);
     static QSet<int> ReadSettings(std::shared_ptr<QSettings> settings, CString& section, CString& property);
     static void WriteSettings(std::shared_ptr<QSettings> settings, const QVariant& value, CString& section, CString& property);
+
+    static bool CopyFile(CString& source, CString& destination);
+    static bool NewFile(MainwindowSqlite& sql, QString& file_path);
+    static bool IsValidFile(const QFileInfo& file_info, CString& suffix = ytx);
+    static void ExportColumns(CString& source, CString& destination, CStringList& table_names, CStringList& columns);
 
     template <InheritQAbstractItemView T> static bool HasSelection(QPointer<T> view)
     {
@@ -148,6 +156,10 @@ public:
     //     if (!geometry.isEmpty())
     //         widget->restoreGeometry(geometry);
     // }
+
+private:
+    static bool IsSQLiteFile(CString& file_path);
+    static QString GeneratePlaceholder(const QVariantList& values);
 };
 
 #endif // MAINWINDOWUTILS_H

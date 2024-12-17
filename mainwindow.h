@@ -89,6 +89,8 @@ private slots:
     void on_actionClearMenu_triggered();
     void on_actionNewFile_triggered();
     void on_actionOpenFile_triggered();
+    void on_actionExport_Node_triggered();
+
     void on_tabWidget_currentChanged(int index);
     void on_tabWidget_tabBarDoubleClicked(int index);
     void on_tabWidget_tabCloseRequested(int index);
