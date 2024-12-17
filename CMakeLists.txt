@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(YTX VERSION 0.1.0 LANGUAGES CXX)
+project(YTX VERSION 0.1.4 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -34,7 +34,7 @@ if(APPLE)
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
   )
 elseif(WIN32)
-  set(INFO_RC "${CMAKE_CURRENT_SOURCE_DIR}/resource/logo/Info.rc")
+  set(INFO_RC "${CMAKE_CURRENT_SOURCE_DIR}/Info.rc")
   qt6_add_executable(${PROJECT_NAME} WIN32 ${PROJECT_SOURCES} ${INFO_RC} ${brc})
 else()
   qt6_add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${brc})
