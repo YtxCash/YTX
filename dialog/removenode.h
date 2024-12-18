@@ -53,7 +53,6 @@ private:
     int node_id_ {};
     int unit_ {};
     int node_type_ {};
-    Section section_ {};
 
     CTreeModel* model_ {};
 };

@@ -803,7 +803,7 @@ void MainWindow::RemoveNode(TreeWidget* tree_widget)
     bool support_reference { sql->SupportReferenceFPTS(node_id) };
 
     if (!interal_reference && !exteral_reference && !support_reference) {
-        RemoveView(model, index, node_id, node_type);
+        RemoveNonBranch(model, index, node_id, node_type);
         return;
     }
 
@@ -854,7 +854,7 @@ void MainWindow::RemoveTrans(TableWidget* table_widget)
         view->setCurrentIndex(new_index);
 }
 
-void MainWindow::RemoveView(PTreeModel tree_model, const QModelIndex& index, int node_id, int node_type)
+void MainWindow::RemoveNonBranch(PTreeModel tree_model, const QModelIndex& index, int node_id, int node_type)
 {
     tree_model->RemoveNode(index.row(), index.parent());
     data_->sql->RemoveNode(node_id, node_type);

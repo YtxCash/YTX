@@ -12,7 +12,6 @@ RemoveNode::RemoveNode(CTreeModel* model, Section section, int node_id, int node
     , node_id_ { node_id }
     , unit_ { unit }
     , node_type_ { node_type }
-    , section_ { section }
     , model_ { model }
 {
     ui->setupUi(this);
@@ -82,7 +81,6 @@ void RemoveNode::IniData(Section section, bool exteral_reference, int node_type)
         ui->label->setText(tr("The node has external references, so it can’t be removed directly. Should it be replaced instead?"));
     }
 
-    // 不需要接收更新combo model的信号
     auto* combo_model_ { new QStandardItemModel(this) };
 
     if (node_type == kTypeSupport) {
