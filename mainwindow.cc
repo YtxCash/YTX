@@ -22,6 +22,7 @@
 #include "database/sqlite/sqlitestakeholder.h"
 #include "database/sqlite/sqlitetask.h"
 #include "delegate/checkbox.h"
+#include "delegate/document.h"
 #include "delegate/doublespin.h"
 #include "delegate/line.h"
 #include "delegate/readonly/colorr.h"
@@ -33,7 +34,6 @@
 #include "delegate/table/supportid.h"
 #include "delegate/table/tablecombo.h"
 #include "delegate/table/tabledatetime.h"
-#include "delegate/table/tabledbclick.h"
 #include "delegate/tree/color.h"
 #include "delegate/tree/finance/financeforeignr.h"
 #include "delegate/tree/order/ordernamer.h"
@@ -482,9 +482,9 @@ void MainWindow::DelegateFPTS(PQTableView table_view, PTreeModel tree_model, CSe
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kState), state);
 
-    auto* document { new TableDbClick(table_view) };
+    auto* document { new Document(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditTransDocument);
+    connect(document, &Document::SEditDocument, this, &MainWindow::REditTransDocument);
 
     auto* lhs_ratio { new DoubleSpin(settings->common_decimal, std::numeric_limits<double>::min(), std::numeric_limits<double>::max(), table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnum::kLhsRatio), lhs_ratio);
@@ -650,9 +650,9 @@ void MainWindow::DelegateTask(PQTreeView tree_view, CSettings& settings) const
     auto* finished { new CheckBox(QEvent::MouseButtonDblClick, tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kFinished), finished);
 
-    auto* document { new TableDbClick(tree_view) };
+    auto* document { new Document(tree_view) };
     tree_view->setItemDelegateForColumn(std::to_underlying(TreeEnumTask::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditNodeDocument);
+    connect(document, &Document::SEditDocument, this, &MainWindow::REditNodeDocument);
 }
 
 void MainWindow::DelegateProduct(PQTreeView tree_view, CSettings& settings) const
@@ -1104,9 +1104,9 @@ void MainWindow::DelegateSupport(PQTableView table_view, PTreeModel tree_model, 
     auto* state { new CheckBox(QEvent::MouseButtonRelease, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kState), state);
 
-    auto* document { new TableDbClick(table_view) };
+    auto* document { new Document(table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kDocument), document);
-    connect(document, &TableDbClick::SEdit, this, &MainWindow::REditNodeDocument);
+    connect(document, &Document::SEditDocument, this, &MainWindow::REditNodeDocument);
 
     auto* value { new DoubleSpinR(settings->amount_decimal, true, table_view) };
     table_view->setItemDelegateForColumn(std::to_underlying(TableEnumSupport::kLhsDebit), value);

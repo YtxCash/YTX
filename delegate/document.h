@@ -17,21 +17,21 @@
  * along with YTX. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TABLEDBCLICK_H
-#define TABLEDBCLICK_H
+#ifndef DOCUMENT_H
+#define DOCUMENT_H
 
 #include <QStyledItemDelegate>
 
-class TableDbClick final : public QStyledItemDelegate {
+class Document final : public QStyledItemDelegate {
     Q_OBJECT
 
 public:
-    explicit TableDbClick(QObject* parent = nullptr);
+    explicit Document(QObject* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 signals:
-    void SEdit();
+    void SEditDocument();
 };
 
-#endif // TABLEDBCLICK_H
+#endif // DOCUMENT_H
