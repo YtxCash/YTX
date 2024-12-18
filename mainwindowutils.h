@@ -39,20 +39,17 @@ concept MemberFunction = std::is_member_function_pointer_v<T>;
 
 class MainWindowUtils {
 public:
-    static bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
-    // static bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
-    // static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
-
     static QString ResourceFile();
-
     static QVariantList SaveTab(CTableHash& table_hash);
     static QSet<int> ReadSettings(std::shared_ptr<QSettings> settings, CString& section, CString& property);
+
     static void WriteSettings(std::shared_ptr<QSettings> settings, const QVariant& value, CString& section, CString& property);
+    static void ExportColumns(CString& source, CString& destination, CStringList& table_names, CStringList& columns);
 
     static bool CopyFile(CString& source, CString& destination);
     static bool NewFile(MainwindowSqlite& sql, QString& file_path);
     static bool IsValidFile(const QFileInfo& file_info, CString& suffix = ytx);
-    static void ExportColumns(CString& source, CString& destination, CStringList& table_names, CStringList& columns);
+    static bool IsTreeWidget(const QWidget* widget) { return widget && widget->inherits("TreeWidget"); }
 
     template <InheritQAbstractItemView T> static bool HasSelection(QPointer<T> view)
     {
@@ -80,41 +77,6 @@ public:
             }
         }
     }
-
-    // template <InheritQWidget T> static void SaveState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
-    // {
-    //     if (!widget || !settings) {
-    //         qWarning() << "SaveState: Invalid parameters (widget or settings is null)";
-    //         return;
-    //     }
-
-    //     auto state { widget->saveState() };
-    //     settings->setValue(QString("%1/%2").arg(section_name, property), state);
-    // }
-
-    // template <InheritQWidget T> static void RestoreState(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
-    // {
-    //     if (!widget || !settings) {
-    //         qWarning() << "RestoreState: Invalid parameters (widget or settings is null)";
-    //         return;
-    //     }
-
-    //     auto state { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
-
-    //     if (!state.isEmpty())
-    //         widget->restoreState(state);
-    // }
-
-    // template <InheritQWidget T> static void SaveGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section, CString& property)
-    // {
-    //     if (!widget || !settings) {
-    //         qWarning() << "SaveGeometry: Invalid parameters (widget or settings is null)";
-    //         return;
-    //     }
-
-    //     auto geometry { widget->saveGeometry() };
-    //     settings->setValue(QString("%1/%2").arg(section, property), geometry);
-    // }
 
     template <InheritQWidget Widget, MemberFunction Function, typename... Args>
     static void WriteSettings(Widget* widget, Function function, std::shared_ptr<QSettings> settings, CString& section, CString& property, Args&&... args)
@@ -146,18 +108,6 @@ public:
             std::invoke(function, widget, value, std::forward<Args>(args)...);
         }
     }
-
-    // template <InheritQWidget T> static void RestoreGeometry(T* widget, std::shared_ptr<QSettings> settings, CString& section_name, CString& property)
-    // {
-    //     if (!widget || !settings) {
-    //         qWarning() << "RestoreGeometry: Invalid parameters (widget or settings is null)";
-    //         return;
-    //     }
-
-    //     auto geometry { settings->value(QString("%1/%2").arg(section_name, property)).toByteArray() };
-    //     if (!geometry.isEmpty())
-    //         widget->restoreGeometry(geometry);
-    // }
 
 private:
     static bool IsSQLiteFile(CString& file_path);
