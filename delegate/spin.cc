@@ -14,7 +14,6 @@ QWidget* Spin::createEditor(QWidget* parent, const QStyleOptionViewItem& /*optio
     auto* editor { new SpinBox(parent) };
     editor->setMinimum(min_);
     editor->setMaximum(max_);
-    editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
     return editor;
 }
