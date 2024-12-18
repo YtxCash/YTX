@@ -7,13 +7,12 @@
 #include "component/signalblocker.h"
 #include "ui_editdocument.h"
 
-EditDocument::EditDocument(Section section, QStringList* document, CString& document_dir, QWidget* parent)
+EditDocument::EditDocument(QStringList* document, CString& document_dir, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::EditDocument)
-    , section { section }
     , document_ { document }
     , list_model_ { new QStringListModel(this) }
-    , document_dir_ { QDir::homePath() + "/" + document_dir }
+    , document_dir_ { document_dir }
 {
     ui->setupUi(this);
     SignalBlocker blocker(this);

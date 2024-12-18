@@ -1735,12 +1735,11 @@ void MainWindow::REditTransDocument()
     if (!index.isValid())
         return;
 
-    auto document_dir { settings_->document_dir };
-    auto model { table_widget->Model() };
-    auto* document_pointer { model->GetDocumentPointer(index) };
+    const auto document_dir { QDir::homePath() + "/" + settings_->document_dir };
     const int trans_id { index.siblingAtColumn(std::to_underlying(TableEnum::kID)).data().toInt() };
 
-    auto* dialog { new EditDocument(start_, document_pointer, document_dir, this) };
+    auto* document_pointer { table_widget->Model()->GetDocumentPointer(index) };
+    auto* dialog { new EditDocument(document_pointer, document_dir, this) };
 
     if (dialog->exec() == QDialog::Accepted)
         data_->sql->UpdateField(data_->info.transaction, document_pointer->join(kSemicolon), kDocument, trans_id);
@@ -1759,12 +1758,11 @@ void MainWindow::REditNodeDocument()
     if (!index.isValid())
         return;
 
-    auto document_dir { settings_->document_dir };
-    auto model { tree_widget_->Model() };
-    auto* document_pointer { model->GetDocumentPointer(index) };
+    const auto document_dir { QDir::homePath() + "/" + settings_->document_dir };
     const int id { index.siblingAtColumn(std::to_underlying(TreeEnum::kID)).data().toInt() };
 
-    auto* dialog { new EditDocument(start_, document_pointer, document_dir, this) };
+    auto* document_pointer { tree_widget_->Model()->GetDocumentPointer(index) };
+    auto* dialog { new EditDocument(document_pointer, document_dir, this) };
 
     if (dialog->exec() == QDialog::Accepted)
         data_->sql->UpdateField(data_->info.node, document_pointer->join(kSemicolon), kDocument, id);

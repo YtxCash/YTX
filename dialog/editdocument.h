@@ -23,7 +23,6 @@
 #include <QDialog>
 #include <QStringListModel>
 
-#include "component/enumclass.h"
 #include "component/using.h"
 
 namespace Ui {
@@ -34,7 +33,7 @@ class EditDocument final : public QDialog {
     Q_OBJECT
 
 public:
-    explicit EditDocument(Section section, QStringList* document, CString& document_dir, QWidget* parent = nullptr);
+    explicit EditDocument(QStringList* document, CString& document_dir, QWidget* parent = nullptr);
     ~EditDocument();
 
 private slots:
@@ -48,7 +47,6 @@ private:
 
 private:
     Ui::EditDocument* ui;
-    Section section {};
     QStringList* document_ {};
     QStringListModel* list_model_ {};
     QString document_dir_ {};
