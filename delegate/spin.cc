@@ -14,7 +14,6 @@ QWidget* Spin::createEditor(QWidget* parent, const QStyleOptionViewItem& /*optio
     auto* editor { new SpinBox(parent) };
     editor->setMinimum(min_);
     editor->setMaximum(max_);
-    editor->setAlignment(Qt::AlignCenter);
     editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
     return editor;
@@ -38,7 +37,7 @@ void Spin::paint(QPainter* painter, const QStyleOptionViewItem& option, const QM
     if (value == 0)
         return QStyledItemDelegate::paint(painter, option, index);
 
-    PaintText(locale_.toString(value), painter, option, index, Qt::AlignCenter);
+    PaintText(locale_.toString(value), painter, option, index, Qt::AlignVCenter | Qt::AlignRight);
 }
 
 QSize Spin::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const

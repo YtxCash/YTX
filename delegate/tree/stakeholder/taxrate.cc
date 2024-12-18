@@ -21,7 +21,6 @@ QWidget* TaxRate::createEditor(QWidget* parent, const QStyleOptionViewItem& opti
     editor->setDecimals(decimal_);
     editor->setMinimum(min_);
     editor->setMaximum(max_);
-    editor->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
     return editor;
 }

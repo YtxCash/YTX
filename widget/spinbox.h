@@ -31,6 +31,7 @@ public:
         : QSpinBox { parent }
     {
         setStepType(QAbstractSpinBox::AdaptiveDecimalStepType);
+        setAlignment(Qt::AlignRight | Qt::AlignVCenter);
         setGroupSeparatorShown(true);
     }
 
