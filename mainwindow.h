@@ -20,7 +20,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QDialog>
 #include <QFileInfo>
 #include <QLockFile>
 #include <QMainWindow>
@@ -185,7 +184,6 @@ private:
     void ResizeColumn(QHeaderView* header, bool table_view = true) const;
 
     void AppSettings(CString& dir_path);
-    void ResourceFile() const;
     bool LockFile(const QFileInfo& file_info);
 
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CIntSet& set, CData& data, CSettings& settings);

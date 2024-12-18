@@ -6,7 +6,6 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QProcess>
 #include <QQueue>
 #include <QResource>
 #include <QScrollBar>
@@ -77,7 +76,7 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
     , ui(new Ui::MainWindow)
     , config_dir_ { config_dir }
 {
-    ResourceFile();
+    QResource::registerResource(MainWindowUtils::ResourceFile());
     AppSettings(config_dir);
 
     ui->setupUi(this);
@@ -2110,53 +2109,6 @@ void MainWindow::AppSettings(CString& dir_path)
 #endif
 
     qApp->setStyleSheet(theme);
-}
-
-void MainWindow::ResourceFile() const
-{
-    QString path {};
-
-#ifdef Q_OS_WIN
-    path = QCoreApplication::applicationDirPath() + "/resource";
-
-    if (QDir dir(path); !dir.exists()) {
-        if (!QDir::home().mkpath(path)) {
-            qDebug() << "Failed to create directory:" << path;
-            return;
-        }
-    }
-
-    path += "/resource.brc";
-
-#if 0
-    QString command { "E:/Qt/6.8.1/llvm-mingw_64/bin/rcc.exe" };
-    QStringList arguments {};
-    arguments << "-binary"
-              << "E:/Code/YTX/resource/resource.qrc"
-              << "-o" << path;
-
-    QProcess process {};
-
-    // 启动终端并执行命令
-    process.start(command, arguments);
-    process.waitForFinished();
-#endif
-
-#elif defined(Q_OS_MACOS)
-    path = QCoreApplication::applicationDirPath() + "/../Resources/resource.brc";
-
-#if 0
-    QString command { QDir::homePath() + "/Qt6.8/6.8.1/macos/libexec/rcc" + " -binary " + QDir::homePath() + "/Documents/YTX/resource/resource.qrc -o "
-        + path };
-
-    QProcess process {};
-    process.start("zsh", QStringList() << "-c" << command);
-    process.waitForFinished();
-#endif
-
-#endif
-
-    QResource::registerResource(path);
 }
 
 void MainWindow::on_actionSearch_triggered()

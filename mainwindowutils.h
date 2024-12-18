@@ -43,6 +43,8 @@ public:
     // static bool IsTableWidget(const QWidget* widget) { return widget && widget->inherits("TableWidget"); }
     // static bool IsEditNodeOrder(const QWidget* widget) { return widget && widget->inherits("EditNodeOrder"); }
 
+    static QString ResourceFile();
+
     static QVariantList SaveTab(CTableHash& table_hash);
     static QSet<int> ReadSettings(std::shared_ptr<QSettings> settings, CString& section, CString& property);
     static void WriteSettings(std::shared_ptr<QSettings> settings, const QVariant& value, CString& section, CString& property);
