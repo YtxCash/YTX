@@ -23,7 +23,6 @@
 #include <QMap>
 #include <QStandardItemModel>
 #include <QStringList>
-#include <tuple>
 
 #include "enumclass.h"
 
@@ -51,18 +50,6 @@ struct Info {
     QStandardItemModel* type_model {};
 };
 
-struct Tab {
-    Section section {};
-    int node_id {};
-
-    // Equality operator overload to compare two Tab structs
-    bool operator==(const Tab& other) const noexcept { return std::tie(section, node_id) == std::tie(other.section, other.node_id); }
-
-    // Inequality operator overload to compare two Tab structs
-    bool operator!=(const Tab& other) const noexcept { return !(*this == other); }
-};
-
 using CInfo = const Info;
-using CTab = const Tab;
 
 #endif // INFO_H

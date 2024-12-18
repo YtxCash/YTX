@@ -20,6 +20,7 @@
 #ifndef USING_H
 #define USING_H
 
+#include <QDialog>
 #include <QHash>
 #include <QMap>
 #include <QStringList>
@@ -35,6 +36,7 @@ using CVariant = const QVariant;
 using CStringList = const QStringList;
 
 using CIntSet = const QSet<int>;
+using PDialog = QPointer<QDialog>;
 
 inline const QString kEmptyString = {};
 inline const QString kDD = "dd";

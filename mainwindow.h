@@ -28,6 +28,7 @@
 #include <QTableView>
 #include <QTranslator>
 
+#include "component/data.h"
 #include "component/settings.h"
 #include "component/using.h"
 #include "database/mainwindowsqlite.h"
@@ -37,15 +38,6 @@
 #include "ui_mainwindow.h"
 #include "widget/tablewidget/tablewidgetorder.h"
 #include "widget/treewidget/treewidget.h"
-
-struct Data {
-    Tab tab {};
-    Info info {};
-    Sqlite* sql {};
-};
-
-using PDialog = QPointer<QDialog>;
-using CData = const Data;
 
 template <typename T>
 concept TableWidgetLike = std::is_base_of_v<QWidget, T> && requires(T t) {
@@ -117,7 +109,6 @@ private slots:
     void RTreeViewDoubleClicked(const QModelIndex& index);
 
 private:
-    void SetHeader();
     void SetTabWidget();
     void SetClearMenuAction();
 

@@ -15,6 +15,7 @@
 #include "component/constvalue.h"
 #include "component/enumclass.h"
 #include "component/signalblocker.h"
+#include "component/stringinitializer.h"
 #include "database/sqlite/sqlitefinance.h"
 #include "database/sqlite/sqliteorder.h"
 #include "database/sqlite/sqliteproduct.h"
@@ -84,7 +85,7 @@ MainWindow::MainWindow(CString& config_dir, QWidget* parent)
 
     SetTabWidget();
     SetConnect();
-    SetHeader();
+    StringInitializer::SetHeader(finance_data_.info, product_data_.info, stakeholder_data_.info, task_data_.info, sales_data_.info, purchase_data_.info);
     SetAction();
 
     this->setAcceptDrops(true);
@@ -1373,63 +1374,6 @@ void MainWindow::SetPurchaseData()
     connect(product_data_.sql, &Sqlite::SUpdateProduct, sql, &Sqlite::RUpdateProduct);
 }
 
-void MainWindow::SetHeader()
-{
-    finance_data_.info.tree_header
-        = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Foreign Total"), tr("Local Total"), {} };
-    finance_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("FXRate"), tr("Code"), tr("Description"), tr("SupportID"), tr("D"), tr("S"),
-        tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
-    finance_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsFXRate"), tr("LhsDebit"), tr("LhsCredit"),
-        tr("Description"), {}, tr("SupportID"), {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsFXRate"), tr("RhsNode") };
-    finance_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {}, {},
-        {}, {}, {}, {}, {}, {}, tr("Foreign Total"), tr("Local Total") };
-    finance_data_.info.support_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), tr("LhsRatio"), tr("LhsDebit"), tr("LhsCredit"),
-        tr("Description"), tr("UnitPrice"), tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), tr("RhsRatio"), tr("RhsNode") };
-
-    product_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Color"),
-        tr("UnitPrice"), tr("Commission"), tr("Quantity"), tr("Amount"), {} };
-    product_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportID"), tr("D"), tr("S"),
-        tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
-    product_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("LhsNode"), {}, tr("LhsDebit"), tr("LhsCredit"), tr("Description"),
-        tr("UnitCost"), tr("SupportID"), {}, {}, tr("D"), tr("S"), tr("RhsCredit"), tr("RhsDebit"), {}, tr("RhsNode") };
-    product_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {}, {},
-        tr("Color"), {}, tr("UnitPrice"), tr("Commission"), {}, {}, tr("Quantity"), tr("Amount") };
-    product_data_.info.support_header = finance_data_.info.support_header;
-
-    stakeholder_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Deadline"),
-        tr("Employee"), tr("PaymentPeriod"), tr("TaxRate"), {} };
-    stakeholder_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitPrice"), tr("Code"), tr("Description"), tr("OutsideProduct"), tr("D"), tr("S"),
-        tr("InsideProduct"), tr("PlaceHolder") };
-    stakeholder_data_.info.search_trans_header = { tr("ID"), tr("DateTime"), tr("Code"), tr("InsideProduct"), {}, {}, {}, tr("Description"), tr("UnitPrice"),
-        tr("SupportID"), {}, {}, tr("D"), tr("S"), {}, {}, {}, tr("OutsideProduct") };
-    stakeholder_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {},
-        tr("Employee"), tr("Deadline"), {}, {}, tr("PaymentPeriod"), tr("TaxRate"), {}, {}, {}, {} };
-    stakeholder_data_.info.support_header = finance_data_.info.support_header;
-
-    task_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("DateTime"),
-        tr("Color"), tr("Document"), tr("Finished"), tr("UnitCost"), tr("Quantity"), tr("Amount"), {} };
-    task_data_.info.table_header = { tr("ID"), tr("DateTime"), tr("UnitCost"), tr("Code"), tr("Description"), tr("SupportID"), tr("D"), tr("S"),
-        tr("RelatedNode"), tr("Debit"), tr("Credit"), tr("Subtotal") };
-    task_data_.info.search_trans_header = product_data_.info.search_trans_header;
-    task_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), {}, {},
-        tr("DateTime"), tr("Color"), tr("Document"), tr("UnitCost"), {}, {}, {}, tr("Quantity"), tr("Amount") };
-    task_data_.info.support_header = finance_data_.info.support_header;
-
-    sales_data_.info.tree_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Party"),
-        tr("Employee"), tr("DateTime"), tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled"), {} };
-    sales_data_.info.table_header = { tr("ID"), tr("InsideProduct"), tr("OutsideProduct"), tr("Code"), tr("Description"), tr("Color"), tr("First"),
-        tr("Second"), tr("UnitPrice"), tr("Amount"), tr("DiscountPrice"), tr("Discount"), tr("Settled") };
-    sales_data_.info.search_trans_header = { tr("ID"), {}, tr("Code"), tr("InsideProduct"), {}, tr("First"), tr("Second"), tr("Description"), tr("UnitPrice"),
-        tr("LhsNode"), tr("DiscountPrice"), tr("Settled"), {}, {}, tr("Amount"), tr("Discount"), {}, tr("OutsideProduct") };
-    sales_data_.info.search_node_header = { tr("Name"), tr("ID"), tr("Code"), tr("Description"), tr("Note"), tr("Rule"), tr("Type"), tr("Unit"), tr("Party"),
-        tr("Employee"), tr("DateTime"), {}, {}, tr("First"), tr("Second"), tr("Finished"), tr("Amount"), tr("Discount"), tr("Settled") };
-
-    purchase_data_.info.tree_header = sales_data_.info.tree_header;
-    purchase_data_.info.table_header = sales_data_.info.table_header;
-    purchase_data_.info.search_trans_header = sales_data_.info.search_trans_header;
-    purchase_data_.info.search_node_header = sales_data_.info.search_node_header;
-}
-
 void MainWindow::SetAction() const
 {
     ui->actionInsertNode->setIcon(QIcon(":/solarized_dark/solarized_dark/insert.png"));
@@ -1928,7 +1872,7 @@ void MainWindow::UpdateInterface(CInterface& interface)
             LoadAndInstallTranslator(new_language);
 
         ui->retranslateUi(this);
-        SetHeader();
+        StringInitializer::SetHeader(finance_data_.info, product_data_.info, stakeholder_data_.info, task_data_.info, sales_data_.info, purchase_data_.info);
         UpdateTranslate();
     }
 
@@ -2463,7 +2407,7 @@ void MainWindow::on_actionAppendTrans_triggered()
 
 void MainWindow::on_actionExport_Node_triggered()
 {
-    QString destination { QFileDialog::getSaveFileName(this, tr("Export Node"), QDir::homePath(), tr("*.ytx")) };
+    QString destination { QFileDialog::getSaveFileName(this, tr("Export Node"), QDir::homePath(), "*.ytx") };
     if (!MainWindowUtils::NewFile(sql_, destination))
         return;
 

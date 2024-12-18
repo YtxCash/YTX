@@ -60,6 +60,9 @@
          <bold>true</bold>
         </font>
        </property>
+       <property name="accessibleDescription">
+        <string notr="true"/>
+       </property>
        <property name="text">
         <string>YTX 0.1.4</string>
        </property>
