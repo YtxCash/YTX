@@ -269,7 +269,7 @@ bool TableModelProduct::removeRows(int row, int /*count*/, const QModelIndex& pa
 bool TableModelProduct::UpdateDebit(TransShadow* trans_shadow, double value)
 {
     double lhs_debit { *trans_shadow->lhs_debit };
-    if (std::abs(lhs_debit - value) < TOLERANCE)
+    if (std::abs(lhs_debit - value) < kTolerance)
         return false;
 
     double lhs_credit { *trans_shadow->lhs_credit };
@@ -299,7 +299,7 @@ bool TableModelProduct::UpdateDebit(TransShadow* trans_shadow, double value)
 bool TableModelProduct::UpdateCredit(TransShadow* trans_shadow, double value)
 {
     double lhs_credit { *trans_shadow->lhs_credit };
-    if (std::abs(lhs_credit - value) < TOLERANCE)
+    if (std::abs(lhs_credit - value) < kTolerance)
         return false;
 
     double lhs_debit { *trans_shadow->lhs_debit };
@@ -329,7 +329,7 @@ bool TableModelProduct::UpdateCredit(TransShadow* trans_shadow, double value)
 bool TableModelProduct::UpdateRatio(TransShadow* trans_shadow, double value)
 {
     double unit_cost { *trans_shadow->unit_price };
-    if (std::abs(unit_cost - value) < TOLERANCE || value < 0)
+    if (std::abs(unit_cost - value) < kTolerance || value < 0)
         return false;
 
     double diff { value - unit_cost };

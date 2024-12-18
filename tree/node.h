@@ -25,7 +25,7 @@
 #include <cmath>
 #include <tuple>
 
-inline constexpr double TOLERANCE = 1e-9;
+inline constexpr double kTolerance = 1e-9;
 
 struct Node {
     Node() = default;
@@ -123,7 +123,7 @@ inline Node& Node::operator=(const Node& other)
 
 inline bool Node::operator==(const Node& other) const noexcept
 {
-    auto AlmostEqual = [](double a, double b, double tolerance = TOLERANCE) noexcept { return std::abs(a - b) < tolerance; };
+    auto AlmostEqual = [](double a, double b, double tolerance = kTolerance) noexcept { return std::abs(a - b) < tolerance; };
 
     // Compare non-floating-point data members
     bool basic_fields_equal

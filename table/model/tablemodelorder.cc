@@ -341,7 +341,7 @@ bool TableModelOrder::UpdateOutsideProduct(TransShadow* trans_shadow, int value)
 
 bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
 {
-    if (std::abs(*trans_shadow->unit_price - value) < TOLERANCE)
+    if (std::abs(*trans_shadow->unit_price - value) < kTolerance)
         return false;
 
     double diff { *trans_shadow->lhs_credit * (value - *trans_shadow->unit_price) };
@@ -363,7 +363,7 @@ bool TableModelOrder::UpdateUnitPrice(TransShadow* trans_shadow, double value)
 
 bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double value)
 {
-    if (std::abs(*trans_shadow->discount_price - value) < TOLERANCE)
+    if (std::abs(*trans_shadow->discount_price - value) < kTolerance)
         return false;
 
     double diff { *trans_shadow->lhs_credit * (value - *trans_shadow->discount_price) };
@@ -384,7 +384,7 @@ bool TableModelOrder::UpdateDiscountPrice(TransShadow* trans_shadow, double valu
 
 bool TableModelOrder::UpdateSecond(TransShadow* trans_shadow, double value)
 {
-    if (std::abs(*trans_shadow->lhs_credit - value) < TOLERANCE)
+    if (std::abs(*trans_shadow->lhs_credit - value) < kTolerance)
         return false;
 
     double diff { value - *trans_shadow->lhs_credit };

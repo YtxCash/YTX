@@ -189,7 +189,7 @@ void TableModel::UpdateAllState(Check state)
 bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 {
     double lhs_debit { *trans_shadow->lhs_debit };
-    if (std::abs(lhs_debit - value) < TOLERANCE)
+    if (std::abs(lhs_debit - value) < kTolerance)
         return false;
 
     double lhs_credit { *trans_shadow->lhs_credit };
@@ -223,7 +223,7 @@ bool TableModel::UpdateDebit(TransShadow* trans_shadow, double value)
 bool TableModel::UpdateCredit(TransShadow* trans_shadow, double value)
 {
     double lhs_credit { *trans_shadow->lhs_credit };
-    if (std::abs(lhs_credit - value) < TOLERANCE)
+    if (std::abs(lhs_credit - value) < kTolerance)
         return false;
 
     double lhs_debit { *trans_shadow->lhs_debit };
@@ -258,7 +258,7 @@ bool TableModel::UpdateRatio(TransShadow* trans_shadow, double value)
 {
     double lhs_ratio { *trans_shadow->lhs_ratio };
 
-    if (std::abs(lhs_ratio - value) < TOLERANCE || value <= 0)
+    if (std::abs(lhs_ratio - value) < kTolerance || value <= 0)
         return false;
 
     double diff { value - lhs_ratio };

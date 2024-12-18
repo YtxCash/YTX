@@ -26,7 +26,7 @@ void Color::paint(QPainter* painter, const QStyleOptionViewItem& option, const Q
     painter->setRenderHint(QPainter::Antialiasing);
     painter->setPen(Qt::NoPen);
 
-    QColor background_color { option.state & QStyle::State_Selected ? option.palette.highlight().color() : option.palette.window().color() };
+    QColor background_color { (option.state & QStyle::State_Selected) ? option.palette.highlight().color() : option.palette.window().color() };
 
     painter->setBrush(background_color);
     painter->drawRect(option.rect);

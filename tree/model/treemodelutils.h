@@ -36,7 +36,7 @@ public:
         T& current_value { std::invoke(member, node) };
 
         if constexpr (std::is_floating_point_v<T>) {
-            if (std::abs(current_value - value) < TOLERANCE)
+            if (std::abs(current_value - value) < kTolerance)
                 return false;
         } else {
             if (current_value == value)
