@@ -25,8 +25,8 @@ Search::Search(CTreeModel* tree, CTreeModel* stakeholder_tree, CTreeModel* produ
     ui->setupUi(this);
     SignalBlocker blocker(this);
 
-    search_tree_ = new SearchNodeModel(info_, tree_, stakeholder_tree, sql, this);
-    search_table_ = new SearchTransModel(&info, sql, this);
+    search_tree_ = new SearchNodeModel(info, tree_, stakeholder_tree, sql, this);
+    search_table_ = new SearchTransModel(info, sql, this);
 
     TreeViewDelegate(ui->searchViewNode, search_tree_);
     TableViewDelegate(ui->searchViewTrans, search_table_);

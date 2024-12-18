@@ -28,7 +28,7 @@
 class SearchTransModel final : public QAbstractItemModel {
     Q_OBJECT
 public:
-    SearchTransModel(CInfo* info, Sqlite* sql, QObject* parent = nullptr);
+    SearchTransModel(CInfo& info, Sqlite* sql, QObject* parent = nullptr);
     ~SearchTransModel();
 
 public:
@@ -50,7 +50,7 @@ private:
     Sqlite* sql_ {};
 
     TransList trans_list_ {};
-    CInfo* info_ {};
+    CInfo& info_;
 };
 
 #endif // SEARCHTRANSMODEL_H

@@ -2,7 +2,7 @@
 
 #include "component/enumclass.h"
 
-SearchTransModel::SearchTransModel(CInfo* info, Sqlite* sql, QObject* parent)
+SearchTransModel::SearchTransModel(CInfo& info, Sqlite* sql, QObject* parent)
     : QAbstractItemModel { parent }
     , sql_ { sql }
     , info_ { info }
@@ -31,7 +31,7 @@ int SearchTransModel::rowCount(const QModelIndex& parent) const
     return trans_list_.size();
 }
 
-int SearchTransModel::columnCount(const QModelIndex& /*parent*/) const { return info_->search_trans_header.size(); }
+int SearchTransModel::columnCount(const QModelIndex& /*parent*/) const { return info_.search_trans_header.size(); }
 
 QVariant SearchTransModel::data(const QModelIndex& index, int role) const
 {
@@ -86,14 +86,14 @@ QVariant SearchTransModel::data(const QModelIndex& index, int role) const
 QVariant SearchTransModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return info_->search_trans_header.at(section);
+        return info_.search_trans_header.at(section);
 
     return QVariant();
 }
 
 void SearchTransModel::sort(int column, Qt::SortOrder order)
 {
-    if (column <= -1 || column >= info_->search_trans_header.size() - 1)
+    if (column <= -1 || column >= info_.search_trans_header.size() - 1)
         return;
 
     auto Compare = [column, order](const Trans* lhs, const Trans* rhs) -> bool {
