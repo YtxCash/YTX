@@ -86,8 +86,10 @@
         4. 快捷键: **`Ctrl + O`**
 3. 文件锁: 为了确保数据完整性，会在您的数据库文件旁创建一个带有 .lock 扩展名的锁文件，以防止数据库被多个实例同时打开。
 4. 配置目录
-    - Mac: `/home/.config/YTX/` (显示隐藏文件夹: **`cmd + shift + .`**)
-    - Win: `\usr\AppData\Local\YTX`
+    - QStandardPaths::AppConfigLocation
+    - Mac: `~/Library/Preferences/<APPNAME>` (显示隐藏文件夹: **`cmd + shift + .`**)
+    - Win: `C:/Users/<USER>/AppData/Local/<APPNAME>`
+    - Linux: `~/.config/<APPNAME>`
 
 ### 操作
 

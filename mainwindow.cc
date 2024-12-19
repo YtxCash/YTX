@@ -72,13 +72,12 @@
 #include "widget/treewidget/treewidgetorder.h"
 #include "widget/treewidget/treewidgetstakeholder.h"
 
-MainWindow::MainWindow(CString& config_dir, QWidget* parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , config_dir_ { config_dir }
 {
     QResource::registerResource(MainWindowUtils::ResourceFile());
-    AppSettings(config_dir);
+    AppSettings();
 
     ui->setupUi(this);
     SignalBlocker blocker(this);
@@ -158,7 +157,8 @@ bool MainWindow::ROpenFile(CString& file_path)
     const auto& complete_base_name { file_info.completeBaseName() };
 
     this->setWindowTitle(complete_base_name);
-    file_settings_ = std::make_unique<QSettings>(config_dir_ + kSlash + complete_base_name + kSuffixINI, QSettings::IniFormat);
+    file_settings_ = std::make_unique<QSettings>(
+        QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + kSlash + complete_base_name + kSuffixINI, QSettings::IniFormat);
 
     sql_ = MainwindowSqlite(start_);
     SetFinanceData();
@@ -2018,9 +2018,9 @@ void MainWindow::ResizeColumn(QHeaderView* header, bool table_view) const
     ;
 }
 
-void MainWindow::AppSettings(CString& dir_path)
+void MainWindow::AppSettings()
 {
-    app_settings_ = std::make_unique<QSettings>(dir_path + "/ytx.ini", QSettings::IniFormat);
+    app_settings_ = std::make_unique<QSettings>(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/ytx.ini", QSettings::IniFormat);
 
     QString language_code {};
 

@@ -14,11 +14,9 @@ QString MainWindowUtils::ResourceFile()
 #ifdef Q_OS_WIN
     path = QCoreApplication::applicationDirPath() + "/resource";
 
-    if (QDir dir(path); !dir.exists()) {
-        if (!QDir::home().mkpath(path)) {
-            qDebug() << "Failed to create directory:" << path;
-            return;
-        }
+    if (!QDir(path).exists() && !QDir().mkpath(path)) {
+        qDebug() << "Failed to create directory:" << path;
+        return {};
     }
 
     path += "/resource.brc";

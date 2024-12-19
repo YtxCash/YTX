@@ -18,6 +18,7 @@
  */
 
 #include <QDir>
+#include <QStandardPaths>
 
 #include "mainwindow.h"
 
@@ -30,14 +31,14 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 
     // Centralize config directory creation
-    const QString config_dir { QDir::home().filePath(".config/YTX") };
+    const QString location { QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) };
 
-    if (!QDir(config_dir).exists() && !QDir::home().mkpath(config_dir)) {
-        qCritical() << "Failed to create config directory:" << config_dir;
+    if (!QDir(location).exists() && !QDir().mkpath(location)) {
+        qCritical() << "Failed to create config directory:" << location;
         return EXIT_FAILURE;
     }
 
-    MainWindow mainwindow(config_dir);
+    MainWindow mainwindow {};
 
     if (application.arguments().size() >= 2) {
         const QString file_path { application.arguments().at(1) };
@@ -63,18 +64,18 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 
     // Centralize config directory creation
-    const QString config_dir { QDir::home().filePath("/AppData/Local/YTX") };
+    const QString location { QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) };
 
-    if (!QDir(config_dir).exists() && !QDir::home().mkpath(config_dir)) {
-        qCritical() << "Failed to create config directory:" << config_dir;
+    if (!QDir(location).exists() && !QDir().mkpath(location)) {
+        qCritical() << "Failed to create config directory:" << location;
         return EXIT_FAILURE;
     }
 
-    MainWindow mainwindow(config_dir);
+    MainWindow mainwindow {};
 
     // Simplified file handling and locking
-    if (argc >= 2) {
-        const QString file_path { QString::fromLocal8Bit(argv[1]) };
+    if (application.arguments().size() >= 2) {
+        const QString file_path { application.arguments().at(1) };
 
         if (!file_path.isEmpty() && !mainwindow.ROpenFile(file_path)) {
             return EXIT_FAILURE;

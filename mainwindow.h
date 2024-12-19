@@ -55,7 +55,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(CString& config_dir, QWidget* parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
     bool ROpenFile(CString& file_path);
@@ -174,7 +174,7 @@ private:
     void LoadAndInstallTranslator(CString& language);
     void ResizeColumn(QHeaderView* header, bool table_view = true) const;
 
-    void AppSettings(CString& dir_path);
+    void AppSettings();
     bool LockFile(const QFileInfo& file_info);
 
     void RestoreTab(PTreeModel tree_model, TableHash& table_hash, CIntSet& set, CData& data, CSettings& settings);
@@ -195,7 +195,6 @@ private:
     QTranslator qt_translator_ {};
     QTranslator ytx_translator_ {};
     Interface interface_ {};
-    QString config_dir_ {};
 
     std::unique_ptr<QLockFile> lock_file_;
     std::shared_ptr<QSettings> app_settings_ {};
