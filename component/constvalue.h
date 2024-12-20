@@ -90,12 +90,16 @@ inline constexpr char kState[] = "state";
 inline constexpr char kSettled[] = "settled";
 inline constexpr char kTaxRate[] = "tax_rate";
 inline constexpr char kUnit[] = "unit";
+inline constexpr char kRemoved[] = "removed";
 inline constexpr char kUnitPrice[] = "unit_price";
 inline constexpr char kDiscountPrice[] = "discount_price";
 inline constexpr char kUnitCost[] = "unit_cost";
 inline constexpr char kInsideProduct[] = "inside_product";
 inline constexpr char kOutsideProduct[] = "outside_product";
 inline constexpr char kSupportID[] = "support_id";
+inline constexpr char kAncestor[] = "ancestor";
+inline constexpr char kDescendant[] = "descendant";
+inline constexpr char kDistance[] = "distance";
 
 // Constants for app's state
 inline constexpr char kHeaderState[] = "header_state";

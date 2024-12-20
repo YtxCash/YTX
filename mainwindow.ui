@@ -182,14 +182,12 @@
       <string>Recent Files</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuExport">
+    <widget class="QMenu" name="menuExport_2">
      <property name="title">
       <string>Export</string>
      </property>
-     <addaction name="actionExport_Node_To_CSV"/>
-     <addaction name="actionExport_Trans_To_CSV"/>
-     <addaction name="separator"/>
-     <addaction name="actionExport_Node"/>
+     <addaction name="actionExportXlsx"/>
+     <addaction name="actionExportNode"/>
     </widget>
     <addaction name="actionAbout"/>
     <addaction name="separator"/>
@@ -197,7 +195,7 @@
     <addaction name="actionOpenFile"/>
     <addaction name="menuRecent"/>
     <addaction name="separator"/>
-    <addaction name="menuExport"/>
+    <addaction name="menuExport_2"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
@@ -408,17 +406,15 @@
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="actionExport_Node_To_CSV">
+  <action name="actionExportXlsx">
    <property name="text">
-    <string>Export Node To CSV...</string>
+    <string>Export Xlsx</string>
+   </property>
+   <property name="toolTip">
+    <string>Export Xlsx</string>
    </property>
   </action>
-  <action name="actionExport_Trans_To_CSV">
-   <property name="text">
-    <string>Export Trans To CSV...</string>
-   </property>
-  </action>
-  <action name="actionExport_Node">
+  <action name="actionExportNode">
    <property name="text">
     <string>Export Node</string>
    </property>

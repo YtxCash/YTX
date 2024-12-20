@@ -2403,7 +2403,7 @@ void MainWindow::on_actionAppendTrans_triggered()
     }
 }
 
-void MainWindow::on_actionExport_Node_triggered()
+void MainWindow::on_actionExportNode_triggered()
 {
     QString destination { QFileDialog::getSaveFileName(this, tr("Export Node"), QDir::homePath(), "*.ytx") };
     if (!MainWindowUtils::NewFile(sql_, destination))
@@ -2412,10 +2412,12 @@ void MainWindow::on_actionExport_Node_triggered()
     CString& source { SqlConnection::Instance().DatabaseName() };
 
     QStringList tables { kFinance, kStakeholder, kTask, kProduct };
-    QStringList columns { kName, kRule, kType, kUnit, "removed" };
+    QStringList columns { kName, kRule, kType, kUnit, kRemoved };
     MainWindowUtils::ExportColumns(source, destination, tables, columns);
 
     tables = { kFinancePath, kStakeholderPath, kTaskPath, kProductPath };
-    columns = { "ancestor", "descendant", "distance" };
+    columns = { kAncestor, kDescendant, kDistance };
     MainWindowUtils::ExportColumns(source, destination, tables, columns);
 }
+
+void MainWindow::on_actionExportXlsx_triggered() { }
